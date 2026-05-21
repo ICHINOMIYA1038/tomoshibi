@@ -1,0 +1,22 @@
+# Cloudflare Pages / Netlify 用ヘッダ設定
+# サブドメイン (tomoshibi.gikyokutosyokan.com) で配信、
+# 親 gikyokutosyokan.com から iframe 埋込を許可する
+
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: serial=(self), usb=(self), xr-spatial-tracking=(self)
+  Content-Security-Policy: frame-ancestors 'self' https://gikyokutosyokan.com https://*.gikyokutosyokan.com
+
+# WebGL/HDR テクスチャに必要な COOP/COEP は WebSerial 接続時の都合で外しておく
+# 必要なら以下を有効化:
+#   Cross-Origin-Opener-Policy: same-origin
+#   Cross-Origin-Embedder-Policy: require-corp
+
+# 静的アセットは長期キャッシュ
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/manifest.webmanifest
+  Content-Type: application/manifest+json
+  Cache-Control: public, max-age=3600

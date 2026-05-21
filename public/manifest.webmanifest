@@ -1,0 +1,27 @@
+{
+  "name": "TOMOSHIBI小屋 — 舞台明かりをともす場所",
+  "short_name": "ともしび小屋",
+  "description": "物理ベースで舞台照明を組み・見て・残せるブラウザのライティングシミュレーター。戯曲図書館。",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#07060a",
+  "theme_color": "#0a0805",
+  "lang": "ja",
+  "categories": ["productivity", "graphics", "education"],
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
