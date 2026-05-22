@@ -6,6 +6,7 @@ import { Stage } from './scene/Stage'
 import { PerformerMeshes } from './scene/PerformerMesh'
 import { FixtureMeshes } from './scene/FixtureMesh'
 import { Beams } from './scene/Beams'
+import { PostFX } from './scene/PostFX'
 import { SelectionGizmo } from './scene/SelectionGizmo'
 import { PhotometricProbe, useProbeClickHandler } from './scene/PhotometricProbe'
 import { SetPieces } from './scene/SetPieces'
@@ -94,6 +95,11 @@ export default function App() {
             preserveDrawingBuffer: false,
           }}
           dpr={[1, 1.5]}
+          shadows="soft"
+          onCreated={({ gl }) => {
+            gl.toneMapping = THREE.ACESFilmicToneMapping
+            gl.toneMappingExposure = 0.45 * (settings.exposure ?? 1.0)
+          }}
           onPointerMissed={() => select(null, null)}
         >
           <PerspectiveCamera key={`cam-${settings.cameraView}`} makeDefault position={view.pos} fov={45} near={0.1} far={100} />
@@ -132,6 +138,7 @@ export default function App() {
           <ProbeClickCatcher />
 
           <XRGLBinder />
+          {settings.renderMode === 'advanced' && <PostFX />}
         </Canvas>
       </div>
 
@@ -143,6 +150,7 @@ export default function App() {
         <ViewButton view="sidewing" label="袖" hint="3" />
         <ViewButton view="free" label="自由" hint="4" />
         <HouseLightsToggle />
+        <RenderModeToggle />
         <XRButton />
       </div>
 
@@ -256,6 +264,21 @@ function ProbeClickCatcher() {
       <planeGeometry args={[40, 40]} />
       <meshBasicMaterial transparent opacity={0} />
     </mesh>
+  )
+}
+
+function RenderModeToggle() {
+  const mode = useStore(s => s.settings.renderMode)
+  const update = useStore(s => s.updateSettings)
+  const advanced = mode === 'advanced'
+  return (
+    <button
+      onClick={() => update({ renderMode: advanced ? 'simple' : 'advanced' })}
+      style={{ background: advanced ? 'rgba(120, 180, 220, 0.25)' : undefined }}
+      title="高度モード = Bloom + SSAO 追加 (重い)"
+    >
+      {advanced ? '高度' : '簡易'}
+    </button>
   )
 }
 

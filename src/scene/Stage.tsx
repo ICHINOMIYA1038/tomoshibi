@@ -56,20 +56,20 @@ export function Stage({ onMaterialsReady }: { onMaterialsReady: (mats: THREE.Sha
       <mesh geometry={floorGeom} material={floorMat} receiveShadow />
 
       {/* バックウォール (黒) */}
-      <mesh position={[0, 4, -8]} material={wallMat}>
+      <mesh position={[0, 4, -8]} material={wallMat} receiveShadow>
         <planeGeometry args={[16, 8]} />
       </mesh>
 
       {/* サイドウォール */}
-      <mesh position={[-8, 4, -3]} rotation={[0, Math.PI / 2, 0]} material={wallMat}>
+      <mesh position={[-8, 4, -3]} rotation={[0, Math.PI / 2, 0]} material={wallMat} receiveShadow>
         <planeGeometry args={[10, 8]} />
       </mesh>
-      <mesh position={[8, 4, -3]} rotation={[0, -Math.PI / 2, 0]} material={wallMat}>
+      <mesh position={[8, 4, -3]} rotation={[0, -Math.PI / 2, 0]} material={wallMat} receiveShadow>
         <planeGeometry args={[10, 8]} />
       </mesh>
 
       {/* ホリゾント (背景幕 白) */}
-      <mesh position={[0, 3.5, -7.6]} material={cycMat}>
+      <mesh position={[0, 3.5, -7.6]} material={cycMat} receiveShadow>
         <planeGeometry args={[14, 6.5]} />
       </mesh>
 
@@ -92,10 +92,10 @@ export function Stage({ onMaterialsReady }: { onMaterialsReady: (mats: THREE.Sha
       ))}
 
       {/* 簡易セット: 平台 (プラットフォーム) */}
-      <mesh position={[-2, 0.3, -3]} material={platformMat}>
+      <mesh position={[-2, 0.3, -3]} material={platformMat} castShadow receiveShadow>
         <boxGeometry args={[3, 0.6, 2]} />
       </mesh>
-      <mesh position={[2.5, 0.5, -4]} material={platformMat}>
+      <mesh position={[2.5, 0.5, -4]} material={platformMat} castShadow receiveShadow>
         <boxGeometry args={[2.5, 1.0, 1.5]} />
       </mesh>
     </group>

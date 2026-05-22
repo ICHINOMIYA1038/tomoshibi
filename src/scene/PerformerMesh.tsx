@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import * as THREE from 'three'
 import { useStore, type Performer } from '../store'
 import { createStageMaterial } from '../lighting/StageMaterial'
@@ -42,11 +42,22 @@ function PerformerMeshSingle({ performer, material }: { performer: Performer; ma
   const selected = selection.kind === 'performer' && selection.id === performer.id
   const isHover = hovered.kind === 'performer' && hovered.id === performer.id
   const s = performer.scale
+  const groupRef = useRef<THREE.Group>(null)
+  // 全パーツに castShadow/receiveShadow を伝播
+  useEffect(() => {
+    groupRef.current?.traverse((o) => {
+      if ((o as THREE.Mesh).isMesh) {
+        ;(o as THREE.Mesh).castShadow = true
+        ;(o as THREE.Mesh).receiveShadow = true
+      }
+    })
+  })
 
   // よりスリムで人らしい比率 (8頭身寄り)
   // 全体高: 約 1.72m (s=1.0時)
   return (
     <group
+      ref={groupRef}
       position={performer.position}
       onPointerOver={(e) => { e.stopPropagation(); setHover('performer', performer.id) }}
       onPointerOut={(e) => { e.stopPropagation(); setHover(null, null) }}

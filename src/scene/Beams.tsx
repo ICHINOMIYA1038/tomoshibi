@@ -91,11 +91,9 @@ function Beam({ fixture, hazeDensity }: { fixture: Fixture; hazeDensity: number 
   )
   // SpotLight angle は半角
   const halfAngle = THREE.MathUtils.degToRad(fixture.beamAngleDeg) * 0.5
-  // intensity: lumens を candela 風にスケール (経験則)
   const flux = profile?.fluxLumens ?? 1000
-  // Three.js r155+: SpotLight.intensity は candela 相当 (decay=2 で物理的)
-  // 経験則で大幅にスケールダウン
-  const lightIntensity = (flux / 6000) * fixture.intensity
+  // 物理: candela = lumens / (2π(1-cos(field/2)))
+  const lightIntensity = (flux / (2 * Math.PI * (1 - Math.cos(fieldAngleRad / 2)))) * fixture.intensity
 
   // コーン: 光源→ターゲット方向、長さは固定 (シーン外まで届かせる)
   const beamLength = 14
@@ -133,9 +131,13 @@ function Beam({ fixture, hazeDensity }: { fixture: Fixture; hazeDensity: number 
         intensity={lightIntensity}
         angle={halfAngle}
         penumbra={0.45}
-        distance={30}
-        decay={1.5}
-        castShadow={false}
+        distance={0}
+        decay={2}
+        castShadow
+        shadow-mapSize-width={1024}
+        shadow-mapSize-height={1024}
+        shadow-bias={-0.0005}
+        shadow-normalBias={0.04}
       />
       <mesh
         ref={coneRef}
