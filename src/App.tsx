@@ -7,6 +7,7 @@ import { PerformerMeshes } from './scene/PerformerMesh'
 import { FixtureMeshes } from './scene/FixtureMesh'
 import { Beams } from './scene/Beams'
 import { PostFX } from './scene/PostFX'
+import { PostFXMinimal } from './scene/PostFXMinimal'
 import { SelectionGizmo } from './scene/SelectionGizmo'
 import { PhotometricProbe, useProbeClickHandler } from './scene/PhotometricProbe'
 import { SetPieces } from './scene/SetPieces'
@@ -123,8 +124,8 @@ export default function App() {
           <hemisphereLight args={['#3a2a20', '#1a1208', 0.2]} />
           {settings.showHouseLights && (
             <>
-              <ambientLight intensity={0.55} color={'#fde0b8'} />
-              <directionalLight position={[0, 8, 6]} intensity={0.6} color={'#fde0b8'} />
+              <ambientLight intensity={0.9} color={'#fde0b8'} />
+              <directionalLight position={[0, 8, 6]} intensity={1.0} color={'#fde0b8'} />
             </>
           )}
 
@@ -138,7 +139,7 @@ export default function App() {
           <ProbeClickCatcher />
 
           <XRGLBinder />
-          {settings.renderMode === 'advanced' && <PostFX />}
+          {settings.renderMode === 'advanced' && <PostFXMinimal />}
         </Canvas>
       </div>
 

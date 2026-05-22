@@ -130,9 +130,9 @@ function Beam({ fixture, hazeDensity }: { fixture: Fixture; hazeDensity: number 
         color={color}
         intensity={lightIntensity}
         angle={halfAngle}
-        penumbra={0.45}
+        penumbra={0.6}
         distance={0}
-        decay={2}
+        decay={1.7}
         castShadow
         shadow-mapSize-width={1024}
         shadow-mapSize-height={1024}
