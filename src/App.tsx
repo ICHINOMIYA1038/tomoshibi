@@ -124,8 +124,8 @@ export default function App() {
           <hemisphereLight args={['#3a2a20', '#1a1208', 0.2]} />
           {settings.showHouseLights && (
             <>
-              <ambientLight intensity={0.9} color={'#fde0b8'} />
-              <directionalLight position={[0, 8, 6]} intensity={1.0} color={'#fde0b8'} />
+              <ambientLight intensity={0.55} color={'#fde0b8'} />
+              <directionalLight position={[0, 8, 6]} intensity={0.7} color={'#fde0b8'} />
             </>
           )}
 
