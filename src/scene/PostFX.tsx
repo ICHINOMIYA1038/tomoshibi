@@ -65,10 +65,12 @@ vec3 linearToSRGB(vec3 c) {
   return mix(hi, lo, vec3(cutoff));
 }
 void main() {
+  // sceneRT は tonemap 済み LDR (リニア空間)
+  // bloom も同じシーンを元にした LDR ベース
   vec3 s = texture2D(uScene, vUv).rgb;
   vec3 b = texture2D(uBloom, vUv).rgb;
   vec3 sum = s + b * uBloomStrength;
-  gl_FragColor = vec4(linearToSRGB(aces(sum * uExposure)), 1.0);
+  gl_FragColor = vec4(linearToSRGB(clamp(sum, 0.0, 1.0)), 1.0);
 }
 `
 
@@ -97,7 +99,7 @@ export function PostFX() {
       uniforms: {
         uSrc: { value: null }, uScene: { value: null }, uBloom: { value: null },
         uThreshold: { value: 1.0 }, uDir: { value: new THREE.Vector2() },
-        uBloomStrength: { value: 0.5 }, uExposure: { value: 1.0 },
+        uBloomStrength: { value: 0.5 }, uExposure: { value: 0.45 },
       },
     })
     const bright = mk(brightPassFS)
@@ -110,29 +112,21 @@ export function PostFX() {
     return { sceneRT, bloomA, bloomB, bright, blur, comp, quad, quadScene, orthoCam }
   }, [])
 
-  // サイズ更新
+  // サイズ更新 (CSS px = drawing buffer px, dpr=1 前提)
   useEffect(() => {
-    const dpr = gl.getPixelRatio()
-    const w = Math.max(2, Math.floor(size.width * dpr))
-    const h = Math.max(2, Math.floor(size.height * dpr))
+    const w = Math.max(2, Math.floor(size.width))
+    const h = Math.max(2, Math.floor(size.height))
     ctx.sceneRT.setSize(w, h)
-    const bw = Math.max(2, Math.floor(w / 2))
-    const bh = Math.max(2, Math.floor(h / 2))
-    ctx.bloomA.setSize(bw, bh)
-    ctx.bloomB.setSize(bw, bh)
-  }, [ctx, gl, size.width, size.height])
+    ctx.bloomA.setSize(Math.max(2, Math.floor(w / 2)), Math.max(2, Math.floor(h / 2)))
+    ctx.bloomB.setSize(Math.max(2, Math.floor(w / 2)), Math.max(2, Math.floor(h / 2)))
+  }, [ctx, size.width, size.height])
 
-  // レンダラの tonemap を切る (composite で実施)
-  useEffect(() => {
-    const prev = { mapping: gl.toneMapping }
-    gl.toneMapping = THREE.NoToneMapping
-    return () => { gl.toneMapping = prev.mapping }
-  }, [gl])
+  // 注: gl.toneMapping は ACES のまま使用 (シーンレンダ時に適用)
+  // composite では bloom 加算のみ
 
   useFrame(() => {
     const { sceneRT, bloomA, bloomB, bright, blur, comp, quad, quadScene, orthoCam } = ctx
     // 1. シーン → sceneRT
-    // 影マップ等の autoUpdate を尊重しつつ手動レンダー
     gl.setRenderTarget(sceneRT)
     gl.setClearColor(0x000000, 1)
     gl.clear(true, true, true)
