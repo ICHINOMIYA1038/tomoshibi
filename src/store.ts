@@ -175,14 +175,56 @@ function defaultPerformer(pos: [number, number, number]): Performer {
   }
 }
 
+// 初期状態: 3点照明 (Key / Fill / Back) のお手本配置
+function initialFixtures(): Fixture[] {
+  // Key (主光源): 上手側前方から、暖色 Fresnel
+  const key = defaultFixture('Fresnel8', [3.2, 6.5, 3.0])
+  key.target = [0, 1.5, -1]
+  key.intensity = 1.0
+  key.name = 'Key (主)'
+  // Fill (補助光): 下手側前方からやや弱め
+  const fill = defaultFixture('Fresnel8', [-3.2, 6.0, 3.0])
+  fill.target = [0, 1.5, -1]
+  fill.intensity = 0.55
+  fill.name = 'Fill (補助)'
+  // Back (バックライト): 後方上から、輪郭を浮かす
+  const back = defaultFixture('PAR64_NSP', [0, 7.2, -5.5])
+  back.target = [0, 1.5, -0.5]
+  back.intensity = 0.9
+  back.name = 'Back (バック)'
+  // 色を白寄りに
+  back.color = [1, 0.92, 0.85]
+  return [key, fill, back]
+}
+
+// 初期状態: 平台2枚を SetPiece として配置 (削除可能)
+function initialSetPieces(): import('./types').SetPiece[] {
+  return [
+    {
+      id: 'sp_init_platform_l', name: '平台 (下手)',
+      kind: 'platform', size: [3, 0.6, 2], color: '#876040',
+      position: [-2, 0.3, -3], rotation: [0, 0, 0], scale: 1,
+    },
+    {
+      id: 'sp_init_platform_r', name: '平台 (上手)',
+      kind: 'platform', size: [2.5, 1.0, 1.5], color: '#876040',
+      position: [2.5, 0.5, -4], rotation: [0, 0, 0], scale: 1,
+    },
+  ]
+}
+
+function initialPerformers(): Performer[] {
+  return [defaultPerformer([0, 0, -1])]
+}
+
 export const useStore = create<State>((set, get) => ({
-  fixtures: [],
-  performers: [],
+  fixtures: initialFixtures(),
+  performers: initialPerformers(),
   selection: { kind: null, id: null },
   hovered: { kind: null, id: null },
   probeMeasurement: null,
   setProbeMeasurement: (m) => set({ probeMeasurement: m }),
-  setPieces: [],
+  setPieces: initialSetPieces(),
   addSetPiece: (sp) => set(s => ({ setPieces: [...s.setPieces, sp] })),
   removeSetPiece: (id) => set(s => ({
     setPieces: s.setPieces.filter(x => x.id !== id),
@@ -294,13 +336,10 @@ export const useStore = create<State>((set, get) => ({
     }
 
     if (name === 'basic') {
-      // 基本明かり — 演劇の標準セットアップ (フロント・トップ・サイド・バック)
-      addF('Fresnel8', [-3, 6.5, 3], [-1.2, 1.5, 0], { gelEnabled: true, color: [1.0, 0.92, 0.78] })  // フロントL (暖)
-      addF('Fresnel8', [3, 6.5, 3], [1.2, 1.5, 0], { gelEnabled: true, color: [0.78, 0.86, 1.0] })    // フロントR (寒)
-      addF('Source4_26', [0, 7.5, -1], [0, 1.5, -0.5])                                                // トップ
-      addF('PAR64_NSP', [-2.5, 7.5, -5], [-1, 1.8, 0], { gelEnabled: true, color: [1, 0.5, 0.7] })    // バックリムL
-      addF('PAR64_NSP', [2.5, 7.5, -5], [1, 1.8, 0], { gelEnabled: true, color: [0.5, 0.6, 1] })      // バックリムR
-      addF('PAR64_WFL', [0, 4.5, -7], [0, 2, -8], { gelEnabled: true, color: [0.2, 0.3, 0.8] })       // ホリゾン中央
+      // 基本明かり — 3点照明 (Key / Fill / Back)
+      addF('Fresnel8', [3.2, 6.5, 3.0], [0, 1.5, -1], { intensity: 1.0, name: 'Key (主)' })
+      addF('Fresnel8', [-3.2, 6.0, 3.0], [0, 1.5, -1], { intensity: 0.55, name: 'Fill (補助)' })
+      addF('PAR64_NSP', [0, 7.2, -5.5], [0, 1.5, -0.5], { intensity: 0.9, name: 'Back (バック)', color: [1, 0.92, 0.85] })
       addP([0, 0, -1], '#cc9977')
     } else if (name === 'colorful') {
       // カラフル — LED コンサート演出向け
@@ -324,8 +363,7 @@ export const useStore = create<State>((set, get) => ({
   },
 }))
 
-// 初期プリセット読み込み
-useStore.getState().loadPreset('basic')
+// (初期状態は store create 時の initialFixtures() / initialSetPieces() で設定済み)
 
 // ==== シェーダー uniform 詰め ====
 

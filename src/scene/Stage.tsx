@@ -91,13 +91,7 @@ export function Stage({ onMaterialsReady }: { onMaterialsReady: (mats: THREE.Sha
         </mesh>
       ))}
 
-      {/* 簡易セット: 平台 (プラットフォーム) */}
-      <mesh position={[-2, 0.3, -3]} material={platformMat} castShadow receiveShadow>
-        <boxGeometry args={[3, 0.6, 2]} />
-      </mesh>
-      <mesh position={[2.5, 0.5, -4]} material={platformMat} castShadow receiveShadow>
-        <boxGeometry args={[2.5, 1.0, 1.5]} />
-      </mesh>
+      {/* 平台は SetPieces (削除可能なインスタンス) に移行したのでここでは描画しない */}
     </group>
   )
 }

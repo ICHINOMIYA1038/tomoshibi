@@ -47,6 +47,13 @@ export function PostFXMinimal() {
 
   useEffect(() => () => ctx.rt.dispose(), [ctx])
 
+  // 高度モード中は XR を無効化 (XR-aware が viewport を壊す疑い)
+  useEffect(() => {
+    const prevXR = gl.xr.enabled
+    gl.xr.enabled = false
+    return () => { gl.xr.enabled = prevXR }
+  }, [gl])
+
   useFrame(() => {
     ;(window as any).__r3f = { gl, scene, camera, size }
     const cam = camera as THREE.PerspectiveCamera
