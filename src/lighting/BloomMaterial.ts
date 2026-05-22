@@ -22,9 +22,25 @@ varying vec2 vUv;
 uniform sampler2D uSrc;
 uniform float uThreshold;
 uniform float uKnee;
+uniform vec2 uSrcTexel;
+
+// 3x3 ガウシアン平均: ボリュメトリックのディザが bloom で強調されるのを防ぐ
+vec3 sampleSrc(vec2 uv) {
+  vec2 t = uSrcTexel;
+  vec3 s = texture2D(uSrc, uv).rgb * 4.0;
+  s += texture2D(uSrc, uv + vec2( t.x, 0.0)).rgb * 2.0;
+  s += texture2D(uSrc, uv + vec2(-t.x, 0.0)).rgb * 2.0;
+  s += texture2D(uSrc, uv + vec2(0.0,  t.y)).rgb * 2.0;
+  s += texture2D(uSrc, uv + vec2(0.0, -t.y)).rgb * 2.0;
+  s += texture2D(uSrc, uv + vec2( t.x,  t.y)).rgb;
+  s += texture2D(uSrc, uv + vec2(-t.x,  t.y)).rgb;
+  s += texture2D(uSrc, uv + vec2( t.x, -t.y)).rgb;
+  s += texture2D(uSrc, uv + vec2(-t.x, -t.y)).rgb;
+  return s / 16.0;
+}
 
 void main() {
-  vec3 c = texture2D(uSrc, vUv).rgb;
+  vec3 c = sampleSrc(vUv);
   float b = max(c.r, max(c.g, c.b));
   // Karis-style soft knee
   float softness = clamp(b - uThreshold + uKnee, 0.0, 2.0 * uKnee);
@@ -102,11 +118,27 @@ uniform sampler2D uScene;
 uniform sampler2D uBloom;
 uniform float uBloomIntensity;
 uniform float uExposure;
+uniform vec2 uSceneTexel;
 
 ${toneMapGLSL}
 
+// 3x3 ガウシアン: ボリュメトリックのディザ/レイマーチノイズを軽く均す
+vec3 sampleSceneSmooth(vec2 uv) {
+  vec2 t = uSceneTexel;
+  vec3 s = texture2D(uScene, uv).rgb * 4.0;
+  s += texture2D(uScene, uv + vec2( t.x, 0.0)).rgb * 2.0;
+  s += texture2D(uScene, uv + vec2(-t.x, 0.0)).rgb * 2.0;
+  s += texture2D(uScene, uv + vec2(0.0,  t.y)).rgb * 2.0;
+  s += texture2D(uScene, uv + vec2(0.0, -t.y)).rgb * 2.0;
+  s += texture2D(uScene, uv + vec2( t.x,  t.y)).rgb;
+  s += texture2D(uScene, uv + vec2(-t.x,  t.y)).rgb;
+  s += texture2D(uScene, uv + vec2( t.x, -t.y)).rgb;
+  s += texture2D(uScene, uv + vec2(-t.x, -t.y)).rgb;
+  return s / 16.0;
+}
+
 void main() {
-  vec3 scene = texture2D(uScene, vUv).rgb;
+  vec3 scene = sampleSceneSmooth(vUv);
   vec3 bloom = texture2D(uBloom, vUv).rgb;
   vec3 combined = scene + bloom * uBloomIntensity;
   combined *= uExposure;
@@ -125,6 +157,7 @@ export function createBrightPass() {
       uSrc: { value: null },
       uThreshold: { value: 1.0 },
       uKnee: { value: 0.5 },
+      uSrcTexel: { value: new THREE.Vector2(1/1920, 1/1080) },
     },
   })
 }
@@ -162,6 +195,7 @@ export function createComposite() {
       uBloom: { value: null },
       uBloomIntensity: { value: 0.7 },
       uExposure: { value: 1.0 },
+      uSceneTexel: { value: new THREE.Vector2(1/1920, 1/1080) },
     },
   })
 }

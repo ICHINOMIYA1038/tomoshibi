@@ -33,7 +33,7 @@ export interface Performer {
   pose: 'standing' | 'sitting'
 }
 
-export type SelectionKind = 'fixture' | 'performer' | null
+export type SelectionKind = 'fixture' | 'performer' | 'setpiece' | null
 export interface Selection {
   kind: SelectionKind
   id: string | null
@@ -71,20 +71,20 @@ function detectInitialQuality(): QualityPreset {
 
 export const QUALITY_PRESETS: Record<QualityPreset, QualityConfig> = {
   low: {
-    volumetricSteps: 16, volumetricScale: 0.5, shadowSteps: 10, shadowSoft: false,
-    bounceEnabled: false, bloomLevels: 3, pixelRatio: 1.0, jitterStrength: 0.6, hazeNoise: false,
+    volumetricSteps: 24, volumetricScale: 0.7, shadowSteps: 10, shadowSoft: false,
+    bounceEnabled: false, bloomLevels: 3, pixelRatio: 1.0, jitterStrength: 0.15, hazeNoise: false,
   },
   medium: {
-    volumetricSteps: 28, volumetricScale: 0.75, shadowSteps: 16, shadowSoft: true,
-    bounceEnabled: true, bloomLevels: 4, pixelRatio: 1.0, jitterStrength: 0.4, hazeNoise: false,
+    volumetricSteps: 40, volumetricScale: 0.85, shadowSteps: 16, shadowSoft: true,
+    bounceEnabled: true, bloomLevels: 4, pixelRatio: 1.0, jitterStrength: 0.1, hazeNoise: false,
   },
   high: {
-    volumetricSteps: 56, volumetricScale: 1.0, shadowSteps: 24, shadowSoft: true,
-    bounceEnabled: true, bloomLevels: 5, pixelRatio: 1.5, jitterStrength: 0.22, hazeNoise: false,
+    volumetricSteps: 64, volumetricScale: 1.0, shadowSteps: 24, shadowSoft: true,
+    bounceEnabled: true, bloomLevels: 5, pixelRatio: 1.5, jitterStrength: 0.06, hazeNoise: false,
   },
   ultra: {
     volumetricSteps: 96, volumetricScale: 1.0, shadowSteps: 36, shadowSoft: true,
-    bounceEnabled: true, bloomLevels: 6, pixelRatio: 2.0, jitterStrength: 0.18, hazeNoise: true,
+    bounceEnabled: true, bloomLevels: 6, pixelRatio: 2.0, jitterStrength: 0.04, hazeNoise: true,
   },
 }
 
@@ -100,7 +100,7 @@ export interface SceneSettings {
   showPerformers: boolean
   cameraView: 'audience' | 'aerial' | 'sidewing' | 'free'
   transformMode: 'translate' | 'rotate'
-  uiTab: 'fixtures' | 'performers'
+  uiTab: 'fixtures' | 'performers' | 'props'
   settingsOpen: boolean
   settingsTab: 'scene' | 'look' | 'advanced'
   quality: QualityPreset
@@ -122,6 +122,8 @@ interface State {
   setPieces: import('./types').SetPiece[]
   addSetPiece: (sp: import('./types').SetPiece) => void
   removeSetPiece: (id: string) => void
+  updateSetPiece: (id: string, patch: Partial<import('./types').SetPiece>) => void
+  addPrimitiveSetPiece: (kind: 'box' | 'platform' | 'riser', atPos?: [number, number, number]) => string
 
   addFixture: (presetKey: string, atPos?: [number, number, number]) => string
   removeFixture: (id: string) => void
@@ -181,13 +183,37 @@ export const useStore = create<State>((set, get) => ({
   setProbeMeasurement: (m) => set({ probeMeasurement: m }),
   setPieces: [],
   addSetPiece: (sp) => set(s => ({ setPieces: [...s.setPieces, sp] })),
-  removeSetPiece: (id) => set(s => ({ setPieces: s.setPieces.filter(x => x.id !== id) })),
+  removeSetPiece: (id) => set(s => ({
+    setPieces: s.setPieces.filter(x => x.id !== id),
+    selection: s.selection.id === id ? { kind: null, id: null } : s.selection,
+  })),
+  updateSetPiece: (id, patch) => set(s => ({
+    setPieces: s.setPieces.map(sp => sp.id === id ? { ...sp, ...patch } : sp),
+  })),
+  addPrimitiveSetPiece: (kind, atPos) => {
+    const SIZE: Record<'box'|'platform'|'riser', [number,number,number]> = {
+      box: [0.6, 0.4, 0.4],            // 箱馬
+      platform: [1.8, 0.3, 0.9],       // 平台 (6尺×3尺)
+      riser: [1.8, 0.6, 0.9],          // 高め台 (riser/二尺)
+    }
+    const NAMES = { box: '箱馬', platform: '平台', riser: '高台' }
+    const size = SIZE[kind]
+    const pos = atPos ?? [0, size[1] / 2, -1]
+    const id = `sp${Date.now()}`
+    const sp: import('./types').SetPiece = {
+      id, name: NAMES[kind], kind, size,
+      color: '#876040',
+      position: pos, rotation: [0, 0, 0], scale: 1,
+    }
+    set(s => ({ setPieces: [...s.setPieces, sp], selection: { kind: 'setpiece', id } }))
+    return id
+  },
   settings: {
     hazeDensity: 0.45,
-    ambient: 0.02,
+    ambient: 0.05,
     exposure: 1.0,
     bloom: 0.35,
-    showHouseLights: false,
+    showHouseLights: true,
     showFixtureMeshes: true,
     showStage: true,
     showGizmos: true,

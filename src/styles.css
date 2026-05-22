@@ -1171,3 +1171,48 @@ body.embed .panel-body h2 { font-size: 13px; }
 .panel { animation-delay: 0.05s; }
 .toolbar { animation-delay: 0.1s; }
 .brand-strip { animation-delay: 0s; }
+
+/* ========================================================
+   選択中フィクスチャの操作切替フロートバー
+   ======================================================== */
+.gizmo-toolbar {
+  position: fixed;
+  bottom: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 4px;
+  padding: 6px;
+  background: rgba(20, 16, 14, 0.92);
+  border: 1px solid rgba(212, 175, 111, 0.18);
+  border-radius: 10px;
+  backdrop-filter: blur(10px);
+  z-index: 50;
+  animation: fadeUp 0.18s ease both;
+}
+.gizmo-toolbar button {
+  padding: 6px 14px;
+  font-size: 12px;
+  background: transparent;
+  border: 1px solid transparent;
+  color: #d4af6f;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.gizmo-toolbar button:hover:not(:disabled) {
+  background: rgba(212, 175, 111, 0.08);
+}
+.gizmo-toolbar button.active {
+  background: rgba(212, 175, 111, 0.2);
+  border-color: rgba(212, 175, 111, 0.45);
+  color: #ffd89a;
+}
+.gizmo-toolbar button:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+.gizmo-sep {
+  width: 1px;
+  background: rgba(212, 175, 111, 0.2);
+  margin: 4px 4px;
+}

@@ -59,16 +59,18 @@ export function ControlPanel() {
         <div className="panel-tabs">
           <TabButton id="fixtures" label="器具" />
           <TabButton id="performers" label="役者" />
+          <TabButton id="props" label="装置" />
         </div>
 
         {tab === 'fixtures' && <FixturesPanel />}
         {tab === 'performers' && <PerformersPanel />}
+        {tab === 'props' && <PropsPanel />}
       </div>
     </>
   )
 }
 
-function TabButton({ id, label }: { id: 'fixtures' | 'performers'; label: string }) {
+function TabButton({ id, label }: { id: 'fixtures' | 'performers' | 'props'; label: string }) {
   const cur = useStore(s => s.settings.uiTab)
   const update = useStore(s => s.updateSettings)
   return (
@@ -232,8 +234,22 @@ function FixtureEditor({ fixture }: { fixture: Fixture }) {
           style={{ flex: 1 }}
         >狙い</button>
       </div>
+      {selection_isPos(fixture.id) && (
+        <div className="row" style={{ marginTop: 4 }}>
+          <button
+            className={useStore.getState().settings.transformMode === 'translate' ? 'active' : ''}
+            onClick={() => useStore.getState().updateSettings({ transformMode: 'translate' })}
+            style={{ flex: 1 }}
+          >移動</button>
+          <button
+            className={useStore.getState().settings.transformMode === 'rotate' ? 'active' : ''}
+            onClick={() => useStore.getState().updateSettings({ transformMode: 'rotate' })}
+            style={{ flex: 1 }}
+          >回転</button>
+        </div>
+      )}
       <div className="info-block" style={{ fontSize: 10, marginTop: 4 }}>
-        3D上の矢印ハンドルで掴んで移動できます
+        3D上の矢印/リングハンドルで掴んで操作
       </div>
 
       <PositionTrio label="光源" value={fixture.position} onChange={v => update({ position: v })} ranges={[[-7, 7], [0.3, 9], [-7.5, 3]]} />
@@ -331,6 +347,80 @@ function PerformersPanel() {
             onChange={v => update(selected.id, { scale: v })}
             fmt={v => `${Math.round(v * 170)}cm`} />
           <PositionTrio label="位置" value={selected.position} onChange={v => update(selected.id, { position: [v[0], 0, v[2]] })} ranges={[[-6, 6], [0, 0], [-7, 2]]} />
+          <div className="row" style={{ marginTop: 12 }}>
+            <button className="danger" onClick={() => remove(selected.id)} style={{ flex: 1 }}>削除</button>
+          </div>
+        </>
+      )}
+    </div>
+  )
+}
+
+// ============ 装置 タブ ============
+function PropsPanel() {
+  const pieces = useStore(s => s.setPieces)
+  const selection = useStore(s => s.selection)
+  const selected = pieces.find(p => p.id === selection.id && selection.kind === 'setpiece')
+  const select = useStore(s => s.select)
+  const addPrim = useStore(s => s.addPrimitiveSetPiece)
+  const remove = useStore(s => s.removeSetPiece)
+  const update = (id: string, patch: any) => useStore.getState().updateSetPiece(id, patch)
+
+  return (
+    <div className="panel-body">
+      <h3>装置を追加</h3>
+      <div className="row" style={{ gap: 4 }}>
+        <button onClick={() => addPrim('box')} style={{ flex: 1 }}>箱馬</button>
+        <button onClick={() => addPrim('platform')} style={{ flex: 1 }}>平台</button>
+        <button onClick={() => addPrim('riser')} style={{ flex: 1 }}>高台</button>
+      </div>
+
+      <h3>一覧 ({pieces.length})</h3>
+      <div className="list">
+        {pieces.map(p => (
+          <div
+            key={p.id}
+            className={'fixture-row' + (selection.kind === 'setpiece' && selection.id === p.id ? ' selected' : '')}
+            onClick={() => select('setpiece', p.id)}
+          >
+            <div className="dot" style={{ background: p.color ?? '#876040' }} />
+            <span className="name">{p.name}</span>
+            <span className="kind">{p.kind}</span>
+          </div>
+        ))}
+        {pieces.length === 0 && <div className="empty-hint">「箱馬 / 平台 / 高台」を追加してください</div>}
+      </div>
+
+      {selected && selected.kind !== 'gltf' && (
+        <>
+          <h3>編集</h3>
+          <div className="row">
+            <label>名前</label>
+            <input type="text" value={selected.name} onChange={e => update(selected.id, { name: e.target.value })} />
+          </div>
+          <div className="row">
+            <label>色</label>
+            <input type="color" value={selected.color ?? '#876040'} onChange={e => update(selected.id, { color: e.target.value })} />
+          </div>
+          {selected.size && (
+            <>
+              <Slider label="幅" value={selected.size[0]} min={0.2} max={4} step={0.05}
+                onChange={v => update(selected.id, { size: [v, selected.size![1], selected.size![2]] })}
+                fmt={v => `${v.toFixed(2)}m`} />
+              <Slider label="高" value={selected.size[1]} min={0.1} max={2} step={0.05}
+                onChange={v => update(selected.id, { size: [selected.size![0], v, selected.size![2]] })}
+                fmt={v => `${v.toFixed(2)}m`} />
+              <Slider label="奥行" value={selected.size[2]} min={0.2} max={4} step={0.05}
+                onChange={v => update(selected.id, { size: [selected.size![0], selected.size![1], v] })}
+                fmt={v => `${v.toFixed(2)}m`} />
+            </>
+          )}
+          <PositionTrio
+            label="位置"
+            value={selected.position}
+            onChange={v => update(selected.id, { position: v })}
+            ranges={[[-7, 7], [0, 5], [-7.5, 3]]}
+          />
           <div className="row" style={{ marginTop: 12 }}>
             <button className="danger" onClick={() => remove(selected.id)} style={{ flex: 1 }}>削除</button>
           </div>

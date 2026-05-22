@@ -1,11 +1,11 @@
-import { useEffect, useMemo, useState, useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import { Canvas, useThree } from '@react-three/fiber'
 import { OrbitControls, PerspectiveCamera } from '@react-three/drei'
 import * as THREE from 'three'
 import { Stage } from './scene/Stage'
 import { PerformerMeshes } from './scene/PerformerMesh'
 import { FixtureMeshes } from './scene/FixtureMesh'
-import { RenderPipeline, type OccluderSpec } from './scene/RenderPipeline'
+import { Beams } from './scene/Beams'
 import { SelectionGizmo } from './scene/SelectionGizmo'
 import { PhotometricProbe, useProbeClickHandler } from './scene/PhotometricProbe'
 import { SetPieces } from './scene/SetPieces'
@@ -13,7 +13,7 @@ import { XRButton, XRGLBinder } from './scene/XRSupport'
 import { ControlPanel } from './ui/ControlPanel'
 import { HelpOverlay } from './ui/HelpOverlay'
 import { SettingsModal } from './ui/SettingsModal'
-import { useStore, performerToOccluders } from './store'
+import { useStore } from './store'
 import { FIXTURE_PROFILES, type FixtureProfile } from './lighting/fixtureTypes'
 import { tryLoadFromHash } from './io/sceneIO'
 
@@ -24,20 +24,13 @@ const CAMERA_VIEWS: Record<string, { pos: [number, number, number]; target: [num
   free: { pos: [4, 4, 8], target: [0, 2, -2] },
 }
 
-const STATIC_OCCLUDERS: OccluderSpec[] = [
-  { pos: [-2, 0.3, -3], axis: [0, 1, 0], radius: 1.4, halfHeight: 0 },
-  { pos: [2.5, 0.5, -4], axis: [0, 1, 0], radius: 1.3, halfHeight: 0 },
-]
-
 const isEmbed = new URLSearchParams(location.search).has('embed')
 
 export default function App() {
-  const [stageMaterials, setStageMaterials] = useState<THREE.ShaderMaterial[]>([])
-  const [performerMaterials, setPerformerMaterials] = useState<THREE.ShaderMaterial[]>([])
   const settings = useStore(s => s.settings)
-  const performers = useStore(s => s.performers)
   const select = useStore(s => s.select)
   const view = CAMERA_VIEWS[settings.cameraView] ?? CAMERA_VIEWS.audience
+  const noopMaterials = () => {}
 
   // embed クラス付与
   useEffect(() => {
@@ -70,6 +63,8 @@ export default function App() {
         case '?': case '/': up({ showHelp: !s.settings.showHelp }); break
         case 'h': up({ showHelp: !s.settings.showHelp }); break
         case 'p': up({ probeMode: !s.settings.probeMode }); break
+        case 'g': if (s.selection.kind === 'fixture') up({ transformMode: 'translate' }); break
+        case 'r': if (s.selection.kind === 'fixture') up({ transformMode: 'rotate' }); break
         case 'delete': case 'backspace': {
           if (s.selection.kind === 'fixture' && s.selection.id) s.removeFixture(s.selection.id)
           else if (s.selection.kind === 'performer' && s.selection.id) s.removePerformer(s.selection.id)
@@ -88,16 +83,6 @@ export default function App() {
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
   }, [])
-
-  const allMaterials = useMemo(
-    () => [...stageMaterials, ...performerMaterials],
-    [stageMaterials, performerMaterials],
-  )
-  const dynamicOccluders = useMemo(() => {
-    const arr = [...STATIC_OCCLUDERS]
-    for (const p of performers) arr.push(...performerToOccluders(p))
-    return arr.slice(0, 12)
-  }, [performers])
 
   return (
     <>
@@ -128,18 +113,25 @@ export default function App() {
           />
           <CameraKeyboardPan />
 
-          <hemisphereLight args={['#3a2a20', '#1a1208', 0.35]} />
+          <ambientLight intensity={settings.ambient ?? 0.05} color={'#3a2a20'} />
+          <hemisphereLight args={['#3a2a20', '#1a1208', 0.2]} />
+          {settings.showHouseLights && (
+            <>
+              <ambientLight intensity={0.55} color={'#fde0b8'} />
+              <directionalLight position={[0, 8, 6]} intensity={0.6} color={'#fde0b8'} />
+            </>
+          )}
 
-          {settings.showStage && <Stage onMaterialsReady={setStageMaterials} />}
-          {settings.showPerformers && <PerformerMeshes onMaterialsReady={setPerformerMaterials} />}
+          {settings.showStage && <Stage onMaterialsReady={noopMaterials} />}
+          {settings.showPerformers && <PerformerMeshes onMaterialsReady={noopMaterials} />}
           {settings.showFixtureMeshes && <FixtureMeshes />}
           <SetPieces />
+          <Beams />
           <SelectionGizmo />
           <PhotometricProbe />
           <ProbeClickCatcher />
 
           <XRGLBinder />
-          <RenderPipeline stageMaterials={allMaterials} occluders={dynamicOccluders} />
         </Canvas>
       </div>
 
@@ -150,6 +142,7 @@ export default function App() {
         <ViewButton view="aerial" label="俯瞰" hint="2" />
         <ViewButton view="sidewing" label="袖" hint="3" />
         <ViewButton view="free" label="自由" hint="4" />
+        <HouseLightsToggle />
         <XRButton />
       </div>
 
@@ -157,6 +150,7 @@ export default function App() {
       <SettingsModal />
       <HelpOverlay />
 
+      <FixtureGizmoToolbar />
       <SelectionStatusHint />
       {!isEmbed && <KeyHint />}
     </>
@@ -262,6 +256,56 @@ function ProbeClickCatcher() {
       <planeGeometry args={[40, 40]} />
       <meshBasicMaterial transparent opacity={0} />
     </mesh>
+  )
+}
+
+function HouseLightsToggle() {
+  const on = useStore(s => s.settings.showHouseLights)
+  const update = useStore(s => s.updateSettings)
+  return (
+    <button
+      onClick={() => update({ showHouseLights: !on })}
+      style={{ background: on ? 'rgba(212, 175, 111, 0.25)' : undefined }}
+      title="客電 (house lights) のON/OFF"
+    >
+      客電 {on ? 'ON' : 'OFF'}
+    </button>
+  )
+}
+
+function FixtureGizmoToolbar() {
+  const selection = useStore(s => s.selection)
+  const mode = useStore(s => s.settings.transformMode)
+  const handle = selection.fixtureHandle ?? 'position'
+  const update = useStore(s => s.updateSettings)
+  const select = useStore(s => s.select)
+  if (selection.kind !== 'fixture' || !selection.id) return null
+  return (
+    <div className="gizmo-toolbar">
+      <button
+        className={handle === 'position' ? 'active' : ''}
+        onClick={() => select('fixture', selection.id!, 'position')}
+        title="光源を操作 (P)"
+      >光源</button>
+      <button
+        className={handle === 'target' ? 'active' : ''}
+        onClick={() => select('fixture', selection.id!, 'target')}
+        title="狙いを操作 (T)"
+      >狙い</button>
+      <span className="gizmo-sep" />
+      <button
+        className={mode === 'translate' ? 'active' : ''}
+        onClick={() => update({ transformMode: 'translate' })}
+        disabled={handle === 'target'}
+        title="移動 (G)"
+      >移動</button>
+      <button
+        className={mode === 'rotate' ? 'active' : ''}
+        onClick={() => update({ transformMode: 'rotate' })}
+        disabled={handle === 'target'}
+        title="回転 (R)"
+      >回転</button>
+    </div>
   )
 }
 

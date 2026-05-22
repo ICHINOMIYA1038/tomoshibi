@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef } from 'react'
 import * as THREE from 'three'
 import { useThree, useFrame } from '@react-three/fiber'
-import { useStore, packFixture, QUALITY_PRESETS } from '../store'
+import { useStore, packFixture, QUALITY_PRESETS, type QualityPreset } from '../store'
 import { createVolumetricMaterial } from '../lighting/VolumetricMaterial'
 import {
   createBrightPass, createDownsample, createUpsample, createComposite,
@@ -95,9 +95,35 @@ export function RenderPipeline({ stageMaterials, occluders }: {
   }, [occluders])
 
   const startTime = useRef(performance.now())
+  const lastFrameTime = useRef(performance.now())
+  const avgFrameMs = useRef(16.7)
+  const downgradeCooldownUntil = useRef(0)
 
   useFrame(() => {
-    const time = (performance.now() - startTime.current) / 1000
+    const now = performance.now()
+    const dt = now - lastFrameTime.current
+    lastFrameTime.current = now
+    // EWMA (約1秒の時定数)
+    if (dt > 0 && dt < 1000) {
+      avgFrameMs.current = avgFrameMs.current * 0.92 + dt * 0.08
+    }
+    // 自動ダウングレード: 平均が ~22fps 以下 (>45ms) で1段下げる
+    if (now > downgradeCooldownUntil.current && avgFrameMs.current > 45) {
+      const cur = useStore.getState().settings.quality
+      const next: Record<string, QualityPreset | null> = {
+        ultra: 'high', high: 'medium', medium: 'low', low: null,
+      }
+      const n = next[cur]
+      if (n) {
+        useStore.getState().updateSettings({ quality: n })
+        avgFrameMs.current = 16.7
+        downgradeCooldownUntil.current = now + 3000
+        if (typeof console !== 'undefined') {
+          console.info(`[TOMOSHIBI] FPSが低いため品質を ${cur} → ${n} に自動調整しました`)
+        }
+      }
+    }
+    const time = (now - startTime.current) / 1000
     const fixtures = useStore.getState().fixtures
     const s = useStore.getState().settings
     const q = QUALITY_PRESETS[s.quality]
@@ -181,6 +207,7 @@ export function RenderPipeline({ stageMaterials, occluders }: {
     brightMat.uniforms.uSrc.value = volRT.texture
     brightMat.uniforms.uThreshold.value = 1.5
     brightMat.uniforms.uKnee.value = 0.5
+    brightMat.uniforms.uSrcTexel.value.set(1 / volRT.width, 1 / volRT.height)
     quad.mesh.material = brightMat
     gl.setRenderTarget(bloomMips[0])
     gl.render(quad.scene, quad.camera)
@@ -213,6 +240,7 @@ export function RenderPipeline({ stageMaterials, occluders }: {
     compMat.uniforms.uBloom.value = bloomMips[0].texture
     compMat.uniforms.uBloomIntensity.value = s.bloom ?? 0.5
     compMat.uniforms.uExposure.value = s.exposure
+    compMat.uniforms.uSceneTexel.value.set(1 / volRT.width, 1 / volRT.height)
     quad.mesh.material = compMat
     gl.setRenderTarget(null)
     gl.render(quad.scene, quad.camera)

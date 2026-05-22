@@ -160,8 +160,7 @@ function FixtureMeshSingle({ id }: { id: string }) {
     return q
   }, [f.position.join(','), f.target.join(',')])
 
-  const selected = selection.kind === 'fixture' && selection.id === f.id
-  const isHover = hovered.kind === 'fixture' && hovered.id === f.id
+  void selection; void hovered;
 
   return (
     <group
@@ -203,18 +202,7 @@ function FixtureMeshSingle({ id }: { id: string }) {
         <meshBasicMaterial transparent opacity={0} />
       </mesh>
 
-      {/* 選択/ホバー インジケータ */}
-      {(selected || isHover) && (
-        <mesh>
-          <sphereGeometry args={[0.42, 16, 12]} />
-          <meshBasicMaterial
-            color={selected ? '#6cf' : '#fc6'}
-            wireframe
-            transparent
-            opacity={0.35}
-          />
-        </mesh>
-      )}
+      {/* 選択/ホバー インジケータ: 不要 (ハンドル球で表現する) */}
     </group>
   )
 }

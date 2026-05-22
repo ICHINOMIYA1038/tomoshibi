@@ -49,6 +49,10 @@ float hash12(vec2 p) {
   p += dot(p, p.yx + 19.19);
   return fract((p.x + p.y) * p.x);
 }
+// Interleaved Gradient Noise (Jimenez 2014) — 静止しても目立たないディザ
+float ign(vec2 p) {
+  return fract(52.9829189 * fract(dot(p, vec2(0.06711056, 0.00583715))));
+}
 float hash13(vec3 p) {
   p = fract(p * 0.1031);
   p += dot(p, p.zyx + 31.32);
@@ -86,7 +90,9 @@ void main() {
   const int MAX_STEPS = 80;
   int steps = uMaxSteps > 0 ? uMaxSteps : 32;
   float stepSize = marchDist / float(steps);
-  float jitter = hash12(gl_FragCoord.xy + uTime * 0.5);
+  // フレームごとに位相をずらして時間平均で滑らかに見せる (TAA風)
+  float frame = mod(floor(uTime * 60.0), 64.0);
+  float jitter = ign(gl_FragCoord.xy + frame * 5.588238);
   vec3 ro = uCameraPos + rd * (jitter * uJitterStrength * stepSize);
 
   vec3 accum = vec3(0.0);
