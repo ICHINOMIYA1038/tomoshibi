@@ -175,24 +175,28 @@ function defaultPerformer(pos: [number, number, number]): Performer {
 }
 
 // 初期状態: 3点照明 (Key / Fill / Back) のお手本配置
+//   Key  = 主光源・被写体全体を照らす  (一番強い)
+//   Fill = 陰の濃さ調整・環境光の役割   (Key の半分程度)
+//   Back = 逆光・輪郭を立たせる         (Key より弱め、輪郭のみ)
 function initialFixtures(): Fixture[] {
-  // Key (主光源): 上手側前方から、暖色 Fresnel
-  const key = defaultFixture('Fresnel8', [3.2, 6.5, 3.0])
+  // Key (主光源): 役者から見て前方上手 (audience right) 45°
+  const key = defaultFixture('Fresnel8', [3.5, 5.5, 2.5])
   key.target = [0, 1.5, -1]
+  key.beamAngleDeg = 22  // 役者全体を包めるよう少し広め
   key.intensity = 1.0
   key.name = 'Key (主)'
-  // Fill (補助光): 下手側前方からやや弱め
-  const fill = defaultFixture('Fresnel8', [-3.2, 6.0, 3.0])
+  // Fill (補助): 反対側下手から、強度は Key の 40% (≒ Key:Fill = 2.5:1)
+  const fill = defaultFixture('Fresnel8', [-3.5, 5.5, 2.5])
   fill.target = [0, 1.5, -1]
-  fill.intensity = 0.55
+  fill.beamAngleDeg = 26  // Fill はさらに広く拡散光気味に
+  fill.intensity = 0.4
   fill.name = 'Fill (補助)'
-  // Back (バックライト): 後方上から、輪郭を浮かす
-  const back = defaultFixture('PAR64_NSP', [0, 7.2, -5.5])
-  back.target = [0, 1.5, -0.5]
-  back.intensity = 0.9
+  // Back (バック・リム): 役者の真後ろ上から狭めの PAR、輪郭を縁取る
+  const back = defaultFixture('PAR64_NSP', [0, 6.5, -4.5])
+  back.target = [0, 1.6, -1]
+  back.intensity = 0.6
   back.name = 'Back (バック)'
-  // 色を白寄りに
-  back.color = [1, 0.92, 0.85]
+  back.color = [1, 0.92, 0.85]  // やや暖白
   return [key, fill, back]
 }
 
@@ -335,9 +339,9 @@ export const useStore = create<State>((set, get) => ({
 
     if (name === 'basic') {
       // 基本明かり — 3点照明 (Key / Fill / Back)
-      addF('Fresnel8', [3.2, 6.5, 3.0], [0, 1.5, -1], { intensity: 1.0, name: 'Key (主)' })
-      addF('Fresnel8', [-3.2, 6.0, 3.0], [0, 1.5, -1], { intensity: 0.55, name: 'Fill (補助)' })
-      addF('PAR64_NSP', [0, 7.2, -5.5], [0, 1.5, -0.5], { intensity: 0.9, name: 'Back (バック)', color: [1, 0.92, 0.85] })
+      addF('Fresnel8', [3.5, 5.5, 2.5], [0, 1.5, -1], { intensity: 1.0, beamAngleDeg: 22, name: 'Key (主)' })
+      addF('Fresnel8', [-3.5, 5.5, 2.5], [0, 1.5, -1], { intensity: 0.4, beamAngleDeg: 26, name: 'Fill (補助)' })
+      addF('PAR64_NSP', [0, 6.5, -4.5], [0, 1.6, -1], { intensity: 0.6, name: 'Back (バック)', color: [1, 0.92, 0.85] })
       addP([0, 0, -1], '#cc9977')
     } else if (name === 'colorful') {
       // カラフル — LED コンサート演出向け
