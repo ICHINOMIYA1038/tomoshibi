@@ -244,8 +244,12 @@ export const useStore = create<State>((set, get) => ({
     }
     const NAMES = { box: '箱馬', platform: '平台', riser: '高台' }
     const size = SIZE[kind]
-    const pos = atPos ?? [0, size[1] / 2, -1]
-    const id = `sp${Date.now()}`
+    // 重なり防止: 既存数でずらす
+    const cur = get().setPieces.length
+    const ox = ((cur % 5) - 2) * 0.9
+    const oz = -1 + Math.floor(cur / 5) * 0.7
+    const pos = atPos ?? [ox, size[1] / 2, oz]
+    const id = `sp${Date.now()}-${cur}`
     const sp: import('./types').SetPiece = {
       id, name: NAMES[kind], kind, size,
       color: '#876040',
@@ -277,7 +281,18 @@ export const useStore = create<State>((set, get) => ({
   },
 
   addFixture: (presetKey, atPos) => {
-    const pos = atPos ?? [0, 6.5, -2]
+    const cur = get().fixtures.length
+    // WebGL の MAX_TEXTURE_IMAGE_UNITS = 16 を超えると影シェーダーが壊れるため上限
+    if (cur >= 16) {
+      console.warn('[TOMOSHIBI] フィクスチャ上限 (16台) に達しました')
+      if (typeof window !== 'undefined') {
+        alert('フィクスチャは 16 台までです (WebGL の制限により影が破綻するため)')
+      }
+      return ''
+    }
+    // 重なり防止: 既存器具の数で少しずらして配置
+    const offset = cur * 0.4
+    const pos = atPos ?? [offset - 1.5, 6.5 - (cur % 3) * 0.3, -2 - (cur % 4) * 0.4]
     const f = defaultFixture(presetKey, pos)
     set(s => ({ fixtures: [...s.fixtures, f], selection: { kind: 'fixture', id: f.id } }))
     return f.id
@@ -302,7 +317,11 @@ export const useStore = create<State>((set, get) => ({
   },
 
   addPerformer: (atPos) => {
-    const pos = atPos ?? [Math.random() * 4 - 2, 0, Math.random() * 2 - 1]
+    // 重なり防止: 既存数で円周状に配置
+    const cur = get().performers.length
+    const r = cur === 0 ? 0 : 1 + (cur % 4) * 0.6
+    const ang = cur * 0.7
+    const pos = atPos ?? [Math.cos(ang) * r, 0, -1 + Math.sin(ang) * r * 0.5]
     const p = defaultPerformer(pos)
     set(s => ({ performers: [...s.performers, p], selection: { kind: 'performer', id: p.id } }))
     return p.id
@@ -361,7 +380,10 @@ export const useStore = create<State>((set, get) => ({
       // 何もなし
     }
 
-    set({ fixtures, performers, selection: { kind: null, id: null } })
+    // プリセット読込時は装置 (setPieces) も初期状態に戻す
+    // 'empty' のみ装置も空にする (完全リセット), 他はデフォルト平台2枚を再配置
+    const setPieces = name === 'empty' ? [] : initialSetPieces()
+    set({ fixtures, performers, setPieces, selection: { kind: null, id: null } })
   },
 }))
 
