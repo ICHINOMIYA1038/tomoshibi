@@ -144,6 +144,7 @@ function Beam({ fixture, hazeDensity }: { fixture: Fixture; hazeDensity: number 
         position={coneTransform.position}
         quaternion={coneTransform.quaternion}
         renderOrder={2}
+        raycast={() => null}
       >
         <coneGeometry args={[baseRadius, beamLength, 32, 1, true]} />
         <shaderMaterial
