@@ -158,12 +158,11 @@ export function SelectionGizmo() {
         <TransformControls
           object={dragRef.current}
           mode="translate"
-          showY={false}
           size={isTouchDevice() ? 1.1 : 0.7}
           onObjectChange={() => {
             const o = dragRef.current
             updatePerformer(performer.id, {
-              position: [o.position.x, 0, o.position.z],
+              position: [o.position.x, Math.max(0, o.position.y), o.position.z],
             })
           }}
         />

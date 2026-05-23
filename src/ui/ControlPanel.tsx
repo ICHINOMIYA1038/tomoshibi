@@ -346,7 +346,7 @@ function PerformersPanel() {
           <Slider label="身長" value={selected.scale} min={0.6} max={1.3} step={0.01}
             onChange={v => update(selected.id, { scale: v })}
             fmt={v => `${Math.round(v * 170)}cm`} />
-          <PositionTrio label="位置" value={selected.position} onChange={v => update(selected.id, { position: [v[0], 0, v[2]] })} ranges={[[-6, 6], [0, 0], [-7, 2]]} />
+          <PositionTrio label="位置" value={selected.position} onChange={v => update(selected.id, { position: [v[0], Math.max(0, v[1]), v[2]] })} ranges={[[-6, 6], [0, 2], [-7, 2]]} />
           <div className="row" style={{ marginTop: 12 }}>
             <button className="danger" onClick={() => remove(selected.id)} style={{ flex: 1 }}>削除</button>
           </div>
