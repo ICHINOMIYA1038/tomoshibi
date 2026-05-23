@@ -108,7 +108,6 @@ export interface SceneSettings {
   probeMode: boolean
   dmxEnabled: boolean
   panelOpen: boolean   // モバイル用: パネル表示トグル
-  renderMode: 'simple' | 'advanced'  // 描画モード
 }
 
 interface State {
@@ -271,7 +270,6 @@ export const useStore = create<State>((set, get) => ({
     probeMode: false,
     dmxEnabled: false,
     panelOpen: typeof window !== 'undefined' ? window.innerWidth >= 768 : true,
-    renderMode: 'simple',
   },
 
   addFixture: (presetKey, atPos) => {
