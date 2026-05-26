@@ -1040,6 +1040,44 @@ body.embed .panel-body h2 { font-size: 13px; }
   transition: all 0.2s;
 }
 .panel-fab:active { transform: scale(0.94); }
+.fab-icon {
+  position: relative;
+  display: inline-block;
+  width: 20px;
+  height: 16px;
+}
+.fab-burger::before,
+.fab-burger::after,
+.fab-burger > i,
+.fab-burger {
+  /* 3本線をCSSで描画 */
+}
+.fab-burger::before,
+.fab-burger::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: #fff;
+  border-radius: 1px;
+}
+.fab-burger::before { top: 2px; box-shadow: 0 6px 0 #fff; }
+.fab-burger::after { bottom: 2px; }
+.fab-close::before,
+.fab-close::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: #fff;
+  border-radius: 1px;
+  transform-origin: center;
+}
+.fab-close::before { transform: translateY(-50%) rotate(45deg); }
+.fab-close::after { transform: translateY(-50%) rotate(-45deg); }
 
 /* ========================================================
    レスポンシブ — タブレット (max-width: 1024px)
@@ -1092,6 +1130,8 @@ body.embed .panel-body h2 { font-size: 13px; }
   }
   .panel-header {
     padding-top: 22px;
+    touch-action: none;
+    cursor: grab;
   }
   .panel-fab {
     display: flex;

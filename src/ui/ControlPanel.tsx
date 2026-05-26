@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useStore, type Fixture, type Performer } from '../store'
 import { FIXTURE_PROFILES, FIXTURE_PRESETS_BY_KIND, KIND_LABELS, type FixtureKind } from '../lighting/fixtureTypes'
 
@@ -36,6 +36,22 @@ export function ControlPanel() {
   const update = useStore(s => s.updateSettings)
   const tab = settings.uiTab
   const open = settings.panelOpen
+  const dragStartY = useRef<number | null>(null)
+  const dragDelta = useRef(0)
+
+  const onHeaderTouchStart = (e: React.TouchEvent) => {
+    dragStartY.current = e.touches[0].clientY
+    dragDelta.current = 0
+  }
+  const onHeaderTouchMove = (e: React.TouchEvent) => {
+    if (dragStartY.current == null) return
+    dragDelta.current = e.touches[0].clientY - dragStartY.current
+  }
+  const onHeaderTouchEnd = () => {
+    if (dragDelta.current > 60) update({ panelOpen: false })
+    dragStartY.current = null
+    dragDelta.current = 0
+  }
 
   return (
     <>
@@ -46,10 +62,15 @@ export function ControlPanel() {
         title="パネル表示/非表示"
         aria-label="パネル開閉"
       >
-        {open ? '×' : '☰'}
+        <span className={'fab-icon ' + (open ? 'fab-close' : 'fab-burger')} aria-hidden="true" />
       </button>
       <div className={'panel' + (open ? ' open' : ' closed')}>
-        <div className="panel-header">
+        <div
+          className="panel-header"
+          onTouchStart={onHeaderTouchStart}
+          onTouchMove={onHeaderTouchMove}
+          onTouchEnd={onHeaderTouchEnd}
+        >
           <div className="panel-title">ともしび小屋</div>
           <div className="panel-actions">
             <button className="icon-btn" title="設定" onClick={() => update({ settingsOpen: true })}>⚙</button>
