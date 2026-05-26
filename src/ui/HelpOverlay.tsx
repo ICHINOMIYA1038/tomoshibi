@@ -51,7 +51,6 @@ export function HelpOverlay() {
         <ul className="help-fixtures">
           <li><b>在来 (白熱)</b>: PAR64 (VNSP/NSP/MFL/WFL), Fresnel 6/8/10″, PC 6/8″, ETC Source Four 19/26/36/50°</li>
           <li><b>LED</b>: Stairville LED PAR 64 / Bee Eye / Show Bar, Chauvet SlimPAR Pro Q / COLORado 2 Solo, ADJ Mega Hex Par, ETC S4 LED Lustr X8, Robe Robin LEDBeam 150</li>
-          <li><b>外部取込</b>: <kbd>GDTF</kbd> (.gdtf zip), <kbd>IES</kbd> (.ies), <kbd>GLTF</kbd> (.glb/.gltf) — 設定→高度ツール から</li>
         </ul>
 
         <div className="help-footer">

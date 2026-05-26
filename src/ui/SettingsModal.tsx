@@ -32,13 +32,13 @@ export function SettingsModal() {
           <div className="settings-tabs">
             <SetTab id="scene" label="シーン管理" />
             <SetTab id="look" label="表現" />
-            <SetTab id="advanced" label="高度ツール" />
+            <SetTab id="advanced" label="高度ツール (準備中)" />
           </div>
         </div>
         <div className="settings-body">
           {tab === 'scene' && <SceneSection />}
           {tab === 'look' && <LookSection />}
-          {tab === 'advanced' && <AdvancedSection />}
+          {tab === 'advanced' && <AdvancedPlaceholder />}
         </div>
       </div>
     </div>
@@ -159,7 +159,21 @@ const QUALITY_LABELS: Record<QualityPreset, string> = {
   low: 'Low', medium: 'Medium', high: 'High', ultra: 'Ultra',
 }
 
-// ============ 高度ツール ============
+// ============ 高度ツール (準備中) ============
+function AdvancedPlaceholder() {
+  return (
+    <div className="info-block" style={{ padding: 24, textAlign: 'center', fontSize: 13, lineHeight: 1.7 }}>
+      <div style={{ fontSize: 28, marginBottom: 8 }}>🚧</div>
+      <b>高度ツールは現在準備中です</b>
+      <div style={{ marginTop: 8, opacity: 0.7, fontSize: 12 }}>
+        照度プローブ・GDTF/IES取込・DMX出力などを検証中。<br />
+        公開までしばらくお待ちください。
+      </div>
+    </div>
+  )
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function AdvancedSection() {
   const settings = useStore(s => s.settings)
   const update = useStore(s => s.updateSettings)

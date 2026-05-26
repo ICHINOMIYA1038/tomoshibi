@@ -1049,6 +1049,7 @@ body.embed .panel-body h2 { font-size: 13px; }
 @media (max-width: 768px) {
   /* パネルを下からのボトムシート化 */
   .panel {
+    animation: none;
     top: auto !important;
     bottom: 0;
     right: 0;
