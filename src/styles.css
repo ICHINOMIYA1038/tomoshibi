@@ -1047,6 +1047,8 @@ body.embed .panel-body h2 { font-size: 13px; }
    レスポンシブ — モバイル (max-width: 768px)
    ======================================================== */
 @media (max-width: 768px) {
+  /* モバイルではヘルプのPC専用セクションを隠す */
+  .help-pc-only { display: none; }
   /* パネルを下からのボトムシート化 */
   .panel {
     animation: none;
@@ -1168,8 +1170,11 @@ body.embed .panel-body h2 { font-size: 13px; }
   from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: none; }
 }
-.panel, .toolbar, .brand-strip, .keyhint { animation: fadeUp 0.4s ease both; }
-.panel { animation-delay: 0.05s; }
+.toolbar, .brand-strip, .keyhint { animation: fadeUp 0.4s ease both; }
+.panel { animation: fadeUp 0.4s ease 0.05s both; }
+@media (max-width: 768px) {
+  .panel { animation: none; }
+}
 .toolbar { animation-delay: 0.1s; }
 .brand-strip { animation-delay: 0s; }
 

@@ -14,14 +14,16 @@ export function HelpOverlay() {
         <h2>はじめに</h2>
         <p>右パネルの <b>器具</b> タブで吊り込みを足し、<b>役者</b> タブで人を配置します。各要素は 3D 内で直接ドラッグして動かせます。</p>
 
-        <h2>カメラ操作 (PC)</h2>
-        <div className="help-grid">
-          <div><kbd>左ドラッグ</kbd></div><div>回転</div>
-          <div><kbd>ホイール</kbd></div><div>ズーム</div>
-          <div><kbd>右ドラッグ</kbd></div><div>パン</div>
-          <div><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd></div><div>カメラを前後左右へ</div>
-          <div><kbd>Q</kbd> <kbd>E</kbd></div><div>カメラを上下へ</div>
-          <div><kbd>1</kbd>〜<kbd>4</kbd></div><div>視点切替 (客席 / 俯瞰 / 袖 / 自由)</div>
+        <div className="help-pc-only">
+          <h2>カメラ操作 (PC)</h2>
+          <div className="help-grid">
+            <div><kbd>左ドラッグ</kbd></div><div>回転</div>
+            <div><kbd>ホイール</kbd></div><div>ズーム</div>
+            <div><kbd>右ドラッグ</kbd></div><div>パン</div>
+            <div><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd></div><div>カメラを前後左右へ</div>
+            <div><kbd>Q</kbd> <kbd>E</kbd></div><div>カメラを上下へ</div>
+            <div><kbd>1</kbd>〜<kbd>4</kbd></div><div>視点切替 (客席 / 俯瞰 / 袖 / 自由)</div>
+          </div>
         </div>
 
         <h2>カメラ操作 (スマホ / タブレット)</h2>
@@ -47,13 +49,7 @@ export function HelpOverlay() {
         <h2>動作が重い時</h2>
         <p><b>⚙ 設定 → 表現 → 描画品質</b> を <b>Low</b> に。古いPC・タブレットでも約 10 倍軽量に動きます。</p>
 
-        <h2>収録機材</h2>
-        <ul className="help-fixtures">
-          <li><b>在来 (白熱)</b>: PAR64 (VNSP/NSP/MFL/WFL), Fresnel 6/8/10″, PC 6/8″, ETC Source Four 19/26/36/50°</li>
-          <li><b>LED</b>: Stairville LED PAR 64 / Bee Eye / Show Bar, Chauvet SlimPAR Pro Q / COLORado 2 Solo, ADJ Mega Hex Par, ETC S4 LED Lustr X8, Robe Robin LEDBeam 150</li>
-        </ul>
-
-        <div className="help-footer">
+<div className="help-footer">
           <span className="help-note">いつでも <kbd>H</kbd> または右上「?」で再表示</span>
           <button className="primary" onClick={() => update({ showHelp: false })}>始める</button>
         </div>
