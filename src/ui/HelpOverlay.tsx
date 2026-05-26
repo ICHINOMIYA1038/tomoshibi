@@ -3,11 +3,15 @@ import { useStore } from '../store'
 export function HelpOverlay() {
   const show = useStore(s => s.settings.showHelp)
   const update = useStore(s => s.updateSettings)
+  const close = () => {
+    try { localStorage.setItem('tomoshibi.helpSeen', '1') } catch { /* noop */ }
+    update({ showHelp: false })
+  }
   if (!show) return null
   return (
-    <div className="help-overlay" onClick={() => update({ showHelp: false })}>
+    <div className="help-overlay" onClick={close}>
       <div className="help-card" onClick={e => e.stopPropagation()}>
-        <button className="help-close" onClick={() => update({ showHelp: false })}>×</button>
+        <button className="help-close" onClick={close}>×</button>
         <h1>TOMOSHIBI<span style={{ fontFamily: 'var(--font-serif)', marginLeft: 2 }}>小屋</span></h1>
         <p className="subtitle">舞台に灯をともす、ちいさな小屋 — 3D で組む・見る・残す</p>
 
@@ -51,7 +55,7 @@ export function HelpOverlay() {
 
 <div className="help-footer">
           <span className="help-note">いつでも <kbd>H</kbd> または右上「?」で再表示</span>
-          <button className="primary" onClick={() => update({ showHelp: false })}>始める</button>
+          <button className="primary" onClick={close}>始める</button>
         </div>
       </div>
     </div>

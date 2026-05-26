@@ -287,7 +287,8 @@ export const useStore = create<State>((set, get) => ({
     settingsOpen: false,
     settingsTab: 'scene',
     quality: detectInitialQuality(),
-    showHelp: true,
+    // 初回訪問のみヘルプを自動表示 (2回目以降はユーザーが「?」で開く)
+    showHelp: typeof localStorage !== 'undefined' ? !localStorage.getItem('tomoshibi.helpSeen') : true,
     probeMode: false,
     dmxEnabled: false,
     panelOpen: typeof window !== 'undefined' ? window.innerWidth >= 768 : true,

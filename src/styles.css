@@ -68,10 +68,10 @@ body {
    ======================================================== */
 /* アカウントチップ (右上 — パネルとは重ならない位置) */
 .account-chip {
-  position: absolute;
+  position: fixed;
   top: 14px;
   right: 392px; /* panel(360) + 余白 */
-  z-index: 21;
+  z-index: 110; /* help-overlay(100) より手前 — モーダル中でもログイン可能 */
   display: flex;
   gap: 6px;
   align-items: center;
