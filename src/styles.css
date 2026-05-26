@@ -42,6 +42,12 @@
 
 * { box-sizing: border-box; }
 html, body, #root { height: 100%; margin: 0; padding: 0; }
+html, body {
+  overscroll-behavior: none;
+}
+.canvas-wrap, .canvas-wrap canvas {
+  touch-action: none;
+}
 body {
   font-family: var(--font-sans);
   color: var(--ink-primary);
@@ -1124,6 +1130,21 @@ body.embed .panel-body h2 { font-size: 13px; }
     bottom: 90px;
     font-size: 11px;
     padding: 6px 14px;
+  }
+
+  /* ギズモツールバーをFAB/パネルと被らない位置へ */
+  .gizmo-toolbar {
+    bottom: auto;
+    top: 88px;
+    left: 8px;
+    right: 8px;
+    transform: none;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .gizmo-toolbar button {
+    padding: 5px 10px;
+    font-size: 11px;
   }
 
   /* キーヒント非表示 */
