@@ -66,6 +66,53 @@ body {
 /* ========================================================
    ブランドストリップ (戯曲図書館連携)
    ======================================================== */
+/* アカウントチップ (右上 — パネルとは重ならない位置) */
+.account-chip {
+  position: absolute;
+  top: 14px;
+  right: 392px; /* panel(360) + 余白 */
+  z-index: 21;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  font-family: var(--font-sans);
+  font-size: 12px;
+}
+.account-chip .account-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--panel-edge);
+  background: rgba(20, 17, 18, 0.78);
+  backdrop-filter: blur(14px) saturate(150%);
+  color: var(--ink-secondary);
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.account-chip .account-btn:hover { border-color: var(--panel-edge-strong); color: var(--ink-primary); }
+.account-chip .account-btn.primary {
+  background: linear-gradient(180deg, var(--shu), var(--suoh));
+  border-color: rgba(212, 175, 111, 0.4);
+  color: #fff;
+}
+.account-chip .account-user {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px 12px 4px 4px;
+  border-radius: 999px;
+  border: 1px solid var(--panel-edge);
+  background: rgba(20, 17, 18, 0.78);
+  backdrop-filter: blur(14px) saturate(150%);
+  color: var(--ink-secondary);
+  cursor: pointer;
+  font: inherit;
+}
+.account-chip .account-user:hover { border-color: var(--panel-edge-strong); color: var(--ink-primary); }
+.account-chip .account-user img { width: 22px; height: 22px; border-radius: 50%; object-fit: cover; }
+.account-chip .account-name { max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.account-chip .account-logout { padding: 6px 10px; }
+.account-chip.account-loading { color: var(--ink-muted); padding: 6px 10px; }
+
 .brand-strip {
   position: absolute;
   top: 14px;
@@ -1143,6 +1190,18 @@ body.embed .panel-body h2 { font-size: 13px; }
   .panel-fab.open {
     /* 何もしない (FAB が ×を表示するだけ) */
   }
+
+  /* アカウントチップ: 右上(ブランドストリップの右隣) */
+  .account-chip {
+    top: 8px;
+    right: 8px;
+    font-size: 11px;
+    gap: 4px;
+  }
+  .account-chip .account-btn { padding: 4px 10px; }
+  .account-chip .account-user { padding: 2px 8px 2px 2px; }
+  .account-chip .account-user img { width: 20px; height: 20px; }
+  .account-chip .account-name { max-width: 60px; }
 
   /* ブランドストリップ最小化 */
   .brand-strip {

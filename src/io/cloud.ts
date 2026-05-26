@@ -68,6 +68,10 @@ export function logoutUrl(): string {
   const cb = typeof location !== 'undefined' ? location.origin : 'https://tomoshibi.gikyokutosyokan.com'
   return `${BASE}/api/auth/signout?callbackUrl=${encodeURIComponent(cb)}`
 }
+export function signupUrl(): string {
+  const cb = typeof location !== 'undefined' ? location.origin : 'https://tomoshibi.gikyokutosyokan.com'
+  return `${BASE}/auth/signup?callbackUrl=${encodeURIComponent(cb)}`
+}
 
 export function listCloudScenes() {
   return req<{ items: CloudSceneMeta[] }>('/scenes').then(r => r.items)

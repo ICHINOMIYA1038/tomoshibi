@@ -14,6 +14,8 @@ import { ControlPanel } from './ui/ControlPanel'
 import { HelpOverlay } from './ui/HelpOverlay'
 import { SettingsModal } from './ui/SettingsModal'
 import { useStore } from './store'
+import { useCloudSession } from './io/cloudSession'
+import { loginUrl, signupUrl, logoutUrl } from './io/cloud'
 import { FIXTURE_PROFILES, type FixtureProfile } from './lighting/fixtureTypes'
 import { tryLoadFromHash } from './io/sceneIO'
 
@@ -141,6 +143,7 @@ export default function App() {
       </div>
 
       {!isEmbed && <BrandStrip />}
+      {!isEmbed && <AccountChip />}
 
       <div className="toolbar">
         <ViewButton view="audience" label="客席" hint="1" />
@@ -179,6 +182,33 @@ function BrandStrip() {
       >
         by 戯曲図書館 <span className="brand-arrow">↗</span>
       </a>
+    </div>
+  )
+}
+
+function AccountChip() {
+  const { user, loading } = useCloudSession()
+  const update = useStore(s => s.updateSettings)
+  if (loading) return <div className="account-chip account-loading" aria-hidden>…</div>
+  if (!user) {
+    return (
+      <div className="account-chip">
+        <a className="account-btn" href={loginUrl()} title="戯曲図書館アカウントでログイン">ログイン</a>
+        <a className="account-btn primary" href={signupUrl()} title="戯曲図書館に新規登録">新規登録</a>
+      </div>
+    )
+  }
+  return (
+    <div className="account-chip">
+      <button
+        className="account-user"
+        onClick={() => update({ settingsOpen: true, settingsTab: 'scene' })}
+        title="クラウド保存を開く"
+      >
+        {user.image && <img src={user.image} alt="" />}
+        <span className="account-name">{user.name ?? 'ログイン中'}</span>
+      </button>
+      <a className="account-btn account-logout" href={logoutUrl()} title="ログアウト">⎋</a>
     </div>
   )
 }

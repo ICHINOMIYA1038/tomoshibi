@@ -5,10 +5,11 @@ import {
   downloadSceneJSON, uploadSceneJSON, makeShareURL,
 } from '../io/sceneIO'
 import {
-  getSession, loginUrl, logoutUrl,
+  loginUrl, signupUrl, logoutUrl,
   listCloudScenes, saveCloudSceneNew, updateCloudScene, loadCloudScene, deleteCloudScene,
-  type CloudUser, type CloudSceneMeta, CloudError,
+  type CloudSceneMeta, CloudError,
 } from '../io/cloud'
+import { useCloudSession } from '../io/cloudSession'
 import { unzipGDTF, parseGDTFXML, gdtfToProfile, type GDTFInfo } from '../io/gdtfParser'
 import { importGLTFFile } from '../scene/SetPieces'
 import {
@@ -63,7 +64,7 @@ function SetTab({ id, label }: { id: 'scene' | 'look' | 'advanced'; label: strin
 
 // ============ クラウド (戯曲図書館アカウントで共有保存) ============
 function CloudSection() {
-  const [user, setUser] = useState<CloudUser | null | undefined>(undefined) // undefined=確認中
+  const { user, loading: sessionLoading } = useCloudSession()
   const [scenes, setScenes] = useState<CloudSceneMeta[]>([])
   const [loading, setLoading] = useState(false)
   const [err, setErr] = useState('')
@@ -75,30 +76,26 @@ function CloudSection() {
   }
 
   useEffect(() => {
-    let alive = true
-    getSession().then(u => {
-      if (!alive) return
-      setUser(u)
-      if (u) refreshScenes()
-    })
-    return () => { alive = false }
-  }, [])
+    if (user) refreshScenes()
+    else setScenes([])
+  }, [user?.id])
 
-  if (user === undefined) {
+  if (sessionLoading && !user) {
     return (<>
       <h3>クラウド保存</h3>
       <div className="info-block" style={{ fontSize: 11 }}>接続を確認中…</div>
     </>)
   }
-  if (user === null) {
+  if (!user) {
     return (<>
       <h3>クラウド保存</h3>
       <div className="info-block" style={{ fontSize: 11, lineHeight: 1.6 }}>
-        戯曲図書館アカウントでログインすると、シーンをサーバーに保存して別端末からも開けます。<br />
-        <span style={{ color: '#998468' }}>ログインは新規タブで戯曲図書館に遷移し、Google認証後この画面に戻ります。</span>
+        ログインすると、シーンをサーバーに保存して別端末からも開けます。<br />
+        <span style={{ color: '#998468' }}>戯曲図書館アカウント(Google認証)を共通利用します。</span>
       </div>
       <div className="row" style={{ marginTop: 6 }}>
-        <button className="primary" onClick={() => { location.href = loginUrl() }}>戯曲図書館でログイン</button>
+        <button className="primary" onClick={() => { location.href = loginUrl() }}>ログイン</button>
+        <button onClick={() => { location.href = signupUrl() }}>新規登録</button>
       </div>
     </>)
   }
