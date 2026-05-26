@@ -697,6 +697,7 @@ body {
   justify-content: center;
   padding: 20px;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 .help-card {
   background: linear-gradient(180deg, #1f1814, #14100c);
@@ -1159,13 +1160,28 @@ body.embed .panel-body h2 { font-size: 13px; }
     font-size: 16px;
   }
 
-  /* ヘルプカード スマホサイズ */
-  .help-card {
-    padding: 24px 22px;
-    font-size: 12.5px;
+  /* ヘルプオーバーレイ: iPhone safe-area 対応 + 上寄せでスクロール許容 */
+  .help-overlay {
+    align-items: flex-start;
+    padding: max(12px, env(safe-area-inset-top)) 12px max(12px, env(safe-area-inset-bottom));
   }
-  .help-card h1 { font-size: 20px; }
-  .help-grid { grid-template-columns: 110px 1fr; gap: 4px 8px; font-size: 11px; }
+  /* ヘルプカード スマホサイズ: 縦余白を切り詰めて iPhone 縦に収める */
+  .help-card {
+    padding: 18px 16px;
+    font-size: 12px;
+    line-height: 1.55;
+  }
+  .help-card::before { inset: 4px; }
+  .help-card h1 { font-size: 18px; margin-bottom: 2px; }
+  .help-card .subtitle { margin: 0 0 12px; padding-bottom: 10px; font-size: 11px; }
+  .help-card h2 { margin: 12px 0 6px; font-size: 10.5px; }
+  .help-card p { margin: 3px 0; }
+  .help-card ul, .help-card ol { margin: 4px 0 4px 18px; }
+  .help-grid { grid-template-columns: 100px 1fr; gap: 3px 8px; font-size: 11px; }
+  .help-close { top: 6px; right: 8px; width: 30px; height: 30px; font-size: 20px; }
+  .help-footer { margin-top: 14px; padding-top: 10px; gap: 8px; }
+  .help-footer .help-note { font-size: 10px; }
+  .help-footer button.primary { padding: 8px 20px; font-size: 12.5px; }
 
   /* 設定モーダル スマホサイズ */
   .settings-card {
