@@ -7,6 +7,13 @@ let nextPid = 1
 const genFid = () => `f${nextFid++}`
 const genPid = () => `p${nextPid++}`
 
+// オブジェクト数の上限 (フロント側ガード。サーバー側にも同等のチェック有り)
+export const LIMITS = {
+  fixtures: 16, // WebGL MAX_TEXTURE_IMAGE_UNITS の制約由来
+  performers: 30,
+  setPieces: 30,
+} as const
+
 export interface Fixture {
   id: string
   name: string
@@ -228,7 +235,13 @@ export const useStore = create<State>((set, get) => ({
   probeMeasurement: null,
   setProbeMeasurement: (m) => set({ probeMeasurement: m }),
   setPieces: initialSetPieces(),
-  addSetPiece: (sp) => set(s => ({ setPieces: [...s.setPieces, sp] })),
+  addSetPiece: (sp) => set(s => {
+    if (s.setPieces.length >= LIMITS.setPieces) {
+      if (typeof window !== 'undefined') alert(`装置は ${LIMITS.setPieces} 個までです`)
+      return {}
+    }
+    return { setPieces: [...s.setPieces, sp] }
+  }),
   removeSetPiece: (id) => set(s => ({
     setPieces: s.setPieces.filter(x => x.id !== id),
     selection: s.selection.id === id ? { kind: null, id: null } : s.selection,
@@ -283,10 +296,10 @@ export const useStore = create<State>((set, get) => ({
   addFixture: (presetKey, atPos) => {
     const cur = get().fixtures.length
     // WebGL の MAX_TEXTURE_IMAGE_UNITS = 16 を超えると影シェーダーが壊れるため上限
-    if (cur >= 16) {
-      console.warn('[TOMOSHIBI] フィクスチャ上限 (16台) に達しました')
+    if (cur >= LIMITS.fixtures) {
+      console.warn(`[TOMOSHIBI] フィクスチャ上限 (${LIMITS.fixtures}台) に達しました`)
       if (typeof window !== 'undefined') {
-        alert('フィクスチャは 16 台までです (WebGL の制限により影が破綻するため)')
+        alert(`フィクスチャは ${LIMITS.fixtures} 台までです (WebGL の制限により影が破綻するため)`)
       }
       return ''
     }
@@ -319,6 +332,10 @@ export const useStore = create<State>((set, get) => ({
   addPerformer: (atPos) => {
     // 重なり防止: 既存数で円周状に配置
     const cur = get().performers.length
+    if (cur >= LIMITS.performers) {
+      if (typeof window !== 'undefined') alert(`役者は ${LIMITS.performers} 人までです`)
+      return ''
+    }
     const r = cur === 0 ? 0 : 1 + (cur % 4) * 0.6
     const ang = cur * 0.7
     const pos = atPos ?? [Math.cos(ang) * r, 0, -1 + Math.sin(ang) * r * 0.5]

@@ -1,9 +1,14 @@
-import { useState } from 'react'
-import { useStore, type QualityPreset, QUALITY_PRESETS } from '../store'
+import { useEffect, useState } from 'react'
+import { useStore, type QualityPreset, QUALITY_PRESETS, LIMITS } from '../store'
 import {
   listSavedScenes, saveSceneLS, loadSceneLS, deleteSceneLS,
   downloadSceneJSON, uploadSceneJSON, makeShareURL,
 } from '../io/sceneIO'
+import {
+  getSession, loginUrl, logoutUrl,
+  listCloudScenes, saveCloudSceneNew, updateCloudScene, loadCloudScene, deleteCloudScene,
+  type CloudUser, type CloudSceneMeta, CloudError,
+} from '../io/cloud'
 import { unzipGDTF, parseGDTFXML, gdtfToProfile, type GDTFInfo } from '../io/gdtfParser'
 import { importGLTFFile } from '../scene/SetPieces'
 import {
@@ -56,6 +61,108 @@ function SetTab({ id, label }: { id: 'scene' | 'look' | 'advanced'; label: strin
   )
 }
 
+// ============ クラウド (戯曲図書館アカウントで共有保存) ============
+function CloudSection() {
+  const [user, setUser] = useState<CloudUser | null | undefined>(undefined) // undefined=確認中
+  const [scenes, setScenes] = useState<CloudSceneMeta[]>([])
+  const [loading, setLoading] = useState(false)
+  const [err, setErr] = useState('')
+  const [name, setName] = useState('')
+
+  const refreshScenes = async () => {
+    try { setScenes(await listCloudScenes()); setErr('') }
+    catch (e) { if (e instanceof CloudError) setErr(e.message) }
+  }
+
+  useEffect(() => {
+    let alive = true
+    getSession().then(u => {
+      if (!alive) return
+      setUser(u)
+      if (u) refreshScenes()
+    })
+    return () => { alive = false }
+  }, [])
+
+  if (user === undefined) {
+    return (<>
+      <h3>クラウド保存</h3>
+      <div className="info-block" style={{ fontSize: 11 }}>接続を確認中…</div>
+    </>)
+  }
+  if (user === null) {
+    return (<>
+      <h3>クラウド保存</h3>
+      <div className="info-block" style={{ fontSize: 11, lineHeight: 1.6 }}>
+        戯曲図書館アカウントでログインすると、シーンをサーバーに保存して別端末からも開けます。<br />
+        <span style={{ color: '#998468' }}>ログインは新規タブで戯曲図書館に遷移し、Google認証後この画面に戻ります。</span>
+      </div>
+      <div className="row" style={{ marginTop: 6 }}>
+        <button className="primary" onClick={() => { location.href = loginUrl() }}>戯曲図書館でログイン</button>
+      </div>
+    </>)
+  }
+
+  const doSave = async () => {
+    const n = name.trim() || `シーン ${new Date().toLocaleString('ja-JP')}`
+    setLoading(true); setErr('')
+    try { await saveCloudSceneNew(n); setName(''); await refreshScenes() }
+    catch (e) { if (e instanceof CloudError) setErr(e.message) }
+    finally { setLoading(false) }
+  }
+  const doUpdate = async (s: CloudSceneMeta) => {
+    if (!confirm(`「${s.name}」を現在の状態で上書きしますか？`)) return
+    setLoading(true); setErr('')
+    try { await updateCloudScene(s.id, s.name); await refreshScenes() }
+    catch (e) { if (e instanceof CloudError) setErr(e.message) }
+    finally { setLoading(false) }
+  }
+  const doLoad = async (s: CloudSceneMeta) => {
+    setLoading(true); setErr('')
+    try { await loadCloudScene(s.id) }
+    catch (e) { if (e instanceof CloudError) setErr(e.message) }
+    finally { setLoading(false) }
+  }
+  const doDelete = async (s: CloudSceneMeta) => {
+    if (!confirm(`「${s.name}」をクラウドから削除しますか？`)) return
+    setLoading(true); setErr('')
+    try { await deleteCloudScene(s.id); await refreshScenes() }
+    catch (e) { if (e instanceof CloudError) setErr(e.message) }
+    finally { setLoading(false) }
+  }
+
+  return (<>
+    <h3>クラウド保存 ({user.name ?? 'ログイン中'})</h3>
+    <div className="row">
+      <input
+        type="text"
+        placeholder="新しい名前で保存…"
+        value={name}
+        onChange={e => setName(e.target.value)}
+        maxLength={60}
+        style={{ flex: 1 }}
+      />
+      <button className="primary" disabled={loading} onClick={doSave}>保存</button>
+    </div>
+    {err && <div className="info-block" style={{ color: '#e07a6a', fontSize: 11 }}>{err}</div>}
+    <div className="list" style={{ marginTop: 6 }}>
+      {scenes.map(s => (
+        <div key={s.id} className="fixture-row">
+          <span className="name">{s.name}</span>
+          <span style={{ fontSize: 10, color: '#998468' }}>{new Date(s.updatedAt).toLocaleDateString('ja-JP')}</span>
+          <button className="small" disabled={loading} onClick={() => doLoad(s)}>読込</button>
+          <button className="small" disabled={loading} onClick={() => doUpdate(s)}>上書</button>
+          <button className="small danger" disabled={loading} onClick={() => doDelete(s)}>×</button>
+        </div>
+      ))}
+      {scenes.length === 0 && <div className="empty-hint">クラウドに保存されたシーンはありません</div>}
+    </div>
+    <div className="row" style={{ marginTop: 6 }}>
+      <a href={logoutUrl()} style={{ fontSize: 10, color: '#998468' }}>ログアウト</a>
+    </div>
+  </>)
+}
+
 // ============ シーン管理 ============
 function SceneSection() {
   const loadPreset = useStore(s => s.loadPreset)
@@ -76,8 +183,10 @@ function SceneSection() {
         <button onClick={() => loadPreset('empty')}>空</button>
       </div>
       <div className="info-block" style={{ marginTop: 6 }}>
-        現在のシーン: フィクスチャ <b>{fixtureCount}</b> / 役者 <b>{performerCount}</b>
+        現在のシーン: フィクスチャ <b>{fixtureCount}</b>/{LIMITS.fixtures} / 役者 <b>{performerCount}</b>/{LIMITS.performers}
       </div>
+
+      <CloudSection />
 
       <h3>シーンを保存・読込</h3>
       <div className="row">
