@@ -4,7 +4,8 @@
 
 import { exportScene, importScene, type SerializedScene } from './sceneIO'
 
-const PROD_BASE = 'https://www.gikyokutosyokan.com'
+// CORSプリフライトが 301 (www→apex) を追えないため apex 直指定
+const PROD_BASE = 'https://gikyokutosyokan.com'
 // @ts-expect-error vite injects
 const ENV_BASE: string | undefined = import.meta.env?.VITE_GIKYOKU_API_BASE
 const BASE =
