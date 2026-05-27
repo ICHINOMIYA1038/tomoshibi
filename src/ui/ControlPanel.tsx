@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react'
 import { useStore, type Fixture, type Performer } from '../store'
 import { FIXTURE_PROFILES, FIXTURE_PRESETS_BY_KIND, KIND_LABELS, type FixtureKind } from '../lighting/fixtureTypes'
+import { useDraggablePanel } from './useDraggablePanel'
 
 // 演劇関係者向け TOP パネル
 // タブ: 器具 / 役者 のみ。設定は ⚙ から SettingsModal で開く
@@ -38,6 +39,13 @@ export function ControlPanel() {
   const open = settings.panelOpen
   const dragStartY = useRef<number | null>(null)
   const dragDelta = useRef(0)
+  const isMobile = typeof window !== 'undefined' && window.matchMedia('(max-width: 768px)').matches
+
+  // PC のみドラッグ可能、モバイルは下からのボトムシート挙動を維持
+  const { panelProps, handleProps } = useDraggablePanel('object', {
+    x: typeof window !== 'undefined' ? window.innerWidth - 372 : 600,
+    y: 12,
+  })
 
   const onHeaderTouchStart = (e: React.TouchEvent) => {
     dragStartY.current = e.touches[0].clientY
@@ -64,15 +72,21 @@ export function ControlPanel() {
       >
         <span className={'fab-icon ' + (open ? 'fab-close' : 'fab-burger')} aria-hidden="true" />
       </button>
-      <div className={'panel' + (open ? ' open' : ' closed')}>
+      <div
+        className={'panel object-panel' + (open ? ' open' : ' closed')}
+        {...(isMobile ? {} : panelProps)}
+      >
         <div
           className="panel-header"
-          onTouchStart={onHeaderTouchStart}
-          onTouchMove={onHeaderTouchMove}
-          onTouchEnd={onHeaderTouchEnd}
+          {...(isMobile
+            ? { onTouchStart: onHeaderTouchStart, onTouchMove: onHeaderTouchMove, onTouchEnd: onHeaderTouchEnd }
+            : handleProps)}
         >
-          <div className="panel-title">ともしび小屋</div>
+          <div className="panel-title">オブジェクト</div>
           <div className="panel-actions">
+            {!isMobile && (
+              <button className="icon-btn" title="シーン管理" onClick={() => update({ scenePanelOpen: true })}>📁</button>
+            )}
             <button className="icon-btn" title="設定" onClick={() => update({ settingsOpen: true })}>⚙</button>
             <button className="icon-btn" title="ヘルプ" onClick={() => update({ showHelp: true })}>?</button>
           </div>

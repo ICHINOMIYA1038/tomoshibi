@@ -21,13 +21,13 @@ import {
 } from '../photometric/colorScience'
 import { luxToFc } from '../photometric/illuminance'
 
-// 設定モーダル — TOPを軽く保つため詳細項目はすべてここに
-// タブ: シーン管理 / 表現 / 高度ツール
+// 設定モーダル — 表現と高度ツールのみ。シーン管理は専用パネル (ScenePanel) に分離。
 
 export function SettingsModal() {
   const open = useStore(s => s.settings.settingsOpen)
-  const tab = useStore(s => s.settings.settingsTab)
+  let tab = useStore(s => s.settings.settingsTab)
   const update = useStore(s => s.updateSettings)
+  if (tab === 'scene') tab = 'look' // 旧設定が残っている場合のフォールバック
   if (!open) return null
   return (
     <div className="settings-overlay" onClick={() => update({ settingsOpen: false })}>
@@ -36,13 +36,11 @@ export function SettingsModal() {
         <div className="settings-header">
           <h1>設定</h1>
           <div className="settings-tabs">
-            <SetTab id="scene" label="シーン管理" />
             <SetTab id="look" label="表現" />
             <SetTab id="advanced" label="高度ツール (準備中)" />
           </div>
         </div>
         <div className="settings-body">
-          {tab === 'scene' && <SceneSection />}
           {tab === 'look' && <LookSection />}
           {tab === 'advanced' && <AdvancedPlaceholder />}
         </div>
@@ -51,7 +49,7 @@ export function SettingsModal() {
   )
 }
 
-function SetTab({ id, label }: { id: 'scene' | 'look' | 'advanced'; label: string }) {
+function SetTab({ id, label }: { id: 'look' | 'advanced'; label: string }) {
   const cur = useStore(s => s.settings.settingsTab)
   const update = useStore(s => s.updateSettings)
   return (
@@ -62,8 +60,9 @@ function SetTab({ id, label }: { id: 'scene' | 'look' | 'advanced'; label: strin
   )
 }
 
-// ============ クラウド (戯曲図書館アカウントで共有保存) ============
-function CloudSection() {
+// ============ クラウド (旧 — シーン管理パネルに移動済。残置はリンク切れ防止用) ============
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function CloudSection_DEPRECATED() {
   const { user, loading: sessionLoading } = useCloudSession()
   const [scenes, setScenes] = useState<CloudSceneMeta[]>([])
   const [loading, setLoading] = useState(false)
@@ -160,8 +159,9 @@ function CloudSection() {
   </>)
 }
 
-// ============ シーン管理 ============
-function SceneSection() {
+// ============ シーン管理 (旧 — ScenePanel に移動) ============
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function SceneSection_DEPRECATED() {
   const loadPreset = useStore(s => s.loadPreset)
   const settings = useStore(s => s.settings)
   const update = useStore(s => s.updateSettings)
@@ -182,8 +182,6 @@ function SceneSection() {
       <div className="info-block" style={{ marginTop: 6 }}>
         現在のシーン: フィクスチャ <b>{fixtureCount}</b>/{LIMITS.fixtures} / 役者 <b>{performerCount}</b>/{LIMITS.performers}
       </div>
-
-      <CloudSection />
 
       <h3>シーンを保存・読込</h3>
       <div className="row">
@@ -257,6 +255,13 @@ function LookSection() {
       <div className="info-block" style={{ fontSize: 10, marginTop: 4, color: '#998468' }}>
         動作が重い場合は <b>Low</b> へ。古いPC/タブレットで約 10 倍軽量に。
       </div>
+
+      <h3>表示</h3>
+      <Toggle label="器具メッシュを表示" value={settings.showFixtureMeshes} onChange={v => update({ showFixtureMeshes: v })} />
+      <Toggle label="役者を表示" value={settings.showPerformers} onChange={v => update({ showPerformers: v })} />
+      <Toggle label="ステージを表示" value={settings.showStage} onChange={v => update({ showStage: v })} />
+      <Toggle label="ビーム円錐ガイド" value={settings.showGizmos} onChange={v => update({ showGizmos: v })} />
+      <Toggle label="客電 (ハウスライト)" value={settings.showHouseLights} onChange={v => update({ showHouseLights: v })} />
     </>
   )
 }

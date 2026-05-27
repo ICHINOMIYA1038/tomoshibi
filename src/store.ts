@@ -114,7 +114,8 @@ export interface SceneSettings {
   showHelp: boolean
   probeMode: boolean
   dmxEnabled: boolean
-  panelOpen: boolean   // モバイル用: パネル表示トグル
+  panelOpen: boolean   // モバイル用: オブジェクトパネル表示トグル
+  scenePanelOpen: boolean // PC: シーン管理パネル表示トグル
 }
 
 interface State {
@@ -292,6 +293,7 @@ export const useStore = create<State>((set, get) => ({
     probeMode: false,
     dmxEnabled: false,
     panelOpen: typeof window !== 'undefined' ? window.innerWidth >= 768 : true,
+    scenePanelOpen: false, // 既定は閉じ。ヘッダーの「シーン管理」ボタンで開く
   },
 
   addFixture: (presetKey, atPos) => {

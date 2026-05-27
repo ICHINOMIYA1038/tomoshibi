@@ -243,9 +243,7 @@ body {
    パネル (右)
    ======================================================== */
 .panel {
-  position: absolute;
-  top: 12px;
-  right: 12px;
+  position: fixed; /* PC: ドラッグ可能。インライン style の left/top で配置 */
   width: 360px;
   max-height: calc(100vh - 24px);
   display: flex;
@@ -259,6 +257,9 @@ body {
   overflow: hidden;
   box-shadow: var(--shadow-card);
 }
+.panel-header { cursor: grab; user-select: none; }
+.panel-header:active { cursor: grabbing; }
+.scene-panel { width: 340px; }
 
 .panel-header {
   display: flex;

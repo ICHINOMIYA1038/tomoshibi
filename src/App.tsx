@@ -16,6 +16,9 @@ import { SettingsModal } from './ui/SettingsModal'
 import { useStore } from './store'
 import { useCloudSession } from './io/cloudSession'
 import { loginUrl, signupUrl, logoutUrl } from './io/cloud'
+import { ScenePanel } from './ui/ScenePanel'
+
+const isMobile = typeof window !== 'undefined' && window.matchMedia('(max-width: 768px)').matches
 import { FIXTURE_PROFILES, type FixtureProfile } from './lighting/fixtureTypes'
 import { tryLoadFromHash } from './io/sceneIO'
 
@@ -143,7 +146,8 @@ export default function App() {
       </div>
 
       {!isEmbed && <BrandStrip />}
-      {!isEmbed && <AccountChip />}
+      {/* スマホはログイン/シーン共有機能を提供しない (タッチでの操作が複雑になるため) */}
+      {!isEmbed && !isMobile && <AccountChip />}
 
       <div className="toolbar">
         <ViewButton view="audience" label="客席" hint="1" />
@@ -155,6 +159,7 @@ export default function App() {
       </div>
 
       <ControlPanel />
+      {!isMobile && <ScenePanel />}
       <SettingsModal />
       <HelpOverlay />
 
