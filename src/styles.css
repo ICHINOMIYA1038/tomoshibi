@@ -324,6 +324,38 @@ body.panel-dragging .panel { transition: none; opacity: 0.92; box-shadow: 0 12px
   color: var(--ink-muted);
   letter-spacing: 0;
 }
+/* ─── 一括選択 ─── */
+.bulk-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 6px;
+  padding: 5px 8px;
+  margin-bottom: 4px;
+  font-size: 11px;
+  color: var(--ink-muted);
+  border-radius: var(--radius-s);
+  background: rgba(13, 10, 10, 0.4);
+  border: 1px solid transparent;
+  transition: all 0.15s;
+}
+.bulk-bar.active {
+  background: rgba(212, 175, 111, 0.08);
+  border-color: rgba(212, 175, 111, 0.3);
+  color: var(--kin);
+}
+.bulk-checkall {
+  display: flex; align-items: center; gap: 6px;
+  cursor: pointer;
+}
+.bulk-checkall input { cursor: pointer; }
+.bulk-actions { display: flex; gap: 4px; }
+.fixture-row .row-check {
+  flex-shrink: 0;
+  cursor: pointer;
+}
+.fixture-row.picked {
+  background: rgba(212, 175, 111, 0.06);
+  border-color: rgba(212, 175, 111, 0.25);
+}
 .scene-dirty-mark {
   display: inline-block;
   margin-left: 6px;

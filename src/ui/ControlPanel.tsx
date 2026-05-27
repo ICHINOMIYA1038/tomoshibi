@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, type ReactNode } from 'react'
 import { useStore, type Fixture, type Performer } from '../store'
 import { FIXTURE_PROFILES, FIXTURE_PRESETS_BY_KIND, KIND_LABELS, type FixtureKind } from '../lighting/fixtureTypes'
 import { useDraggablePanel } from './useDraggablePanel'
@@ -113,6 +113,46 @@ function TabButton({ id, label }: { id: 'fixtures' | 'performers' | 'props'; lab
   )
 }
 
+// ============ 一括選択: チェックボックス + 上部アクションバー ============
+function useBulkSelection(ids: string[]) {
+  const [picked, setPicked] = useState<Set<string>>(new Set())
+  // 一覧から消えた id をクリーンアップ
+  const valid = new Set(ids)
+  for (const p of picked) if (!valid.has(p)) picked.delete(p)
+
+  const toggle = (id: string) => {
+    setPicked(prev => {
+      const n = new Set(prev)
+      if (n.has(id)) n.delete(id); else n.add(id)
+      return n
+    })
+  }
+  const clear = () => setPicked(new Set())
+  const allOn = ids.length > 0 && picked.size === ids.length
+  const toggleAll = () => setPicked(allOn ? new Set() : new Set(ids))
+  return { picked, toggle, clear, allOn, toggleAll, count: picked.size }
+}
+
+function BulkBar({ count, allOn, onToggleAll, onClear, children }: {
+  count: number; allOn: boolean; onToggleAll: () => void; onClear: () => void;
+  children?: ReactNode
+}) {
+  return (
+    <div className={'bulk-bar' + (count > 0 ? ' active' : '')}>
+      <label className="bulk-checkall" onClick={e => e.stopPropagation()}>
+        <input type="checkbox" checked={allOn} onChange={onToggleAll} />
+        <span>{count > 0 ? `${count} 件選択中` : '一括選択'}</span>
+      </label>
+      {count > 0 && (
+        <div className="bulk-actions">
+          {children}
+          <button className="small" onClick={onClear}>解除</button>
+        </div>
+      )}
+    </div>
+  )
+}
+
 // ============ 器具 タブ ============
 function FixturesPanel() {
   const fixtures = useStore(s => s.fixtures)
@@ -120,9 +160,20 @@ function FixturesPanel() {
   const selected = fixtures.find(f => f.id === selection.id && selection.kind === 'fixture')
   const select = useStore(s => s.select)
   const add = useStore(s => s.addFixture)
+  const bulk = useBulkSelection(fixtures.map(f => f.id))
 
   const [addKind, setAddKind] = useState<FixtureKind>('Fresnel')
   const [addPreset, setAddPreset] = useState<string>('Fresnel8')
+
+  const bulkDelete = () => {
+    if (bulk.count === 0) return
+    if (!confirm(`${bulk.count} 件の器具を削除しますか?`)) return
+    for (const id of bulk.picked) useStore.getState().removeFixture(id)
+    bulk.clear()
+  }
+  const bulkToggle = (enabled: boolean) => {
+    for (const id of bulk.picked) useStore.getState().updateFixture(id, { enabled })
+  }
 
   return (
     <div className="panel-body">
@@ -153,13 +204,26 @@ function FixturesPanel() {
       </div>
 
       <h3>一覧 ({fixtures.length})</h3>
+      <BulkBar count={bulk.count} allOn={bulk.allOn} onToggleAll={bulk.toggleAll} onClear={bulk.clear}>
+        <button className="small" onClick={() => bulkToggle(true)}>点灯</button>
+        <button className="small" onClick={() => bulkToggle(false)}>消灯</button>
+        <button className="small danger" onClick={bulkDelete}>削除</button>
+      </BulkBar>
       <div className="list">
         {fixtures.map(f => (
           <div
             key={f.id}
-            className={'fixture-row' + (selection.kind === 'fixture' && selection.id === f.id ? ' selected' : '')}
+            className={'fixture-row' + (selection.kind === 'fixture' && selection.id === f.id ? ' selected' : '') + (bulk.picked.has(f.id) ? ' picked' : '')}
             onClick={() => select('fixture', f.id, 'position')}
           >
+            <input
+              type="checkbox"
+              className="row-check"
+              checked={bulk.picked.has(f.id)}
+              onClick={e => e.stopPropagation()}
+              onChange={() => bulk.toggle(f.id)}
+              title="一括選択"
+            />
             <div className="dot" style={{ background: f.enabled ? colorToHex(f.color) : '#444' }} />
             <span className="name">{f.name}</span>
             <span className="kind">{FIXTURE_PROFILES[f.presetKey].kind}</span>
@@ -170,6 +234,11 @@ function FixturesPanel() {
               onChange={e => useStore.getState().updateFixture(f.id, { enabled: e.target.checked })}
               title="点灯"
             />
+            <button
+              className="danger small"
+              onClick={(e) => { e.stopPropagation(); useStore.getState().removeFixture(f.id) }}
+              title="削除"
+            >×</button>
           </div>
         ))}
         {fixtures.length === 0 && <div className="empty-hint">「+ 追加」で配置してください</div>}
@@ -338,26 +407,47 @@ function PerformersPanel() {
   const selection = useStore(s => s.selection)
   const selected = performers.find(p => p.id === selection.id && selection.kind === 'performer')
   const update = (id: string, patch: Partial<Performer>) => useStore.getState().updatePerformer(id, patch)
+  const bulk = useBulkSelection(performers.map(p => p.id))
+
+  const bulkDelete = () => {
+    if (bulk.count === 0) return
+    if (!confirm(`${bulk.count} 人の役者を削除しますか?`)) return
+    for (const id of bulk.picked) remove(id)
+    bulk.clear()
+  }
 
   return (
     <div className="panel-body">
+      <h3>役者を追加</h3>
       <div className="row">
-        <button className="primary" onClick={() => add()} style={{ flex: 1 }}>+ 役者を追加</button>
+        <button className="primary" onClick={() => add()} style={{ flex: 1 }}>+ 追加</button>
       </div>
 
       <h3>一覧 ({performers.length})</h3>
+      <BulkBar count={bulk.count} allOn={bulk.allOn} onToggleAll={bulk.toggleAll} onClear={bulk.clear}>
+        <button className="small danger" onClick={bulkDelete}>削除</button>
+      </BulkBar>
       <div className="list">
         {performers.map(p => (
           <div
             key={p.id}
-            className={'fixture-row' + (selection.kind === 'performer' && selection.id === p.id ? ' selected' : '')}
+            className={'fixture-row' + (selection.kind === 'performer' && selection.id === p.id ? ' selected' : '') + (bulk.picked.has(p.id) ? ' picked' : '')}
             onClick={() => select('performer', p.id)}
           >
+            <input
+              type="checkbox"
+              className="row-check"
+              checked={bulk.picked.has(p.id)}
+              onClick={e => e.stopPropagation()}
+              onChange={() => bulk.toggle(p.id)}
+              title="一括選択"
+            />
             <div className="dot" style={{ background: p.color }} />
             <span className="name">{p.name}</span>
             <button
               className="danger small"
               onClick={(e) => { e.stopPropagation(); remove(p.id) }}
+              title="削除"
             >×</button>
           </div>
         ))}
@@ -367,6 +457,12 @@ function PerformersPanel() {
       {selected && (
         <>
           <h3>選択中</h3>
+          <div className="callout">
+            <b>{selected.name}</b>
+            <div style={{ fontSize: 10, color: '#998468', marginTop: 2, fontFamily: 'var(--font-sans)' }}>
+              役者 / {Math.round(selected.scale * 170)}cm
+            </div>
+          </div>
           <div className="row">
             <label>名前</label>
             <input type="text" value={selected.name} onChange={e => update(selected.id, { name: e.target.value })} />
@@ -397,6 +493,14 @@ function PropsPanel() {
   const addPrim = useStore(s => s.addPrimitiveSetPiece)
   const remove = useStore(s => s.removeSetPiece)
   const update = (id: string, patch: any) => useStore.getState().updateSetPiece(id, patch)
+  const bulk = useBulkSelection(pieces.map(p => p.id))
+
+  const bulkDelete = () => {
+    if (bulk.count === 0) return
+    if (!confirm(`${bulk.count} 件の装置を削除しますか?`)) return
+    for (const id of bulk.picked) remove(id)
+    bulk.clear()
+  }
 
   return (
     <div className="panel-body">
@@ -408,16 +512,32 @@ function PropsPanel() {
       </div>
 
       <h3>一覧 ({pieces.length})</h3>
+      <BulkBar count={bulk.count} allOn={bulk.allOn} onToggleAll={bulk.toggleAll} onClear={bulk.clear}>
+        <button className="small danger" onClick={bulkDelete}>削除</button>
+      </BulkBar>
       <div className="list">
         {pieces.map(p => (
           <div
             key={p.id}
-            className={'fixture-row' + (selection.kind === 'setpiece' && selection.id === p.id ? ' selected' : '')}
+            className={'fixture-row' + (selection.kind === 'setpiece' && selection.id === p.id ? ' selected' : '') + (bulk.picked.has(p.id) ? ' picked' : '')}
             onClick={() => select('setpiece', p.id)}
           >
+            <input
+              type="checkbox"
+              className="row-check"
+              checked={bulk.picked.has(p.id)}
+              onClick={e => e.stopPropagation()}
+              onChange={() => bulk.toggle(p.id)}
+              title="一括選択"
+            />
             <div className="dot" style={{ background: p.color ?? '#876040' }} />
             <span className="name">{p.name}</span>
             <span className="kind">{p.kind}</span>
+            <button
+              className="danger small"
+              onClick={(e) => { e.stopPropagation(); remove(p.id) }}
+              title="削除"
+            >×</button>
           </div>
         ))}
         {pieces.length === 0 && <div className="empty-hint">「箱馬 / 平台 / 高台」を追加してください</div>}
@@ -425,7 +545,13 @@ function PropsPanel() {
 
       {selected && selected.kind !== 'gltf' && (
         <>
-          <h3>編集</h3>
+          <h3>選択中</h3>
+          <div className="callout">
+            <b>{selected.name}</b>
+            <div style={{ fontSize: 10, color: '#998468', marginTop: 2, fontFamily: 'var(--font-sans)' }}>
+              装置 / {selected.kind}
+            </div>
+          </div>
           <div className="row">
             <label>名前</label>
             <input type="text" value={selected.name} onChange={e => update(selected.id, { name: e.target.value })} />
