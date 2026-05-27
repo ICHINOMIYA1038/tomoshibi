@@ -257,6 +257,8 @@ body {
   overflow: hidden;
   box-shadow: var(--shadow-card);
 }
+.panel { user-select: none; }
+.panel input, .panel textarea, .panel .share-url { user-select: text; }
 .panel-header {
   cursor: grab;
   user-select: none;
