@@ -282,7 +282,150 @@ body {
 .panel-header:active { cursor: grabbing; }
 body.panel-dragging { cursor: grabbing !important; user-select: none; }
 body.panel-dragging .panel { transition: none; opacity: 0.92; box-shadow: 0 12px 36px rgba(0,0,0,0.6); }
-.scene-panel { width: 340px; }
+.scene-panel { width: 320px; }
+.scene-body { padding: 0 !important; }
+.scene-body > * { padding: 0 16px; }
+
+/* ─── 未ログイン誘導 ─── */
+.scene-login {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 10px; padding: 22px 18px 18px;
+  text-align: center;
+}
+.scene-login-icon { font-size: 36px; line-height: 1; opacity: 0.75; }
+.scene-login-lead { font-size: 12px; line-height: 1.7; color: var(--ink-secondary); margin: 0; }
+.scene-login-note { font-size: 10px; color: var(--ink-muted); margin: 4px 0 0; }
+
+/* ─── セクション共通 ─── */
+.scene-section { padding: 14px 16px; border-bottom: 1px solid var(--panel-edge); }
+.scene-section:last-of-type { border-bottom: none; }
+.scene-section-h {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 10px; font-weight: 700;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--ink-muted); margin-bottom: 8px;
+}
+.scene-dot {
+  display: inline-block; width: 6px; height: 6px; border-radius: 50%;
+  background: var(--shu); box-shadow: 0 0 6px rgba(200, 72, 45, 0.6);
+}
+.scene-count {
+  margin-left: auto;
+  font-size: 10px; padding: 1px 7px;
+  background: var(--panel-edge); border-radius: 999px;
+  letter-spacing: 0;
+}
+.scene-status { padding: 16px; font-size: 11px; color: var(--ink-muted); }
+
+/* ─── 編集中ブロック ─── */
+.scene-name-input {
+  width: 100%; box-sizing: border-box;
+  padding: 9px 12px; font-size: 13px;
+  background: var(--bg-deep);
+  border: 1px solid var(--panel-edge);
+  border-radius: var(--radius-s);
+  color: var(--ink-primary);
+  outline: none; transition: border-color 0.15s;
+}
+.scene-name-input:focus { border-color: var(--panel-edge-strong); }
+.scene-actions {
+  display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap;
+}
+.scene-cta {
+  flex: 1; min-width: 120px;
+  padding: 10px 12px; font-size: 12.5px; font-weight: 600;
+  background: var(--bg-deep);
+  border: 1px solid var(--panel-edge);
+  border-radius: var(--radius-s);
+  color: var(--ink-primary);
+  cursor: pointer; transition: all 0.15s;
+}
+.scene-cta:hover:not(:disabled) { border-color: var(--panel-edge-strong); }
+.scene-cta:disabled { opacity: 0.4; cursor: not-allowed; }
+.scene-cta.primary {
+  background: linear-gradient(180deg, var(--shu), var(--suoh));
+  border-color: rgba(212, 175, 111, 0.4);
+  color: #fff;
+}
+.scene-cta-sub {
+  padding: 8px 12px; font-size: 11px;
+  background: transparent;
+  border: 1px solid var(--panel-edge);
+  border-radius: var(--radius-s);
+  color: var(--ink-secondary); cursor: pointer;
+  transition: all 0.15s;
+}
+.scene-cta-sub:hover:not(:disabled) { border-color: var(--panel-edge-strong); color: var(--ink-primary); }
+.scene-cta-sub:disabled { opacity: 0.4; cursor: not-allowed; }
+.scene-error {
+  margin-top: 8px; padding: 6px 10px; font-size: 11px;
+  color: #e07a6a;
+  background: rgba(176, 53, 64, 0.08);
+  border: 1px solid rgba(176, 53, 64, 0.25);
+  border-radius: var(--radius-s);
+}
+.scene-toast {
+  margin-top: 8px; padding: 6px 10px; font-size: 11px;
+  color: #88c275;
+  background: rgba(80, 150, 80, 0.08);
+  border: 1px solid rgba(80, 150, 80, 0.25);
+  border-radius: var(--radius-s);
+  animation: fadeUp 0.2s ease both;
+}
+
+/* ─── 一覧 ─── */
+.scene-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 4px; }
+.scene-item {
+  display: flex; align-items: stretch;
+  border: 1px solid transparent;
+  border-radius: var(--radius-s);
+  overflow: hidden;
+  background: rgba(13, 10, 10, 0.4);
+  transition: all 0.12s;
+}
+.scene-item:hover { border-color: var(--panel-edge); background: rgba(20, 17, 18, 0.6); }
+.scene-item.active {
+  border-color: rgba(212, 175, 111, 0.4);
+  background: rgba(212, 175, 111, 0.08);
+}
+.scene-item-main {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: flex-start; gap: 2px;
+  padding: 8px 10px;
+  background: transparent; border: none; color: inherit;
+  text-align: left; cursor: pointer;
+  font: inherit;
+}
+.scene-item-main:disabled { opacity: 0.5; cursor: wait; }
+.scene-item-name { font-size: 12.5px; color: var(--ink-primary); }
+.scene-item-date { font-size: 10px; color: var(--ink-muted); }
+.scene-item-del {
+  width: 30px; flex-shrink: 0;
+  background: transparent; border: none; border-left: 1px solid var(--panel-edge);
+  color: var(--ink-muted); font-size: 14px; cursor: pointer;
+  transition: all 0.12s;
+}
+.scene-item-del:hover { background: rgba(176, 53, 64, 0.2); color: #e07a6a; }
+.scene-empty {
+  font-size: 11px; color: var(--ink-muted);
+  text-align: center; padding: 14px 8px; line-height: 1.7;
+  border: 1px dashed var(--panel-edge);
+  border-radius: var(--radius-s);
+}
+
+/* ─── アカウント ─── */
+.scene-account {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 16px;
+  border-top: 1px solid var(--panel-edge);
+  background: rgba(13, 10, 10, 0.4);
+}
+.scene-account-name {
+  font-size: 11px; color: var(--ink-secondary);
+  max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.scene-account-logout { font-size: 10px; color: var(--ink-muted); text-decoration: none; }
+.scene-account-logout:hover { color: var(--ink-secondary); text-decoration: underline; }
 
 .panel-header {
   display: flex;
