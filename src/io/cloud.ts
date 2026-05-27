@@ -63,9 +63,9 @@ export async function getSession(): Promise<CloudUser | null> {
 
 export function loginUrl(): string {
   const cb = typeof location !== 'undefined' ? location.origin : 'https://tomoshibi.gikyokutosyokan.com'
-  // NextAuth /api/auth/signin/{provider} は POST + CSRF が必要なので GET だと 400。
-  // 戯曲図書館の signin ページに飛ばし、そこのGoogleボタンから signIn() を実行させる。
-  return `${BASE}/auth/signin?callbackUrl=${encodeURIComponent(cb)}`
+  // signin ページに auto=1 を渡すと、useEffect で即座に Google OAuth を起動する
+  // (中継ページのUIは出さずユーザーは直接 Google アカウント選択画面へ)
+  return `${BASE}/auth/signin?auto=1&callbackUrl=${encodeURIComponent(cb)}`
 }
 export function logoutUrl(): string {
   const cb = typeof location !== 'undefined' ? location.origin : 'https://tomoshibi.gikyokutosyokan.com'
