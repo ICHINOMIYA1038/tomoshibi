@@ -324,6 +324,14 @@ body.panel-dragging .panel { transition: none; opacity: 0.92; box-shadow: 0 12px
   color: var(--ink-muted);
   letter-spacing: 0;
 }
+.scene-dirty-mark {
+  display: inline-block;
+  margin-left: 6px;
+  color: var(--shu);
+  font-size: 8px;
+  vertical-align: middle;
+  text-shadow: 0 0 4px rgba(200, 72, 45, 0.5);
+}
 
 /* 編集中の入力 + 操作 */
 .scene-name-input {

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useStore } from '../store'
+import { useStore, useIsDirty } from '../store'
 import { importScene } from '../io/sceneIO'
 import {
   loginUrl, signupUrl, logoutUrl,
@@ -43,6 +43,22 @@ function CloudScenes() {
   const [loading, setLoading] = useState(false)
   const [err, setErr] = useState('')
   const [toast, setToast] = useState('')
+  const dirty = useIsDirty()
+  const markSaved = useStore(s => s.markSavedSnapshot)
+
+  // ページ離脱前の警告 (未保存の変更がある場合のみ)
+  useEffect(() => {
+    if (!dirty) return
+    const handler = (e: BeforeUnloadEvent) => {
+      e.preventDefault()
+      e.returnValue = ''
+    }
+    window.addEventListener('beforeunload', handler)
+    return () => window.removeEventListener('beforeunload', handler)
+  }, [dirty])
+
+  const confirmDiscard = (action: string) =>
+    !dirty || confirm(`未保存の変更があります。${action}しますか?\n変更内容は失われます。`)
 
   const refresh = async () => {
     try { setScenes(await listCloudScenes()); setErr('') }
@@ -81,12 +97,13 @@ function CloudScenes() {
   const showToast = (msg: string) => { setToast(msg); window.setTimeout(() => setToast(''), 1800) }
 
   const doNew = () => {
-    if (scenes.length > 0 && !confirm('現在の編集内容を破棄して新しいシーンを始めますか?')) return
+    if (!confirmDiscard('破棄して新規シーンを開始')) return
     importScene({
       version: 1, name: '無題', savedAt: new Date().toISOString(),
       fixtures: [], performers: [], settings: {},
     })
     setActiveId(null); setActiveName('')
+    markSaved()
   }
   const doSave = async () => {
     const n = activeName.trim()
@@ -99,15 +116,18 @@ function CloudScenes() {
       } else {
         const created = await saveCloudSceneNew(n); setActiveId(created.id); showToast('保存しました')
       }
+      markSaved()
       await refresh()
     } catch (e) {
       if (e instanceof CloudError) setErr(e.message)
     } finally { setLoading(false) }
   }
   const doLoad = async (s: CloudSceneMeta) => {
+    if (!confirmDiscard(`「${s.name}」を読み込み`)) return
     setLoading(true); setErr('')
     try {
       await loadCloudScene(s.id); setActiveId(s.id); setActiveName(s.name)
+      markSaved()
       showToast('読み込みました')
     } catch (e) {
       if (e instanceof CloudError) setErr(e.message)
@@ -128,7 +148,9 @@ function CloudScenes() {
   return (
     <>
       <section className="scene-section">
-        <header className="scene-section-h">編集中</header>
+        <header className="scene-section-h">
+          <span>編集中{dirty && <span className="scene-dirty-mark" title="未保存の変更があります">●</span>}</span>
+        </header>
         <input
           className="scene-name-input"
           type="text"

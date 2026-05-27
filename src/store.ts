@@ -126,6 +126,10 @@ interface State {
   settings: SceneSettings
   probeMeasurement: import('./photometric/illuminance').IlluminanceMeasurement | null
   setProbeMeasurement: (m: import('./photometric/illuminance').IlluminanceMeasurement | null) => void
+  /** 最後にクラウド保存 or 読込した時点のシーンスナップショット (JSON文字列)。null=未保存(初期状態は警告しない) */
+  savedSnapshot: string | null
+  /** 現在の状態を「保存済み」としてスナップショット */
+  markSavedSnapshot: () => void
   // セットピース (GLTF 取込)
   setPieces: import('./types').SetPiece[]
   addSetPiece: (sp: import('./types').SetPiece) => void
@@ -228,9 +232,18 @@ function initialPerformers(): Performer[] {
   return [defaultPerformer([0, 0, -1])]
 }
 
+export function computeSceneSnapshot(s: Pick<State, 'fixtures' | 'performers' | 'setPieces'>): string {
+  return JSON.stringify({ f: s.fixtures, p: s.performers, sp: s.setPieces })
+}
+
 export const useStore = create<State>((set, get) => ({
   fixtures: initialFixtures(),
   performers: initialPerformers(),
+  savedSnapshot: null,
+  markSavedSnapshot: () => {
+    const s = get()
+    set({ savedSnapshot: computeSceneSnapshot(s) })
+  },
   selection: { kind: null, id: null },
   hovered: { kind: null, id: null },
   probeMeasurement: null,
@@ -503,3 +516,11 @@ export function performerToOccluders(p: Performer): PackedOccluder[] {
     { pos: [x, y + 1.0 * s, z], axis: [0, 1, 0], radius: 0.28 * s, halfHeight: 0.35 * s },
   ]
 }
+
+export function useIsDirty(): boolean {
+  return useStore(s => {
+    if (s.savedSnapshot === null) return false
+    return s.savedSnapshot !== computeSceneSnapshot(s)
+  })
+}
+
