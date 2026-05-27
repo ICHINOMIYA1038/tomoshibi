@@ -67,7 +67,8 @@ export function loginUrl(): string {
 }
 export function logoutUrl(): string {
   const cb = typeof location !== 'undefined' ? location.origin : 'https://tomoshibi.gikyokutosyokan.com'
-  return `${BASE}/api/auth/signout?callbackUrl=${encodeURIComponent(cb)}`
+  // NextAuth 標準 /api/auth/signout は CSRF フォームが必要なので tomoshibi 専用ルートを使う
+  return `${BASE}/api/tomoshibi/logout?callbackUrl=${encodeURIComponent(cb)}`
 }
 export function signupUrl(): string {
   const cb = typeof location !== 'undefined' ? location.origin : 'https://tomoshibi.gikyokutosyokan.com'
