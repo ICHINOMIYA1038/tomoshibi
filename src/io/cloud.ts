@@ -63,9 +63,7 @@ export async function getSession(): Promise<CloudUser | null> {
 
 export function loginUrl(): string {
   const cb = typeof location !== 'undefined' ? location.origin : 'https://tomoshibi.gikyokutosyokan.com'
-  // signin ページに auto=1 を渡すと、useEffect で即座に Google OAuth を起動する
-  // (中継ページのUIは出さずユーザーは直接 Google アカウント選択画面へ)
-  return `${BASE}/auth/signin?auto=1&callbackUrl=${encodeURIComponent(cb)}`
+  return `${BASE}/auth/signin?callbackUrl=${encodeURIComponent(cb)}`
 }
 export function logoutUrl(): string {
   const cb = typeof location !== 'undefined' ? location.origin : 'https://tomoshibi.gikyokutosyokan.com'
