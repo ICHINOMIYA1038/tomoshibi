@@ -257,8 +257,29 @@ body {
   overflow: hidden;
   box-shadow: var(--shadow-card);
 }
-.panel-header { cursor: grab; user-select: none; }
+.panel-header {
+  cursor: grab;
+  user-select: none;
+  touch-action: none; /* タッチでスクロールせずドラッグに使う */
+  position: relative;
+}
+.panel-header::before {
+  /* ドラッグ可能なつかみ目印 (左側のドット) */
+  content: '⋮⋮';
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--ink-muted);
+  font-size: 12px;
+  letter-spacing: -2px;
+  opacity: 0.6;
+  pointer-events: none;
+}
+.panel-header .panel-title { padding-left: 18px; }
 .panel-header:active { cursor: grabbing; }
+body.panel-dragging { cursor: grabbing !important; user-select: none; }
+body.panel-dragging .panel { transition: none; opacity: 0.92; box-shadow: 0 12px 36px rgba(0,0,0,0.6); }
 .scene-panel { width: 340px; }
 
 .panel-header {

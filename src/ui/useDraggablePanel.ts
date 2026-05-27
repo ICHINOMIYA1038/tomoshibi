@@ -35,25 +35,40 @@ export function useDraggablePanel(id: string, defaultPos: PanelPos) {
     const handle = handleRef.current
     if (!handle) return
 
-    const onMove = (clientX: number, clientY: number) => {
-      if (!drag.current) return
+    // 子要素のボタンや input が押された時はドラッグ開始しない
+    const isInteractive = (target: EventTarget | null) => {
+      const el = target as HTMLElement | null
+      if (!el) return false
+      const tag = el.closest('button, a, input, select, textarea, label')
+      return !!tag
+    }
+
+    const clamp = (clientX: number, clientY: number, ox: number, oy: number) => {
       const panel = panelRef.current
       const w = panel?.offsetWidth ?? 300
       const h = panel?.offsetHeight ?? 200
-      const maxX = window.innerWidth - 40
-      const maxY = window.innerHeight - 40
-      const x = Math.max(-w + 80, Math.min(maxX, clientX - drag.current.ox))
-      const y = Math.max(0, Math.min(maxY, clientY - drag.current.oy))
-      setPos({ x, y })
+      const x = Math.max(-w + 120, Math.min(window.innerWidth - 120, clientX - ox))
+      const y = Math.max(0, Math.min(window.innerHeight - 60, clientY - oy))
+      return { x, y, h }
     }
 
-    const onMouseMove = (e: MouseEvent) => onMove(e.clientX, e.clientY)
+    const onMouseMove = (e: MouseEvent) => {
+      if (!drag.current) return
+      e.preventDefault()
+      const { x, y } = clamp(e.clientX, e.clientY, drag.current.ox, drag.current.oy)
+      setPos({ x, y })
+    }
     const onTouchMove = (e: TouchEvent) => {
-      if (e.touches[0]) onMove(e.touches[0].clientX, e.touches[0].clientY)
+      const t = e.touches[0]
+      if (!drag.current || !t) return
+      e.preventDefault()
+      const { x, y } = clamp(t.clientX, t.clientY, drag.current.ox, drag.current.oy)
+      setPos({ x, y })
     }
     const stop = () => {
       if (drag.current) {
         drag.current = null
+        document.body.classList.remove('panel-dragging')
         document.removeEventListener('mousemove', onMouseMove)
         document.removeEventListener('mouseup', stop)
         document.removeEventListener('touchmove', onTouchMove)
@@ -62,19 +77,24 @@ export function useDraggablePanel(id: string, defaultPos: PanelPos) {
       }
     }
     const onMouseDown = (e: MouseEvent) => {
+      if (isInteractive(e.target)) return
       const panel = panelRef.current
       if (!panel) return
+      e.preventDefault()
       const rect = panel.getBoundingClientRect()
       drag.current = { ox: e.clientX - rect.left, oy: e.clientY - rect.top }
+      document.body.classList.add('panel-dragging')
       document.addEventListener('mousemove', onMouseMove)
       document.addEventListener('mouseup', stop)
     }
     const onTouchStart = (e: TouchEvent) => {
+      if (isInteractive(e.target)) return
       const panel = panelRef.current
       const t = e.touches[0]
       if (!panel || !t) return
       const rect = panel.getBoundingClientRect()
       drag.current = { ox: t.clientX - rect.left, oy: t.clientY - rect.top }
+      document.body.classList.add('panel-dragging')
       document.addEventListener('touchmove', onTouchMove, { passive: false })
       document.addEventListener('touchend', stop)
     }
