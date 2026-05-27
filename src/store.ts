@@ -293,7 +293,7 @@ export const useStore = create<State>((set, get) => ({
     probeMode: false,
     dmxEnabled: false,
     panelOpen: typeof window !== 'undefined' ? window.innerWidth >= 768 : true,
-    scenePanelOpen: false, // 既定は閉じ。ヘッダーの「シーン管理」ボタンで開く
+    scenePanelOpen: true, // PC は既定で表示
   },
 
   addFixture: (presetKey, atPos) => {

@@ -84,9 +84,6 @@ export function ControlPanel() {
         >
           <div className="panel-title">オブジェクト</div>
           <div className="panel-actions">
-            {!isMobile && (
-              <button className="icon-btn" title="シーン管理" onClick={() => update({ scenePanelOpen: true })}>📁</button>
-            )}
             <button className="icon-btn" title="設定" onClick={() => update({ settingsOpen: true })}>⚙</button>
             <button className="icon-btn" title="ヘルプ" onClick={() => update({ showHelp: true })}>?</button>
           </div>

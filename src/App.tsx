@@ -146,8 +146,7 @@ export default function App() {
       </div>
 
       {!isEmbed && <BrandStrip />}
-      {/* スマホはログイン/シーン共有機能を提供しない (タッチでの操作が複雑になるため) */}
-      {!isEmbed && !isMobile && <AccountChip />}
+      {/* ログイン/新規登録はシーン管理パネル内に集約したので画面右上のチップは廃止 */}
 
       <div className="toolbar">
         <ViewButton view="audience" label="客席" hint="1" />
