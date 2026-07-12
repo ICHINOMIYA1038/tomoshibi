@@ -209,6 +209,13 @@ export function ProPage() {
       <div className="pro-price-card">
         <div className="pro-price-amount">¥{SERVICE.proPriceMonthly}<span>/月</span></div>
         <div className="pro-price-sub">税込・自動更新・いつでも解約可能</div>
+        <button
+          className="pro-subscribe-btn"
+          onClick={() => alert('決済機能は準備中です。もうしばらくお待ちください。\n\n(Stripe 側の審査完了後に利用可能となります)')}
+        >
+          Pro プランに申し込む
+        </button>
+        <div className="pro-subscribe-note">※ 現在、決済機能は準備中です</div>
       </div>
 
       <h2>Free プランと Pro プランの違い</h2>

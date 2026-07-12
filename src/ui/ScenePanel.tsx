@@ -9,7 +9,7 @@ import {
 import { useCloudSession } from '../io/cloudSession'
 import { useDraggablePanel } from './useDraggablePanel'
 
-const MAX_SCENES = 5
+const FALLBACK_MAX_SCENES = 3
 
 export function ScenePanel() {
   const { panelProps, handleProps } = useDraggablePanel('scene', {
@@ -43,6 +43,7 @@ function CloudScenes() {
   const [loading, setLoading] = useState(false)
   const [err, setErr] = useState('')
   const [toast, setToast] = useState('')
+  const [showUpgrade, setShowUpgrade] = useState(false)
   const dirty = useIsDirty()
   const markSaved = useStore(s => s.markSavedSnapshot)
 
@@ -93,7 +94,9 @@ function CloudScenes() {
   }
 
   const isNewScene = !activeId
-  const atLimit = isNewScene && scenes.length >= MAX_SCENES
+  const maxScenes = user.maxScenes ?? FALLBACK_MAX_SCENES
+  const isPro = user.plan === 'pro'
+  const atLimit = isNewScene && scenes.length >= maxScenes
   const showToast = (msg: string) => { setToast(msg); window.setTimeout(() => setToast(''), 1800) }
 
   const doNew = () => {
@@ -108,7 +111,11 @@ function CloudScenes() {
   const doSave = async () => {
     const n = activeName.trim()
     if (!n) { setErr('シーン名を入力してください'); return }
-    if (atLimit) { setErr(`シーンは ${MAX_SCENES} 件まで保存できます。不要なシーンを削除してください`); return }
+    if (atLimit) {
+      if (!isPro) { setShowUpgrade(true); return }
+      setErr(`シーンは ${maxScenes} 件まで保存できます。不要なシーンを削除してください`)
+      return
+    }
     setLoading(true); setErr('')
     try {
       if (activeId) {
@@ -119,7 +126,10 @@ function CloudScenes() {
       markSaved()
       await refresh()
     } catch (e) {
-      if (e instanceof CloudError) setErr(e.message)
+      if (e instanceof CloudError) {
+        if (e.status === 403 && !isPro) { setShowUpgrade(true) }
+        else { setErr(e.message) }
+      }
     } finally { setLoading(false) }
   }
   const doLoad = async (s: CloudSceneMeta) => {
@@ -177,7 +187,10 @@ function CloudScenes() {
       <section className="scene-section">
         <header className="scene-section-h">
           <span>保存済み</span>
-          <span className="scene-count">{scenes.length} / {MAX_SCENES}</span>
+          <span className="scene-count">
+            {scenes.length} / {isPro ? '∞' : maxScenes}
+            {isPro && <span className="pro-badge" title="Pro プラン">Pro</span>}
+          </span>
         </header>
         {scenes.length === 0 ? (
           <div className="empty-hint">まだ保存されたシーンはありません</div>
@@ -207,11 +220,58 @@ function CloudScenes() {
         )}
       </section>
 
+      {!isPro && (
+        <section className="scene-section pro-upsell">
+          <a href="/pro" className="pro-upsell-link">
+            <span className="pro-upsell-icon">✦</span>
+            <span className="pro-upsell-body">
+              <strong>Pro プラン</strong>
+              <span>月額300円で保存無制限</span>
+            </span>
+            <span className="pro-upsell-arrow">→</span>
+          </a>
+        </section>
+      )}
+
       <footer className="scene-account">
         <span className="scene-account-name">{user.name ?? user.id}</span>
         <a href={logoutUrl()} className="scene-account-logout">ログアウト</a>
       </footer>
+
+      {showUpgrade && (
+        <UpgradeModal
+          scenesCount={scenes.length}
+          limit={maxScenes}
+          onClose={() => setShowUpgrade(false)}
+        />
+      )}
     </>
+  )
+}
+
+function UpgradeModal({ scenesCount, limit, onClose }: { scenesCount: number; limit: number; onClose: () => void }) {
+  return (
+    <div className="upgrade-backdrop" onClick={onClose}>
+      <div className="upgrade-modal" onClick={e => e.stopPropagation()}>
+        <button className="upgrade-close" onClick={onClose} aria-label="閉じる">×</button>
+        <div className="upgrade-flame">✦</div>
+        <h2>保存件数の上限に達しました</h2>
+        <p>Free プランでは <strong>{limit} 件</strong> まで保存できます。<br />現在: {scenesCount} 件</p>
+        <div className="upgrade-price">
+          <span className="upgrade-price-amount">¥300</span>
+          <span className="upgrade-price-per">/月</span>
+        </div>
+        <ul className="upgrade-bullets">
+          <li>クラウド保存<strong>無制限</strong></li>
+          <li>いつでも解約可能・違約金なし</li>
+          <li>シミュレーター本体は Free と同じ全機能</li>
+        </ul>
+        <div className="upgrade-actions">
+          <a href="/pro" className="upgrade-cta primary">Pro プランを見る</a>
+          <button className="upgrade-cta-sub" onClick={onClose}>今はしない</button>
+        </div>
+      </div>
+    </div>
   )
 }
 

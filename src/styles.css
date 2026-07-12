@@ -1791,3 +1791,164 @@ body.embed .panel-body h2 { font-size: 13px; }
   opacity: 0.75;
   margin: -8px 0 20px;
 }
+
+/* Pro badge / upsell / upgrade modal */
+.pro-badge {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 6px;
+  border-radius: 3px;
+  background: linear-gradient(135deg, #d4905a, #ffd9a3);
+  color: #1a1208;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  vertical-align: middle;
+}
+.pro-upsell {
+  padding: 8px 12px;
+}
+.pro-upsell-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: linear-gradient(135deg, rgba(212,175,111,0.15), rgba(212,144,90,0.08));
+  border: 1px solid rgba(255,217,163,0.35);
+  border-radius: 8px;
+  color: #ffd9a3;
+  text-decoration: none;
+  font-size: 12px;
+  transition: transform 0.1s, background 0.2s;
+}
+.pro-upsell-link:hover {
+  transform: translateY(-1px);
+  background: linear-gradient(135deg, rgba(212,175,111,0.25), rgba(212,144,90,0.15));
+}
+.pro-upsell-icon { font-size: 18px; }
+.pro-upsell-body { flex: 1; display: flex; flex-direction: column; line-height: 1.35; }
+.pro-upsell-body strong { font-size: 13px; }
+.pro-upsell-body span { font-size: 11px; opacity: 0.85; }
+.pro-upsell-arrow { font-size: 14px; opacity: 0.7; }
+
+.upgrade-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.upgrade-modal {
+  position: relative;
+  background: linear-gradient(180deg, #1a1208, #0f0a06);
+  border: 1px solid rgba(255,217,163,0.3);
+  border-radius: 12px;
+  padding: 32px 28px 24px;
+  max-width: 420px;
+  width: 100%;
+  color: #f2e6cf;
+  font-family: 'Shippori Mincho', 'Noto Sans JP', serif;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+}
+.upgrade-close {
+  position: absolute;
+  top: 8px; right: 8px;
+  background: transparent;
+  border: none;
+  color: rgba(242,230,207,0.6);
+  font-size: 20px;
+  cursor: pointer;
+  padding: 4px 10px;
+}
+.upgrade-close:hover { color: #ffd9a3; }
+.upgrade-flame {
+  font-size: 32px;
+  color: #ffd9a3;
+  margin-bottom: 4px;
+}
+.upgrade-modal h2 {
+  font-size: 18px;
+  color: #ffd9a3;
+  margin: 4px 0 12px;
+}
+.upgrade-modal p { font-size: 13px; margin: 0 0 16px; opacity: 0.9; }
+.upgrade-price {
+  margin: 8px 0 16px;
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 4px;
+}
+.upgrade-price-amount {
+  font-size: 42px;
+  font-weight: 700;
+  color: #ffd9a3;
+  font-family: 'Inter', sans-serif;
+  line-height: 1;
+}
+.upgrade-price-per { font-size: 14px; opacity: 0.85; }
+.upgrade-bullets {
+  text-align: left;
+  padding: 0 0 0 20px;
+  margin: 0 0 20px;
+  font-size: 13px;
+  line-height: 1.7;
+}
+.upgrade-bullets strong { color: #ffd9a3; }
+.upgrade-actions {
+  display: flex;
+  gap: 10px;
+  flex-direction: column;
+}
+.upgrade-cta {
+  display: block;
+  padding: 12px 20px;
+  background: linear-gradient(135deg, #d4905a, #b46a3a);
+  color: #1a1208;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+  font-family: inherit;
+}
+.upgrade-cta:hover { filter: brightness(1.1); }
+.upgrade-cta-sub {
+  background: transparent;
+  color: rgba(242,230,207,0.7);
+  border: 1px solid rgba(212,175,111,0.3);
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+  font-family: inherit;
+}
+.upgrade-cta-sub:hover { color: #ffd9a3; }
+
+/* Pro page 申し込むボタン */
+.pro-subscribe-btn {
+  display: block;
+  width: 100%;
+  margin-top: 20px;
+  padding: 14px 24px;
+  background: linear-gradient(135deg, #d4905a, #b46a3a);
+  color: #1a1208;
+  border: none;
+  border-radius: 6px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+}
+.pro-subscribe-btn:hover { filter: brightness(1.1); }
+.pro-subscribe-note {
+  margin-top: 10px;
+  font-size: 11px;
+  opacity: 0.7;
+}

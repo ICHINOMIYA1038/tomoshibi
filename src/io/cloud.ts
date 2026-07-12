@@ -16,11 +16,21 @@ const BASE =
 
 const API = `${BASE}/api/tomoshibi`
 
+export type CloudPlan = 'free' | 'pro'
+
 export interface CloudUser {
   id: string
   name: string | null
   image: string | null
+  /** 現在のプラン。バックエンドが返さない旧セッションでは 'free' 扱い。 */
+  plan: CloudPlan
+  /** Pro 期限。free ならず null。 */
+  planExpiresAt: string | null
+  /** 保存できるシーンの上限。バックエンドから返す。 */
+  maxScenes: number
 }
+
+export const FREE_MAX_SCENES = 3
 export interface CloudSceneMeta {
   id: string
   name: string
@@ -54,8 +64,17 @@ async function req<T>(path: string, init: RequestInit = {}): Promise<T> {
 
 export async function getSession(): Promise<CloudUser | null> {
   try {
-    const { user } = await req<{ user: CloudUser | null }>('/session')
-    return user
+    const { user } = await req<{ user: Partial<CloudUser> | null }>('/session')
+    if (!user) return null
+    // バックエンド旧バージョン互換: plan/maxScenes が無ければ free 扱い
+    return {
+      id: String(user.id),
+      name: user.name ?? null,
+      image: user.image ?? null,
+      plan: (user.plan === 'pro' ? 'pro' : 'free') as CloudPlan,
+      planExpiresAt: user.planExpiresAt ?? null,
+      maxScenes: typeof user.maxScenes === 'number' ? user.maxScenes : FREE_MAX_SCENES,
+    }
   } catch {
     return null
   }
