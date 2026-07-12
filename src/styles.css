@@ -2255,3 +2255,26 @@ body.embed .panel-body h2 { font-size: 13px; }
   }
   .account-menu-item { padding: 12px 12px; font-size: 14px; }
 }
+
+/* Contact page card */
+.contact-card {
+  margin: 20px 0 8px;
+  padding: 24px 20px;
+  background: rgba(212,175,111,0.06);
+  border: 1px solid rgba(212,175,111,0.2);
+  border-radius: 10px;
+  text-align: center;
+}
+.contact-card-label {
+  font-size: 11px;
+  opacity: 0.7;
+  margin-bottom: 6px;
+}
+.contact-email {
+  font-size: 20px;
+  color: #ffd9a3;
+  font-family: 'Inter', sans-serif;
+  word-break: break-all;
+  text-decoration: none;
+}
+.contact-email:hover { text-decoration: underline; }

@@ -178,6 +178,8 @@ function LegalFooter() {
     <div className="legal-footer-mini" aria-label="法務情報">
       <a href="/pro">Pro</a>
       <span>・</span>
+      <a href="/contact">お問い合わせ</a>
+      <span>・</span>
       <a href="/terms">利用規約</a>
       <span>・</span>
       <a href="/privacy">プライバシー</a>
@@ -312,6 +314,10 @@ function AccountMenu() {
               <a className="account-menu-item" href="/pro" onClick={() => setOpen(false)}>
                 <span className="account-menu-icon" aria-hidden>⚙</span>
                 プラン詳細
+              </a>
+              <a className="account-menu-item" href="/contact" onClick={() => setOpen(false)}>
+                <span className="account-menu-icon" aria-hidden>✉</span>
+                お問い合わせ
               </a>
               <a className="account-menu-item" href={logoutUrl()}>
                 <span className="account-menu-icon" aria-hidden>↩</span>

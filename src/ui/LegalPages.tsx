@@ -36,7 +36,8 @@ function Layout({ title, children }: { title: string; children: ReactNode }) {
             <a href="/terms">利用規約</a> ・
             <a href="/privacy">プライバシーポリシー</a> ・
             <a href="/tokushoho">特定商取引法に基づく表記</a> ・
-            <a href="/pro">Pro プラン</a>
+            <a href="/pro">Pro プラン</a> ・
+            <a href="/contact">お問い合わせ</a>
           </nav>
         </footer>
       </main>
@@ -317,6 +318,59 @@ function ProSubscribeButton() {
   )
 }
 
+export function ContactPage() {
+  const subject = encodeURIComponent(`[${SERVICE.name}] お問い合わせ`)
+  const body = encodeURIComponent(
+    `── 以下にお問い合わせ内容をご記入ください ──\n\n\n\n──────────────\n(自動記入) 送信元: ${SERVICE.url}\n`
+  )
+  const mailto = `mailto:${OPERATOR.email}?subject=${subject}&body=${body}`
+
+  return (
+    <Layout title="お問い合わせ">
+      <p>{SERVICE.name} に関するご質問・ご要望・不具合報告は、下記メールアドレスまでお気軽にご連絡ください。</p>
+
+      <h2>連絡先</h2>
+      <div className="contact-card">
+        <div className="contact-card-label">メールアドレス</div>
+        <a className="contact-email" href={mailto}>{OPERATOR.email}</a>
+        <a className="pro-subscribe-btn" href={mailto} style={{ marginTop: 16 }}>
+          メールでお問い合わせ
+        </a>
+        <p className="legal-note" style={{ textAlign: 'center', marginTop: 12 }}>
+          上のボタンでメールソフトが自動で開きます
+        </p>
+      </div>
+
+      <h2>お問い合わせの種類</h2>
+      <ul>
+        <li><strong>サービス全般</strong> — 使い方・機能の質問、動作環境の相談</li>
+        <li><strong>不具合報告</strong> — 表示崩れ、エラー、動作しない機能等(可能であればスクリーンショット添付)</li>
+        <li><strong>Pro プラン</strong> — 決済トラブル、領収書再発行、返金相談</li>
+        <li><strong>要望・提案</strong> — 新機能のリクエスト、改善案</li>
+        <li><strong>その他</strong> — 上記以外の全て</li>
+      </ul>
+
+      <h2>返信について</h2>
+      <ul>
+        <li>返信は原則 <strong>3営業日以内</strong> を目安にお送りしております(個人運営のため多少前後する場合があります)。</li>
+        <li>迷惑メールフォルダに振り分けられている場合がありますので、返信が届かないときは併せてご確認ください。</li>
+        <li>フリーメール(gmail, yahoo 等)をお使いの場合、当方からの返信が届かないことがあります。届かない場合は別のアドレスをお試しください。</li>
+      </ul>
+
+      <h2>Pro プランに関するお問い合わせ</h2>
+      <p>
+        Pro プラン加入者の方は、決済・領収書・支払い方法の変更・解約について
+        <strong>Stripe カスタマーポータル</strong> から直接操作いただけます
+        (画面右上のアカウントメニューからアクセスできます)。
+        ポータルで解決しない場合のみ上記メールにご連絡ください。
+      </p>
+
+      <h2>特定商取引法上の表記</h2>
+      <p>事業者情報の詳細は <a href="/tokushoho">特定商取引法に基づく表記</a> ページをご覧ください。</p>
+    </Layout>
+  )
+}
+
 function ProSuccessPage() {
   return (
     <Layout title="Pro プランへようこそ">
@@ -354,6 +408,7 @@ export function tryRenderLegalPage() {
     case '/pro': return <ProPage />
     case '/pro/success': return <ProSuccessPage />
     case '/pro/cancel': return <ProCancelPage />
+    case '/contact': return <ContactPage />
     default: return null
   }
 }
