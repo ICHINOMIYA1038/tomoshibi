@@ -17,6 +17,7 @@ import { useStore } from './store'
 import { useCloudSession } from './io/cloudSession'
 import { loginUrl, signupUrl, logoutUrl } from './io/cloud'
 import { ScenePanel } from './ui/ScenePanel'
+import { WebGLErrorBoundary } from './ui/WebGLErrorBoundary'
 
 const isMobile = typeof window !== 'undefined' && window.matchMedia('(max-width: 768px)').matches
 import { FIXTURE_PROFILES, type FixtureProfile } from './lighting/fixtureTypes'
@@ -92,6 +93,7 @@ export default function App() {
   return (
     <>
       <div className="canvas-wrap">
+       <WebGLErrorBoundary>
         <Canvas
           gl={{
             antialias: true,
@@ -143,9 +145,11 @@ export default function App() {
 
           <XRGLBinder />
         </Canvas>
+       </WebGLErrorBoundary>
       </div>
 
       {!isEmbed && <BrandStrip />}
+      {!isEmbed && <LegalFooter />}
       {/* ログイン/新規登録はシーン管理パネル内に集約したので画面右上のチップは廃止 */}
 
       <div className="toolbar">
@@ -166,6 +170,20 @@ export default function App() {
       <SelectionStatusHint />
       {!isEmbed && <KeyHint />}
     </>
+  )
+}
+
+function LegalFooter() {
+  return (
+    <div className="legal-footer-mini" aria-label="法務情報">
+      <a href="/pro">Pro</a>
+      <span>・</span>
+      <a href="/terms">利用規約</a>
+      <span>・</span>
+      <a href="/privacy">プライバシー</a>
+      <span>・</span>
+      <a href="/tokushoho">特商法表記</a>
+    </div>
   )
 }
 
