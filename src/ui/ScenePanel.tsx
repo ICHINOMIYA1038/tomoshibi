@@ -4,7 +4,6 @@ import { importScene } from '../io/sceneIO'
 import {
   loginUrl, signupUrl, logoutUrl,
   listCloudScenes, saveCloudSceneNew, updateCloudScene, loadCloudScene, deleteCloudScene,
-  createBillingPortal,
   type CloudSceneMeta, CloudError,
 } from '../io/cloud'
 import { useCloudSession } from '../io/cloudSession'
@@ -234,8 +233,6 @@ function CloudScenes() {
         </section>
       )}
 
-      {isPro && <ProManageSection expiresAt={user.planExpiresAt} />}
-
       <footer className="scene-account">
         <span className="scene-account-name">{user.name ?? user.id}</span>
         <a href={logoutUrl()} className="scene-account-logout">ログアウト</a>
@@ -275,53 +272,6 @@ function UpgradeModal({ scenesCount, limit, onClose }: { scenesCount: number; li
         </div>
       </div>
     </div>
-  )
-}
-
-function ProManageSection({ expiresAt }: { expiresAt: string | null }) {
-  const [busy, setBusy] = useState(false)
-  const [err, setErr] = useState('')
-
-  const open = async () => {
-    setBusy(true); setErr('')
-    try {
-      const { url } = await createBillingPortal()
-      window.location.href = url
-    } catch (e) {
-      setErr(e instanceof CloudError ? e.message : String(e))
-      setBusy(false)
-    }
-  }
-
-  const renewLabel = expiresAt
-    ? new Date(expiresAt).toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric' })
-    : null
-
-  return (
-    <section className="scene-section pro-manage">
-      <header className="scene-section-h">
-        <span>Pro プラン <span className="pro-badge" aria-hidden>Pro</span></span>
-        {renewLabel && <span className="pro-manage-renew" title="次回更新日 (または利用終了日)">〜 {renewLabel}</span>}
-      </header>
-      <div className="pro-manage-buttons">
-        <button className="pro-manage-btn" onClick={open} disabled={busy}>
-          <span className="pro-manage-icon" aria-hidden>📄</span>
-          <span className="pro-manage-label">領収書・請求履歴</span>
-        </button>
-        <button className="pro-manage-btn" onClick={open} disabled={busy}>
-          <span className="pro-manage-icon" aria-hidden>💳</span>
-          <span className="pro-manage-label">支払い方法を変更</span>
-        </button>
-        <button className="pro-manage-btn danger" onClick={open} disabled={busy}>
-          <span className="pro-manage-icon" aria-hidden>✕</span>
-          <span className="pro-manage-label">Pro プランを解約</span>
-        </button>
-      </div>
-      <p className="pro-manage-note">
-        {busy ? 'Stripe ポータルへ移動中…' : 'いずれも Stripe のカスタマーポータルで安全に手続きできます'}
-      </p>
-      {err && <div className="scene-error">{err}</div>}
-    </section>
   )
 }
 

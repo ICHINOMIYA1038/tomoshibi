@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Canvas, useThree } from '@react-three/fiber'
 import { OrbitControls, PerspectiveCamera } from '@react-three/drei'
 import * as THREE from 'three'
@@ -15,7 +15,7 @@ import { HelpOverlay } from './ui/HelpOverlay'
 import { SettingsModal } from './ui/SettingsModal'
 import { useStore } from './store'
 import { useCloudSession } from './io/cloudSession'
-import { loginUrl, signupUrl, logoutUrl } from './io/cloud'
+import { loginUrl, signupUrl, logoutUrl, createBillingPortal, CloudError } from './io/cloud'
 import { ScenePanel } from './ui/ScenePanel'
 import { WebGLErrorBoundary } from './ui/WebGLErrorBoundary'
 
@@ -150,7 +150,7 @@ export default function App() {
 
       {!isEmbed && <BrandStrip />}
       {!isEmbed && <LegalFooter />}
-      {/* ログイン/新規登録はシーン管理パネル内に集約したので画面右上のチップは廃止 */}
+      {!isEmbed && <AccountMenu />}
 
       <div className="toolbar">
         <ViewButton view="audience" label="客席" hint="1" />
@@ -208,29 +208,119 @@ function BrandStrip() {
   )
 }
 
-function AccountChip() {
+function AccountMenu() {
   const { user, loading } = useCloudSession()
-  const update = useStore(s => s.updateSettings)
-  if (loading) return <div className="account-chip account-loading" aria-hidden>…</div>
+  const [open, setOpen] = useState(false)
+  const [portalBusy, setPortalBusy] = useState(false)
+  const [portalErr, setPortalErr] = useState('')
+
+  useEffect(() => {
+    if (!open) return
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpen(false) }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [open])
+
+  const openPortal = async () => {
+    setPortalBusy(true); setPortalErr('')
+    try {
+      const { url } = await createBillingPortal()
+      window.location.href = url
+    } catch (e) {
+      setPortalErr(e instanceof CloudError ? e.message : String(e))
+      setPortalBusy(false)
+    }
+  }
+
+  if (loading) return <div className="account-menu-trigger loading" aria-hidden>…</div>
+
   if (!user) {
     return (
-      <div className="account-chip">
-        <a className="account-btn" href={loginUrl()} title="戯曲図書館アカウントでログイン">ログイン</a>
-        <a className="account-btn primary" href={signupUrl()} title="戯曲図書館に新規登録">新規登録</a>
+      <div className="account-menu-root">
+        <a className="account-menu-trigger login" href={loginUrl()} title="ログイン">
+          <span className="account-menu-avatar-fallback">👤</span>
+          <span className="account-menu-trigger-label">ログイン</span>
+        </a>
       </div>
     )
   }
+
+  const isPro = user.plan === 'pro'
+  const renewLabel = user.planExpiresAt
+    ? new Date(user.planExpiresAt).toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric' })
+    : null
+
   return (
-    <div className="account-chip">
+    <div className="account-menu-root">
       <button
-        className="account-user"
-        onClick={() => update({ settingsOpen: true, settingsTab: 'scene' })}
-        title="クラウド保存を開く"
+        className={`account-menu-trigger${open ? ' open' : ''}${isPro ? ' pro' : ''}`}
+        onClick={() => setOpen(v => !v)}
+        aria-expanded={open}
+        aria-haspopup="menu"
+        title={user.name ?? 'アカウント'}
       >
-        {user.image && <img src={user.image} alt="" />}
-        <span className="account-name">{user.name ?? 'ログイン中'}</span>
+        {user.image
+          ? <img src={user.image} alt="" className="account-menu-avatar" />
+          : <span className="account-menu-avatar-fallback">👤</span>}
+        {isPro && <span className="account-menu-pro-dot" aria-label="Pro プラン" />}
       </button>
-      <a className="account-btn account-logout" href={logoutUrl()} title="ログアウト">⎋</a>
+
+      {open && (
+        <>
+          <div className="account-menu-backdrop" onClick={() => setOpen(false)} />
+          <div className="account-menu-panel" role="menu">
+            <header className="account-menu-header">
+              {user.image && <img src={user.image} alt="" />}
+              <div className="account-menu-header-body">
+                <div className="account-menu-name">{user.name ?? 'ログイン中'}</div>
+                <div className="account-menu-plan">
+                  {isPro
+                    ? <><span className="pro-badge">Pro</span>{renewLabel && <span className="account-menu-renew">〜 {renewLabel}</span>}</>
+                    : <span className="account-menu-free">Free プラン</span>}
+                </div>
+              </div>
+            </header>
+
+            <div className="account-menu-section">
+              {isPro ? (
+                <>
+                  <button className="account-menu-item" onClick={openPortal} disabled={portalBusy}>
+                    <span className="account-menu-icon" aria-hidden>📄</span>
+                    領収書・請求履歴
+                  </button>
+                  <button className="account-menu-item" onClick={openPortal} disabled={portalBusy}>
+                    <span className="account-menu-icon" aria-hidden>💳</span>
+                    支払い方法を変更
+                  </button>
+                  <button className="account-menu-item danger" onClick={openPortal} disabled={portalBusy}>
+                    <span className="account-menu-icon" aria-hidden>✕</span>
+                    Pro プランを解約
+                  </button>
+                  {portalBusy && <div className="account-menu-note">Stripe ポータルへ移動中…</div>}
+                  {portalErr && <div className="account-menu-err">{portalErr}</div>}
+                </>
+              ) : (
+                <a className="account-menu-item upsell" href="/pro">
+                  <span className="account-menu-icon" aria-hidden>✦</span>
+                  Pro プランにアップグレード
+                  <span className="account-menu-tail">¥300/月</span>
+                </a>
+              )}
+            </div>
+
+            <div className="account-menu-section">
+              <a className="account-menu-item" href="/pro" onClick={() => setOpen(false)}>
+                <span className="account-menu-icon" aria-hidden>⚙</span>
+                プラン詳細
+              </a>
+              <a className="account-menu-item" href={logoutUrl()}>
+                <span className="account-menu-icon" aria-hidden>↩</span>
+                ログアウト
+              </a>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   )
 }
