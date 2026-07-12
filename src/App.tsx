@@ -211,7 +211,7 @@ function BrandStrip() {
 }
 
 function AccountMenu() {
-  const { user, loading } = useCloudSession()
+  const { user, proAvailable, loading } = useCloudSession()
   const [open, setOpen] = useState(false)
   const [portalBusy, setPortalBusy] = useState(false)
   const [portalErr, setPortalErr] = useState('')
@@ -301,11 +301,16 @@ function AccountMenu() {
                   {portalBusy && <div className="account-menu-note">Stripe ポータルへ移動中…</div>}
                   {portalErr && <div className="account-menu-err">{portalErr}</div>}
                 </>
-              ) : (
+              ) : proAvailable ? (
                 <a className="account-menu-item upsell" href="/pro">
                   <span className="account-menu-icon" aria-hidden>✦</span>
                   Pro プランにアップグレード
                   <span className="account-menu-tail">¥300/月</span>
+                </a>
+              ) : (
+                <a className="account-menu-item" href="/pro" style={{ opacity: 0.7 }}>
+                  <span className="account-menu-icon" aria-hidden>✦</span>
+                  Pro プラン(準備中)
                 </a>
               )}
             </div>

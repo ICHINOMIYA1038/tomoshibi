@@ -36,7 +36,7 @@ export function ScenePanel() {
 }
 
 function CloudScenes() {
-  const { user, loading: sessionLoading } = useCloudSession()
+  const { user, proAvailable, loading: sessionLoading } = useCloudSession()
   const [scenes, setScenes] = useState<CloudSceneMeta[]>([])
   const [activeId, setActiveId] = useState<string | null>(null)
   const [activeName, setActiveName] = useState<string>('')
@@ -112,8 +112,12 @@ function CloudScenes() {
     const n = activeName.trim()
     if (!n) { setErr('シーン名を入力してください'); return }
     if (atLimit) {
-      if (!isPro) { setShowUpgrade(true); return }
-      setErr(`シーンは ${maxScenes} 件まで保存できます。不要なシーンを削除してください`)
+      if (!isPro && proAvailable) { setShowUpgrade(true); return }
+      setErr(
+        !isPro && !proAvailable
+          ? `シーンは ${maxScenes} 件まで保存できます。上限解除の Pro プランは現在準備中です。不要なシーンを削除してください。`
+          : `シーンは ${maxScenes} 件まで保存できます。不要なシーンを削除してください。`
+      )
       return
     }
     setLoading(true); setErr('')
@@ -127,7 +131,7 @@ function CloudScenes() {
       await refresh()
     } catch (e) {
       if (e instanceof CloudError) {
-        if (e.status === 403 && !isPro) { setShowUpgrade(true) }
+        if (e.status === 403 && !isPro && proAvailable) { setShowUpgrade(true) }
         else { setErr(e.message) }
       }
     } finally { setLoading(false) }
@@ -220,7 +224,7 @@ function CloudScenes() {
         )}
       </section>
 
-      {!isPro && (
+      {!isPro && proAvailable && (
         <section className="scene-section pro-upsell">
           <a href="/pro" className="pro-upsell-link">
             <span className="pro-upsell-icon">✦</span>

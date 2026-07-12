@@ -255,11 +255,28 @@ export function ProPage() {
 }
 
 function ProSubscribeButton() {
-  const { user, loading } = useCloudSession()
+  const { user, proAvailable, loading } = useCloudSession()
   const [busy, setBusy] = useState(false)
   const [err, setErr] = useState('')
 
   if (loading) return <button className="pro-subscribe-btn" disabled>読み込み中…</button>
+
+  const isPro = user?.plan === 'pro'
+
+  // 本番決済が有効化されていない状態では、Pro 未加入者に対して申込 UI を隠す。
+  // 既存 Pro ユーザーは解約導線を出しておく必要があるため対象外。
+  if (!proAvailable && !isPro) {
+    return (
+      <>
+        <button className="pro-subscribe-btn" disabled>準備中</button>
+        <div className="pro-subscribe-note">
+          Pro プランは現在準備中です。公開までしばらくお待ちください。
+          <br />
+          リリース通知を希望される方は <a href="/contact">お問い合わせ</a> よりご連絡ください。
+        </div>
+      </>
+    )
+  }
 
   if (!user) {
     return (

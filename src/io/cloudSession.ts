@@ -1,17 +1,17 @@
 // クラウドセッションのアプリ全体共有 (シングルトン + React フック)
 import { useEffect, useSyncExternalStore } from 'react'
-import { getSession, type CloudUser } from './cloud'
+import { getSessionSnapshot, type CloudUser } from './cloud'
 
-type State = { user: CloudUser | null; loading: boolean }
-let state: State = { user: null, loading: true }
+type State = { user: CloudUser | null; proAvailable: boolean; loading: boolean }
+let state: State = { user: null, proAvailable: false, loading: true }
 const listeners = new Set<() => void>()
 const emit = () => listeners.forEach(l => l())
 
 let inited = false
 export async function refreshSession() {
   state = { ...state, loading: true }; emit()
-  const user = await getSession()
-  state = { user, loading: false }; emit()
+  const snap = await getSessionSnapshot()
+  state = { user: snap.user, proAvailable: snap.proAvailable, loading: false }; emit()
 }
 
 export function useCloudSession(): State {

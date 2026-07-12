@@ -62,22 +62,39 @@ async function req<T>(path: string, init: RequestInit = {}): Promise<T> {
   return body as T
 }
 
-export async function getSession(): Promise<CloudUser | null> {
+/** getSession() の結果全体。user が null でも proAvailable は取れる。 */
+export interface SessionSnapshot {
+  user: CloudUser | null
+  /** Stripe が本番モードで有効になっているか。false なら Pro 申込 UI を「準備中」に。 */
+  proAvailable: boolean
+}
+
+export async function getSessionSnapshot(): Promise<SessionSnapshot> {
   try {
-    const { user } = await req<{ user: Partial<CloudUser> | null }>('/session')
-    if (!user) return null
-    // バックエンド旧バージョン互換: plan/maxScenes が無ければ free 扱い
+    const res = await req<{ user: Partial<CloudUser> | null; proAvailable?: boolean }>('/session')
+    const proAvailable = res.proAvailable === true
+    if (!res.user) return { user: null, proAvailable }
+    const u = res.user
     return {
-      id: String(user.id),
-      name: user.name ?? null,
-      image: user.image ?? null,
-      plan: (user.plan === 'pro' ? 'pro' : 'free') as CloudPlan,
-      planExpiresAt: user.planExpiresAt ?? null,
-      maxScenes: typeof user.maxScenes === 'number' ? user.maxScenes : FREE_MAX_SCENES,
+      user: {
+        id: String(u.id),
+        name: u.name ?? null,
+        image: u.image ?? null,
+        plan: (u.plan === 'pro' ? 'pro' : 'free') as CloudPlan,
+        planExpiresAt: u.planExpiresAt ?? null,
+        maxScenes: typeof u.maxScenes === 'number' ? u.maxScenes : FREE_MAX_SCENES,
+      },
+      proAvailable,
     }
   } catch {
-    return null
+    return { user: null, proAvailable: false }
   }
+}
+
+/** 後方互換 (単体で user だけ欲しい場所用) */
+export async function getSession(): Promise<CloudUser | null> {
+  const snap = await getSessionSnapshot()
+  return snap.user
 }
 
 export function loginUrl(): string {
