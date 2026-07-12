@@ -131,6 +131,16 @@ export function deleteCloudScene(id: string) {
   return req<void>(`/scenes/${id}`, { method: 'DELETE' })
 }
 
+/** Stripe Checkout セッションを作成し、Stripe ホスト画面の URL を返す。 */
+export async function createProCheckout(): Promise<{ url: string }> {
+  return req<{ url: string }>('/checkout', { method: 'POST', body: '{}' })
+}
+
+/** Stripe Customer Portal (解約・支払い方法変更) の URL を返す。 */
+export async function createBillingPortal(): Promise<{ url: string }> {
+  return req<{ url: string }>('/billing-portal', { method: 'POST', body: '{}' })
+}
+
 // 保存するペイロードからUI状態(panelOpenなど)を除き、シーン本体だけ送る
 function pick(s: SerializedScene) {
   return {

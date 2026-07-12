@@ -1,4 +1,6 @@
-import type { ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
+import { createProCheckout, createBillingPortal, CloudError, loginUrl } from '../io/cloud'
+import { useCloudSession } from '../io/cloudSession'
 
 const OPERATOR = {
   name: '一ノ宮 綾平',
@@ -209,13 +211,7 @@ export function ProPage() {
       <div className="pro-price-card">
         <div className="pro-price-amount">¥{SERVICE.proPriceMonthly}<span>/月</span></div>
         <div className="pro-price-sub">税込・自動更新・いつでも解約可能</div>
-        <button
-          className="pro-subscribe-btn"
-          onClick={() => alert('決済機能は準備中です。もうしばらくお待ちください。\n\n(Stripe 側の審査完了後に利用可能となります)')}
-        >
-          Pro プランに申し込む
-        </button>
-        <div className="pro-subscribe-note">※ 現在、決済機能は準備中です</div>
+        <ProSubscribeButton />
       </div>
 
       <h2>Free プランと Pro プランの違い</h2>
@@ -257,13 +253,107 @@ export function ProPage() {
   )
 }
 
+function ProSubscribeButton() {
+  const { user, loading } = useCloudSession()
+  const [busy, setBusy] = useState(false)
+  const [err, setErr] = useState('')
+
+  if (loading) return <button className="pro-subscribe-btn" disabled>読み込み中…</button>
+
+  if (!user) {
+    return (
+      <>
+        <a href={loginUrl()} className="pro-subscribe-btn">ログインして申し込む</a>
+        <div className="pro-subscribe-note">戯曲図書館アカウント (Google) でログインが必要です</div>
+      </>
+    )
+  }
+
+  if (user.plan === 'pro') {
+    return (
+      <>
+        <button
+          className="pro-subscribe-btn"
+          disabled={busy}
+          onClick={async () => {
+            setBusy(true); setErr('')
+            try {
+              const { url } = await createBillingPortal()
+              window.location.href = url
+            } catch (e) {
+              setErr(e instanceof CloudError ? e.message : String(e))
+              setBusy(false)
+            }
+          }}
+        >
+          {busy ? '準備中…' : 'Pro プラン管理・解約'}
+        </button>
+        <div className="pro-subscribe-note">Stripe のポータルで解約・支払い方法変更・領収書再発行ができます</div>
+        {err && <div className="pro-subscribe-error">{err}</div>}
+      </>
+    )
+  }
+
+  return (
+    <>
+      <button
+        className="pro-subscribe-btn"
+        disabled={busy}
+        onClick={async () => {
+          setBusy(true); setErr('')
+          try {
+            const { url } = await createProCheckout()
+            window.location.href = url
+          } catch (e) {
+            setErr(e instanceof CloudError ? e.message : String(e))
+            setBusy(false)
+          }
+        }}
+      >
+        {busy ? 'Stripe へ移動中…' : 'Pro プランに申し込む'}
+      </button>
+      {err && <div className="pro-subscribe-error">{err}</div>}
+    </>
+  )
+}
+
+function ProSuccessPage() {
+  return (
+    <Layout title="Pro プランへようこそ">
+      <div className="pro-price-card">
+        <div className="pro-flame-large">✦</div>
+        <h2 className="pro-success-h">ご登録ありがとうございます!</h2>
+        <p>Pro プランの決済が完了しました。<br />クラウド保存が<strong>無制限</strong>に開放されました。</p>
+        <a href="/" className="pro-subscribe-btn">シミュレーターに戻る</a>
+        <div className="pro-subscribe-note">領収書は登録メールアドレスに Stripe から自動送信されます</div>
+      </div>
+    </Layout>
+  )
+}
+
+function ProCancelPage() {
+  return (
+    <Layout title="申し込みをキャンセルしました">
+      <p>Pro プランの申し込みはキャンセルされました。課金は発生していません。</p>
+      <p>もう一度検討する場合は下記からどうぞ。</p>
+      <div className="pro-price-card">
+        <a href="/pro" className="pro-subscribe-btn">Pro プランのページに戻る</a>
+        <a href="/" className="pro-subscribe-btn" style={{ background: 'transparent', border: '1px solid rgba(212,175,111,0.35)', color: '#ffd9a3', marginTop: 10 }}>シミュレーターに戻る</a>
+      </div>
+    </Layout>
+  )
+}
+
 export function tryRenderLegalPage() {
   if (typeof window === 'undefined') return null
-  switch (window.location.pathname) {
+  const path = window.location.pathname
+  switch (path) {
     case '/terms': return <TermsPage />
     case '/privacy': return <PrivacyPage />
     case '/tokushoho': return <TokushohoPage />
     case '/pro': return <ProPage />
+    case '/pro/success': return <ProSuccessPage />
+    case '/pro/cancel': return <ProCancelPage />
     default: return null
   }
 }
