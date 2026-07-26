@@ -20,3 +20,8 @@
 /manifest.webmanifest
   Content-Type: application/manifest+json
   Cache-Control: public, max-age=3600
+
+# iOS Universal Links (アプリのAssociated Domains capabilityと対応)
+/.well-known/apple-app-site-association
+  Content-Type: application/json
+  Cache-Control: public, max-age=3600

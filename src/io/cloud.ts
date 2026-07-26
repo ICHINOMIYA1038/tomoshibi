@@ -110,6 +110,10 @@ export function signupUrl(): string {
   const cb = typeof location !== 'undefined' ? location.origin : 'https://tomoshibi.gikyokutosyokan.com'
   return `${BASE}/auth/signup?callbackUrl=${encodeURIComponent(cb)}`
 }
+// アカウント削除は戯曲図書館本体のマイページで行う (tomoshibi固有のアカウントは存在しない)。
+export function accountUrl(): string {
+  return `${BASE}/mypage`
+}
 
 export function listCloudScenes() {
   return req<{ items: CloudSceneMeta[] }>('/scenes').then(r => r.items)

@@ -491,6 +491,7 @@ body.panel-dragging .panel { transition: none; opacity: 0.92; box-shadow: 0 12px
   max-width: 180px;
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
+.scene-account-links { display: flex; align-items: center; gap: 12px; }
 .scene-account-logout {
   font-size: 10px; color: var(--ink-muted);
   text-decoration: none;
