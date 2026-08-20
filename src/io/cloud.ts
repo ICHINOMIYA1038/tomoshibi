@@ -16,6 +16,27 @@ const BASE =
 
 const API = `${BASE}/api/tomoshibi`
 
+/**
+ * TOMOSHIBI小屋 iOSアプリのWebView内で動いているかを判定する。
+ * アプリはWebViewControllerに `TomoshibiSession` というJavaScriptChannelを
+ * 登録しており、WKWebViewはページ自身のスクリプトが動く前に
+ * window.webkit.messageHandlers.<channel名> を用意するため、通常のブラウザでは
+ * 絶対に存在しない確実な判定材料として使える (追加のプラミング不要)。
+ *
+ * Guideline 5.1.1(v)対応: Web購読者向けのStripe Checkoutはアカウントに
+ * 紐付ける都合上ログインを必須にしてよいが、アプリ内のネイティブIAP購入は
+ * ログイン (会員登録) を必須にしてはならない。この判定でアプリ内かどうかを
+ * 区別し、Proページの購入導線を出し分ける。
+ */
+export function isNativeApp(): boolean {
+  if (typeof window === 'undefined') return false
+  const webkit = (window as unknown as { webkit?: { messageHandlers?: Record<string, unknown> } }).webkit
+  return Boolean(webkit?.messageHandlers?.TomoshibiSession)
+}
+
+/** アプリ内で未ログインのままネイティブ購入を開始するためのカスタムスキームURL。 */
+export const NATIVE_PURCHASE_URL = 'tomoshibi://native-purchase'
+
 export type CloudPlan = 'free' | 'pro'
 
 export interface CloudUser {

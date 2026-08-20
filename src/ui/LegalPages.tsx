@@ -1,5 +1,12 @@
 import { useState, type ReactNode } from 'react'
-import { createProCheckout, createBillingPortal, CloudError, loginUrl } from '../io/cloud'
+import {
+  createProCheckout,
+  createBillingPortal,
+  CloudError,
+  loginUrl,
+  isNativeApp,
+  NATIVE_PURCHASE_URL,
+} from '../io/cloud'
 import { useCloudSession } from '../io/cloudSession'
 
 const OPERATOR = {
@@ -279,6 +286,20 @@ function ProSubscribeButton() {
   }
 
   if (!user) {
+    // Guideline 5.1.1(v): アプリ内のネイティブIAP購入はアカウント登録
+    // (ログイン) を必須にしてはならない。アプリ内実行時は未ログインのまま
+    // ネイティブ購入フローに入れるボタンを出す。複数端末で使うためのサイン
+    // インはアプリ側で購入完了後に任意で案内する (main.dartのoffer参照)。
+    if (isNativeApp()) {
+      return (
+        <>
+          <a href={NATIVE_PURCHASE_URL} className="pro-subscribe-btn">Pro プランに申し込む</a>
+          <div className="pro-subscribe-note">
+            ログインなしでご購入いただけます。複数端末で使う場合は、購入後にサインインを案内します。
+          </div>
+        </>
+      )
+    }
     return (
       <>
         <a href={loginUrl()} className="pro-subscribe-btn">ログインして申し込む</a>
