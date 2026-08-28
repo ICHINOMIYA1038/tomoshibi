@@ -23,11 +23,55 @@ const isMobile = typeof window !== 'undefined' && window.matchMedia('(max-width:
 import { FIXTURE_PROFILES, type FixtureProfile } from './lighting/fixtureTypes'
 import { tryLoadFromHash } from './io/sceneIO'
 
+// 舞台の寸法は scene/Stage.tsx を参照 (床 z=-8..2, サイドウォール x=±8,
+// プロセニアム袖枠 x=±6.5 / z=2.5, バトン y=7.0)。
 const CAMERA_VIEWS: Record<string, { pos: [number, number, number]; target: [number, number, number] }> = {
   audience: { pos: [0, 2.5, 10], target: [0, 2.5, -2] },
-  aerial: { pos: [0, 12, 8], target: [0, 1.5, -3] },
-  sidewing: { pos: [-9, 3, 4], target: [1, 2, -2] },
+  // 吊り位置と当たりの範囲を仕込み図のように見るための俯瞰。
+  aerial: { pos: [0, 13, 4], target: [0, 0.6, -3] },
+  // 下手袖に立った人の目線。サイドウォール (x=-8) の内側、かつプロセニアム袖枠
+  // (x=-6.5, z=2.5) より奥に置く。以前は pos=[-9,3,4] と壁の外側にあったため、
+  // 壁の裏面が画面のほとんどを黒く覆って何も見えなかった。
+  sidewing: { pos: [-6.8, 1.7, 1.4], target: [1.6, 1.5, -3.2] },
   free: { pos: [4, 4, 8], target: [0, 2, -2] },
+}
+
+// 基準の垂直画角。横長画面ではこの値をそのまま使う。
+const BASE_FOV = 45
+// 縦画面で広げるときの上限。これ以上広げるとパースの歪みが目立つ。
+const MAX_FOV = 70
+
+/**
+ * 縦長画面 (スマホを縦に持った状態) では、垂直fovを45°のまま使うと水平画角が
+ * 極端に狭くなり、幅12mのプロセニアム開口のうち中央数メートルしか映らない。
+ * アスペクト比が1未満のときは、横長時と同じ水平画角を保てるところまで垂直fovを
+ * 広げる (歪みが出ないよう MAX_FOV で頭打ち)。横長では何もしない。
+ */
+function ResponsiveFov() {
+  const camera = useThree(s => s.camera)
+  const width = useThree(s => s.size.width)
+  const height = useThree(s => s.size.height)
+
+  useEffect(() => {
+    const cam = camera as THREE.PerspectiveCamera
+    if (!cam.isPerspectiveCamera) return
+    const aspect = width / Math.max(height, 1)
+    const fov =
+      aspect >= 1
+        ? BASE_FOV
+        : Math.min(
+            THREE.MathUtils.radToDeg(
+              2 * Math.atan(Math.tan(THREE.MathUtils.degToRad(BASE_FOV) / 2) / aspect),
+            ),
+            MAX_FOV,
+          )
+    if (Math.abs(cam.fov - fov) > 0.01) {
+      cam.fov = fov
+      cam.updateProjectionMatrix()
+    }
+  }, [camera, width, height])
+
+  return null
 }
 
 const isEmbed = new URLSearchParams(location.search).has('embed')
@@ -108,7 +152,8 @@ export default function App() {
           }}
           onPointerMissed={() => select(null, null)}
         >
-          <PerspectiveCamera key={`cam-${settings.cameraView}`} makeDefault position={view.pos} fov={45} near={0.1} far={100} />
+          <PerspectiveCamera key={`cam-${settings.cameraView}`} makeDefault position={view.pos} fov={BASE_FOV} near={0.1} far={100} />
+          <ResponsiveFov />
           <OrbitControls
             key={`ctl-${settings.cameraView}`}
             makeDefault
