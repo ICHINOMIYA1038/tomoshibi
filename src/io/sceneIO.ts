@@ -4,6 +4,7 @@
 // - URL hash でショー共有 (#scene=base64(json))
 
 import { useStore, type Fixture, type Performer, type SceneSettings } from '../store'
+import type { SetPiece } from '../types'
 
 export interface SerializedScene {
   version: 1
@@ -11,6 +12,8 @@ export interface SerializedScene {
   savedAt: string
   fixtures: Fixture[]
   performers: Performer[]
+  /** 装置(平台・箱馬・GLTF)。装置対応前の保存データには無いので optional。 */
+  setPieces?: SetPiece[]
   settings: Partial<SceneSettings>
 }
 
@@ -22,6 +25,11 @@ export function exportScene(name: string = '無題'): SerializedScene {
     savedAt: new Date().toISOString(),
     fixtures: s.fixtures,
     performers: s.performers,
+    // blob: URL の GLTF は再読込できないため、URL を持たない形で保存する
+    // (位置・大きさは残るので、再取込すれば同じ場所に戻せる)。
+    setPieces: s.setPieces.map(sp =>
+      sp.url && sp.url.startsWith('blob:') ? { ...sp, url: undefined } : sp,
+    ),
     settings: {
       hazeDensity: s.settings.hazeDensity,
       ambient: s.settings.ambient,
@@ -40,6 +48,8 @@ export function importScene(scene: SerializedScene) {
   useStore.setState(s => ({
     fixtures: scene.fixtures,
     performers: scene.performers,
+    // 装置が保存されていない古いデータでは、いま舞台にある装置をそのまま残す。
+    setPieces: Array.isArray(scene.setPieces) ? scene.setPieces : s.setPieces,
     settings: { ...s.settings, ...scene.settings },
     selection: { kind: null, id: null },
   }))

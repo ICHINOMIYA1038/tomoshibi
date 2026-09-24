@@ -164,6 +164,7 @@ export async function loadCloudScene(id: string) {
     savedAt: s.updatedAt,
     fixtures: s.data.fixtures ?? [],
     performers: s.data.performers ?? [],
+    setPieces: s.data.setPieces,
     settings: s.data.settings ?? {},
   })
   return s
@@ -188,6 +189,9 @@ function pick(s: SerializedScene) {
   return {
     fixtures: s.fixtures,
     performers: s.performers,
+    // 装置はサーバ側 (validateSceneData) も受け付けているのに送っていなかった。
+    // クラウド保存→読込で装置が消える原因。
+    setPieces: s.setPieces ?? [],
     settings: s.settings,
   }
 }
