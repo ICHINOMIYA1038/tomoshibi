@@ -1,11 +1,47 @@
 import { useRef, useEffect } from 'react'
 import * as THREE from 'three'
 import { TransformControls } from '@react-three/drei'
+import { useThree } from '@react-three/fiber'
 import { useStore } from '../store'
 
 function isTouchDevice() {
   if (typeof window === 'undefined') return false
   return ('ontouchstart' in window) || (navigator.maxTouchPoints > 0)
+}
+
+/**
+ * TransformControls の size を画面に合わせて決める。
+ *
+ * three の TransformControls はギズモの見かけの大きさを「垂直画角に対する割合」で保つ
+ * (factor ∝ tan(fov/2))。App.tsx の ResponsiveFov が縦長画面で fov を 45°→最大70°に
+ * 広げるため、そのままだとスマホ縦持ちで矢印・回転リングが約1.7倍になり、
+ * さらにタッチ用に 1.1 倍していたので画面の大半を覆っていた。
+ * fov 45° のときと同じ見かけになるよう tan 比で打ち消し、小さい画面ではもう一段縮める。
+ */
+const BASE_FOV_DEG = 45
+const MAX_FOV_DEG = 70
+function useGizmoSize(): number {
+  const width = useThree(s => s.size.width)
+  const height = useThree(s => s.size.height)
+  // camera.fov は ResponsiveFov の effect が描画後に書き換えるため、描画時点では
+  // 古い値のことがある。同じ式でアスペクト比から直接求める。
+  const aspect = width / Math.max(height, 1)
+  const fov =
+    aspect >= 1
+      ? BASE_FOV_DEG
+      : Math.min(
+          THREE.MathUtils.radToDeg(
+            2 * Math.atan(Math.tan(THREE.MathUtils.degToRad(BASE_FOV_DEG) / 2) / aspect),
+          ),
+          MAX_FOV_DEG,
+        )
+  const fovScale =
+    Math.tan(THREE.MathUtils.degToRad(BASE_FOV_DEG) / 2) /
+    Math.tan(THREE.MathUtils.degToRad(fov) / 2)
+  const base = isTouchDevice() ? 0.8 : 0.7
+  // 幅が狭い端末 (スマホ縦) では指で掴める最小限まで落とす。
+  const narrow = Math.min(width, height) < 520 ? 0.8 : 1
+  return THREE.MathUtils.clamp(base * fovScale * narrow, 0.35, 1.1)
 }
 
 // 選択中フィクスチャ → ビーム円錐ガイド + TransformControls (位置/狙い)
@@ -25,6 +61,7 @@ export function SelectionGizmo() {
   const updateFixture = useStore(s => s.updateFixture)
   const updatePerformer = useStore(s => s.updatePerformer)
   const select = useStore(s => s.select)
+  const gizmoSize = useGizmoSize()
 
   // 動的に position を反映するための Object3D
   const dragRef = useRef<THREE.Object3D>(new THREE.Object3D())
@@ -107,7 +144,7 @@ export function SelectionGizmo() {
           ref={tcRef as any}
           object={dragRef.current}
           mode={mode}
-          size={isTouchDevice() ? 1.1 : 0.7}
+          size={gizmoSize}
           onObjectChange={() => {
             const o = dragRef.current
             if (mode === 'rotate' && handle === 'position') {
@@ -137,7 +174,7 @@ export function SelectionGizmo() {
           ref={tcRef as any}
           object={dragRef.current}
           mode={transformMode}
-          size={isTouchDevice() ? 1.1 : 0.7}
+          size={gizmoSize}
           onObjectChange={() => {
             const o = dragRef.current
             updateSetPiece(setPiece.id, {
@@ -158,7 +195,7 @@ export function SelectionGizmo() {
         <TransformControls
           object={dragRef.current}
           mode="translate"
-          size={isTouchDevice() ? 1.1 : 0.7}
+          size={gizmoSize}
           onObjectChange={() => {
             const o = dragRef.current
             updatePerformer(performer.id, {
