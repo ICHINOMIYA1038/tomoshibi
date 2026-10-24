@@ -26,7 +26,7 @@ const SERVICE = {
   proPriceMonthly: 300,
 }
 
-const UPDATED = '2026年7月12日'
+const UPDATED = '2026年10月24日'
 
 function Layout({ title, children }: { title: string; children: ReactNode }) {
   return (
@@ -126,6 +126,7 @@ export function PrivacyPage() {
         <li>サービス利用情報: 保存されたシーンデータ、操作ログ</li>
         <li>決済情報: Pro プランをご利用の場合、Stripe 等の決済事業者を通じたお名前、メールアドレス、支払い方法(カード情報は当方は保持せず、決済事業者が管理します)</li>
         <li>技術情報: IP アドレス、ブラウザ種別、アクセス日時等</li>
+        <li>アプリの利用状況とクラッシュ情報(iOS アプリ版): 画面の表示・操作の記録、アプリのバージョン、端末の機種・OS のバージョン、強制終了時の技術的な記録、端末ごとの識別子。個人を特定する目的では利用しません</li>
       </ul>
 
       <h2>2. 利用目的</h2>
@@ -154,6 +155,7 @@ export function PrivacyPage() {
         <li>認証: 姉妹サービス「戯曲図書館」および Google OAuth</li>
         <li>決済: Stripe 等の決済事業者</li>
         <li>ホスティング: Vercel Inc.</li>
+        <li>アプリの利用状況の統計・クラッシュ情報の収集(iOS アプリ版): Google Firebase(Firebase Analytics・Firebase Crashlytics)</li>
       </ul>
       <p>これらのサービスにおける情報の取り扱いは、各サービスのプライバシーポリシーに従います。</p>
 
