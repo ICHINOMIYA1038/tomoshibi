@@ -17,3 +17,6 @@ src/**/*.js
 src/**/*.d.ts
 src/**/*.js.map
 .vercel
+
+# Cloudflare Workers（wrangler）
+.wrangler/
