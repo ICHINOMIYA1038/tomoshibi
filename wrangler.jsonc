@@ -11,5 +11,6 @@
     "not_found_handling": "single-page-application",
     "html_handling": "auto-trailing-slash"
   },
+  "routes": [{ "pattern": "tomoshibi.gikyokutosyokan.com", "custom_domain": true }],
   "observability": { "enabled": true }
 }
