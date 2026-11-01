@@ -120,13 +120,16 @@ export async function getSession(): Promise<CloudUser | null> {
 }
 
 // ログイン・ログアウト・アカウントは戯曲 ID のポータル（3 サービス共通、2026-11）
+// iOS アプリの WebView はポータルをアプリ内で開かず Safari に飛ばすので、アプリの中では図書館の入口を使う（アプリ側がログイン用シートに差し替える）
 const PORTAL = 'https://id.gikyokutosyokan.com'
 const here = () => (typeof location !== 'undefined' ? location.origin + '/' : 'https://tomoshibi.gikyokutosyokan.com/')
 
 export function loginUrl(): string {
+  if (isNativeApp()) return `${BASE}/auth/signin?callbackUrl=${encodeURIComponent(here())}`
   return `${PORTAL}/?return_to=${encodeURIComponent(here())}`
 }
 export function logoutUrl(): string {
+  if (isNativeApp()) return `${BASE}/api/tomoshibi/logout?callbackUrl=${encodeURIComponent(here())}`
   return `${PORTAL}/logout?return_to=${encodeURIComponent(here())}`
 }
 export function signupUrl(): string {
@@ -134,6 +137,7 @@ export function signupUrl(): string {
 }
 /** アカウント設定と退会はポータルで行う（TOMOSHIBI 固有のアカウントは無い） */
 export function accountUrl(): string {
+  if (isNativeApp()) return `${BASE}/mypage`
   return `${PORTAL}/account`
 }
 
