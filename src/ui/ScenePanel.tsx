@@ -88,7 +88,7 @@ function CloudScenes() {
             新規登録
           </button>
         </div>
-        <p className="scene-login-note">戯曲図書館アカウント (Google認証) を共通利用します</p>
+        <p className="scene-login-note">戯曲 ID（戯曲図書館・戯曲パレットと共通のアカウント）でログインします</p>
       </div>
     )
   }
