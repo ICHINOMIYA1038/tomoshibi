@@ -96,6 +96,7 @@ export async function getSessionSnapshot(): Promise<SessionSnapshot> {
     const proAvailable = res.proAvailable === true
     if (!res.user) return { user: null, proAvailable }
     const u = res.user
+    markServiceSeen()
     return {
       user: {
         id: String(u.id),
@@ -118,22 +119,43 @@ export async function getSession(): Promise<CloudUser | null> {
   return snap.user
 }
 
+// ログイン・ログアウト・アカウントは戯曲 ID のポータル（3 サービス共通、2026-11）
+const PORTAL = 'https://id.gikyokutosyokan.com'
+const here = () => (typeof location !== 'undefined' ? location.origin + '/' : 'https://tomoshibi.gikyokutosyokan.com/')
+
 export function loginUrl(): string {
-  const cb = typeof location !== 'undefined' ? location.origin : 'https://tomoshibi.gikyokutosyokan.com'
-  return `${BASE}/auth/signin?callbackUrl=${encodeURIComponent(cb)}`
+  return `${PORTAL}/?return_to=${encodeURIComponent(here())}`
 }
 export function logoutUrl(): string {
-  const cb = typeof location !== 'undefined' ? location.origin : 'https://tomoshibi.gikyokutosyokan.com'
-  // NextAuth 標準 /api/auth/signout は CSRF フォームが必要なので tomoshibi 専用ルートを使う
-  return `${BASE}/api/tomoshibi/logout?callbackUrl=${encodeURIComponent(cb)}`
+  return `${PORTAL}/logout?return_to=${encodeURIComponent(here())}`
 }
 export function signupUrl(): string {
-  const cb = typeof location !== 'undefined' ? location.origin : 'https://tomoshibi.gikyokutosyokan.com'
-  return `${BASE}/auth/signup?callbackUrl=${encodeURIComponent(cb)}`
+  return loginUrl()
 }
-// アカウント削除は戯曲図書館本体のマイページで行う (tomoshibi固有のアカウントは存在しない)。
+/** アカウント設定と退会はポータルで行う（TOMOSHIBI 固有のアカウントは無い） */
 export function accountUrl(): string {
-  return `${BASE}/mypage`
+  return `${PORTAL}/account`
+}
+
+/**
+ * 戯曲 ID でこのサービスを使ったことをポータルに知らせる（運営の一覧用）。
+ * 親ドメインの Cookie が一緒に送られる。1 日に 1 回で十分なので localStorage で間引く
+ */
+export function markServiceSeen(): void {
+  try {
+    const key = 'gid_seen_tomoshibi'
+    const today = new Date().toISOString().slice(0, 10)
+    if (localStorage.getItem(key) === today) return
+    localStorage.setItem(key, today)
+  } catch {
+    /* localStorage が使えない環境ではそのまま送る */
+  }
+  fetch(`${PORTAL}/api/seen`, {
+    method: 'POST',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ service: 'tomoshibi' }),
+  }).catch(() => undefined)
 }
 
 export function listCloudScenes() {
