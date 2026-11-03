@@ -1,5 +1,5 @@
 // Cloudflare Workers の設定（静的な SPA を Workers の静的アセットとして配信。Vercel から移行、2026-10-31）
-// - dist/ をそのまま配る。見つからないパスは index.html に落とす（SPA）
+// - dist/ をそのまま配る。アプリの URL は scripts/generate-routes.mjs が HTML を作り、それ以外は 404 を返す
 // - public/_headers のヘッダ（CSP・キャッシュ）はそのまま効く
 // - 本番ドメイン tomoshibi.gikyokutosyokan.com はゾーンのルートで結びつける（DNS は *.gikyokutosyokan.com）。
 //   専用ドメイン（custom_domain）にしない。証明書が別になり、接続を共用したブラウザが Cloudflare に 403 で弾かれる
@@ -9,7 +9,7 @@
   "compatibility_date": "2026-10-01",
   "assets": {
     "directory": "./dist",
-    "not_found_handling": "single-page-application",
+    "not_found_handling": "404-page",
     "html_handling": "auto-trailing-slash"
   },
   "routes": [{ "pattern": "tomoshibi.gikyokutosyokan.com/*", "zone_name": "gikyokutosyokan.com" }],

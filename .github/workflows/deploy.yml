@@ -59,12 +59,15 @@ jobs:
         run: |
           sleep 10
           fail=0
-          # 深いパスは SPA のフォールバック（index.html）で 200 になるはず
-          for path in / /og.png /manifest.webmanifest /.well-known/apple-app-site-association /some/deep/path; do
+          for path in / /about /pro /terms /privacy /tokushoho /contact /pro/success /og.png /sitemap.xml /manifest.webmanifest /.well-known/apple-app-site-association; do
             code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 30 "https://tomoshibi.gikyokutosyokan.com$path")
             echo "$code $path"
             [ "$code" = "200" ] || fail=1
           done
+          # 存在しない URL は 404 を返す
+          code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 30 "https://tomoshibi.gikyokutosyokan.com/some/deep/path")
+          echo "$code /some/deep/path"
+          [ "$code" = "404" ] || fail=1
           exit $fail
 
       - name: Roll back on failure
