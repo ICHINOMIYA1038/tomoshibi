@@ -7,10 +7,15 @@ jobs:
   inspect:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/mock-complete-html
       - name: Prepare browser
         run: npm install --prefix /tmp/mock-browser --no-save playwright-core@1.56.1
       - name: Inspect live mock
         run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 --directory public >/tmp/mock-server.log 2>&1 &
+          sleep 1
           node <<'JS'
           const { chromium } = require('/tmp/mock-browser/node_modules/playwright-core')
           const fs = require('node:fs')
@@ -24,15 +29,18 @@ jobs:
             page.on('console', message => console.log('CONSOLE', message.type(), message.text(), JSON.stringify(message.location())))
             page.on('pageerror', error => console.log('PAGE_ERROR', error.stack || error.message))
             page.on('requestfailed', request => console.log('REQUEST_FAILED', request.url(), request.failure()?.errorText))
-            const response = await page.goto('https://tomoshibi.gikyokutosyokan.com/mock/', { waitUntil: 'domcontentloaded', timeout: 30000 })
+            const response = await page.goto('http://127.0.0.1:8765/mock/', { waitUntil: 'domcontentloaded', timeout: 30000 })
             await page.waitForTimeout(7000)
             console.log('HTTP_STATUS', response?.status())
             console.log('SCRIPT_INFO', JSON.stringify(await page.evaluate(() => Array.from(document.scripts).map(script => ({ src: script.src, length: script.textContent.length, start: script.textContent.slice(0, 80), end: script.textContent.slice(-80) })))))
             console.log('TITLE', await page.title())
-            console.log('ROOT_HTML', (await page.locator('#root').innerHTML()).slice(0, 1500))
+            const rootHtml = await page.locator('#root').innerHTML()
+            console.log('ROOT_HTML', rootHtml.slice(0, 1500))
+            console.log('ROOT_LENGTH', rootHtml.length)
             console.log('BODY_TEXT', (await page.locator('body').innerText()).slice(0, 1500))
             await page.screenshot({ path: '/tmp/mock-browser.png', fullPage: true })
             await browser.close()
+            if (rootHtml.length < 100) throw new Error('Mock root is empty')
           })().catch(error => { console.error(error); process.exitCode = 1 })
           JS
       - uses: actions/upload-artifact@v4
