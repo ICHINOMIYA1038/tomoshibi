@@ -1,0 +1,41 @@
+name: Mock browser diagnostic
+on:
+  push:
+    branches: [debug/mock-browser]
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Prepare browser
+        run: npm install --prefix /tmp/mock-browser --no-save playwright-core@1.56.1
+      - name: Inspect live mock
+        run: |
+          node <<'JS'
+          const { chromium } = require('/tmp/mock-browser/node_modules/playwright-core')
+          const fs = require('node:fs')
+          const candidates = ['/usr/bin/google-chrome', '/usr/bin/chromium', '/opt/google/chrome/chrome']
+          const executablePath = candidates.find(path => fs.existsSync(path))
+          if (!executablePath) throw new Error('Chrome executable not found')
+          console.log('CHROME', executablePath)
+          ;(async () => {
+            const browser = await chromium.launch({ executablePath, headless: true, args: ['--no-sandbox', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] })
+            const page = await browser.newPage({ viewport: { width: 1440, height: 900 } })
+            page.on('console', message => { if (message.type() === 'error') console.log('CONSOLE_ERROR', message.text()) })
+            page.on('pageerror', error => console.log('PAGE_ERROR', error.stack || error.message))
+            page.on('requestfailed', request => console.log('REQUEST_FAILED', request.url(), request.failure()?.errorText))
+            const response = await page.goto('https://tomoshibi.gikyokutosyokan.com/mock/', { waitUntil: 'domcontentloaded', timeout: 30000 })
+            await page.waitForTimeout(7000)
+            console.log('HTTP_STATUS', response?.status())
+            console.log('TITLE', await page.title())
+            console.log('ROOT_HTML', (await page.locator('#root').innerHTML()).slice(0, 1500))
+            console.log('BODY_TEXT', (await page.locator('body').innerText()).slice(0, 1500))
+            await page.screenshot({ path: '/tmp/mock-browser.png', fullPage: true })
+            await browser.close()
+          })().catch(error => { console.error(error); process.exitCode = 1 })
+          JS
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mock-browser-screenshot
+          path: /tmp/mock-browser.png
