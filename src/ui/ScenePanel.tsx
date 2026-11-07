@@ -77,8 +77,9 @@ function CloudScenes() {
     return (
       <div className="scene-login">
         <p className="scene-login-lead">
-          ログインすると、明かりプランを<br />
-          サーバに保存して別端末から開けます。
+          ログイン前でも、光を組んでURLで共有できます。<br />
+          残したい明かりプランは、ログインすると名前を付けて保存し、<br />
+          別端末から開けます。
         </p>
         <div className="scene-actions">
           <button className="scene-cta primary" onClick={() => { location.href = loginUrl() }}>
