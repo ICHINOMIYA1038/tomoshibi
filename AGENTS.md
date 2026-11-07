@@ -200,6 +200,8 @@ interface Fixture {
 
 ## 開発フロー
 
+照明の演出案を作る・見直すときは、[TOMOSHIBI 照明演出スキル](.agents/skills/tomoshibi-lighting-design/SKILL.md)と[調査資料](docs/stage-lighting-design-research.md)を読む。保存版「灯の帰路」は比較用に残す。
+
 ### よく使うコマンド
 ```bash
 npm run dev          # localhost:5173
