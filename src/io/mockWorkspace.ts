@@ -27,6 +27,7 @@ let lastSignature = ''
 let lastRecordedAt = 0
 let saveTimer: ReturnType<typeof setTimeout> | null = null
 let saveStatus: SaveStatus = 'saved'
+let demoBaseline: string | null = null
 let viewState: ViewState = { canUndo: false, canRedo: false, saveStatus }
 const listeners = new Set<() => void>()
 
@@ -74,15 +75,39 @@ export function useMockWorkspaceState() {
   return useSyncExternalStore(subscribe, () => viewState, () => viewState)
 }
 
+export function markMockDemoBaseline() {
+  demoBaseline = projectContentKey(exportScene())
+}
+
+function projectContentKey(scene: SerializedScene): string {
+  const plan = scene.productionPlan
+  return JSON.stringify({
+    projectTitle: plan?.projectTitle,
+    chapters: plan?.chapters,
+    sequences: plan?.sequences,
+    scenes: plan?.scenes,
+    audienceBlocks: plan?.audienceBlocks,
+    venueLayout: plan?.venueLayout,
+    settings: {
+      hazeDensity: scene.settings?.hazeDensity,
+      ambient: scene.settings?.ambient,
+      exposure: scene.settings?.exposure,
+      bloom: scene.settings?.bloom,
+      showHouseLights: scene.settings?.showHouseLights,
+    },
+  })
+}
+
 export function preserveMockDraftBeforeDemo(): boolean {
   try {
     const raw = localStorage.getItem(SESSION_KEY)
     if (!raw) return true
-    const session = JSON.parse(raw) as { scene?: SerializedScene; activeSavedName?: string | null }
+    const session = JSON.parse(raw) as { scene?: SerializedScene; activeSavedName?: string | null; demoBaseline?: string | null }
     if (session.activeSavedName || !session.scene || (session.scene.version !== 1 && session.scene.version !== 2)) return true
     const scene = session.scene
     const title = scene.productionPlan?.projectTitle?.trim() || ''
     if (!title && !scene.fixtures.length && !scene.performers.length && !scene.setPieces?.length) return true
+    if (session.demoBaseline && projectContentKey(scene) === session.demoBaseline) return true
     const names = new Set(listSavedScenes().map(item => item.name))
     let name = title || scene.name?.trim() || '保存前のプラン'
     if (names.has(name)) {
@@ -133,15 +158,16 @@ export function initMockWorkspace(restore = true) {
     try {
       const raw = localStorage.getItem(SESSION_KEY)
       if (raw) {
-        const session = JSON.parse(raw) as { scene?: SerializedScene; activeSavedName?: string | null }
+        const session = JSON.parse(raw) as { scene?: SerializedScene; activeSavedName?: string | null; demoBaseline?: string | null }
         if (session.scene && (session.scene.version === 1 || session.scene.version === 2)) {
           importScene(session.scene)
           setActiveSavedProjectName(typeof session.activeSavedName === 'string' ? session.activeSavedName : null)
+          demoBaseline = session.demoBaseline ?? null
           useStore.getState().markSavedSnapshot()
         }
       }
     } catch {}
-  } else setActiveSavedProjectName(null)
+  } else { setActiveSavedProjectName(null); demoBaseline = null }
   history = [capture(useStore.getState())]
   cursor = 0
   lastSignature = signature(useStore.getState())
@@ -158,7 +184,7 @@ export function flushMockAutosave(): boolean {
     const projectTitle = useStore.getState().productionPlan.projectTitle?.trim()
     const scene = exportScene(name || projectTitle || '編集中のプロジェクト')
     if (name) saveSceneLS(name)
-    localStorage.setItem(SESSION_KEY, JSON.stringify({ version: 1, activeSavedName: name, scene }))
+    localStorage.setItem(SESSION_KEY, JSON.stringify({ version: 1, activeSavedName: name, scene, demoBaseline }))
     useStore.getState().markSavedSnapshot()
     saveStatus = 'saved'
     publish()
@@ -172,6 +198,7 @@ export function flushMockAutosave(): boolean {
 
 export function resetMockWorkspace() {
   if (!installed) return
+  demoBaseline = null
   if (saveTimer) { clearTimeout(saveTimer); saveTimer = null }
   history = [capture(useStore.getState())]
   cursor = 0

@@ -7,6 +7,7 @@ const SVG_WIDTH = 860
 const SVG_HEIGHT = 660
 const VIEWS = {
   near: { scale: 24, centerZ: 2.5 },
+  surround: { scale: 16, centerZ: -2 },
   wide: { scale: 10, centerZ: 8 },
 }
 const clamp = (value: number, low: number, high: number) => Math.min(high, Math.max(low, value))
@@ -34,7 +35,8 @@ export function AudienceLayoutEditor({ open, onClose }: { open: boolean; onClose
   const dragging = useRef<{
     kind: 'block' | 'vertex'; id: string; pointerId: number; at: [number, number]; from: [number, number]
   } | null>(null)
-  const { scale, centerZ } = wideView ? VIEWS.wide : VIEWS.near
+  const hasRearSeating = blocks.some(block => block.position[1] < -11)
+  const { scale, centerZ } = wideView ? VIEWS.wide : hasRearSeating ? VIEWS.surround : VIEWS.near
   const mapX = (x: number) => SVG_WIDTH / 2 + x * scale
   const mapY = (z: number) => SVG_HEIGHT / 2 + (z - centerZ) * scale
   const outline = stageFootprint(venue)

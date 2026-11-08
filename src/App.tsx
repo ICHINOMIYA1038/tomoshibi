@@ -20,7 +20,7 @@ import { ScenePanel } from './ui/ScenePanel'
 import { PlanBoard } from './ui/PlanBoard'
 import { ProjectLibrary } from './ui/ProjectLibrary'
 import { getActiveSavedProjectName } from './io/mockProjectSession'
-import { flushMockAutosave, initMockWorkspace, preserveMockDraftBeforeDemo, redoMockWorkspace, undoMockWorkspace, useMockWorkspaceState } from './io/mockWorkspace'
+import { flushMockAutosave, initMockWorkspace, markMockDemoBaseline, preserveMockDraftBeforeDemo, redoMockWorkspace, undoMockWorkspace, useMockWorkspaceState } from './io/mockWorkspace'
 import { StagePlayback } from './ui/StagePlayback'
 import { DirectionPaths } from './scene/DirectionPaths'
 import { WebGLErrorBoundary } from './ui/WebGLErrorBoundary'
@@ -33,6 +33,7 @@ import { createRainLibraryLightingStudyPlan } from './demo/createRainLibraryLigh
 import { createAkaoniPlan } from './demo/createAkaoniPlan'
 import { createAkaoniWashPlan } from './demo/createAkaoniWashPlan'
 import { createAkaoniLightingStudyPlan } from './demo/createAkaoniLightingStudyPlan'
+import { createVenueStudyPlan, VENUE_STUDY_LINKS } from './demo/createVenueStudyPlans'
 import { AudienceSeating } from './scene/AudienceSeating'
 
 const CAMERA_VIEWS: Record<string, { pos: [number, number, number]; target: [number, number, number] }> = {
@@ -203,7 +204,8 @@ export default function App() {
   useEffect(() => {
     const loadedFromHash = tryLoadFromHash()
     const demo = !loadedFromHash ? requestedDemo() : null
-    const wantsDemo = demo === '1' || demo === '2' || demo === 'rain-library-study' || demo === 'akaoni' || demo === 'akaoni-wash' || demo === 'akaoni-study'
+    const venueStudy = VENUE_STUDY_LINKS.find(item => demo === `venue-${item.kind}`)
+    const wantsDemo = demo === '1' || demo === '2' || demo === 'rain-library-study' || demo === 'akaoni' || demo === 'akaoni-wash' || demo === 'akaoni-study' || !!venueStudy
     const loadDemo = wantsDemo && preserveMockDraftBeforeDemo()
     if (wantsDemo && !loadDemo) setWorkspaceFeedback('前のプランを保存できなかったため、デモを開きませんでした。')
     if (loadDemo && demo === '1') createShowcasePlan()
@@ -212,9 +214,11 @@ export default function App() {
     else if (loadDemo && demo === 'akaoni') createAkaoniPlan()
     else if (loadDemo && demo === 'akaoni-wash') createAkaoniWashPlan()
     else if (loadDemo && demo === 'akaoni-study') createAkaoniLightingStudyPlan()
+    else if (loadDemo && venueStudy) createVenueStudyPlan(venueStudy.kind)
     else if (isMockPreview && !isProjectLibraryPath() && !loadedFromHash) useStore.getState().ensureScenes()
     if (isMockPreview) initMockWorkspace(!loadedFromHash && !loadDemo)
     if (loadDemo) {
+      markMockDemoBaseline()
       flushMockAutosave()
       const url = new URL(location.href)
       url.searchParams.delete('demo')
