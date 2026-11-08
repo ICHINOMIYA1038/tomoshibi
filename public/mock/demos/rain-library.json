@@ -1,7 +1,7 @@
 {
   "version": 2,
   "name": "雨を待つ図書室｜演出デモ",
-  "savedAt": "2026-11-07T02:47:46.245Z",
+  "savedAt": "2026-11-08T02:16:43.804Z",
   "fixtures": [
     {
       "id": "f1",
@@ -72,7 +72,7 @@
         -2.9
       ],
       "beamAngleDeg": 27,
-      "intensity": 0.58,
+      "intensity": 0.38,
       "color": [
         1,
         0.72,
@@ -197,17 +197,17 @@
       "name": "稲光",
       "presetKey": "Chauvet_COLORado2Solo",
       "position": [
-        5.7,
-        6.5,
-        -5
+        5.5,
+        4.5,
+        -5.2
       ],
       "target": [
-        3.8,
-        1.5,
-        -5.7
+        4.1,
+        1.7,
+        -6.5
       ],
-      "beamAngleDeg": 24,
-      "intensity": 0.94,
+      "beamAngleDeg": 12,
+      "intensity": 0.07,
       "color": [
         0.82,
         0.9,
@@ -245,6 +245,114 @@
       "colorTempK": 6500,
       "rotationZDeg": 0,
       "enabled": false
+    },
+    {
+      "id": "f10",
+      "name": "下手の地明かり",
+      "presetKey": "Fresnel10",
+      "position": [
+        -4.7,
+        6.8,
+        0.5
+      ],
+      "target": [
+        -3.7,
+        0,
+        -2
+      ],
+      "beamAngleDeg": 32,
+      "intensity": 0.42,
+      "color": [
+        1,
+        0.84,
+        0.7
+      ],
+      "gelEnabled": true,
+      "whiteMix": 0,
+      "colorTempK": 3200,
+      "rotationZDeg": 0,
+      "enabled": true
+    },
+    {
+      "id": "f11",
+      "name": "上手の地明かり",
+      "presetKey": "Fresnel10",
+      "position": [
+        4.7,
+        6.8,
+        0.5
+      ],
+      "target": [
+        3.7,
+        0,
+        -2
+      ],
+      "beamAngleDeg": 32,
+      "intensity": 0.44,
+      "color": [
+        0.76,
+        0.85,
+        1
+      ],
+      "gelEnabled": true,
+      "whiteMix": 0,
+      "colorTempK": 3200,
+      "rotationZDeg": 0,
+      "enabled": true
+    },
+    {
+      "id": "f12",
+      "name": "舞台奥・下手の地明かり",
+      "presetKey": "Fresnel10",
+      "position": [
+        -4.5,
+        6.8,
+        -5.5
+      ],
+      "target": [
+        -3.5,
+        0,
+        -4.9
+      ],
+      "beamAngleDeg": 30,
+      "intensity": 0.2,
+      "color": [
+        0.71,
+        0.8,
+        1
+      ],
+      "gelEnabled": true,
+      "whiteMix": 0,
+      "colorTempK": 3200,
+      "rotationZDeg": 0,
+      "enabled": true
+    },
+    {
+      "id": "f13",
+      "name": "舞台奥・上手の地明かり",
+      "presetKey": "Fresnel10",
+      "position": [
+        4.5,
+        6.8,
+        -5.5
+      ],
+      "target": [
+        3.5,
+        0,
+        -4.9
+      ],
+      "beamAngleDeg": 30,
+      "intensity": 0.2,
+      "color": [
+        0.67,
+        0.78,
+        1
+      ],
+      "gelEnabled": true,
+      "whiteMix": 0,
+      "colorTempK": 3200,
+      "rotationZDeg": 0,
+      "enabled": true
     }
   ],
   "performers": [
@@ -277,7 +385,7 @@
   ],
   "setPieces": [
     {
-      "id": "sp1794019666239-0",
+      "id": "sp1794104203794-0",
       "name": "閲覧机",
       "kind": "box",
       "size": [
@@ -300,7 +408,7 @@
       "appearance": "table"
     },
     {
-      "id": "sp1794019666239-1",
+      "id": "sp1794104203794-1",
       "name": "書架",
       "kind": "box",
       "size": [
@@ -323,7 +431,7 @@
       "appearance": "bookshelf"
     },
     {
-      "id": "sp1794019666239-2",
+      "id": "sp1794104203794-2",
       "name": "雨の窓",
       "kind": "box",
       "size": [
@@ -346,7 +454,7 @@
       "appearance": "window"
     },
     {
-      "id": "sp1794019666239-3",
+      "id": "sp1794104203794-3",
       "name": "返却された本",
       "kind": "box",
       "size": [
@@ -373,29 +481,29 @@
     "projectTitle": "雨を待つ図書室｜演出デモ",
     "chapters": [
       {
-        "id": "ch1794019666239-99gn5f",
+        "id": "ch1794104203794-y63uzx",
         "title": "第一章・閉館"
       },
       {
-        "id": "ch1794019666240-p3xhvr",
+        "id": "ch1794104203796-0ziym2",
         "title": "第二章・夜明け"
       }
     ],
     "sequences": [
       {
-        "id": "sq1794019666239-t6b78n",
-        "chapterId": "ch1794019666239-99gn5f",
+        "id": "sq1794104203794-rwn2p5",
+        "chapterId": "ch1794104203794-y63uzx",
         "title": "シーケンス 1"
       },
       {
-        "id": "sq1794019666240-0222bj",
-        "chapterId": "ch1794019666240-p3xhvr",
+        "id": "sq1794104203796-mw75wd",
+        "chapterId": "ch1794104203796-0ziym2",
         "title": "シーケンス 1"
       }
     ],
     "scenes": [
       {
-        "id": "sc1794019666239-2q0kkt",
+        "id": "sc1794104203794-3bqdt7",
         "title": "閉館前",
         "trigger": "",
         "note": "見せるもの：司書の顔、本、書架。窓の青を弱く残し、机の暖色を視線の中心にする。",
@@ -469,7 +577,7 @@
               -2.9
             ],
             "beamAngleDeg": 27,
-            "intensity": 0.44,
+            "intensity": 0.3,
             "color": [
               1,
               0.72,
@@ -594,17 +702,17 @@
             "name": "稲光",
             "presetKey": "Chauvet_COLORado2Solo",
             "position": [
-              5.7,
-              6.5,
-              -5
+              5.5,
+              4.5,
+              -5.2
             ],
             "target": [
-              3.8,
-              1.5,
-              -5.7
+              4.1,
+              1.7,
+              -6.5
             ],
-            "beamAngleDeg": 24,
-            "intensity": 0.94,
+            "beamAngleDeg": 12,
+            "intensity": 0.07,
             "color": [
               0.82,
               0.9,
@@ -642,6 +750,114 @@
             "colorTempK": 6500,
             "rotationZDeg": 0,
             "enabled": false
+          },
+          {
+            "id": "f10",
+            "name": "下手の地明かり",
+            "presetKey": "Fresnel10",
+            "position": [
+              -4.7,
+              6.8,
+              0.5
+            ],
+            "target": [
+              -3.7,
+              0,
+              -2
+            ],
+            "beamAngleDeg": 32,
+            "intensity": 0.52,
+            "color": [
+              1,
+              0.84,
+              0.7
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true
+          },
+          {
+            "id": "f11",
+            "name": "上手の地明かり",
+            "presetKey": "Fresnel10",
+            "position": [
+              4.7,
+              6.8,
+              0.5
+            ],
+            "target": [
+              3.7,
+              0,
+              -2
+            ],
+            "beamAngleDeg": 32,
+            "intensity": 0.48,
+            "color": [
+              0.76,
+              0.85,
+              1
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true
+          },
+          {
+            "id": "f12",
+            "name": "舞台奥・下手の地明かり",
+            "presetKey": "Fresnel10",
+            "position": [
+              -4.5,
+              6.8,
+              -5.5
+            ],
+            "target": [
+              -3.5,
+              0,
+              -4.9
+            ],
+            "beamAngleDeg": 30,
+            "intensity": 0.3,
+            "color": [
+              0.71,
+              0.8,
+              1
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true
+          },
+          {
+            "id": "f13",
+            "name": "舞台奥・上手の地明かり",
+            "presetKey": "Fresnel10",
+            "position": [
+              4.5,
+              6.8,
+              -5.5
+            ],
+            "target": [
+              3.5,
+              0,
+              -4.9
+            ],
+            "beamAngleDeg": 30,
+            "intensity": 0.3,
+            "color": [
+              0.67,
+              0.78,
+              1
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true
           }
         ],
         "performers": [
@@ -674,7 +890,7 @@
         ],
         "setPieces": [
           {
-            "id": "sp1794019666239-0",
+            "id": "sp1794104203794-0",
             "name": "閲覧机",
             "kind": "box",
             "size": [
@@ -697,7 +913,7 @@
             "appearance": "table"
           },
           {
-            "id": "sp1794019666239-1",
+            "id": "sp1794104203794-1",
             "name": "書架",
             "kind": "box",
             "size": [
@@ -720,7 +936,7 @@
             "appearance": "bookshelf"
           },
           {
-            "id": "sp1794019666239-2",
+            "id": "sp1794104203794-2",
             "name": "雨の窓",
             "kind": "box",
             "size": [
@@ -743,7 +959,7 @@
             "appearance": "window"
           },
           {
-            "id": "sp1794019666239-3",
+            "id": "sp1794104203794-3",
             "name": "返却された本",
             "kind": "box",
             "size": [
@@ -765,10 +981,10 @@
             "scale": 1
           }
         ],
-        "sequenceId": "sq1794019666239-t6b78n"
+        "sequenceId": "sq1794104203794-rwn2p5"
       },
       {
-        "id": "sc1794019666240-h2kte3",
+        "id": "sc1794104203795-l1bcrt",
         "title": "遅い来訪者",
         "trigger": "扉の鈴",
         "note": "来訪者が上手から入る。来訪者の前明かりと輪郭を加え、司書と本も見失わない。",
@@ -842,7 +1058,7 @@
               -2.9
             ],
             "beamAngleDeg": 27,
-            "intensity": 0.44,
+            "intensity": 0.3,
             "color": [
               1,
               0.72,
@@ -967,17 +1183,17 @@
             "name": "稲光",
             "presetKey": "Chauvet_COLORado2Solo",
             "position": [
-              5.7,
-              6.5,
-              -5
+              5.5,
+              4.5,
+              -5.2
             ],
             "target": [
-              3.8,
-              1.5,
-              -5.7
+              4.1,
+              1.7,
+              -6.5
             ],
-            "beamAngleDeg": 24,
-            "intensity": 0.94,
+            "beamAngleDeg": 12,
+            "intensity": 0.07,
             "color": [
               0.82,
               0.9,
@@ -1015,6 +1231,114 @@
             "colorTempK": 6500,
             "rotationZDeg": 0,
             "enabled": false
+          },
+          {
+            "id": "f10",
+            "name": "下手の地明かり",
+            "presetKey": "Fresnel10",
+            "position": [
+              -4.7,
+              6.8,
+              0.5
+            ],
+            "target": [
+              -3.7,
+              0,
+              -2
+            ],
+            "beamAngleDeg": 32,
+            "intensity": 0.52,
+            "color": [
+              1,
+              0.84,
+              0.7
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true
+          },
+          {
+            "id": "f11",
+            "name": "上手の地明かり",
+            "presetKey": "Fresnel10",
+            "position": [
+              4.7,
+              6.8,
+              0.5
+            ],
+            "target": [
+              3.7,
+              0,
+              -2
+            ],
+            "beamAngleDeg": 32,
+            "intensity": 0.55,
+            "color": [
+              0.76,
+              0.85,
+              1
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true
+          },
+          {
+            "id": "f12",
+            "name": "舞台奥・下手の地明かり",
+            "presetKey": "Fresnel10",
+            "position": [
+              -4.5,
+              6.8,
+              -5.5
+            ],
+            "target": [
+              -3.5,
+              0,
+              -4.9
+            ],
+            "beamAngleDeg": 30,
+            "intensity": 0.3,
+            "color": [
+              0.71,
+              0.8,
+              1
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true
+          },
+          {
+            "id": "f13",
+            "name": "舞台奥・上手の地明かり",
+            "presetKey": "Fresnel10",
+            "position": [
+              4.5,
+              6.8,
+              -5.5
+            ],
+            "target": [
+              3.5,
+              0,
+              -4.9
+            ],
+            "beamAngleDeg": 30,
+            "intensity": 0.3,
+            "color": [
+              0.67,
+              0.78,
+              1
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true
           }
         ],
         "performers": [
@@ -1047,7 +1371,7 @@
         ],
         "setPieces": [
           {
-            "id": "sp1794019666239-0",
+            "id": "sp1794104203794-0",
             "name": "閲覧机",
             "kind": "box",
             "size": [
@@ -1070,7 +1394,7 @@
             "appearance": "table"
           },
           {
-            "id": "sp1794019666239-1",
+            "id": "sp1794104203794-1",
             "name": "書架",
             "kind": "box",
             "size": [
@@ -1093,7 +1417,7 @@
             "appearance": "bookshelf"
           },
           {
-            "id": "sp1794019666239-2",
+            "id": "sp1794104203794-2",
             "name": "雨の窓",
             "kind": "box",
             "size": [
@@ -1116,7 +1440,7 @@
             "appearance": "window"
           },
           {
-            "id": "sp1794019666239-3",
+            "id": "sp1794104203794-3",
             "name": "返却された本",
             "kind": "box",
             "size": [
@@ -1138,11 +1462,11 @@
             "scale": 1
           }
         ],
-        "sequenceId": "sq1794019666239-t6b78n",
+        "sequenceId": "sq1794104203794-rwn2p5",
         "triggerType": "sound"
       },
       {
-        "id": "sc1794019666240-5luw3b",
+        "id": "sc1794104203795-uv6bzi",
         "title": "返された本",
         "trigger": "この本を、返しに来ました",
         "note": "二人と机上の本を三角形に見せる。書架を落として、会話と本に視線を集める。",
@@ -1216,7 +1540,7 @@
               -2.9
             ],
             "beamAngleDeg": 27,
-            "intensity": 0.58,
+            "intensity": 0.38,
             "color": [
               1,
               0.72,
@@ -1341,17 +1665,17 @@
             "name": "稲光",
             "presetKey": "Chauvet_COLORado2Solo",
             "position": [
-              5.7,
-              6.5,
-              -5
+              5.5,
+              4.5,
+              -5.2
             ],
             "target": [
-              3.8,
-              1.5,
-              -5.7
+              4.1,
+              1.7,
+              -6.5
             ],
-            "beamAngleDeg": 24,
-            "intensity": 0.94,
+            "beamAngleDeg": 12,
+            "intensity": 0.07,
             "color": [
               0.82,
               0.9,
@@ -1389,6 +1713,114 @@
             "colorTempK": 6500,
             "rotationZDeg": 0,
             "enabled": false
+          },
+          {
+            "id": "f10",
+            "name": "下手の地明かり",
+            "presetKey": "Fresnel10",
+            "position": [
+              -4.7,
+              6.8,
+              0.5
+            ],
+            "target": [
+              -3.7,
+              0,
+              -2
+            ],
+            "beamAngleDeg": 32,
+            "intensity": 0.42,
+            "color": [
+              1,
+              0.84,
+              0.7
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true
+          },
+          {
+            "id": "f11",
+            "name": "上手の地明かり",
+            "presetKey": "Fresnel10",
+            "position": [
+              4.7,
+              6.8,
+              0.5
+            ],
+            "target": [
+              3.7,
+              0,
+              -2
+            ],
+            "beamAngleDeg": 32,
+            "intensity": 0.44,
+            "color": [
+              0.76,
+              0.85,
+              1
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true
+          },
+          {
+            "id": "f12",
+            "name": "舞台奥・下手の地明かり",
+            "presetKey": "Fresnel10",
+            "position": [
+              -4.5,
+              6.8,
+              -5.5
+            ],
+            "target": [
+              -3.5,
+              0,
+              -4.9
+            ],
+            "beamAngleDeg": 30,
+            "intensity": 0.2,
+            "color": [
+              0.71,
+              0.8,
+              1
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true
+          },
+          {
+            "id": "f13",
+            "name": "舞台奥・上手の地明かり",
+            "presetKey": "Fresnel10",
+            "position": [
+              4.5,
+              6.8,
+              -5.5
+            ],
+            "target": [
+              3.5,
+              0,
+              -4.9
+            ],
+            "beamAngleDeg": 30,
+            "intensity": 0.2,
+            "color": [
+              0.67,
+              0.78,
+              1
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true
           }
         ],
         "performers": [
@@ -1421,7 +1853,7 @@
         ],
         "setPieces": [
           {
-            "id": "sp1794019666239-0",
+            "id": "sp1794104203794-0",
             "name": "閲覧机",
             "kind": "box",
             "size": [
@@ -1444,7 +1876,7 @@
             "appearance": "table"
           },
           {
-            "id": "sp1794019666239-1",
+            "id": "sp1794104203794-1",
             "name": "書架",
             "kind": "box",
             "size": [
@@ -1467,7 +1899,7 @@
             "appearance": "bookshelf"
           },
           {
-            "id": "sp1794019666239-2",
+            "id": "sp1794104203794-2",
             "name": "雨の窓",
             "kind": "box",
             "size": [
@@ -1490,7 +1922,7 @@
             "appearance": "window"
           },
           {
-            "id": "sp1794019666239-3",
+            "id": "sp1794104203794-3",
             "name": "返却された本",
             "kind": "box",
             "size": [
@@ -1512,11 +1944,11 @@
             "scale": 1
           }
         ],
-        "sequenceId": "sq1794019666239-t6b78n",
+        "sequenceId": "sq1794104203794-rwn2p5",
         "triggerType": "dialogue"
       },
       {
-        "id": "sc1794019666240-rbwv80",
+        "id": "sc1794104203795-qf6vvi",
         "title": "雷鳴",
         "trigger": "近くで雷が鳴る",
         "note": "顔を意図的に隠す。窓と二人の輪郭を冷たい光で浮かべ、本と書架は暗くする。",
@@ -1590,7 +2022,7 @@
               -2.9
             ],
             "beamAngleDeg": 27,
-            "intensity": 0.58,
+            "intensity": 0.38,
             "color": [
               1,
               0.72,
@@ -1715,17 +2147,17 @@
             "name": "稲光",
             "presetKey": "Chauvet_COLORado2Solo",
             "position": [
-              5.7,
-              6.5,
-              -5
+              5.5,
+              4.5,
+              -5.2
             ],
             "target": [
-              3.8,
-              1.5,
-              -5.7
+              4.1,
+              1.7,
+              -6.5
             ],
-            "beamAngleDeg": 24,
-            "intensity": 0.94,
+            "beamAngleDeg": 12,
+            "intensity": 0.07,
             "color": [
               0.82,
               0.9,
@@ -1763,6 +2195,114 @@
             "colorTempK": 6500,
             "rotationZDeg": 0,
             "enabled": false
+          },
+          {
+            "id": "f10",
+            "name": "下手の地明かり",
+            "presetKey": "Fresnel10",
+            "position": [
+              -4.7,
+              6.8,
+              0.5
+            ],
+            "target": [
+              -3.7,
+              0,
+              -2
+            ],
+            "beamAngleDeg": 32,
+            "intensity": 0.42,
+            "color": [
+              1,
+              0.84,
+              0.7
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": false
+          },
+          {
+            "id": "f11",
+            "name": "上手の地明かり",
+            "presetKey": "Fresnel10",
+            "position": [
+              4.7,
+              6.8,
+              0.5
+            ],
+            "target": [
+              3.7,
+              0,
+              -2
+            ],
+            "beamAngleDeg": 32,
+            "intensity": 0.44,
+            "color": [
+              0.76,
+              0.85,
+              1
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": false
+          },
+          {
+            "id": "f12",
+            "name": "舞台奥・下手の地明かり",
+            "presetKey": "Fresnel10",
+            "position": [
+              -4.5,
+              6.8,
+              -5.5
+            ],
+            "target": [
+              -3.5,
+              0,
+              -4.9
+            ],
+            "beamAngleDeg": 30,
+            "intensity": 0.2,
+            "color": [
+              0.71,
+              0.8,
+              1
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": false
+          },
+          {
+            "id": "f13",
+            "name": "舞台奥・上手の地明かり",
+            "presetKey": "Fresnel10",
+            "position": [
+              4.5,
+              6.8,
+              -5.5
+            ],
+            "target": [
+              3.5,
+              0,
+              -4.9
+            ],
+            "beamAngleDeg": 30,
+            "intensity": 0.2,
+            "color": [
+              0.67,
+              0.78,
+              1
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": false
           }
         ],
         "performers": [
@@ -1795,7 +2335,7 @@
         ],
         "setPieces": [
           {
-            "id": "sp1794019666239-0",
+            "id": "sp1794104203794-0",
             "name": "閲覧机",
             "kind": "box",
             "size": [
@@ -1818,7 +2358,7 @@
             "appearance": "table"
           },
           {
-            "id": "sp1794019666239-1",
+            "id": "sp1794104203794-1",
             "name": "書架",
             "kind": "box",
             "size": [
@@ -1841,7 +2381,7 @@
             "appearance": "bookshelf"
           },
           {
-            "id": "sp1794019666239-2",
+            "id": "sp1794104203794-2",
             "name": "雨の窓",
             "kind": "box",
             "size": [
@@ -1864,7 +2404,7 @@
             "appearance": "window"
           },
           {
-            "id": "sp1794019666239-3",
+            "id": "sp1794104203794-3",
             "name": "返却された本",
             "kind": "box",
             "size": [
@@ -1886,11 +2426,11 @@
             "scale": 1
           }
         ],
-        "sequenceId": "sq1794019666239-t6b78n",
+        "sequenceId": "sq1794104203794-rwn2p5",
         "triggerType": "sound"
       },
       {
-        "id": "sc1794019666241-0ndam8",
+        "id": "sc1794104203796-o9mh1b",
         "title": "余白の言葉",
         "trigger": "続きを、読んでください",
         "note": "雷が去り、暖色の机と二人の顔を戻す。背景は静かに沈める。",
@@ -1964,7 +2504,7 @@
               -2.9
             ],
             "beamAngleDeg": 27,
-            "intensity": 0.48,
+            "intensity": 0.33,
             "color": [
               1,
               0.72,
@@ -2089,17 +2629,17 @@
             "name": "稲光",
             "presetKey": "Chauvet_COLORado2Solo",
             "position": [
-              5.7,
-              6.5,
-              -5
+              5.5,
+              4.5,
+              -5.2
             ],
             "target": [
-              3.8,
-              1.5,
-              -5.7
+              4.1,
+              1.7,
+              -6.5
             ],
-            "beamAngleDeg": 24,
-            "intensity": 0.94,
+            "beamAngleDeg": 12,
+            "intensity": 0.07,
             "color": [
               0.82,
               0.9,
@@ -2137,6 +2677,114 @@
             "colorTempK": 6500,
             "rotationZDeg": 0,
             "enabled": false
+          },
+          {
+            "id": "f10",
+            "name": "下手の地明かり",
+            "presetKey": "Fresnel10",
+            "position": [
+              -4.7,
+              6.8,
+              0.5
+            ],
+            "target": [
+              -3.7,
+              0,
+              -2
+            ],
+            "beamAngleDeg": 32,
+            "intensity": 0.38,
+            "color": [
+              1,
+              0.84,
+              0.7
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true
+          },
+          {
+            "id": "f11",
+            "name": "上手の地明かり",
+            "presetKey": "Fresnel10",
+            "position": [
+              4.7,
+              6.8,
+              0.5
+            ],
+            "target": [
+              3.7,
+              0,
+              -2
+            ],
+            "beamAngleDeg": 32,
+            "intensity": 0.4,
+            "color": [
+              0.76,
+              0.85,
+              1
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true
+          },
+          {
+            "id": "f12",
+            "name": "舞台奥・下手の地明かり",
+            "presetKey": "Fresnel10",
+            "position": [
+              -4.5,
+              6.8,
+              -5.5
+            ],
+            "target": [
+              -3.5,
+              0,
+              -4.9
+            ],
+            "beamAngleDeg": 30,
+            "intensity": 0.16,
+            "color": [
+              0.71,
+              0.8,
+              1
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true
+          },
+          {
+            "id": "f13",
+            "name": "舞台奥・上手の地明かり",
+            "presetKey": "Fresnel10",
+            "position": [
+              4.5,
+              6.8,
+              -5.5
+            ],
+            "target": [
+              3.5,
+              0,
+              -4.9
+            ],
+            "beamAngleDeg": 30,
+            "intensity": 0.16,
+            "color": [
+              0.67,
+              0.78,
+              1
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true
           }
         ],
         "performers": [
@@ -2169,7 +2817,7 @@
         ],
         "setPieces": [
           {
-            "id": "sp1794019666239-0",
+            "id": "sp1794104203794-0",
             "name": "閲覧机",
             "kind": "box",
             "size": [
@@ -2192,7 +2840,7 @@
             "appearance": "table"
           },
           {
-            "id": "sp1794019666239-1",
+            "id": "sp1794104203794-1",
             "name": "書架",
             "kind": "box",
             "size": [
@@ -2215,7 +2863,7 @@
             "appearance": "bookshelf"
           },
           {
-            "id": "sp1794019666239-2",
+            "id": "sp1794104203794-2",
             "name": "雨の窓",
             "kind": "box",
             "size": [
@@ -2238,7 +2886,7 @@
             "appearance": "window"
           },
           {
-            "id": "sp1794019666239-3",
+            "id": "sp1794104203794-3",
             "name": "返却された本",
             "kind": "box",
             "size": [
@@ -2260,11 +2908,11 @@
             "scale": 1
           }
         ],
-        "sequenceId": "sq1794019666240-0222bj",
+        "sequenceId": "sq1794104203796-mw75wd",
         "triggerType": "dialogue"
       },
       {
-        "id": "sc1794019666241-8uc4od",
+        "id": "sc1794104203796-xv7yzl",
         "title": "雨がやむ",
         "trigger": "雨音が止む",
         "note": "二人が机に寄る。窓の青を弱め、夜明けの逆光と柔らかい前明かりを重ねる。",
@@ -2338,7 +2986,7 @@
               -2.9
             ],
             "beamAngleDeg": 27,
-            "intensity": 0.48,
+            "intensity": 0.33,
             "color": [
               1,
               0.72,
@@ -2463,17 +3111,17 @@
             "name": "稲光",
             "presetKey": "Chauvet_COLORado2Solo",
             "position": [
-              5.7,
-              6.5,
-              -5
+              5.5,
+              4.5,
+              -5.2
             ],
             "target": [
-              3.8,
-              1.5,
-              -5.7
+              4.1,
+              1.7,
+              -6.5
             ],
-            "beamAngleDeg": 24,
-            "intensity": 0.94,
+            "beamAngleDeg": 12,
+            "intensity": 0.07,
             "color": [
               0.82,
               0.9,
@@ -2511,6 +3159,114 @@
             "colorTempK": 6500,
             "rotationZDeg": 0,
             "enabled": true
+          },
+          {
+            "id": "f10",
+            "name": "下手の地明かり",
+            "presetKey": "Fresnel10",
+            "position": [
+              -4.7,
+              6.8,
+              0.5
+            ],
+            "target": [
+              -3.7,
+              0,
+              -2
+            ],
+            "beamAngleDeg": 32,
+            "intensity": 0.47,
+            "color": [
+              1,
+              0.88,
+              0.76
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true
+          },
+          {
+            "id": "f11",
+            "name": "上手の地明かり",
+            "presetKey": "Fresnel10",
+            "position": [
+              4.7,
+              6.8,
+              0.5
+            ],
+            "target": [
+              3.7,
+              0,
+              -2
+            ],
+            "beamAngleDeg": 32,
+            "intensity": 0.45,
+            "color": [
+              1,
+              0.87,
+              0.74
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true
+          },
+          {
+            "id": "f12",
+            "name": "舞台奥・下手の地明かり",
+            "presetKey": "Fresnel10",
+            "position": [
+              -4.5,
+              6.8,
+              -5.5
+            ],
+            "target": [
+              -3.5,
+              0,
+              -4.9
+            ],
+            "beamAngleDeg": 30,
+            "intensity": 0.28,
+            "color": [
+              1,
+              0.78,
+              0.61
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true
+          },
+          {
+            "id": "f13",
+            "name": "舞台奥・上手の地明かり",
+            "presetKey": "Fresnel10",
+            "position": [
+              4.5,
+              6.8,
+              -5.5
+            ],
+            "target": [
+              3.5,
+              0,
+              -4.9
+            ],
+            "beamAngleDeg": 30,
+            "intensity": 0.28,
+            "color": [
+              1,
+              0.77,
+              0.59
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true
           }
         ],
         "performers": [
@@ -2543,7 +3299,7 @@
         ],
         "setPieces": [
           {
-            "id": "sp1794019666239-0",
+            "id": "sp1794104203794-0",
             "name": "閲覧机",
             "kind": "box",
             "size": [
@@ -2566,7 +3322,7 @@
             "appearance": "table"
           },
           {
-            "id": "sp1794019666239-1",
+            "id": "sp1794104203794-1",
             "name": "書架",
             "kind": "box",
             "size": [
@@ -2589,7 +3345,7 @@
             "appearance": "bookshelf"
           },
           {
-            "id": "sp1794019666239-2",
+            "id": "sp1794104203794-2",
             "name": "雨の窓",
             "kind": "box",
             "size": [
@@ -2612,7 +3368,7 @@
             "appearance": "window"
           },
           {
-            "id": "sp1794019666239-3",
+            "id": "sp1794104203794-3",
             "name": "返却された本",
             "kind": "box",
             "size": [
@@ -2634,11 +3390,11 @@
             "scale": 1
           }
         ],
-        "sequenceId": "sq1794019666240-0222bj",
+        "sequenceId": "sq1794104203796-mw75wd",
         "triggerType": "sound"
       },
       {
-        "id": "sc1794019666241-0on1kp",
+        "id": "sc1794104203797-w2e936",
         "title": "本を持って出る",
         "trigger": "また明日",
         "note": "来訪者が本を持ち上手へ向かう。前明かりを移動先まで広げ、司書も明るさを保つ。",
@@ -2712,7 +3468,7 @@
               -2.9
             ],
             "beamAngleDeg": 27,
-            "intensity": 0.27,
+            "intensity": 0.22,
             "color": [
               1,
               0.72,
@@ -2837,17 +3593,17 @@
             "name": "稲光",
             "presetKey": "Chauvet_COLORado2Solo",
             "position": [
-              5.7,
-              6.5,
-              -5
+              5.5,
+              4.5,
+              -5.2
             ],
             "target": [
-              3.8,
-              1.5,
-              -5.7
+              4.1,
+              1.7,
+              -6.5
             ],
-            "beamAngleDeg": 24,
-            "intensity": 0.94,
+            "beamAngleDeg": 12,
+            "intensity": 0.07,
             "color": [
               0.82,
               0.9,
@@ -2885,6 +3641,114 @@
             "colorTempK": 6500,
             "rotationZDeg": 0,
             "enabled": true
+          },
+          {
+            "id": "f10",
+            "name": "下手の地明かり",
+            "presetKey": "Fresnel10",
+            "position": [
+              -4.7,
+              6.8,
+              0.5
+            ],
+            "target": [
+              -3.7,
+              0,
+              -2
+            ],
+            "beamAngleDeg": 32,
+            "intensity": 0.4,
+            "color": [
+              1,
+              0.88,
+              0.76
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true
+          },
+          {
+            "id": "f11",
+            "name": "上手の地明かり",
+            "presetKey": "Fresnel10",
+            "position": [
+              4.7,
+              6.8,
+              0.5
+            ],
+            "target": [
+              3.7,
+              0,
+              -2
+            ],
+            "beamAngleDeg": 32,
+            "intensity": 0.55,
+            "color": [
+              1,
+              0.87,
+              0.74
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true
+          },
+          {
+            "id": "f12",
+            "name": "舞台奥・下手の地明かり",
+            "presetKey": "Fresnel10",
+            "position": [
+              -4.5,
+              6.8,
+              -5.5
+            ],
+            "target": [
+              -3.5,
+              0,
+              -4.9
+            ],
+            "beamAngleDeg": 30,
+            "intensity": 0.28,
+            "color": [
+              1,
+              0.78,
+              0.61
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true
+          },
+          {
+            "id": "f13",
+            "name": "舞台奥・上手の地明かり",
+            "presetKey": "Fresnel10",
+            "position": [
+              4.5,
+              6.8,
+              -5.5
+            ],
+            "target": [
+              3.5,
+              0,
+              -4.9
+            ],
+            "beamAngleDeg": 30,
+            "intensity": 0.28,
+            "color": [
+              1,
+              0.77,
+              0.59
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true
           }
         ],
         "performers": [
@@ -2917,7 +3781,7 @@
         ],
         "setPieces": [
           {
-            "id": "sp1794019666239-0",
+            "id": "sp1794104203794-0",
             "name": "閲覧机",
             "kind": "box",
             "size": [
@@ -2940,7 +3804,7 @@
             "appearance": "table"
           },
           {
-            "id": "sp1794019666239-1",
+            "id": "sp1794104203794-1",
             "name": "書架",
             "kind": "box",
             "size": [
@@ -2963,7 +3827,7 @@
             "appearance": "bookshelf"
           },
           {
-            "id": "sp1794019666239-2",
+            "id": "sp1794104203794-2",
             "name": "雨の窓",
             "kind": "box",
             "size": [
@@ -2986,7 +3850,7 @@
             "appearance": "window"
           },
           {
-            "id": "sp1794019666239-3",
+            "id": "sp1794104203794-3",
             "name": "返却された本",
             "kind": "box",
             "size": [
@@ -3008,11 +3872,11 @@
             "scale": 1
           }
         ],
-        "sequenceId": "sq1794019666240-0222bj",
+        "sequenceId": "sq1794104203796-mw75wd",
         "triggerType": "dialogue"
       },
       {
-        "id": "sc1794019666241-2zrhgj",
+        "id": "sc1794104203797-9p3ph9",
         "title": "開館",
         "trigger": "朝の光が広がる",
         "note": "来訪者と本は退場する。司書、机、書架、窓を朝の光で見せて終える。",
@@ -3086,7 +3950,7 @@
               -2.9
             ],
             "beamAngleDeg": 27,
-            "intensity": 0.16,
+            "intensity": 0.12,
             "color": [
               1,
               0.72,
@@ -3211,17 +4075,17 @@
             "name": "稲光",
             "presetKey": "Chauvet_COLORado2Solo",
             "position": [
-              5.7,
-              6.5,
-              -5
+              5.5,
+              4.5,
+              -5.2
             ],
             "target": [
-              3.8,
-              1.5,
-              -5.7
+              4.1,
+              1.7,
+              -6.5
             ],
-            "beamAngleDeg": 24,
-            "intensity": 0.94,
+            "beamAngleDeg": 12,
+            "intensity": 0.07,
             "color": [
               0.82,
               0.9,
@@ -3259,6 +4123,114 @@
             "colorTempK": 6500,
             "rotationZDeg": 0,
             "enabled": true
+          },
+          {
+            "id": "f10",
+            "name": "下手の地明かり",
+            "presetKey": "Fresnel10",
+            "position": [
+              -4.7,
+              6.8,
+              0.5
+            ],
+            "target": [
+              -3.7,
+              0,
+              -2
+            ],
+            "beamAngleDeg": 32,
+            "intensity": 0.53,
+            "color": [
+              1,
+              0.88,
+              0.76
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true
+          },
+          {
+            "id": "f11",
+            "name": "上手の地明かり",
+            "presetKey": "Fresnel10",
+            "position": [
+              4.7,
+              6.8,
+              0.5
+            ],
+            "target": [
+              3.7,
+              0,
+              -2
+            ],
+            "beamAngleDeg": 32,
+            "intensity": 0.5,
+            "color": [
+              1,
+              0.87,
+              0.74
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true
+          },
+          {
+            "id": "f12",
+            "name": "舞台奥・下手の地明かり",
+            "presetKey": "Fresnel10",
+            "position": [
+              -4.5,
+              6.8,
+              -5.5
+            ],
+            "target": [
+              -3.5,
+              0,
+              -4.9
+            ],
+            "beamAngleDeg": 30,
+            "intensity": 0.36,
+            "color": [
+              1,
+              0.78,
+              0.61
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true
+          },
+          {
+            "id": "f13",
+            "name": "舞台奥・上手の地明かり",
+            "presetKey": "Fresnel10",
+            "position": [
+              4.5,
+              6.8,
+              -5.5
+            ],
+            "target": [
+              3.5,
+              0,
+              -4.9
+            ],
+            "beamAngleDeg": 30,
+            "intensity": 0.36,
+            "color": [
+              1,
+              0.77,
+              0.59
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true
           }
         ],
         "performers": [
@@ -3291,7 +4263,7 @@
         ],
         "setPieces": [
           {
-            "id": "sp1794019666239-0",
+            "id": "sp1794104203794-0",
             "name": "閲覧机",
             "kind": "box",
             "size": [
@@ -3314,7 +4286,7 @@
             "appearance": "table"
           },
           {
-            "id": "sp1794019666239-1",
+            "id": "sp1794104203794-1",
             "name": "書架",
             "kind": "box",
             "size": [
@@ -3337,7 +4309,7 @@
             "appearance": "bookshelf"
           },
           {
-            "id": "sp1794019666239-2",
+            "id": "sp1794104203794-2",
             "name": "雨の窓",
             "kind": "box",
             "size": [
@@ -3360,11 +4332,11 @@
             "appearance": "window"
           }
         ],
-        "sequenceId": "sq1794019666240-0222bj",
+        "sequenceId": "sq1794104203796-mw75wd",
         "triggerType": "light"
       }
     ],
-    "activeSceneId": "sc1794019666240-5luw3b"
+    "activeSceneId": "sc1794104203795-uv6bzi"
   },
   "settings": {
     "hazeDensity": 0.23,
