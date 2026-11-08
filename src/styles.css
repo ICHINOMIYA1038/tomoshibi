@@ -1043,6 +1043,45 @@ body.panel-dragging .panel { transition: none; opacity: 0.92; box-shadow: 0 12px
   font-family: var(--font-mono);
 }
 
+.props-add { margin: 0 0 18px; }
+.props-add summary {
+  display: flex; align-items: center; justify-content: center; min-height: 42px;
+  border: 1px solid rgba(212,175,111,.5); border-radius: 7px;
+  background: rgba(212,175,111,.12); color: var(--ink-primary);
+  font-size: 12px; font-weight: 700; cursor: pointer; list-style: none;
+}
+.props-add summary::-webkit-details-marker { display: none; }
+.props-add[open] summary { border-radius: 7px 7px 0 0; }
+.props-add > div {
+  display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 6px;
+  padding: 10px; border: 1px solid var(--panel-edge); border-top: 0;
+  border-radius: 0 0 7px 7px; background: #211d20;
+}
+.panel .props-add > div button { min-width: 0; min-height: 38px; padding: 6px 3px; }
+.props-list-heading { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 0 0 7px; }
+.props-list-heading h3 { margin: 0; }
+.panel .props-list-heading button { flex: none; min-height: 34px; padding: 5px 9px; font-size: 11px; }
+.props-list { max-height: none; overflow: visible; }
+.props-item {
+  display: flex; align-items: center; gap: 9px; min-height: 58px; margin: 0 0 6px;
+  padding: 4px 7px; border: 1px solid var(--panel-edge); border-radius: 7px;
+  background: rgba(13,10,10,.4);
+}
+.props-item.selected { border-color: var(--kin); background: rgba(212,175,111,.12); }
+.props-item.picked { border-color: rgba(212,175,111,.6); background: rgba(212,175,111,.08); }
+.props-item .row-check { flex: none; width: 17px; height: 17px; margin: 0 3px; cursor: pointer; }
+.panel .props-item-main {
+  display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; min-height: 48px;
+  padding: 5px 7px; border: 0; background: transparent; text-align: left;
+}
+.panel .props-item-main:hover { border: 0; background: rgba(212,175,111,.07); }
+.props-item-color { flex: none; width: 22px; height: 22px; border: 1px solid rgba(255,255,255,.25); border-radius: 5px; }
+.props-item-text { display: grid; gap: 3px; flex: 1; min-width: 0; }
+.props-item-text strong { overflow: hidden; color: var(--ink-primary); font-size: 12px; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
+.props-item-text small { color: var(--ink-muted); font-size: 11px; }
+.props-item-action { flex: none; color: var(--kin); font-size: 11px; }
+.props-item.selected .props-item-action { color: var(--ink-primary); }
+
 /* ========================================================
    プリセットグリッド
    ======================================================== */

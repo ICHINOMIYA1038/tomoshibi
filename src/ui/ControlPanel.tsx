@@ -687,73 +687,82 @@ function PropsPanel() {
     })
   }
   const bulk = useBulkSelection(pieces.map(p => p.id))
+  const [bulkMode, setBulkMode] = useState(false)
 
   const bulkDelete = () => {
     if (bulk.count === 0) return
     if (!confirm(`${bulk.count} 件の装置を削除しますか?`)) return
     for (const id of bulk.picked) remove(id)
     bulk.clear()
+    setBulkMode(false)
   }
 
-  return (
-    <div className="panel-body">
-      <h3>装置を追加</h3>
-      <div className="row" style={{ gap: 4 }}>
-        <button onClick={() => addPrim('box')} style={{ flex: 1 }}>箱馬</button>
-        <button onClick={() => addPrim('platform')} style={{ flex: 1 }}>平台</button>
-        <button onClick={() => addPrim('riser')} style={{ flex: 1 }}>高台</button>
-      </div>
-      <div className="row" style={{ gap: 4 }}>
-        <button onClick={() => addAppearance('bench')} style={{ flex: 1 }}>ベンチ</button>
-        <button onClick={() => addAppearance('door')} style={{ flex: 1 }}>扉</button>
-        <button onClick={() => addAppearance('suitcase')} style={{ flex: 1 }}>鞄</button>
-      </div>
-      <div className="row" style={{ gap: 4 }}>
-        <button onClick={() => addAppearance('table')} style={{ flex: 1 }}>机</button>
-        <button onClick={() => addAppearance('bookshelf')} style={{ flex: 1 }}>書架</button>
-        <button onClick={() => addAppearance('window')} style={{ flex: 1 }}>窓</button>
-      </div>
+  const toggleBulkMode = () => {
+    bulk.clear()
+    setBulkMode(value => !value)
+  }
 
-      <h3>一覧 ({pieces.length})</h3>
-      <BulkBar count={bulk.count} allOn={bulk.allOn} onToggleAll={bulk.toggleAll} onClear={bulk.clear}>
-        <button className="small danger" onClick={bulkDelete}>削除</button>
-      </BulkBar>
-      <div className="list">
+  const kindLabel = (piece: SetPiece) => piece.appearance && piece.appearance !== 'basic'
+    ? { bench: 'ベンチ', door: '扉', suitcase: '鞄', table: '机', bookshelf: '書架', window: '窓' }[piece.appearance]
+    : { box: '箱型', platform: '平台', riser: '高台', gltf: '3Dモデル' }[piece.kind]
+
+  return (
+    <div className="panel-body props-panel">
+      <details className="props-add">
+        <summary>＋ 舞台セットを追加</summary>
+        <div>
+          <button type="button" onClick={() => addPrim('box')}>箱馬</button>
+          <button type="button" onClick={() => addPrim('platform')}>平台</button>
+          <button type="button" onClick={() => addPrim('riser')}>高台</button>
+          <button type="button" onClick={() => addAppearance('bench')}>ベンチ</button>
+          <button type="button" onClick={() => addAppearance('door')}>扉</button>
+          <button type="button" onClick={() => addAppearance('suitcase')}>鞄</button>
+          <button type="button" onClick={() => addAppearance('table')}>机</button>
+          <button type="button" onClick={() => addAppearance('bookshelf')}>書架</button>
+          <button type="button" onClick={() => addAppearance('window')}>窓</button>
+        </div>
+      </details>
+
+      <div className="props-list-heading">
+        <h3>舞台セット（{pieces.length}点）</h3>
+        {pieces.length > 0 && <button type="button" className={bulkMode ? 'active' : ''}
+          aria-pressed={bulkMode} onClick={toggleBulkMode}>{bulkMode ? '選択を終了' : 'まとめて選ぶ'}</button>}
+      </div>
+      {bulkMode && <BulkBar count={bulk.count} allOn={bulk.allOn} onToggleAll={bulk.toggleAll} onClear={bulk.clear}>
+        <button type="button" className="small danger" onClick={bulkDelete}>選択したセットを削除</button>
+      </BulkBar>}
+      <div className="list props-list">
         {pieces.map(p => (
           <div
             key={p.id}
-            className={'fixture-row' + (selection.kind === 'setpiece' && selection.id === p.id ? ' selected' : '') + (bulk.picked.has(p.id) ? ' picked' : '')}
-            onClick={() => select('setpiece', p.id)}
+            className={'props-item' + (selection.kind === 'setpiece' && selection.id === p.id ? ' selected' : '') + (bulk.picked.has(p.id) ? ' picked' : '')}
           >
-            <input
+            {bulkMode && <input
               type="checkbox"
               className="row-check"
               checked={bulk.picked.has(p.id)}
-              onClick={e => e.stopPropagation()}
               onChange={() => bulk.toggle(p.id)}
-              title="一括選択"
-            />
-            <div className="dot" style={{ background: p.color ?? '#876040' }} />
-            <span className="name">{p.name}</span>
-            <span className="kind">{p.appearance && p.appearance !== 'basic'
-              ? { bench: 'ベンチ', door: '扉', suitcase: '鞄', table: '机', bookshelf: '書架', window: '窓' }[p.appearance] : p.kind}</span>
-            <button
-              className="danger small"
-              onClick={(e) => { e.stopPropagation(); remove(p.id) }}
-              title="削除"
-            >×</button>
+              aria-label={`${p.name}をまとめて選ぶ`} />}
+            <button type="button" className="props-item-main"
+              aria-label={bulkMode ? `${p.name}をまとめて選ぶ` : `${p.name}の設定を開く`}
+              aria-pressed={bulkMode ? bulk.picked.has(p.id) : selection.kind === 'setpiece' && selection.id === p.id}
+              onClick={() => bulkMode ? bulk.toggle(p.id) : select('setpiece', p.id)}>
+              <span className="props-item-color" style={{ background: p.color ?? '#876040' }} aria-hidden="true" />
+              <span className="props-item-text"><strong>{p.name}</strong><small>{kindLabel(p)}</small></span>
+              <span className="props-item-action" aria-hidden="true">{bulkMode ? '' : '設定 ›'}</span>
+            </button>
           </div>
         ))}
-        {pieces.length === 0 && <div className="empty-hint">「箱馬 / 平台 / 高台」を追加してください</div>}
+        {pieces.length === 0 && <div className="empty-hint">「舞台セットを追加」から配置してください</div>}
       </div>
 
       {selected && (
-        <div className="selected-editor">
-          <h3>選択中</h3>
+        <div className="selected-editor props-selected-editor">
+          <h3>セットの設定</h3>
           <div className="callout">
             <b>{selected.name}</b>
             <div style={{ fontSize: 10, color: '#998468', marginTop: 2, fontFamily: 'var(--font-sans)' }}>
-              装置 / {selected.kind}
+              舞台セット / {kindLabel(selected)}
             </div>
           </div>
           <div className="row">
@@ -796,7 +805,9 @@ function PropsPanel() {
             ranges={[[-7, 7], [0, 5], [-7.5, 3]]}
           />
           <div className="row" style={{ marginTop: 12 }}>
-            <button className="danger" onClick={() => remove(selected.id)} style={{ flex: 1 }}>削除</button>
+            <button className="danger" onClick={() => {
+              if (confirm(`「${selected.name}」を削除しますか？`)) remove(selected.id)
+            }} style={{ flex: 1 }}>このセットを削除</button>
           </div>
         </div>
       )}

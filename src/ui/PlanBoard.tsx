@@ -21,6 +21,17 @@ function CueIcon({ type }: { type?: SceneTriggerType }) {
 
 type MapBounds = { left: number; right: number; rear: number; front: number }
 function clamp(value: number, min: number, max: number) { return Math.max(min, Math.min(max, value)) }
+function equalScaleBounds(bounds: MapBounds): MapBounds {
+  const width = bounds.right - bounds.left
+  const depth = bounds.front - bounds.rear
+  const ratio = MAP.width / MAP.height
+  if (width / depth < ratio) {
+    const extra = (depth * ratio - width) / 2
+    return { ...bounds, left: bounds.left - extra, right: bounds.right + extra }
+  }
+  const extra = (width / ratio - depth) / 2
+  return { ...bounds, rear: bounds.rear - extra, front: bounds.front + extra }
+}
 function colorToHex(rgb: [number, number, number]) {
   return '#' + rgb.map(value => Math.round(clamp(value, 0, 1) * 255).toString(16).padStart(2, '0')).join('')
 }
@@ -63,19 +74,32 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
   sceneEditorOpen?: boolean; onOpenSceneEditor?: () => void; onCloseSceneEditor?: () => void
 }) {
   const plan = useStore(s => s.productionPlan)
-  const stageOutline = stageFootprint(plan.venueLayout ?? DEFAULT_VENUE_LAYOUT)
-  const mapBounds: MapBounds = plan.venueLayout ? {
-    left: Math.min(-8, ...stageOutline.map(point => point[0] - .5)),
-    right: Math.max(8, ...stageOutline.map(point => point[0] + .5)),
-    rear: Math.min(-8, ...stageOutline.map(point => point[1] - .2)),
-    front: Math.max(2, ...stageOutline.map(point => point[1] + .2)),
-  } : { left: -8, right: 8, rear: -8, front: 2 }
-  const mapX = (x: number) => MAP.left + (x - mapBounds.left) * MAP.width / (mapBounds.right - mapBounds.left)
-  const stageMapY = (z: number) => MAP.top + (z - mapBounds.rear) * MAP.height / (mapBounds.front - mapBounds.rear)
-  const mapY = (z: number) => z <= mapBounds.front ? stageMapY(z) : 550 + (z - mapBounds.front) * 2.5
   const performers = useStore(s => s.performers)
   const fixtures = useStore(s => s.fixtures)
   const setPieces = useStore(s => s.setPieces)
+  const stageOutline = stageFootprint(plan.venueLayout ?? DEFAULT_VENUE_LAYOUT)
+  const contentPoints: StagePoint[] = [...stageOutline]
+  for (const performer of performers) {
+    if (performer.onStage !== false) contentPoints.push([performer.position[0], performer.position[2]])
+  }
+  for (const piece of setPieces) {
+    const halfWidth = Math.max(.5, (piece.size?.[0] ?? 1) * Math.abs(piece.scale) / 2)
+    const halfDepth = Math.max(.5, (piece.size?.[2] ?? 1) * Math.abs(piece.scale) / 2)
+    const angle = piece.rotation[1]
+    const dx = Math.abs(Math.cos(angle)) * halfWidth + Math.abs(Math.sin(angle)) * halfDepth
+    const dz = Math.abs(Math.sin(angle)) * halfWidth + Math.abs(Math.cos(angle)) * halfDepth
+    contentPoints.push([piece.position[0] - dx, piece.position[2] - dz],
+      [piece.position[0] + dx, piece.position[2] + dz])
+  }
+  const mapBounds = equalScaleBounds(plan.venueLayout ? {
+    left: Math.min(-8, ...contentPoints.map(point => point[0] - 2)),
+    right: Math.max(8, ...contentPoints.map(point => point[0] + 2)),
+    rear: Math.min(-8, ...contentPoints.map(point => point[1] - 2)),
+    front: Math.max(2, ...contentPoints.map(point => point[1] + 2)),
+  } : { left: -8, right: 8, rear: -8, front: 2 })
+  const mapX = (x: number) => MAP.left + (x - mapBounds.left) * MAP.width / (mapBounds.right - mapBounds.left)
+  const stageMapY = (z: number) => MAP.top + (z - mapBounds.rear) * MAP.height / (mapBounds.front - mapBounds.rear)
+  const mapY = (z: number) => z <= mapBounds.front ? stageMapY(z) : 550 + (z - mapBounds.front) * 2.5
   const selection = useStore(s => s.selection)
   const select = useStore(s => s.select)
   const updateSettings = useStore(s => s.updateSettings)
@@ -852,6 +876,7 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
               const label = name.length > 14 ? name.slice(0, 13) + '…' : name
               const x = mapX(piece.position[0])
               const y = mapY(piece.position[2])
+              const labelAnchor = x < 230 ? 'start' : x > 730 ? 'end' : 'middle'
               return <g key={piece.id} transform={`translate(${x} ${y})`}
                 role="button" tabIndex={0} aria-label={`${name}を選択・移動`}
                 style={{ cursor: 'grab', touchAction: 'none' }}
@@ -893,7 +918,7 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
                   stroke="#2f2522" strokeWidth="3" pointerEvents="none" />)}
                 {piece.appearance === 'window' && <path d={`M 0 ${-depth * .5} V ${depth * .5} M ${-width * .5} 0 H ${width * .5}`}
                   fill="none" stroke="#d7e7ed" strokeWidth="3" pointerEvents="none" />}
-                <text y={depth / 2 + 20} textAnchor="middle" fill="#332820" fontSize="16" fontWeight="700"
+                <text y={depth / 2 + 20} textAnchor={labelAnchor} fill="#332820" fontSize="16" fontWeight="700"
                   paintOrder="stroke" stroke="#fffdf8" strokeWidth="5" pointerEvents="none">{label}</text>
               </g>
             })}
@@ -977,8 +1002,11 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
               if (performer.onStage === false) return null
               const point: StagePoint = [performer.position[0], performer.position[2]]
               const active = performer.id === selectedPerformer?.id
+              const x = mapX(point[0])
+              const actorLabel = performer.name.length > 12 ? performer.name.slice(0, 11) + '…' : performer.name
+              const labelAnchor = x < 230 ? 'start' : x > 730 ? 'end' : 'middle'
               return <g key={performer.id}>
-                <circle cx={mapX(point[0])} cy={mapY(point[1])} r="27"
+                <circle cx={x} cy={mapY(point[1])} r="27"
                   fill={actorColors[index % actorColors.length]} stroke={active ? '#181519' : '#fffdf8'}
                   strokeWidth={active ? 6 : 4} style={{ cursor: 'grab', touchAction: 'none' }}
                   role="button" tabIndex={0} aria-label={performer.name + 'の立ち位置を移動'}
@@ -996,11 +1024,11 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
                       Math.round(clamp(point[1] + delta[1], mapBounds.rear + .2, mapBounds.front - .2) * 10) / 10,
                     ] })
                   }} />
-                <text x={mapX(point[0])} y={mapY(point[1]) + 6} textAnchor="middle"
+                <text x={x} y={mapY(point[1]) + 6} textAnchor="middle"
                   fill="#fffdf8" fontSize="19" fontWeight="700" pointerEvents="none">{index + 1}</text>
-                <text x={mapX(point[0])} y={mapY(point[1]) - 34} textAnchor="middle"
+                <text x={x} y={mapY(point[1]) - 34} textAnchor={labelAnchor}
                   fill="#322b25" fontSize="17" fontWeight="700" paintOrder="stroke"
-                  stroke="#fffdf8" strokeWidth="4" pointerEvents="none">{performer.name}</text>
+                  stroke="#fffdf8" strokeWidth="4" pointerEvents="none">{actorLabel}</text>
               </g>
             })}
           </svg>
