@@ -24,9 +24,10 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet" />
   <script>
-    if (location.hash.startsWith('#scene=') || new URLSearchParams(location.search).has('embed') ||
-        window.webkit?.messageHandlers?.TomoshibiSession) {
+    if (location.hash.startsWith('#scene=') || new URLSearchParams(location.search).has('embed')) {
       location.replace('/studio/' + location.search + location.hash)
+    } else if (window.webkit?.messageHandlers?.TomoshibiSession) {
+      location.replace('/studio/projects/' + location.search + location.hash)
     }
   </script>
   <style>
