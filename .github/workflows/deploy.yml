@@ -59,7 +59,7 @@ jobs:
         run: |
           sleep 10
           fail=0
-          for path in / /about /pro /terms /privacy /tokushoho /contact /pro/success /og.png /sitemap.xml /manifest.webmanifest /.well-known/apple-app-site-association; do
+          for path in / /about /pro /terms /privacy /tokushoho /contact /pro/success /studio/ /studio/projects/ /og.png /sitemap.xml /manifest.webmanifest /.well-known/apple-app-site-association; do
             code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 30 "https://tomoshibi.gikyokutosyokan.com$path")
             echo "$code $path"
             [ "$code" = "200" ] || fail=1

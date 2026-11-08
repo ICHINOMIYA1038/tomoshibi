@@ -1,6 +1,6 @@
 // ビルドのあとに、アプリの URL ごとの HTML を dist に作る。
 // 見つからない URL は 404 を返す設定（wrangler.jsonc）なので、index.html を各 URL に複製し、タイトルなどを差し替える
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 
 const ORIGIN = 'https://tomoshibi.gikyokutosyokan.com'
@@ -18,6 +18,9 @@ const ROUTES = [
 
 const dist = join(import.meta.dirname, '..', 'dist')
 const base = readFileSync(join(dist, 'index.html'), 'utf8')
+for (const path of ['studio/index.html', 'studio/projects/index.html']) {
+  if (!existsSync(join(dist, path))) throw new Error(`見つからない: ${path}`)
+}
 
 function replaceOnce(html, pattern, replacement) {
   if (!pattern.test(html)) throw new Error(`見つからない: ${pattern}`)

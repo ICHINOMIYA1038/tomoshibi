@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useStore, useIsDirty } from '../store'
-import { importScene } from '../io/sceneIO'
+import { exportScene, importScene } from '../io/sceneIO'
 import {
-  loginUrl, signupUrl, logoutUrl, accountUrl,
+  loginUrl, signupUrl, logoutUrl, accountUrl, isNativeApp,
   listCloudScenes, saveCloudSceneNew, updateCloudScene, loadCloudScene, deleteCloudScene,
   type CloudSceneMeta, CloudError,
 } from '../io/cloud'
@@ -30,8 +30,34 @@ export function ScenePanel() {
       </div>
       <div className="panel-body scene-body">
         <CloudScenes />
+        {!isNativeApp() && <StudioEntry />}
       </div>
     </div>
+  )
+}
+
+function StudioEntry() {
+  const [error, setError] = useState('')
+  const openStudio = () => {
+    try {
+      sessionStorage.setItem(
+        'tomoshibi.workspace.handoff.v1',
+        JSON.stringify(exportScene('舞台プランのコピー')),
+      )
+      location.assign('/studio/?copy=current')
+    } catch {
+      setError('コピーを作成できませんでした。ブラウザの保存設定をご確認ください。')
+    }
+  }
+
+  return (
+    <section className="scene-section studio-entry">
+      <header className="scene-section-h"><span>新しい演出プラン</span></header>
+      <p>現在の舞台をコピーして、章・シーンや平面図を試せます。元の保存データは変更されません。新しい画面の内容はこの端末に保存されます。</p>
+      <button className="scene-cta-sub" onClick={openStudio}>現在の舞台をコピーして開く</button>
+      <a href="/studio/projects/">プロジェクト一覧から開く</a>
+      {error && <div className="scene-error" role="alert">{error}</div>}
+    </section>
   )
 }
 

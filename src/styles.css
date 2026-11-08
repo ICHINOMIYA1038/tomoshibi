@@ -414,6 +414,24 @@ body.panel-dragging .panel { transition: none; opacity: 0.92; box-shadow: 0 12px
 .scene-cta-sub:hover:not(:disabled) { border-color: var(--panel-edge-strong); color: var(--ink-primary); }
 .scene-cta-sub:disabled { opacity: 0.35; cursor: not-allowed; }
 
+.studio-entry p {
+  margin: 0 0 10px;
+  color: var(--ink-secondary);
+  font-size: 11px;
+  line-height: 1.65;
+}
+.studio-entry .scene-cta-sub { width: 100%; }
+.studio-entry a {
+  display: block;
+  margin-top: 10px;
+  color: var(--ink-secondary);
+  font-size: 11px;
+  text-align: center;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.studio-entry a:hover { color: var(--ink-primary); }
+
 .scene-error {
   margin-top: 8px; padding: 6px 10px;
   font-size: 11px; line-height: 1.5;
