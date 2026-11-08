@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useIsDirty, useStore } from '../store'
 import { deleteSceneLS, exportScene, listSavedScenes, loadSceneLS, type SerializedScene } from '../io/sceneIO'
 import { getActiveCloudProject, getActiveSavedProjectName, setActiveCloudProject, setActiveSavedProjectName } from '../io/mockProjectSession'
-import { flushMockAutosave, resetMockWorkspace } from '../io/mockWorkspace'
+import { flushMockAutosave, preserveMockDraftBeforeDemo, resetMockWorkspace, useMockWorkspaceState } from '../io/mockWorkspace'
 import { VENUE_STUDY_LINKS } from '../demo/createVenueStudyPlans'
 import { audienceSeatPositions } from '../audienceLayout'
 import { DEFAULT_VENUE_LAYOUT, stageFootprint } from '../venueLayout'
@@ -106,6 +106,7 @@ function StructurePreview({ item }: { item: LibraryItem }) {
 
 export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
   const dirty = useIsDirty()
+  const { cloudDirty } = useMockWorkspaceState()
   const { user, loading: sessionLoading } = useCloudSession()
   const [projects, setProjects] = useState(listSavedScenes)
   const [memberProjects, setMemberProjects] = useState<CloudProjectMeta[]>([])
@@ -170,7 +171,7 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
   useEffect(() => {
     if (selectedKey === null && savedName) setSelectedKey(savedName)
   }, [plan.activeSceneId, savedName, selectedKey])
-  const hasDraft = plan.scenes.length > 0 && (dirty || !savedName)
+  const hasDraft = plan.scenes.length > 0 && (dirty || cloudDirty || !savedName)
   const draftTitle = plan.projectTitle?.trim() || '名称未設定のプロジェクト'
   const items: LibraryItem[] = [
     ...(hasDraft ? [{ key: '__draft', scene: exportScene(draftTitle), draft: true }] : []),
@@ -187,6 +188,7 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
   const open = (item: LibraryItem) => {
     if (item.draft) { onOpenEditor(); return }
     if (!flushMockAutosave() && !window.confirm('現在の変更を保存できませんでした。別のプロジェクトを開きますか？')) return
+    if (cloudDirty && !preserveMockDraftBeforeDemo()) { setFeedback('クラウド未保存の変更を端末に控えられませんでした。'); return }
     loadSceneLS(item.scene.name)
     setActiveCloudProject(null)
     setActiveSavedProjectName(item.scene.name)
@@ -196,6 +198,7 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
   }
   const create = () => {
     if (!flushMockAutosave() && !window.confirm('現在の変更を保存できませんでした。新しいプロジェクトを作りますか？')) return
+    if (cloudDirty && !preserveMockDraftBeforeDemo()) { setFeedback('クラウド未保存の変更を端末に控えられませんでした。'); return }
     loadPreset('empty')
     useStore.getState().ensureScenes()
     setActiveSavedProjectName(null)
@@ -206,6 +209,7 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
   }
   const openMemberProject = async (item: CloudProjectMeta) => {
     if (!flushMockAutosave()) { setMemberError('現在の変更を端末に保存できませんでした。'); return }
+    if (cloudDirty && !preserveMockDraftBeforeDemo()) { setMemberError('クラウド未保存の変更を端末に控えられませんでした。'); return }
     setMemberBusy(true)
     try {
       const full = await fetchCloudProject(item.id)
