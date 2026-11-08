@@ -123,7 +123,7 @@ export function PrivacyPage() {
       <h2>1. 取得する情報</h2>
       <ul>
         <li>認証情報: Google アカウントを用いた認証によるメールアドレス、表示名、プロフィール画像</li>
-        <li>サービス利用情報: 保存されたシーンデータ、操作ログ</li>
+        <li>サービス利用情報: 保存されたプロジェクト・旧シーンデータ、操作ログ</li>
         <li>決済情報: Pro プランをご利用の場合、Stripe 等の決済事業者を通じたお名前、メールアドレス、支払い方法(カード情報は当方は保持せず、決済事業者が管理します)</li>
         <li>技術情報: IP アドレス、ブラウザ種別、アクセス日時等</li>
         <li>アプリの利用状況とクラッシュ情報(iOS アプリ版): 画面の表示・操作の記録、アプリのバージョン、端末の機種・OS のバージョン、強制終了時の技術的な記録、端末ごとの識別子。個人を特定する目的では利用しません</li>
@@ -216,7 +216,7 @@ export function TokushohoPage() {
 export function ProPage() {
   return (
     <Layout title="Pro プラン">
-      <p className="pro-lead">{SERVICE.name}をもっと快適に。<br />クラウドに何度でも保存できる Pro プラン。</p>
+      <p className="pro-lead">{SERVICE.name}で複数の舞台を計画する方へ。<br />クラウドに 500 件まで保存できる Pro プラン。</p>
 
       <div className="pro-price-card">
         <div className="pro-price-amount">¥{SERVICE.proPriceMonthly}<span>/月</span></div>
@@ -230,10 +230,9 @@ export function ProPage() {
           <tr><th></th><th>Free</th><th>Pro</th></tr>
         </thead>
         <tbody>
-          <tr><td>シミュレーター本体の全機能</td><td>◯</td><td>◯</td></tr>
+          <tr><td>演出プランの基本機能</td><td>◯</td><td>◯</td></tr>
           <tr><td>基本の器具プロファイル (Fresnel / PAR / LED)</td><td>◯</td><td>◯</td></tr>
-          <tr><td>クラウドへのシーン保存</td><td>3件まで</td><td><strong>無制限</strong></td></tr>
-          <tr><td>シーンの共有URL</td><td>◯</td><td>◯ (長期保持)</td></tr>
+          <tr><td>クラウドへのプロジェクト保存</td><td>3件まで</td><td><strong>500件まで</strong></td></tr>
           <tr><td>優先サポート</td><td>—</td><td>◯</td></tr>
         </tbody>
       </table>
@@ -249,11 +248,11 @@ export function ProPage() {
       <h2>よくあるご質問</h2>
       <dl className="faq">
         <dt>Free プランでも使い続けられますか?</dt>
-        <dd>はい。シミュレーター本体は Free プランでもすべての機能をご利用いただけます。Pro プランは主にクラウド保存数の上限を解除するオプションです。</dd>
+        <dd>はい。演出プランの基本機能は Free プランでも使えます。Pro プランではクラウドに保存できるプロジェクトが 500 件になります。</dd>
         <dt>いつでも解約できますか?</dt>
         <dd>はい。解約は本サービス内から数クリックで完了します。違約金等は一切かかりません。</dd>
-        <dt>Pro プランを解約した後、保存していたシーンはどうなりますか?</dt>
-        <dd>4件目以降のシーンは、Pro プラン期間終了後に閲覧・編集のみ可能な「アーカイブ状態」となります。データが削除されることはなく、再度 Pro プランに加入すれば通常通り利用できます。</dd>
+        <dt>Pro プランを解約した後、保存していたプロジェクトはどうなりますか?</dt>
+        <dd>保存済みのプロジェクトは残り、閲覧・編集できます。Free プランの上限である 3 件を超えている場合は、新しいプロジェクトの追加はできません。</dd>
         <dt>領収書は発行されますか?</dt>
         <dd>Stripe 決済の場合、決済完了時に自動で領収書メールが送信されます。</dd>
       </dl>
@@ -418,7 +417,7 @@ function ProSuccessPage() {
         <div className="pro-flame-large">✦</div>
         <h2 className="pro-success-h">ご登録ありがとうございます!</h2>
         <p>Pro プランの決済が完了しました。<br />クラウド保存が<strong>無制限</strong>に開放されました。</p>
-        <a href="/simulator/" className="pro-subscribe-btn">シミュレーターに戻る</a>
+        <a href="/studio/projects/" className="pro-subscribe-btn">プロジェクトに戻る</a>
         <div className="pro-subscribe-note">領収書は登録メールアドレスに Stripe から自動送信されます</div>
       </div>
     </Layout>
@@ -432,7 +431,7 @@ function ProCancelPage() {
       <p>もう一度検討する場合は下記からどうぞ。</p>
       <div className="pro-price-card">
         <a href="/pro" className="pro-subscribe-btn">Pro プランのページに戻る</a>
-        <a href="/simulator/" className="pro-subscribe-btn" style={{ background: 'transparent', border: '1px solid rgba(212,175,111,0.35)', color: '#ffd9a3', marginTop: 10 }}>シミュレーターに戻る</a>
+        <a href="/studio/projects/" className="pro-subscribe-btn" style={{ background: 'transparent', border: '1px solid rgba(212,175,111,0.35)', color: '#ffd9a3', marginTop: 10 }}>プロジェクトに戻る</a>
       </div>
     </Layout>
   )

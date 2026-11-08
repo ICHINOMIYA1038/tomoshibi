@@ -26,7 +26,7 @@
   <script>
     if (location.hash.startsWith('#scene=') || new URLSearchParams(location.search).has('embed') ||
         window.webkit?.messageHandlers?.TomoshibiSession) {
-      location.replace('/simulator/' + location.search + location.hash)
+      location.replace('/studio/' + location.search + location.hash)
     }
   </script>
   <style>
@@ -106,7 +106,6 @@
     <a class="brand" href="/">TOMOSHIBI<span>小屋</span></a>
     <nav class="site-nav" aria-label="サイト内の移動">
       <a href="#できること">できること</a>
-      <a href="/simulator/">照明シミュレーター</a>
       <a class="nav-start" href="/studio/projects/">演出プランを開く ↗</a>
     </nav>
   </div></header>
@@ -118,9 +117,8 @@
         <p class="hero-copy">照明・役者・舞台セットを配置しながら、章とシーンの流れを組み立てる。平面図と客席からの見え方を行き来して、演出プランを形にできます。</p>
         <div class="hero-actions">
           <a class="button primary" href="/studio/projects/">演出プランを始める　→</a>
-          <a class="button secondary" href="/studio/projects/#import">以前のプランを引き継ぐ</a>
         </div>
-        <p class="hero-note">照明だけを組みたい方も、新しい画面で始められます。<br />従来の<a href="/simulator/">照明シミュレーター</a>も引き続き使えます。</p>
+        <p class="hero-note">照明だけを組みたい方も、同じ画面で始められます。以前の保存済みプランはプロジェクトに自動でまとまります。</p>
       </div>
       <div class="preview" aria-label="演出プラン画面のイメージ">
         <div class="preview-header"><span>演出プラン</span><span>画面イメージ</span></div>
@@ -157,13 +155,13 @@
       </div>
     </div></section>
     <section class="migration"><div class="wrap migration-grid">
-      <div><p class="section-label">以前のプランをお持ちの方へ</p><h2>保存したプランを、新しい画面へ。</h2>
-        <p>この端末に保存した旧プランは同じブラウザから、会員アカウントに保存した旧プランはログイン後にコピーできます。元のデータは残ります。コピー先はこの端末で、別の端末とは同期しません。</p></div>
-      <a class="button secondary" href="/studio/projects/#import">プランを引き継ぐ　→</a>
+      <div><p class="section-label">以前のプランをお持ちの方へ</p><h2>保存したプランを、自動でひとつに。</h2>
+        <p>会員アカウントの旧プランは、プロジェクトにまとめて表示します。この端末の旧プランも、同じブラウザで開くと自動でまとまります。元のデータは残ります。</p></div>
+      <a class="button secondary" href="/studio/projects/">プロジェクトを見る　→</a>
     </div></section>
   </main>
   <footer class="site-footer"><div class="wrap"><span>© TOMOSHIBI小屋 · by 戯曲図書館</span><nav aria-label="その他のページ">
-    <a href="/simulator/">従来の照明シミュレーター</a><a href="/about">使い方</a><a href="/pro">Pro</a><a href="/contact">お問い合わせ</a><a href="/terms">利用規約</a><a href="/privacy">プライバシー</a>
+    <a href="/about">使い方</a><a href="/pro">Pro</a><a href="/contact">お問い合わせ</a><a href="/terms">利用規約</a><a href="/privacy">プライバシー</a>
   </nav></div></footer>
 </body>
 </html>
