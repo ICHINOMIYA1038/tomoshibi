@@ -282,7 +282,7 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
     {importOpen && <div className="legacy-import-backdrop" onMouseDown={event => { if (event.target === event.currentTarget) closeImport() }}>
       <section className="legacy-import-dialog" role="dialog" aria-modal="true" aria-labelledby="legacy-import-title">
         <header><div><h2 id="legacy-import-title">以前のプランを引き継ぐ</h2>
-          <p>旧シミュレーターの保存データを新しいプロジェクトにコピーします。元のプランは残ります。</p></div>
+          <p>旧プランをこの端末の新しいプロジェクトにコピーします。元のプランは残ります。コピー先は別の端末と同期しません。</p></div>
           <button className="legacy-import-close" onClick={closeImport} aria-label="閉じる">×</button></header>
         <div className="legacy-import-body">
           <section><h3>この端末に保存したプラン <small>{legacyLocal.items.length}件</small></h3>
