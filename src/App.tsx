@@ -35,8 +35,6 @@ import { createAkaoniWashPlan } from './demo/createAkaoniWashPlan'
 import { createAkaoniLightingStudyPlan } from './demo/createAkaoniLightingStudyPlan'
 import { AudienceSeating } from './scene/AudienceSeating'
 
-// 舞台の寸法は scene/Stage.tsx を参照 (床 z=-8..2, サイドウォール x=±8,
-// プロセニアム袖枠 x=±6.5 / z=2.5, バトン y=7.0)。
 const CAMERA_VIEWS: Record<string, { pos: [number, number, number]; target: [number, number, number] }> = {
   audience: { pos: [0, 2.5, 10], target: [0, 2.5, -2] },
   // 吊り位置と当たりの範囲を仕込み図のように見るための俯瞰。
@@ -105,6 +103,7 @@ function ExposureSync({ exposure }: { exposure: number }) {
 export default function App() {
   const settings = useStore(s => s.settings)
   const hasAudienceBlocks = useStore(s => (s.productionPlan.audienceBlocks?.length ?? 0) > 0)
+  const audienceBlocks = useStore(s => s.productionPlan.audienceBlocks ?? [])
   const select = useStore(s => s.select)
   const scenePath = useStore(s => {
     const plan = s.productionPlan
@@ -129,7 +128,22 @@ export default function App() {
   const [playbackOpen, setPlaybackOpen] = useState(false)
   const [, setViewportWidth] = useState(window.innerWidth)
   const wasMobile = useRef(window.innerWidth <= 960)
-  const view = CAMERA_VIEWS[settings.cameraView] ?? CAMERA_VIEWS.audience
+  const maxSeatZ = Math.max(3, ...audienceBlocks.map(block =>
+    block.position[1] + block.rows * block.rowSpacing / 2))
+  const minSeatZ = Math.min(-9, ...audienceBlocks.map(block =>
+    block.position[1] - block.rows * block.rowSpacing / 2))
+  const maxSeatX = Math.max(8, ...audienceBlocks.map(block => {
+    const angle = block.rotationDeg * Math.PI / 180
+    const halfWidth = (block.seatsPerRow * block.seatSpacing) / 2
+    const halfDepth = (block.rows * block.rowSpacing) / 2
+    return Math.abs(block.position[0]) + Math.abs(Math.cos(angle)) * halfWidth + Math.abs(Math.sin(angle)) * halfDepth
+  }))
+  const houseSpan = maxSeatZ - minSeatZ
+  const view = settings.cameraView === 'house' && (maxSeatZ > 15 || minSeatZ < -10 || maxSeatX > 10)
+    ? { pos: [0, Math.max(24, houseSpan * .85, maxSeatX * 1.5),
+        Math.max(27, maxSeatZ + 14, maxSeatX * 1.5)] as [number, number, number],
+      target: [0, .5, (maxSeatZ + minSeatZ) / 2] as [number, number, number] }
+    : CAMERA_VIEWS[settings.cameraView] ?? CAMERA_VIEWS.audience
   const noopMaterials = () => {}
 
   useEffect(() => {
@@ -317,7 +331,7 @@ export default function App() {
             zoomSpeed={0.9}
             panSpeed={0.8}
             minDistance={1.5}
-            maxDistance={40}
+            maxDistance={100}
             maxPolarAngle={Math.PI * 0.49}
             enablePan
           />

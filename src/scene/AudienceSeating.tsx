@@ -39,8 +39,8 @@ export function AudienceSeating() {
   const blocks = useStore(state => state.productionPlan.audienceBlocks ?? [])
   if (!blocks.length) return null
   return <group>
-    <mesh position={[0, -.06, 13.5]} rotation={[-Math.PI / 2, 0, 0]}>
-      <planeGeometry args={[20, 23]} />
+    <mesh position={[0, -.06, 7]} rotation={[-Math.PI / 2, 0, 0]}>
+      <planeGeometry args={[52, 60]} />
       <meshBasicMaterial color="#211d24" toneMapped={false} />
     </mesh>
     {blocks.map(block => <SeatingBlock key={block.id} block={block} />)}

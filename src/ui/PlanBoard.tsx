@@ -2,6 +2,7 @@ import { Fragment, useEffect, useRef, useState, type MouseEvent, type PointerEve
 import { activeSceneDirections, LIMITS, PLAN_LIMITS, SCENE_TRIGGER_LABELS, sceneDisplayTitle, useStore,
   type DirectionKind, type MoveSceneResult, type SceneTriggerType, type StagePoint } from '../store'
 import { AudienceLayoutEditor } from './AudienceLayoutEditor'
+import { DEFAULT_VENUE_LAYOUT, stageFootprint } from '../venueLayout'
 
 const MAP = { left: 100, top: 70, width: 760, height: 480, svgWidth: 960, svgHeight: 630 }
 const pathColors: Record<DirectionKind, string> = {
@@ -18,8 +19,7 @@ function CueIcon({ type }: { type?: SceneTriggerType }) {
   return null
 }
 
-function mapX(x: number) { return MAP.left + (x + 8) * MAP.width / 16 }
-function mapY(z: number) { return z <= 2 ? MAP.top + (z + 8) * MAP.height / 10 : 550 + (z - 2) * 2.5 }
+type MapBounds = { left: number; right: number; rear: number; front: number }
 function clamp(value: number, min: number, max: number) { return Math.max(min, Math.min(max, value)) }
 function colorToHex(rgb: [number, number, number]) {
   return '#' + rgb.map(value => Math.round(clamp(value, 0, 1) * 255).toString(16).padStart(2, '0')).join('')
@@ -27,14 +27,16 @@ function colorToHex(rgb: [number, number, number]) {
 function hexToRgb(hex: string): [number, number, number] {
   return [1, 3, 5].map(index => parseInt(hex.slice(index, index + 2), 16) / 255) as [number, number, number]
 }
-function mapPoint(event: PointerEvent<SVGSVGElement>, includeHouse = false): StagePoint {
+function mapPoint(event: PointerEvent<SVGSVGElement>, bounds: MapBounds, includeHouse = false): StagePoint {
   const rect = event.currentTarget.getBoundingClientRect()
   const px = (event.clientX - rect.left) * MAP.svgWidth / rect.width
   const py = (event.clientY - rect.top) * MAP.svgHeight / rect.height
   return [
-    Math.round(clamp((px - MAP.left) * 16 / MAP.width - 8, -9.2, 9.2) * 10) / 10,
-    Math.round(clamp(includeHouse && py > 550 ? 2 + (py - 550) / 2.5
-      : (py - MAP.top) * 10 / MAP.height - 8, -7.8, includeHouse ? 24 : 1.8) * 10) / 10,
+    Math.round(clamp((px - MAP.left) * (bounds.right - bounds.left) / MAP.width + bounds.left,
+      bounds.left - 1, bounds.right + 1) * 10) / 10,
+    Math.round(clamp(includeHouse && py > 550 ? bounds.front + (py - 550) / 2.5
+      : (py - MAP.top) * (bounds.front - bounds.rear) / MAP.height + bounds.rear,
+      bounds.rear + .2, includeHouse ? 35 : bounds.front - .2) * 10) / 10,
   ]
 }
 function placeName(point: StagePoint) {
@@ -61,6 +63,16 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
   sceneEditorOpen?: boolean; onOpenSceneEditor?: () => void; onCloseSceneEditor?: () => void
 }) {
   const plan = useStore(s => s.productionPlan)
+  const stageOutline = stageFootprint(plan.venueLayout ?? DEFAULT_VENUE_LAYOUT)
+  const mapBounds: MapBounds = plan.venueLayout ? {
+    left: Math.min(-8, ...stageOutline.map(point => point[0] - .5)),
+    right: Math.max(8, ...stageOutline.map(point => point[0] + .5)),
+    rear: Math.min(-8, ...stageOutline.map(point => point[1] - .2)),
+    front: Math.max(2, ...stageOutline.map(point => point[1] + .2)),
+  } : { left: -8, right: 8, rear: -8, front: 2 }
+  const mapX = (x: number) => MAP.left + (x - mapBounds.left) * MAP.width / (mapBounds.right - mapBounds.left)
+  const stageMapY = (z: number) => MAP.top + (z - mapBounds.rear) * MAP.height / (mapBounds.front - mapBounds.rear)
+  const mapY = (z: number) => z <= mapBounds.front ? stageMapY(z) : 550 + (z - mapBounds.front) * 2.5
   const performers = useStore(s => s.performers)
   const fixtures = useStore(s => s.fixtures)
   const setPieces = useStore(s => s.setPieces)
@@ -202,24 +214,25 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
   const moveDrag = (event: PointerEvent<SVGSVGElement>) => {
     const start = dragStart.current
     if (!start || start.sceneId !== scene.id) return
-    const [x, z] = mapPoint(event, start.kind === 'fixture')
+    const [x, z] = mapPoint(event, mapBounds, start.kind === 'fixture')
     if (start.kind === 'performer') {
       const actor = useStore.getState().performers.find(item => item.id === start.id)
       if (actor) updatePerformer(actor.id, { position: [x, actor.position[1], z] })
     } else if (start.kind === 'target') {
       const fixture = useStore.getState().fixtures.find(item => item.id === start.id)
       if (fixture) updateFixture(fixture.id, {
-        target: [clamp(x, -7.8, 7.8), fixture.target[1], z],
+        target: [clamp(x, mapBounds.left + .2, mapBounds.right - .2), fixture.target[1], z],
       })
     } else if (start.kind === 'fixture') {
       const fixture = useStore.getState().fixtures.find(item => item.id === start.id)
       if (fixture) updateFixture(fixture.id, {
-        position: [clamp(x, -7, 7), fixture.position[1], clamp(z, -7.5, 24)],
+        position: [clamp(x, mapBounds.left + .5, mapBounds.right - .5), fixture.position[1], clamp(z, mapBounds.rear + .5, 35)],
       })
     } else {
       const piece = useStore.getState().setPieces.find(item => item.id === start.id)
       if (piece) updateSetPiece(piece.id, {
-        position: [clamp(x, -7, 7), piece.position[1], clamp(z, -7.5, 2)],
+        position: [clamp(x, mapBounds.left + .5, mapBounds.right - .5), piece.position[1],
+          clamp(z, mapBounds.rear + .5, mapBounds.front - .2)],
       })
     }
   }
@@ -807,7 +820,7 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
           <button type="button" onClick={() => quickAdd('fixture')}>＋ 照明</button>
           <button type="button" onClick={() => quickAdd('setpiece')}>＋ 箱馬</button>
           <button type="button" className="plan-audience-button" onClick={() => setAudienceEditorOpen(true)}>
-            客席を配置{plan.audienceBlocks?.length ? `（${plan.audienceBlocks.reduce((count, block) => count + block.rows * block.seatsPerRow, 0)}席）` : ''}
+            舞台・客席を配置{plan.audienceBlocks?.length ? `（${plan.audienceBlocks.reduce((count, block) => count + block.rows * block.seatsPerRow, 0)}席）` : ''}
           </button>
           {lastMove && <button type="button" className="plan-map-undo" onClick={undoMove}>↶ 移動を戻す</button>}
           <small>追加後、平面図で移動できます</small>
@@ -844,7 +857,9 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
             </text>
             <rect x="8" y="70" width="92" height="480" fill="#e5ddd0" stroke="#8e8273" />
             <rect x="860" y="70" width="92" height="480" fill="#e5ddd0" stroke="#8e8273" />
-            <rect x="100" y="70" width="760" height="480" fill="#fffdf8" stroke="#3b342b" strokeWidth="3" />
+            <rect x="100" y="70" width="760" height="480"
+              fill={(plan.venueLayout?.stageShape ?? 'proscenium') === 'proscenium' ? '#fffdf8' : '#ddd6cc'}
+              stroke="#3b342b" strokeWidth="3" />
             <line x1="100" x2="860" y1="230" y2="230" stroke="#ded6c9" strokeDasharray="6 7" />
             <line x1="100" x2="860" y1="390" y2="390" stroke="#ded6c9" strokeDasharray="6 7" />
             <text x="54" y="110" textAnchor="middle" fill="#5b5349" fontSize="17">下手袖</text>
@@ -853,10 +868,14 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
             <rect x="100" y="558" width="760" height="60" fill="#ece6da" stroke="#a99a83" strokeDasharray="8 6" />
             <text x="112" y="577" fill="#716758" fontSize="14">客席側の吊り位置</text>
             <text x="848" y="577" textAnchor="end" fill="#777066" fontSize="13">距離を縮めて表示</text>
+            {(plan.venueLayout?.stageShape ?? 'proscenium') !== 'proscenium' && <polygon
+              points={stageFootprint(plan.venueLayout ?? DEFAULT_VENUE_LAYOUT)
+                .map(([x, z]) => `${mapX(x)},${stageMapY(z)}`).join(' ')}
+              fill="#fffdf8" stroke="#967447" strokeWidth="5" />}
             {showSetPieces && setPieces.map((piece, index) => {
               const active = selectedSetPiece?.id === piece.id
-              const width = Math.max(28, (piece.size?.[0] ?? 1) * Math.abs(piece.scale) * MAP.width / 16)
-              const depth = Math.max(24, (piece.size?.[2] ?? 1) * Math.abs(piece.scale) * MAP.height / 10)
+              const width = Math.max(28, (piece.size?.[0] ?? 1) * Math.abs(piece.scale) * MAP.width / (mapBounds.right - mapBounds.left))
+              const depth = Math.max(24, (piece.size?.[2] ?? 1) * Math.abs(piece.scale) * MAP.height / (mapBounds.front - mapBounds.rear))
               const duplicates = setPieces.filter(item => item.name === piece.name)
               const order = setPieces.slice(0, index + 1).filter(item => item.name === piece.name).length
               const name = (piece.name.trim() || '名称未設定') + (duplicates.length > 1 ? ` ${order}` : '')
@@ -880,8 +899,8 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
                   selectSetPiece(piece.id)
                   setLastMove({ kind: 'setpiece', id: piece.id, sceneId: scene.id, from: [piece.position[0], piece.position[2]] })
                   updateSetPiece(piece.id, { position: [
-                    clamp(piece.position[0] + delta[0], -7, 7), piece.position[1],
-                    clamp(piece.position[2] + delta[1], -7.5, 2),
+                    clamp(piece.position[0] + delta[0], mapBounds.left + .5, mapBounds.right - .5), piece.position[1],
+                    clamp(piece.position[2] + delta[1], mapBounds.rear + .5, mapBounds.front - .2),
                   ] })
                 }}>
                 {piece.kind === 'gltf' && <title>3D モデルの平面上の大きさは目安です</title>}
@@ -951,8 +970,8 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
                     selectFixture(fixture.id, 'target')
                     setLastMove({ kind: 'target', id: fixture.id, sceneId: scene.id, from: [fixture.target[0], fixture.target[2]] })
                     updateFixture(fixture.id, { target: [
-                      clamp(fixture.target[0] + delta[0], -7.8, 7.8), fixture.target[1],
-                      clamp(fixture.target[2] + delta[1], -7.8, 1.8),
+                      clamp(fixture.target[0] + delta[0], mapBounds.left + .2, mapBounds.right - .2), fixture.target[1],
+                      clamp(fixture.target[2] + delta[1], mapBounds.rear + .2, mapBounds.front - .2),
                     ] })
                   }} />
                 <g role="button" tabIndex={0} aria-label={fixture.name + 'の設置位置を移動'}
@@ -971,8 +990,8 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
                     selectFixture(fixture.id)
                     setLastMove({ kind: 'fixture', id: fixture.id, sceneId: scene.id, from: [fixture.position[0], fixture.position[2]] })
                     updateFixture(fixture.id, { position: [
-                      clamp(fixture.position[0] + delta[0], -7, 7), fixture.position[1],
-                      clamp(fixture.position[2] + delta[1], -7.5, 24),
+                      clamp(fixture.position[0] + delta[0], mapBounds.left + .5, mapBounds.right - .5), fixture.position[1],
+                      clamp(fixture.position[2] + delta[1], mapBounds.rear + .5, 35),
                     ] })
                   }}>
                   <title>{fixture.name}{fixture.position[2] > 2 ? `・舞台前から ${(fixture.position[2] - 2).toFixed(1)}m` : ''}</title>
@@ -1004,7 +1023,7 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
                     updatePerformer(performer.id, { position: [
                       Math.round(clamp(point[0] + delta[0], -9.2, 9.2) * 10) / 10,
                       performer.position[1],
-                      Math.round(clamp(point[1] + delta[1], -7.8, 1.8) * 10) / 10,
+                      Math.round(clamp(point[1] + delta[1], mapBounds.rear + .2, mapBounds.front - .2) * 10) / 10,
                     ] })
                   }} />
                 <text x={mapX(point[0])} y={mapY(point[1]) + 6} textAnchor="middle"

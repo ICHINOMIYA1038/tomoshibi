@@ -69,6 +69,16 @@ export interface ProductionPlan {
   scenes: PlanScene[]
   activeSceneId: string | null
   audienceBlocks?: AudienceBlock[]
+  venueLayout?: VenueLayout
+}
+
+export type StageShape = 'proscenium' | 'round' | 'thrust' | 'custom'
+export interface VenueLayout {
+  stageShape: StageShape
+  stageWidth: number
+  stageDepth: number
+  stageVertices?: StagePoint[]
+  targetCapacity: number
 }
 
 export interface AudienceBlock {
@@ -329,6 +339,7 @@ interface State {
   addAudienceBlock: () => string | null
   updateAudienceBlock: (id: string, patch: Partial<AudienceBlock>) => void
   removeAudienceBlock: (id: string) => void
+  updateVenueLayout: (patch: Partial<VenueLayout>) => void
   ensureScenes: () => void
   addScene: () => void
   addSceneAt: (chapterId: string, beforeSceneId: string | null) => string | null
@@ -580,7 +591,7 @@ export const useStore = create<State>((set, get) => ({
     let addedId: string | null = null
     set(s => {
       const blocks = s.productionPlan.audienceBlocks ?? []
-      if (blocks.length >= 8) return {}
+      if (blocks.length >= 16) return {}
       const block: AudienceBlock = {
         id: groupId('au'), name: `客席 ${blocks.length + 1}`,
         position: [blocks.length % 2 === 0 ? -3 : 3, 10 + Math.floor(blocks.length / 2) * 3],
@@ -598,6 +609,11 @@ export const useStore = create<State>((set, get) => ({
   removeAudienceBlock: (id) => set(s => ({ productionPlan: {
     ...s.productionPlan,
     audienceBlocks: (s.productionPlan.audienceBlocks ?? []).filter(block => block.id !== id),
+  } })),
+  updateVenueLayout: (patch) => set(s => ({ productionPlan: {
+    ...s.productionPlan,
+    venueLayout: { stageShape: 'proscenium', stageWidth: 16, stageDepth: 12,
+      targetCapacity: 0, ...s.productionPlan.venueLayout, ...patch },
   } })),
   ensureScenes: () => set(s => {
     if (s.productionPlan.scenes.length) return { productionPlan: ensurePlanHierarchy(s.productionPlan) }
