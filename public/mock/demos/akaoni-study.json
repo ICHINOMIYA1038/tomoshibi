@@ -18,7 +18,7 @@
         -2
       ],
       "beamAngleDeg": 44,
-      "intensity": 0.2838,
+      "intensity": 0.17,
       "color": [
         1,
         0.7200782887719634,
@@ -46,7 +46,7 @@
         -2
       ],
       "beamAngleDeg": 44,
-      "intensity": 0.2064,
+      "intensity": 0.24,
       "color": [
         1,
         0.7200782887719634,
@@ -74,7 +74,7 @@
         -5
       ],
       "beamAngleDeg": 44,
-      "intensity": 0.1548,
+      "intensity": 0.08,
       "color": [
         1,
         0.7200782887719634,
@@ -102,7 +102,7 @@
         -5
       ],
       "beamAngleDeg": 44,
-      "intensity": 0.1548,
+      "intensity": 0.2,
       "color": [
         1,
         0.7200782887719634,
@@ -117,20 +117,20 @@
     },
     {
       "id": "f5",
-      "name": "あの女の前明かり",
-      "presetKey": "Source4_19",
+      "name": "前明かり・下手の面",
+      "presetKey": "Fresnel10",
       "position": [
         -4.5,
         5.8,
         1.4
       ],
       "target": [
-        -2.1,
-        1.4,
-        -2.2
+        -3,
+        1.5,
+        -3
       ],
-      "beamAngleDeg": 17,
-      "intensity": 0.0078000000000000005,
+      "beamAngleDeg": 44,
+      "intensity": 0.08,
       "color": [
         1,
         0.7200782887719634,
@@ -140,24 +140,25 @@
       "whiteMix": 0,
       "colorTempK": 3200,
       "rotationZDeg": 0,
-      "enabled": true
+      "enabled": true,
+      "photometricProfile": "etc-fos4-fresnel10-mid"
     },
     {
       "id": "f6",
-      "name": "浜の人物の前明かり",
-      "presetKey": "Source4_19",
+      "name": "前明かり・上手の面",
+      "presetKey": "Fresnel10",
       "position": [
         4.5,
         5.8,
         1.4
       ],
       "target": [
-        4.6,
-        1.4,
-        -1.8
+        3,
+        1.5,
+        -3
       ],
-      "beamAngleDeg": 17,
-      "intensity": 0.006299999999999999,
+      "beamAngleDeg": 44,
+      "intensity": 0.08,
       "color": [
         1,
         0.7200782887719634,
@@ -167,24 +168,25 @@
       "whiteMix": 0,
       "colorTempK": 3200,
       "rotationZDeg": 0,
-      "enabled": true
+      "enabled": true,
+      "photometricProfile": "etc-fos4-fresnel10-mid"
     },
     {
       "id": "f7",
-      "name": "赤鬼の前明かり",
-      "presetKey": "Source4_19",
+      "name": "前明かり・中央の面",
+      "presetKey": "Fresnel10",
       "position": [
         1,
         5.8,
         1.4
       ],
       "target": [
-        3,
-        1.4,
-        -4.2
+        1.2,
+        1.6,
+        -3.6
       ],
-      "beamAngleDeg": 17,
-      "intensity": 0.003,
+      "beamAngleDeg": 36,
+      "intensity": 0,
       "color": [
         1,
         0.7200782887719634,
@@ -194,7 +196,8 @@
       "whiteMix": 0,
       "colorTempK": 3200,
       "rotationZDeg": 0,
-      "enabled": true
+      "enabled": false,
+      "photometricProfile": "etc-fos4-fresnel10-mid"
     },
     {
       "id": "f8",
@@ -249,7 +252,7 @@
       "whiteMix": 0,
       "colorTempK": 6500,
       "rotationZDeg": 0,
-      "enabled": true
+      "enabled": false
     },
     {
       "id": "f10",
@@ -403,7 +406,7 @@
         -2
       ],
       "beamAngleDeg": 44,
-      "intensity": 0.111972,
+      "intensity": 0.08,
       "color": [
         1,
         0.7200782887719634,
@@ -617,7 +620,7 @@
               -2
             ],
             "beamAngleDeg": 44,
-            "intensity": 0.2838,
+            "intensity": 0.25,
             "color": [
               1,
               0.7200782887719634,
@@ -645,7 +648,7 @@
               -2
             ],
             "beamAngleDeg": 44,
-            "intensity": 0.258,
+            "intensity": 0.24,
             "color": [
               1,
               0.7200782887719634,
@@ -673,7 +676,7 @@
               -5
             ],
             "beamAngleDeg": 44,
-            "intensity": 0.1548,
+            "intensity": 0.16,
             "color": [
               1,
               0.7200782887719634,
@@ -701,7 +704,7 @@
               -5
             ],
             "beamAngleDeg": 44,
-            "intensity": 0.1548,
+            "intensity": 0.16,
             "color": [
               1,
               0.7200782887719634,
@@ -716,20 +719,20 @@
           },
           {
             "id": "f5",
-            "name": "あの女の前明かり",
-            "presetKey": "Source4_19",
+            "name": "前明かり・下手の面",
+            "presetKey": "Fresnel10",
             "position": [
               -4.5,
               5.8,
               1.4
             ],
             "target": [
-              -2.1,
-              1.4,
-              -2.2
+              -3,
+              1.5,
+              -3
             ],
-            "beamAngleDeg": 17,
-            "intensity": 0.0078000000000000005,
+            "beamAngleDeg": 44,
+            "intensity": 0.1,
             "color": [
               1,
               0.7200782887719634,
@@ -739,24 +742,25 @@
             "whiteMix": 0,
             "colorTempK": 3200,
             "rotationZDeg": 0,
-            "enabled": true
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
           },
           {
             "id": "f6",
-            "name": "浜の人物の前明かり",
-            "presetKey": "Source4_19",
+            "name": "前明かり・上手の面",
+            "presetKey": "Fresnel10",
             "position": [
               4.5,
               5.8,
               1.4
             ],
             "target": [
-              3.9,
-              1.4,
-              -2.6
+              3,
+              1.5,
+              -3
             ],
-            "beamAngleDeg": 17,
-            "intensity": 0.006299999999999999,
+            "beamAngleDeg": 44,
+            "intensity": 0.1,
             "color": [
               1,
               0.7200782887719634,
@@ -766,24 +770,25 @@
             "whiteMix": 0,
             "colorTempK": 3200,
             "rotationZDeg": 0,
-            "enabled": true
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
           },
           {
             "id": "f7",
-            "name": "赤鬼の前明かり",
-            "presetKey": "Source4_19",
+            "name": "前明かり・中央の面",
+            "presetKey": "Fresnel10",
             "position": [
               1,
               5.8,
               1.4
             ],
             "target": [
-              8.7,
-              1.4,
-              -4.2
+              1.2,
+              1.6,
+              -3.6
             ],
-            "beamAngleDeg": 17,
-            "intensity": 0.0045000000000000005,
+            "beamAngleDeg": 36,
+            "intensity": 0,
             "color": [
               1,
               0.7200782887719634,
@@ -793,7 +798,8 @@
             "whiteMix": 0,
             "colorTempK": 3200,
             "rotationZDeg": 0,
-            "enabled": false
+            "enabled": false,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
           },
           {
             "id": "f8",
@@ -1002,7 +1008,7 @@
               -2
             ],
             "beamAngleDeg": 44,
-            "intensity": 0.11919600000000001,
+            "intensity": 0.1,
             "color": [
               1,
               0.7200782887719634,
@@ -1167,7 +1173,7 @@
         "id": "sc1794120046931-sg49v8",
         "title": "浜に現れた影",
         "trigger": "海の奥に輪郭が現れる",
-        "note": "赤鬼が海側から現れ、ミズカネは上手へ退く。輪郭の赤は赤鬼だけに使い、地明かりの色は変えない。",
+        "note": "赤鬼が海側から現れ、ミズカネは上手へ退く。上手の地明かりを増やし、赤鬼だけを狙う灯りは使わない。",
         "fixtures": [
           {
             "id": "f1",
@@ -1184,7 +1190,7 @@
               -2
             ],
             "beamAngleDeg": 44,
-            "intensity": 0.2838,
+            "intensity": 0.17,
             "color": [
               1,
               0.7200782887719634,
@@ -1212,7 +1218,7 @@
               -2
             ],
             "beamAngleDeg": 44,
-            "intensity": 0.2064,
+            "intensity": 0.24,
             "color": [
               1,
               0.7200782887719634,
@@ -1240,7 +1246,7 @@
               -5
             ],
             "beamAngleDeg": 44,
-            "intensity": 0.1548,
+            "intensity": 0.08,
             "color": [
               1,
               0.7200782887719634,
@@ -1268,7 +1274,7 @@
               -5
             ],
             "beamAngleDeg": 44,
-            "intensity": 0.1548,
+            "intensity": 0.2,
             "color": [
               1,
               0.7200782887719634,
@@ -1283,20 +1289,20 @@
           },
           {
             "id": "f5",
-            "name": "あの女の前明かり",
-            "presetKey": "Source4_19",
+            "name": "前明かり・下手の面",
+            "presetKey": "Fresnel10",
             "position": [
               -4.5,
               5.8,
               1.4
             ],
             "target": [
-              -2.1,
-              1.4,
-              -2.2
+              -3,
+              1.5,
+              -3
             ],
-            "beamAngleDeg": 17,
-            "intensity": 0.0078000000000000005,
+            "beamAngleDeg": 44,
+            "intensity": 0.08,
             "color": [
               1,
               0.7200782887719634,
@@ -1306,24 +1312,25 @@
             "whiteMix": 0,
             "colorTempK": 3200,
             "rotationZDeg": 0,
-            "enabled": true
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
           },
           {
             "id": "f6",
-            "name": "浜の人物の前明かり",
-            "presetKey": "Source4_19",
+            "name": "前明かり・上手の面",
+            "presetKey": "Fresnel10",
             "position": [
               4.5,
               5.8,
               1.4
             ],
             "target": [
-              4.6,
-              1.4,
-              -1.8
+              3,
+              1.5,
+              -3
             ],
-            "beamAngleDeg": 17,
-            "intensity": 0.006299999999999999,
+            "beamAngleDeg": 44,
+            "intensity": 0.08,
             "color": [
               1,
               0.7200782887719634,
@@ -1333,24 +1340,25 @@
             "whiteMix": 0,
             "colorTempK": 3200,
             "rotationZDeg": 0,
-            "enabled": true
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
           },
           {
             "id": "f7",
-            "name": "赤鬼の前明かり",
-            "presetKey": "Source4_19",
+            "name": "前明かり・中央の面",
+            "presetKey": "Fresnel10",
             "position": [
               1,
               5.8,
               1.4
             ],
             "target": [
-              3,
-              1.4,
-              -4.2
+              1.2,
+              1.6,
+              -3.6
             ],
-            "beamAngleDeg": 17,
-            "intensity": 0.003,
+            "beamAngleDeg": 36,
+            "intensity": 0,
             "color": [
               1,
               0.7200782887719634,
@@ -1360,7 +1368,8 @@
             "whiteMix": 0,
             "colorTempK": 3200,
             "rotationZDeg": 0,
-            "enabled": true
+            "enabled": false,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
           },
           {
             "id": "f8",
@@ -1415,7 +1424,7 @@
             "whiteMix": 0,
             "colorTempK": 6500,
             "rotationZDeg": 0,
-            "enabled": true
+            "enabled": false
           },
           {
             "id": "f10",
@@ -1569,7 +1578,7 @@
               -2
             ],
             "beamAngleDeg": 44,
-            "intensity": 0.111972,
+            "intensity": 0.08,
             "color": [
               1,
               0.7200782887719634,
@@ -1734,7 +1743,7 @@
         "id": "sc1794120046932-s1uvxm",
         "title": "境目で足を止める",
         "trigger": "足音が止まる",
-        "note": "赤鬼は海との境目に止まり、あの女だけ一歩近づく。二人の間の余白を残し、赤い輪郭は弱める。",
+        "note": "赤鬼は海との境目に止まり、あの女だけ一歩近づく。二人のいる中央の面を広く照らし、周囲は落とす。",
         "fixtures": [
           {
             "id": "f1",
@@ -1751,7 +1760,7 @@
               -2
             ],
             "beamAngleDeg": 44,
-            "intensity": 0.2838,
+            "intensity": 0.08,
             "color": [
               1,
               0.7200782887719634,
@@ -1779,7 +1788,7 @@
               -2
             ],
             "beamAngleDeg": 44,
-            "intensity": 0.2064,
+            "intensity": 0.13,
             "color": [
               1,
               0.7200782887719634,
@@ -1807,7 +1816,7 @@
               -5
             ],
             "beamAngleDeg": 44,
-            "intensity": 0.1548,
+            "intensity": 0.04,
             "color": [
               1,
               0.7200782887719634,
@@ -1835,7 +1844,7 @@
               -5
             ],
             "beamAngleDeg": 44,
-            "intensity": 0.1548,
+            "intensity": 0.1,
             "color": [
               1,
               0.7200782887719634,
@@ -1850,20 +1859,20 @@
           },
           {
             "id": "f5",
-            "name": "あの女の前明かり",
-            "presetKey": "Source4_19",
+            "name": "前明かり・下手の面",
+            "presetKey": "Fresnel10",
             "position": [
               -4.5,
               5.8,
               1.4
             ],
             "target": [
-              0.6,
-              1.4,
+              -3,
+              1.5,
               -3
             ],
-            "beamAngleDeg": 17,
-            "intensity": 0.0078000000000000005,
+            "beamAngleDeg": 44,
+            "intensity": 0.025,
             "color": [
               1,
               0.7200782887719634,
@@ -1873,24 +1882,25 @@
             "whiteMix": 0,
             "colorTempK": 3200,
             "rotationZDeg": 0,
-            "enabled": true
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
           },
           {
             "id": "f6",
-            "name": "浜の人物の前明かり",
-            "presetKey": "Source4_19",
+            "name": "前明かり・上手の面",
+            "presetKey": "Fresnel10",
             "position": [
               4.5,
               5.8,
               1.4
             ],
             "target": [
-              4.6,
-              1.4,
-              -1.8
+              3,
+              1.5,
+              -3
             ],
-            "beamAngleDeg": 17,
-            "intensity": 0.006299999999999999,
+            "beamAngleDeg": 44,
+            "intensity": 0.03,
             "color": [
               1,
               0.7200782887719634,
@@ -1900,24 +1910,25 @@
             "whiteMix": 0,
             "colorTempK": 3200,
             "rotationZDeg": 0,
-            "enabled": true
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
           },
           {
             "id": "f7",
-            "name": "赤鬼の前明かり",
-            "presetKey": "Source4_19",
+            "name": "前明かり・中央の面",
+            "presetKey": "Fresnel10",
             "position": [
               1,
               5.8,
               1.4
             ],
             "target": [
-              2.2,
-              1.4,
-              -4.1
+              1.2,
+              1.6,
+              -3.6
             ],
-            "beamAngleDeg": 17,
-            "intensity": 0.004200000000000001,
+            "beamAngleDeg": 36,
+            "intensity": 0.08,
             "color": [
               1,
               0.7200782887719634,
@@ -1927,7 +1938,8 @@
             "whiteMix": 0,
             "colorTempK": 3200,
             "rotationZDeg": 0,
-            "enabled": true
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
           },
           {
             "id": "f8",
@@ -1982,7 +1994,7 @@
             "whiteMix": 0,
             "colorTempK": 6500,
             "rotationZDeg": 0,
-            "enabled": true
+            "enabled": false
           },
           {
             "id": "f10",
@@ -2119,7 +2131,7 @@
             "whiteMix": 0,
             "colorTempK": 3200,
             "rotationZDeg": 0,
-            "enabled": true
+            "enabled": false
           },
           {
             "id": "f-ground-center-study",
@@ -2136,7 +2148,7 @@
               -2
             ],
             "beamAngleDeg": 44,
-            "intensity": 0.111972,
+            "intensity": 0.18,
             "color": [
               1,
               0.7200782887719634,
@@ -2301,7 +2313,7 @@
         "id": "sc1794120046931-6uy94k",
         "title": "花のしるし",
         "trigger": "赤い布を置く",
-        "note": "あの女と赤鬼が中央へ近づく。赤い布は二人の前明かりで見せ、床の円形の光だまりを抑える。",
+        "note": "あの女と赤鬼が中央へ近づく。中央の地明かりと前明かりを重ね、赤い布と二人を同じ面の中で見せる。",
         "fixtures": [
           {
             "id": "f1",
@@ -2318,7 +2330,7 @@
               -2
             ],
             "beamAngleDeg": 44,
-            "intensity": 0.19866,
+            "intensity": 0.06,
             "color": [
               1,
               0.7200782887719634,
@@ -2346,7 +2358,7 @@
               -2
             ],
             "beamAngleDeg": 44,
-            "intensity": 0.14448,
+            "intensity": 0.07,
             "color": [
               1,
               0.7200782887719634,
@@ -2374,7 +2386,7 @@
               -5
             ],
             "beamAngleDeg": 44,
-            "intensity": 0.10835999999999998,
+            "intensity": 0.03,
             "color": [
               1,
               0.7200782887719634,
@@ -2402,7 +2414,7 @@
               -5
             ],
             "beamAngleDeg": 44,
-            "intensity": 0.10835999999999998,
+            "intensity": 0.05,
             "color": [
               1,
               0.7200782887719634,
@@ -2417,20 +2429,20 @@
           },
           {
             "id": "f5",
-            "name": "あの女の前明かり",
-            "presetKey": "Source4_19",
+            "name": "前明かり・下手の面",
+            "presetKey": "Fresnel10",
             "position": [
               -4.5,
               5.8,
               1.4
             ],
             "target": [
-              0,
-              1.4,
-              -2.2
+              -3,
+              1.5,
+              -3
             ],
-            "beamAngleDeg": 17,
-            "intensity": 0.0087,
+            "beamAngleDeg": 44,
+            "intensity": 0.02,
             "color": [
               1,
               0.7200782887719634,
@@ -2440,24 +2452,25 @@
             "whiteMix": 0,
             "colorTempK": 3200,
             "rotationZDeg": 0,
-            "enabled": true
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
           },
           {
             "id": "f6",
-            "name": "浜の人物の前明かり",
-            "presetKey": "Source4_19",
+            "name": "前明かり・上手の面",
+            "presetKey": "Fresnel10",
             "position": [
               4.5,
               5.8,
               1.4
             ],
             "target": [
-              4.6,
-              1.4,
-              -1.8
+              3,
+              1.5,
+              -3
             ],
-            "beamAngleDeg": 17,
-            "intensity": 0.006299999999999999,
+            "beamAngleDeg": 44,
+            "intensity": 0.02,
             "color": [
               1,
               0.7200782887719634,
@@ -2467,24 +2480,25 @@
             "whiteMix": 0,
             "colorTempK": 3200,
             "rotationZDeg": 0,
-            "enabled": true
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
           },
           {
             "id": "f7",
-            "name": "赤鬼の前明かり",
-            "presetKey": "Source4_19",
+            "name": "前明かり・中央の面",
+            "presetKey": "Fresnel10",
             "position": [
               1,
               5.8,
               1.4
             ],
             "target": [
-              1.8,
-              1.4,
-              -3.2
+              0.9,
+              1.6,
+              -2.7
             ],
-            "beamAngleDeg": 17,
-            "intensity": 0.005399999999999999,
+            "beamAngleDeg": 36,
+            "intensity": 0.1,
             "color": [
               1,
               0.7200782887719634,
@@ -2494,7 +2508,8 @@
             "whiteMix": 0,
             "colorTempK": 3200,
             "rotationZDeg": 0,
-            "enabled": true
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
           },
           {
             "id": "f8",
@@ -2549,7 +2564,7 @@
             "whiteMix": 0,
             "colorTempK": 6500,
             "rotationZDeg": 0,
-            "enabled": true
+            "enabled": false
           },
           {
             "id": "f10",
@@ -2686,7 +2701,7 @@
             "whiteMix": 0,
             "colorTempK": 3200,
             "rotationZDeg": 0,
-            "enabled": true
+            "enabled": false
           },
           {
             "id": "f-ground-center-study",
@@ -2703,7 +2718,7 @@
               -2
             ],
             "beamAngleDeg": 44,
-            "intensity": 0.07838039999999999,
+            "intensity": 0.22,
             "color": [
               1,
               0.7200782887719634,
@@ -2890,7 +2905,7 @@
         "id": "sc1794120046931-tjmgl5",
         "title": "洞窟で向き合う",
         "trigger": "外の波音が遠のく",
-        "note": "洞窟の口を二つの岩で示す。あの女と赤鬼を内側に、ミズカネととんびを外側に置く。地明かりは4灯とも同じ色で絞る。",
+        "note": "洞窟の口を二つの岩で示す。あの女と赤鬼を内側に、ミズカネととんびを外側に置く。下手の地明かりと前明かりで内側を広く見せる。",
         "fixtures": [
           {
             "id": "f1",
@@ -2907,7 +2922,7 @@
               -2
             ],
             "beamAngleDeg": 44,
-            "intensity": 0.1677,
+            "intensity": 0.08,
             "color": [
               1,
               0.7200782887719634,
@@ -2935,7 +2950,7 @@
               -2
             ],
             "beamAngleDeg": 44,
-            "intensity": 0.1677,
+            "intensity": 0.015,
             "color": [
               1,
               0.7200782887719634,
@@ -2963,7 +2978,7 @@
               -5
             ],
             "beamAngleDeg": 44,
-            "intensity": 0.129,
+            "intensity": 0.15,
             "color": [
               1,
               0.7200782887719634,
@@ -2991,7 +3006,7 @@
               -5
             ],
             "beamAngleDeg": 44,
-            "intensity": 0.129,
+            "intensity": 0.015,
             "color": [
               1,
               0.7200782887719634,
@@ -3006,20 +3021,20 @@
           },
           {
             "id": "f5",
-            "name": "あの女の前明かり",
-            "presetKey": "Source4_19",
+            "name": "前明かり・下手の面",
+            "presetKey": "Fresnel10",
             "position": [
               -4.5,
               5.8,
               1.4
             ],
             "target": [
-              -2.8,
-              1.4,
-              -4.6
+              -3.4,
+              1.5,
+              -4.2
             ],
-            "beamAngleDeg": 17,
-            "intensity": 0.005399999999999999,
+            "beamAngleDeg": 44,
+            "intensity": 0.08,
             "color": [
               1,
               0.7200782887719634,
@@ -3029,24 +3044,25 @@
             "whiteMix": 0,
             "colorTempK": 3200,
             "rotationZDeg": 0,
-            "enabled": true
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
           },
           {
             "id": "f6",
-            "name": "浜の人物の前明かり",
-            "presetKey": "Source4_19",
+            "name": "前明かり・上手の面",
+            "presetKey": "Fresnel10",
             "position": [
               4.5,
               5.8,
               1.4
             ],
             "target": [
-              -0.5,
-              1.4,
-              -3.8
+              -0.2,
+              1.5,
+              -4.2
             ],
-            "beamAngleDeg": 17,
-            "intensity": 0.0048,
+            "beamAngleDeg": 44,
+            "intensity": 0.015,
             "color": [
               1,
               0.7200782887719634,
@@ -3056,24 +3072,25 @@
             "whiteMix": 0,
             "colorTempK": 3200,
             "rotationZDeg": 0,
-            "enabled": true
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
           },
           {
             "id": "f7",
-            "name": "赤鬼の前明かり",
-            "presetKey": "Source4_19",
+            "name": "前明かり・中央の面",
+            "presetKey": "Fresnel10",
             "position": [
               1,
               5.8,
               1.4
             ],
             "target": [
-              -3.8,
-              1.4,
-              -5.1
+              1.2,
+              1.6,
+              -3.6
             ],
-            "beamAngleDeg": 17,
-            "intensity": 0.0045000000000000005,
+            "beamAngleDeg": 36,
+            "intensity": 0,
             "color": [
               1,
               0.7200782887719634,
@@ -3083,7 +3100,8 @@
             "whiteMix": 0,
             "colorTempK": 3200,
             "rotationZDeg": 0,
-            "enabled": true
+            "enabled": false,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
           },
           {
             "id": "f8",
@@ -3165,7 +3183,7 @@
             "whiteMix": 0,
             "colorTempK": 6500,
             "rotationZDeg": 0,
-            "enabled": true
+            "enabled": false
           },
           {
             "id": "f11",
@@ -3292,7 +3310,7 @@
               -2
             ],
             "beamAngleDeg": 44,
-            "intensity": 0.08307600000000001,
+            "intensity": 0.04,
             "color": [
               1,
               0.7200782887719634,
@@ -3479,7 +3497,7 @@
         "id": "sc1794120046932-mrhokk",
         "title": "海の向こうへ",
         "trigger": "舟のきしむ音",
-        "note": "四人が舟に乗る。浜の地明かりを弱め、海の青と舟の輪郭を残す。",
+        "note": "四人が舟に乗る。浜の地明かりを弱め、海の青と舟の輪郭を残す。人物の面を弱い前明かりで支える。",
         "fixtures": [
           {
             "id": "f1",
@@ -3496,7 +3514,7 @@
               -2
             ],
             "beamAngleDeg": 44,
-            "intensity": 0.1032,
+            "intensity": 0.01,
             "color": [
               1,
               0.7200782887719634,
@@ -3524,7 +3542,7 @@
               -2
             ],
             "beamAngleDeg": 44,
-            "intensity": 0.1032,
+            "intensity": 0.01,
             "color": [
               1,
               0.7200782887719634,
@@ -3552,7 +3570,7 @@
               -5
             ],
             "beamAngleDeg": 44,
-            "intensity": 0.1032,
+            "intensity": 0.03,
             "color": [
               1,
               0.7200782887719634,
@@ -3580,7 +3598,7 @@
               -5
             ],
             "beamAngleDeg": 44,
-            "intensity": 0.1032,
+            "intensity": 0.03,
             "color": [
               1,
               0.7200782887719634,
@@ -3595,20 +3613,20 @@
           },
           {
             "id": "f5",
-            "name": "あの女の前明かり",
-            "presetKey": "Source4_19",
+            "name": "前明かり・下手の面",
+            "presetKey": "Fresnel10",
             "position": [
               -4.5,
               5.8,
               1.4
             ],
             "target": [
-              -1.5,
-              1.4,
-              -5.7
+              -1,
+              1.5,
+              -5.5
             ],
-            "beamAngleDeg": 17,
-            "intensity": 0.006299999999999999,
+            "beamAngleDeg": 44,
+            "intensity": 0.05,
             "color": [
               1,
               0.7200782887719634,
@@ -3618,24 +3636,25 @@
             "whiteMix": 0,
             "colorTempK": 3200,
             "rotationZDeg": 0,
-            "enabled": true
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
           },
           {
             "id": "f6",
-            "name": "浜の人物の前明かり",
-            "presetKey": "Source4_19",
+            "name": "前明かり・上手の面",
+            "presetKey": "Fresnel10",
             "position": [
               4.5,
               5.8,
               1.4
             ],
             "target": [
-              0.5,
-              1.4,
-              -5.7
+              1,
+              1.5,
+              -5.5
             ],
-            "beamAngleDeg": 17,
-            "intensity": 0.0057,
+            "beamAngleDeg": 44,
+            "intensity": 0.05,
             "color": [
               1,
               0.7200782887719634,
@@ -3645,24 +3664,25 @@
             "whiteMix": 0,
             "colorTempK": 3200,
             "rotationZDeg": 0,
-            "enabled": true
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
           },
           {
             "id": "f7",
-            "name": "赤鬼の前明かり",
-            "presetKey": "Source4_19",
+            "name": "前明かり・中央の面",
+            "presetKey": "Fresnel10",
             "position": [
               1,
               5.8,
               1.4
             ],
             "target": [
+              0,
               1.5,
-              1.4,
-              -5.7
+              -5.5
             ],
-            "beamAngleDeg": 17,
-            "intensity": 0.005399999999999999,
+            "beamAngleDeg": 36,
+            "intensity": 0.035,
             "color": [
               1,
               0.7200782887719634,
@@ -3672,7 +3692,8 @@
             "whiteMix": 0,
             "colorTempK": 3200,
             "rotationZDeg": 0,
-            "enabled": true
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
           },
           {
             "id": "f8",
@@ -3809,7 +3830,7 @@
             "whiteMix": 0,
             "colorTempK": 6500,
             "rotationZDeg": 0,
-            "enabled": true
+            "enabled": false
           },
           {
             "id": "f13",
@@ -3881,7 +3902,7 @@
               -2
             ],
             "beamAngleDeg": 44,
-            "intensity": 0.057792,
+            "intensity": 0.045,
             "color": [
               1,
               0.7200782887719634,
