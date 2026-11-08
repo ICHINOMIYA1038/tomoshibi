@@ -1,24 +1,24 @@
 {
   "version": 2,
   "name": "雨を待つ図書室｜面明かり試作",
-  "savedAt": "2026-11-08T02:16:43.804Z",
+  "savedAt": "2026-11-08T13:51:04.888Z",
   "fixtures": [
     {
       "id": "f1",
       "name": "前明かり・下手の面",
       "presetKey": "Fresnel10",
       "position": [
-        -3.8,
-        5.4,
-        0.8
+        -5.5,
+        9.2,
+        6.5
       ],
       "target": [
         -2.5,
         1.5,
         -2.4
       ],
-      "beamAngleDeg": 44,
-      "intensity": 0.025,
+      "beamAngleDeg": 28,
+      "intensity": 0.05500000000000001,
       "color": [
         1,
         0.85,
@@ -29,6 +29,7 @@
       "colorTempK": 3200,
       "rotationZDeg": 0,
       "enabled": true,
+      "upstageCutDeg": 3,
       "photometricProfile": "etc-fos4-fresnel10-mid"
     },
     {
@@ -36,17 +37,17 @@
       "name": "前明かり・上手の面",
       "presetKey": "Fresnel10",
       "position": [
-        4.4,
-        5.2,
-        0.8
+        5.5,
+        9.2,
+        6.5
       ],
       "target": [
         2.5,
         1.5,
         -2.4
       ],
-      "beamAngleDeg": 44,
-      "intensity": 0.025,
+      "beamAngleDeg": 28,
+      "intensity": 0.05500000000000001,
       "color": [
         1,
         0.85,
@@ -57,6 +58,7 @@
       "colorTempK": 3200,
       "rotationZDeg": 0,
       "enabled": true,
+      "upstageCutDeg": 3,
       "photometricProfile": "etc-fos4-fresnel10-mid"
     },
     {
@@ -74,7 +76,7 @@
         -2.9
       ],
       "beamAngleDeg": 27,
-      "intensity": 0.095,
+      "intensity": 0,
       "color": [
         1,
         0.72,
@@ -89,29 +91,31 @@
     {
       "id": "f4",
       "name": "書架の面明かり",
-      "presetKey": "Fresnel8",
+      "presetKey": "Fresnel10",
       "position": [
         -5.5,
-        5.8,
-        -3.7
+        6.2,
+        -3.2
       ],
       "target": [
         -4.4,
         1.4,
-        -5.9
+        -6
       ],
-      "beamAngleDeg": 28,
-      "intensity": 0.18,
+      "beamAngleDeg": 30,
+      "intensity": 0.02,
       "color": [
         1,
-        0.82,
-        0.66
+        0.85,
+        0.72
       ],
       "gelEnabled": true,
       "whiteMix": 0.16,
       "colorTempK": 3200,
       "rotationZDeg": 0,
-      "enabled": false
+      "enabled": true,
+      "upstageCutDeg": 3,
+      "photometricProfile": "etc-fos4-fresnel10-mid"
     },
     {
       "id": "f5",
@@ -260,12 +264,12 @@
         0.5
       ],
       "target": [
-        -3.5,
+        -2.5,
         1,
         -2
       ],
       "beamAngleDeg": 44,
-      "intensity": 0.06,
+      "intensity": 0.1,
       "color": [
         1,
         0.85,
@@ -288,12 +292,12 @@
         0.5
       ],
       "target": [
-        3.5,
+        2.5,
         1,
         -2
       ],
       "beamAngleDeg": 44,
-      "intensity": 0.06,
+      "intensity": 0.1,
       "color": [
         1,
         0.85,
@@ -313,15 +317,15 @@
       "position": [
         -4.5,
         6.8,
-        -5.5
+        -3.8
       ],
       "target": [
-        -3,
+        -4.5,
         1,
         -5
       ],
       "beamAngleDeg": 44,
-      "intensity": 0.04,
+      "intensity": 0.05,
       "color": [
         1,
         0.85,
@@ -332,6 +336,7 @@
       "colorTempK": 3200,
       "rotationZDeg": 0,
       "enabled": true,
+      "upstageCutDeg": 5,
       "photometricProfile": "etc-fos4-fresnel10-mid"
     },
     {
@@ -341,15 +346,15 @@
       "position": [
         4.5,
         6.8,
-        -5.5
+        -3.8
       ],
       "target": [
-        3,
+        4.5,
         1,
         -5
       ],
       "beamAngleDeg": 44,
-      "intensity": 0.04,
+      "intensity": 0.05,
       "color": [
         1,
         0.85,
@@ -360,6 +365,7 @@
       "colorTempK": 3200,
       "rotationZDeg": 0,
       "enabled": true,
+      "upstageCutDeg": 5,
       "photometricProfile": "etc-fos4-fresnel10-mid"
     },
     {
@@ -377,7 +383,7 @@
         -2.4
       ],
       "beamAngleDeg": 44,
-      "intensity": 0.16,
+      "intensity": 0.065,
       "color": [
         1,
         0.85,
@@ -396,16 +402,16 @@
       "presetKey": "Fresnel10",
       "position": [
         0,
-        5.8,
-        1.4
+        9.2,
+        6.5
       ],
       "target": [
         0,
         1.5,
         -2.3
       ],
-      "beamAngleDeg": 36,
-      "intensity": 0.09,
+      "beamAngleDeg": 26,
+      "intensity": 0.198,
       "color": [
         1,
         0.85,
@@ -416,6 +422,7 @@
       "colorTempK": 3200,
       "rotationZDeg": 0,
       "enabled": true,
+      "upstageCutDeg": 3,
       "photometricProfile": "etc-fos4-fresnel10-mid"
     }
   ],
@@ -449,7 +456,7 @@
   ],
   "setPieces": [
     {
-      "id": "sp1794104203794-0",
+      "id": "sp1794145864885-0",
       "name": "閲覧机",
       "kind": "box",
       "size": [
@@ -472,7 +479,7 @@
       "appearance": "table"
     },
     {
-      "id": "sp1794104203794-1",
+      "id": "sp1794145864885-1",
       "name": "書架",
       "kind": "box",
       "size": [
@@ -495,7 +502,7 @@
       "appearance": "bookshelf"
     },
     {
-      "id": "sp1794104203794-2",
+      "id": "sp1794145864885-2",
       "name": "雨の窓",
       "kind": "box",
       "size": [
@@ -518,7 +525,7 @@
       "appearance": "window"
     },
     {
-      "id": "sp1794104203794-3",
+      "id": "sp1794145864885-3",
       "name": "返却された本",
       "kind": "box",
       "size": [
@@ -545,29 +552,29 @@
     "projectTitle": "雨を待つ図書室｜面明かり試作",
     "chapters": [
       {
-        "id": "ch1794104203794-y63uzx",
+        "id": "ch1794145864884-yhfc3q",
         "title": "第一章・閉館"
       },
       {
-        "id": "ch1794104203796-0ziym2",
+        "id": "ch1794145864887-vnpqy7",
         "title": "第二章・夜明け"
       }
     ],
     "sequences": [
       {
-        "id": "sq1794104203794-rwn2p5",
-        "chapterId": "ch1794104203794-y63uzx",
+        "id": "sq1794145864884-mg2749",
+        "chapterId": "ch1794145864884-yhfc3q",
         "title": "シーケンス 1"
       },
       {
-        "id": "sq1794104203796-mw75wd",
-        "chapterId": "ch1794104203796-0ziym2",
+        "id": "sq1794145864887-gffbdv",
+        "chapterId": "ch1794145864887-vnpqy7",
         "title": "シーケンス 1"
       }
     ],
     "scenes": [
       {
-        "id": "sc1794104203794-3bqdt7",
+        "id": "sc1794145864884-57pfev",
         "title": "閉館前",
         "trigger": "",
         "note": "司書のいる下手と本を見せ、上手の窓は青く残す。",
@@ -577,17 +584,17 @@
             "name": "前明かり・下手の面",
             "presetKey": "Fresnel10",
             "position": [
-              -3.8,
-              5.4,
-              0.8
+              -5.5,
+              9.2,
+              6.5
             ],
             "target": [
               -2.5,
               1.5,
               -2.4
             ],
-            "beamAngleDeg": 44,
-            "intensity": 0.09,
+            "beamAngleDeg": 28,
+            "intensity": 0.198,
             "color": [
               1,
               0.85,
@@ -598,6 +605,7 @@
             "colorTempK": 3200,
             "rotationZDeg": 0,
             "enabled": true,
+            "upstageCutDeg": 3,
             "photometricProfile": "etc-fos4-fresnel10-mid"
           },
           {
@@ -605,16 +613,16 @@
             "name": "前明かり・上手の面",
             "presetKey": "Fresnel10",
             "position": [
-              4.4,
-              5.2,
-              0.8
+              5.5,
+              9.2,
+              6.5
             ],
             "target": [
               2.5,
               1.5,
               -2.4
             ],
-            "beamAngleDeg": 44,
+            "beamAngleDeg": 28,
             "intensity": 0,
             "color": [
               1,
@@ -626,6 +634,7 @@
             "colorTempK": 3200,
             "rotationZDeg": 0,
             "enabled": false,
+            "upstageCutDeg": 3,
             "photometricProfile": "etc-fos4-fresnel10-mid"
           },
           {
@@ -643,7 +652,7 @@
               -2.9
             ],
             "beamAngleDeg": 27,
-            "intensity": 0.075,
+            "intensity": 0,
             "color": [
               1,
               0.72,
@@ -658,29 +667,31 @@
           {
             "id": "f4",
             "name": "書架の面明かり",
-            "presetKey": "Fresnel8",
+            "presetKey": "Fresnel10",
             "position": [
               -5.5,
-              5.8,
-              -3.7
+              6.2,
+              -3.2
             ],
             "target": [
               -4.4,
               1.4,
-              -5.9
+              -6
             ],
-            "beamAngleDeg": 28,
-            "intensity": 0.48,
+            "beamAngleDeg": 30,
+            "intensity": 0.05,
             "color": [
               1,
-              0.82,
-              0.66
+              0.85,
+              0.72
             ],
             "gelEnabled": true,
             "whiteMix": 0.16,
             "colorTempK": 3200,
             "rotationZDeg": 0,
-            "enabled": false
+            "enabled": true,
+            "upstageCutDeg": 3,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
           },
           {
             "id": "f5",
@@ -829,12 +840,12 @@
               0.5
             ],
             "target": [
-              -3.5,
+              -2.5,
               1,
               -2
             ],
             "beamAngleDeg": 44,
-            "intensity": 0.16,
+            "intensity": 0.2,
             "color": [
               1,
               0.85,
@@ -857,12 +868,12 @@
               0.5
             ],
             "target": [
-              3.5,
+              2.5,
               1,
               -2
             ],
             "beamAngleDeg": 44,
-            "intensity": 0.06,
+            "intensity": 0.08,
             "color": [
               1,
               0.85,
@@ -882,15 +893,15 @@
             "position": [
               -4.5,
               6.8,
-              -5.5
+              -3.8
             ],
             "target": [
-              -3,
+              -4.5,
               1,
               -5
             ],
             "beamAngleDeg": 44,
-            "intensity": 0.1,
+            "intensity": 0.13,
             "color": [
               1,
               0.85,
@@ -901,6 +912,7 @@
             "colorTempK": 3200,
             "rotationZDeg": 0,
             "enabled": true,
+            "upstageCutDeg": 5,
             "photometricProfile": "etc-fos4-fresnel10-mid"
           },
           {
@@ -910,15 +922,15 @@
             "position": [
               4.5,
               6.8,
-              -5.5
+              -3.8
             ],
             "target": [
-              3,
+              4.5,
               1,
               -5
             ],
             "beamAngleDeg": 44,
-            "intensity": 0.04,
+            "intensity": 0.06,
             "color": [
               1,
               0.85,
@@ -929,6 +941,7 @@
             "colorTempK": 3200,
             "rotationZDeg": 0,
             "enabled": true,
+            "upstageCutDeg": 5,
             "photometricProfile": "etc-fos4-fresnel10-mid"
           },
           {
@@ -946,7 +959,7 @@
               -2.4
             ],
             "beamAngleDeg": 44,
-            "intensity": 0.06,
+            "intensity": 0.04,
             "color": [
               1,
               0.85,
@@ -965,16 +978,16 @@
             "presetKey": "Fresnel10",
             "position": [
               0,
-              5.8,
-              1.4
+              9.2,
+              6.5
             ],
             "target": [
               0,
               1.5,
               -2.3
             ],
-            "beamAngleDeg": 36,
-            "intensity": 0.025,
+            "beamAngleDeg": 26,
+            "intensity": 0.05500000000000001,
             "color": [
               1,
               0.85,
@@ -985,6 +998,7 @@
             "colorTempK": 3200,
             "rotationZDeg": 0,
             "enabled": true,
+            "upstageCutDeg": 3,
             "photometricProfile": "etc-fos4-fresnel10-mid"
           }
         ],
@@ -1018,7 +1032,7 @@
         ],
         "setPieces": [
           {
-            "id": "sp1794104203794-0",
+            "id": "sp1794145864885-0",
             "name": "閲覧机",
             "kind": "box",
             "size": [
@@ -1041,7 +1055,7 @@
             "appearance": "table"
           },
           {
-            "id": "sp1794104203794-1",
+            "id": "sp1794145864885-1",
             "name": "書架",
             "kind": "box",
             "size": [
@@ -1064,7 +1078,7 @@
             "appearance": "bookshelf"
           },
           {
-            "id": "sp1794104203794-2",
+            "id": "sp1794145864885-2",
             "name": "雨の窓",
             "kind": "box",
             "size": [
@@ -1087,7 +1101,7 @@
             "appearance": "window"
           },
           {
-            "id": "sp1794104203794-3",
+            "id": "sp1794145864885-3",
             "name": "返却された本",
             "kind": "box",
             "size": [
@@ -1109,10 +1123,10 @@
             "scale": 1
           }
         ],
-        "sequenceId": "sq1794104203794-rwn2p5"
+        "sequenceId": "sq1794145864884-mg2749"
       },
       {
-        "id": "sc1794104203795-l1bcrt",
+        "id": "sc1794145864886-97k25j",
         "title": "遅い来訪者",
         "trigger": "扉の鈴",
         "note": "来訪者が上手から入る。上手の地明かりを広げ、司書と本も見失わない。",
@@ -1122,17 +1136,17 @@
             "name": "前明かり・下手の面",
             "presetKey": "Fresnel10",
             "position": [
-              -3.8,
-              5.4,
-              0.8
+              -5.5,
+              9.2,
+              6.5
             ],
             "target": [
               -2.5,
               1.5,
               -2.4
             ],
-            "beamAngleDeg": 44,
-            "intensity": 0.07,
+            "beamAngleDeg": 28,
+            "intensity": 0.15400000000000003,
             "color": [
               1,
               0.85,
@@ -1143,6 +1157,7 @@
             "colorTempK": 3200,
             "rotationZDeg": 0,
             "enabled": true,
+            "upstageCutDeg": 3,
             "photometricProfile": "etc-fos4-fresnel10-mid"
           },
           {
@@ -1150,17 +1165,17 @@
             "name": "前明かり・上手の面",
             "presetKey": "Fresnel10",
             "position": [
-              4.4,
-              5.2,
-              0.8
+              5.5,
+              9.2,
+              6.5
             ],
             "target": [
               2.5,
               1.5,
               -2.4
             ],
-            "beamAngleDeg": 44,
-            "intensity": 0.09,
+            "beamAngleDeg": 28,
+            "intensity": 0.198,
             "color": [
               1,
               0.85,
@@ -1171,6 +1186,7 @@
             "colorTempK": 3200,
             "rotationZDeg": 0,
             "enabled": true,
+            "upstageCutDeg": 3,
             "photometricProfile": "etc-fos4-fresnel10-mid"
           },
           {
@@ -1188,7 +1204,7 @@
               -2.9
             ],
             "beamAngleDeg": 27,
-            "intensity": 0.075,
+            "intensity": 0,
             "color": [
               1,
               0.72,
@@ -1203,29 +1219,31 @@
           {
             "id": "f4",
             "name": "書架の面明かり",
-            "presetKey": "Fresnel8",
+            "presetKey": "Fresnel10",
             "position": [
               -5.5,
-              5.8,
-              -3.7
+              6.2,
+              -3.2
             ],
             "target": [
               -4.4,
               1.4,
-              -5.9
+              -6
             ],
-            "beamAngleDeg": 28,
-            "intensity": 0.48,
+            "beamAngleDeg": 30,
+            "intensity": 0.05,
             "color": [
               1,
-              0.82,
-              0.66
+              0.85,
+              0.72
             ],
             "gelEnabled": true,
             "whiteMix": 0.16,
             "colorTempK": 3200,
             "rotationZDeg": 0,
-            "enabled": false
+            "enabled": true,
+            "upstageCutDeg": 3,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
           },
           {
             "id": "f5",
@@ -1374,12 +1392,12 @@
               0.5
             ],
             "target": [
-              -3.5,
+              -2.5,
               1,
               -2
             ],
             "beamAngleDeg": 44,
-            "intensity": 0.12,
+            "intensity": 0.15,
             "color": [
               1,
               0.85,
@@ -1402,12 +1420,12 @@
               0.5
             ],
             "target": [
-              3.5,
+              2.5,
               1,
               -2
             ],
             "beamAngleDeg": 44,
-            "intensity": 0.18,
+            "intensity": 0.21,
             "color": [
               1,
               0.85,
@@ -1427,15 +1445,15 @@
             "position": [
               -4.5,
               6.8,
-              -5.5
+              -3.8
             ],
             "target": [
-              -3,
+              -4.5,
               1,
               -5
             ],
             "beamAngleDeg": 44,
-            "intensity": 0.07,
+            "intensity": 0.08,
             "color": [
               1,
               0.85,
@@ -1446,6 +1464,7 @@
             "colorTempK": 3200,
             "rotationZDeg": 0,
             "enabled": true,
+            "upstageCutDeg": 5,
             "photometricProfile": "etc-fos4-fresnel10-mid"
           },
           {
@@ -1455,15 +1474,15 @@
             "position": [
               4.5,
               6.8,
-              -5.5
+              -3.8
             ],
             "target": [
-              3,
+              4.5,
               1,
               -5
             ],
             "beamAngleDeg": 44,
-            "intensity": 0.1,
+            "intensity": 0.13,
             "color": [
               1,
               0.85,
@@ -1474,6 +1493,7 @@
             "colorTempK": 3200,
             "rotationZDeg": 0,
             "enabled": true,
+            "upstageCutDeg": 5,
             "photometricProfile": "etc-fos4-fresnel10-mid"
           },
           {
@@ -1491,7 +1511,7 @@
               -2.4
             ],
             "beamAngleDeg": 44,
-            "intensity": 0.08,
+            "intensity": 0.05,
             "color": [
               1,
               0.85,
@@ -1510,16 +1530,16 @@
             "presetKey": "Fresnel10",
             "position": [
               0,
-              5.8,
-              1.4
+              9.2,
+              6.5
             ],
             "target": [
               0,
               1.5,
               -2.3
             ],
-            "beamAngleDeg": 36,
-            "intensity": 0.025,
+            "beamAngleDeg": 26,
+            "intensity": 0.05500000000000001,
             "color": [
               1,
               0.85,
@@ -1530,6 +1550,7 @@
             "colorTempK": 3200,
             "rotationZDeg": 0,
             "enabled": true,
+            "upstageCutDeg": 3,
             "photometricProfile": "etc-fos4-fresnel10-mid"
           }
         ],
@@ -1563,7 +1584,7 @@
         ],
         "setPieces": [
           {
-            "id": "sp1794104203794-0",
+            "id": "sp1794145864885-0",
             "name": "閲覧机",
             "kind": "box",
             "size": [
@@ -1586,7 +1607,7 @@
             "appearance": "table"
           },
           {
-            "id": "sp1794104203794-1",
+            "id": "sp1794145864885-1",
             "name": "書架",
             "kind": "box",
             "size": [
@@ -1609,7 +1630,7 @@
             "appearance": "bookshelf"
           },
           {
-            "id": "sp1794104203794-2",
+            "id": "sp1794145864885-2",
             "name": "雨の窓",
             "kind": "box",
             "size": [
@@ -1632,7 +1653,7 @@
             "appearance": "window"
           },
           {
-            "id": "sp1794104203794-3",
+            "id": "sp1794145864885-3",
             "name": "返却された本",
             "kind": "box",
             "size": [
@@ -1654,11 +1675,11 @@
             "scale": 1
           }
         ],
-        "sequenceId": "sq1794104203794-rwn2p5",
+        "sequenceId": "sq1794145864884-mg2749",
         "triggerType": "sound"
       },
       {
-        "id": "sc1794104203795-uv6bzi",
+        "id": "sc1794145864886-2hjbph",
         "title": "返された本",
         "trigger": "この本を、返しに来ました",
         "note": "二人と机上の本を中央の同じ面の中で見せる。書架は落とす。",
@@ -1668,17 +1689,17 @@
             "name": "前明かり・下手の面",
             "presetKey": "Fresnel10",
             "position": [
-              -3.8,
-              5.4,
-              0.8
+              -5.5,
+              9.2,
+              6.5
             ],
             "target": [
               -2.5,
               1.5,
               -2.4
             ],
-            "beamAngleDeg": 44,
-            "intensity": 0.025,
+            "beamAngleDeg": 28,
+            "intensity": 0.05500000000000001,
             "color": [
               1,
               0.85,
@@ -1689,6 +1710,7 @@
             "colorTempK": 3200,
             "rotationZDeg": 0,
             "enabled": true,
+            "upstageCutDeg": 3,
             "photometricProfile": "etc-fos4-fresnel10-mid"
           },
           {
@@ -1696,17 +1718,17 @@
             "name": "前明かり・上手の面",
             "presetKey": "Fresnel10",
             "position": [
-              4.4,
-              5.2,
-              0.8
+              5.5,
+              9.2,
+              6.5
             ],
             "target": [
               2.5,
               1.5,
               -2.4
             ],
-            "beamAngleDeg": 44,
-            "intensity": 0.025,
+            "beamAngleDeg": 28,
+            "intensity": 0.05500000000000001,
             "color": [
               1,
               0.85,
@@ -1717,6 +1739,7 @@
             "colorTempK": 3200,
             "rotationZDeg": 0,
             "enabled": true,
+            "upstageCutDeg": 3,
             "photometricProfile": "etc-fos4-fresnel10-mid"
           },
           {
@@ -1734,7 +1757,7 @@
               -2.9
             ],
             "beamAngleDeg": 27,
-            "intensity": 0.095,
+            "intensity": 0,
             "color": [
               1,
               0.72,
@@ -1749,29 +1772,31 @@
           {
             "id": "f4",
             "name": "書架の面明かり",
-            "presetKey": "Fresnel8",
+            "presetKey": "Fresnel10",
             "position": [
               -5.5,
-              5.8,
-              -3.7
+              6.2,
+              -3.2
             ],
             "target": [
               -4.4,
               1.4,
-              -5.9
+              -6
             ],
-            "beamAngleDeg": 28,
-            "intensity": 0.18,
+            "beamAngleDeg": 30,
+            "intensity": 0.02,
             "color": [
               1,
-              0.82,
-              0.66
+              0.85,
+              0.72
             ],
             "gelEnabled": true,
             "whiteMix": 0.16,
             "colorTempK": 3200,
             "rotationZDeg": 0,
-            "enabled": false
+            "enabled": true,
+            "upstageCutDeg": 3,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
           },
           {
             "id": "f5",
@@ -1920,12 +1945,12 @@
               0.5
             ],
             "target": [
-              -3.5,
+              -2.5,
               1,
               -2
             ],
             "beamAngleDeg": 44,
-            "intensity": 0.06,
+            "intensity": 0.1,
             "color": [
               1,
               0.85,
@@ -1948,12 +1973,12 @@
               0.5
             ],
             "target": [
-              3.5,
+              2.5,
               1,
               -2
             ],
             "beamAngleDeg": 44,
-            "intensity": 0.06,
+            "intensity": 0.1,
             "color": [
               1,
               0.85,
@@ -1973,15 +1998,15 @@
             "position": [
               -4.5,
               6.8,
-              -5.5
+              -3.8
             ],
             "target": [
-              -3,
+              -4.5,
               1,
               -5
             ],
             "beamAngleDeg": 44,
-            "intensity": 0.04,
+            "intensity": 0.05,
             "color": [
               1,
               0.85,
@@ -1992,6 +2017,7 @@
             "colorTempK": 3200,
             "rotationZDeg": 0,
             "enabled": true,
+            "upstageCutDeg": 5,
             "photometricProfile": "etc-fos4-fresnel10-mid"
           },
           {
@@ -2001,15 +2027,15 @@
             "position": [
               4.5,
               6.8,
-              -5.5
+              -3.8
             ],
             "target": [
-              3,
+              4.5,
               1,
               -5
             ],
             "beamAngleDeg": 44,
-            "intensity": 0.04,
+            "intensity": 0.05,
             "color": [
               1,
               0.85,
@@ -2020,6 +2046,7 @@
             "colorTempK": 3200,
             "rotationZDeg": 0,
             "enabled": true,
+            "upstageCutDeg": 5,
             "photometricProfile": "etc-fos4-fresnel10-mid"
           },
           {
@@ -2037,7 +2064,7 @@
               -2.4
             ],
             "beamAngleDeg": 44,
-            "intensity": 0.16,
+            "intensity": 0.065,
             "color": [
               1,
               0.85,
@@ -2056,16 +2083,16 @@
             "presetKey": "Fresnel10",
             "position": [
               0,
-              5.8,
-              1.4
+              9.2,
+              6.5
             ],
             "target": [
               0,
               1.5,
               -2.3
             ],
-            "beamAngleDeg": 36,
-            "intensity": 0.09,
+            "beamAngleDeg": 26,
+            "intensity": 0.198,
             "color": [
               1,
               0.85,
@@ -2076,6 +2103,7 @@
             "colorTempK": 3200,
             "rotationZDeg": 0,
             "enabled": true,
+            "upstageCutDeg": 3,
             "photometricProfile": "etc-fos4-fresnel10-mid"
           }
         ],
@@ -2109,7 +2137,7 @@
         ],
         "setPieces": [
           {
-            "id": "sp1794104203794-0",
+            "id": "sp1794145864885-0",
             "name": "閲覧机",
             "kind": "box",
             "size": [
@@ -2132,7 +2160,7 @@
             "appearance": "table"
           },
           {
-            "id": "sp1794104203794-1",
+            "id": "sp1794145864885-1",
             "name": "書架",
             "kind": "box",
             "size": [
@@ -2155,7 +2183,7 @@
             "appearance": "bookshelf"
           },
           {
-            "id": "sp1794104203794-2",
+            "id": "sp1794145864885-2",
             "name": "雨の窓",
             "kind": "box",
             "size": [
@@ -2178,7 +2206,7 @@
             "appearance": "window"
           },
           {
-            "id": "sp1794104203794-3",
+            "id": "sp1794145864885-3",
             "name": "返却された本",
             "kind": "box",
             "size": [
@@ -2200,11 +2228,11 @@
             "scale": 1
           }
         ],
-        "sequenceId": "sq1794104203794-rwn2p5",
+        "sequenceId": "sq1794145864884-mg2749",
         "triggerType": "dialogue"
       },
       {
-        "id": "sc1794104203795-qf6vvi",
+        "id": "sc1794145864886-ejtnhh",
         "title": "雷鳴",
         "trigger": "近くで雷が鳴る",
         "note": "地明かりと前明かりを消す。窓と二人の輪郭を冷たい光で浮かべ、本と書架は暗くする。",
@@ -2214,16 +2242,16 @@
             "name": "前明かり・下手の面",
             "presetKey": "Fresnel10",
             "position": [
-              -3.8,
-              5.4,
-              0.8
+              -5.5,
+              9.2,
+              6.5
             ],
             "target": [
               -2.5,
               1.5,
               -2.4
             ],
-            "beamAngleDeg": 44,
+            "beamAngleDeg": 28,
             "intensity": 0,
             "color": [
               1,
@@ -2235,6 +2263,7 @@
             "colorTempK": 3200,
             "rotationZDeg": 0,
             "enabled": false,
+            "upstageCutDeg": 3,
             "photometricProfile": "etc-fos4-fresnel10-mid"
           },
           {
@@ -2242,16 +2271,16 @@
             "name": "前明かり・上手の面",
             "presetKey": "Fresnel10",
             "position": [
-              4.4,
-              5.2,
-              0.8
+              5.5,
+              9.2,
+              6.5
             ],
             "target": [
               2.5,
               1.5,
               -2.4
             ],
-            "beamAngleDeg": 44,
+            "beamAngleDeg": 28,
             "intensity": 0,
             "color": [
               1,
@@ -2263,6 +2292,7 @@
             "colorTempK": 3200,
             "rotationZDeg": 0,
             "enabled": false,
+            "upstageCutDeg": 3,
             "photometricProfile": "etc-fos4-fresnel10-mid"
           },
           {
@@ -2280,7 +2310,7 @@
               -2.9
             ],
             "beamAngleDeg": 27,
-            "intensity": 0.095,
+            "intensity": 0,
             "color": [
               1,
               0.72,
@@ -2295,29 +2325,31 @@
           {
             "id": "f4",
             "name": "書架の面明かり",
-            "presetKey": "Fresnel8",
+            "presetKey": "Fresnel10",
             "position": [
               -5.5,
-              5.8,
-              -3.7
+              6.2,
+              -3.2
             ],
             "target": [
               -4.4,
               1.4,
-              -5.9
+              -6
             ],
-            "beamAngleDeg": 28,
-            "intensity": 0.18,
+            "beamAngleDeg": 30,
+            "intensity": 0,
             "color": [
               1,
-              0.82,
-              0.66
+              0.85,
+              0.72
             ],
             "gelEnabled": true,
             "whiteMix": 0.16,
             "colorTempK": 3200,
             "rotationZDeg": 0,
-            "enabled": false
+            "enabled": false,
+            "upstageCutDeg": 3,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
           },
           {
             "id": "f5",
@@ -2466,7 +2498,7 @@
               0.5
             ],
             "target": [
-              -3.5,
+              -2.5,
               1,
               -2
             ],
@@ -2494,7 +2526,7 @@
               0.5
             ],
             "target": [
-              3.5,
+              2.5,
               1,
               -2
             ],
@@ -2519,10 +2551,10 @@
             "position": [
               -4.5,
               6.8,
-              -5.5
+              -3.8
             ],
             "target": [
-              -3,
+              -4.5,
               1,
               -5
             ],
@@ -2538,6 +2570,7 @@
             "colorTempK": 3200,
             "rotationZDeg": 0,
             "enabled": false,
+            "upstageCutDeg": 5,
             "photometricProfile": "etc-fos4-fresnel10-mid"
           },
           {
@@ -2547,10 +2580,10 @@
             "position": [
               4.5,
               6.8,
-              -5.5
+              -3.8
             ],
             "target": [
-              3,
+              4.5,
               1,
               -5
             ],
@@ -2566,6 +2599,7 @@
             "colorTempK": 3200,
             "rotationZDeg": 0,
             "enabled": false,
+            "upstageCutDeg": 5,
             "photometricProfile": "etc-fos4-fresnel10-mid"
           },
           {
@@ -2602,15 +2636,15 @@
             "presetKey": "Fresnel10",
             "position": [
               0,
-              5.8,
-              1.4
+              9.2,
+              6.5
             ],
             "target": [
               0,
               1.5,
               -2.3
             ],
-            "beamAngleDeg": 36,
+            "beamAngleDeg": 26,
             "intensity": 0,
             "color": [
               1,
@@ -2622,6 +2656,7 @@
             "colorTempK": 3200,
             "rotationZDeg": 0,
             "enabled": false,
+            "upstageCutDeg": 3,
             "photometricProfile": "etc-fos4-fresnel10-mid"
           }
         ],
@@ -2655,7 +2690,7 @@
         ],
         "setPieces": [
           {
-            "id": "sp1794104203794-0",
+            "id": "sp1794145864885-0",
             "name": "閲覧机",
             "kind": "box",
             "size": [
@@ -2678,7 +2713,7 @@
             "appearance": "table"
           },
           {
-            "id": "sp1794104203794-1",
+            "id": "sp1794145864885-1",
             "name": "書架",
             "kind": "box",
             "size": [
@@ -2701,7 +2736,7 @@
             "appearance": "bookshelf"
           },
           {
-            "id": "sp1794104203794-2",
+            "id": "sp1794145864885-2",
             "name": "雨の窓",
             "kind": "box",
             "size": [
@@ -2724,7 +2759,7 @@
             "appearance": "window"
           },
           {
-            "id": "sp1794104203794-3",
+            "id": "sp1794145864885-3",
             "name": "返却された本",
             "kind": "box",
             "size": [
@@ -2746,11 +2781,11 @@
             "scale": 1
           }
         ],
-        "sequenceId": "sq1794104203794-rwn2p5",
+        "sequenceId": "sq1794145864884-mg2749",
         "triggerType": "sound"
       },
       {
-        "id": "sc1794104203796-o9mh1b",
+        "id": "sc1794145864887-kzlckl",
         "title": "余白の言葉",
         "trigger": "続きを、読んでください",
         "note": "中央の地明かりと前明かりを戻し、二人と机上の本を見せる。",
@@ -2760,17 +2795,17 @@
             "name": "前明かり・下手の面",
             "presetKey": "Fresnel10",
             "position": [
-              -3.8,
-              5.4,
-              0.8
+              -5.5,
+              9.2,
+              6.5
             ],
             "target": [
               -2.5,
               1.5,
               -2.4
             ],
-            "beamAngleDeg": 44,
-            "intensity": 0.025,
+            "beamAngleDeg": 28,
+            "intensity": 0.05500000000000001,
             "color": [
               1,
               0.85,
@@ -2781,6 +2816,7 @@
             "colorTempK": 3200,
             "rotationZDeg": 0,
             "enabled": true,
+            "upstageCutDeg": 3,
             "photometricProfile": "etc-fos4-fresnel10-mid"
           },
           {
@@ -2788,17 +2824,17 @@
             "name": "前明かり・上手の面",
             "presetKey": "Fresnel10",
             "position": [
-              4.4,
-              5.2,
-              0.8
+              5.5,
+              9.2,
+              6.5
             ],
             "target": [
               2.5,
               1.5,
               -2.4
             ],
-            "beamAngleDeg": 44,
-            "intensity": 0.025,
+            "beamAngleDeg": 28,
+            "intensity": 0.05500000000000001,
             "color": [
               1,
               0.85,
@@ -2809,6 +2845,7 @@
             "colorTempK": 3200,
             "rotationZDeg": 0,
             "enabled": true,
+            "upstageCutDeg": 3,
             "photometricProfile": "etc-fos4-fresnel10-mid"
           },
           {
@@ -2826,7 +2863,7 @@
               -2.9
             ],
             "beamAngleDeg": 27,
-            "intensity": 0.0825,
+            "intensity": 0,
             "color": [
               1,
               0.72,
@@ -2841,29 +2878,31 @@
           {
             "id": "f4",
             "name": "書架の面明かり",
-            "presetKey": "Fresnel8",
+            "presetKey": "Fresnel10",
             "position": [
               -5.5,
-              5.8,
-              -3.7
+              6.2,
+              -3.2
             ],
             "target": [
               -4.4,
               1.4,
-              -5.9
+              -6
             ],
-            "beamAngleDeg": 28,
-            "intensity": 0.18,
+            "beamAngleDeg": 30,
+            "intensity": 0.02,
             "color": [
               1,
-              0.82,
-              0.66
+              0.85,
+              0.72
             ],
             "gelEnabled": true,
             "whiteMix": 0.16,
             "colorTempK": 3200,
             "rotationZDeg": 0,
-            "enabled": false
+            "enabled": true,
+            "upstageCutDeg": 3,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
           },
           {
             "id": "f5",
@@ -3012,7 +3051,7 @@
               0.5
             ],
             "target": [
-              -3.5,
+              -2.5,
               1,
               -2
             ],
@@ -3040,7 +3079,7 @@
               0.5
             ],
             "target": [
-              3.5,
+              2.5,
               1,
               -2
             ],
@@ -3065,10 +3104,10 @@
             "position": [
               -4.5,
               6.8,
-              -5.5
+              -3.8
             ],
             "target": [
-              -3,
+              -4.5,
               1,
               -5
             ],
@@ -3084,6 +3123,7 @@
             "colorTempK": 3200,
             "rotationZDeg": 0,
             "enabled": true,
+            "upstageCutDeg": 5,
             "photometricProfile": "etc-fos4-fresnel10-mid"
           },
           {
@@ -3093,10 +3133,10 @@
             "position": [
               4.5,
               6.8,
-              -5.5
+              -3.8
             ],
             "target": [
-              3,
+              4.5,
               1,
               -5
             ],
@@ -3112,6 +3152,7 @@
             "colorTempK": 3200,
             "rotationZDeg": 0,
             "enabled": true,
+            "upstageCutDeg": 5,
             "photometricProfile": "etc-fos4-fresnel10-mid"
           },
           {
@@ -3129,7 +3170,7 @@
               -2.4
             ],
             "beamAngleDeg": 44,
-            "intensity": 0.14,
+            "intensity": 0.07,
             "color": [
               1,
               0.85,
@@ -3148,16 +3189,16 @@
             "presetKey": "Fresnel10",
             "position": [
               0,
-              5.8,
-              1.4
+              9.2,
+              6.5
             ],
             "target": [
               0,
               1.5,
               -2.3
             ],
-            "beamAngleDeg": 36,
-            "intensity": 0.08,
+            "beamAngleDeg": 26,
+            "intensity": 0.17600000000000002,
             "color": [
               1,
               0.85,
@@ -3168,6 +3209,7 @@
             "colorTempK": 3200,
             "rotationZDeg": 0,
             "enabled": true,
+            "upstageCutDeg": 3,
             "photometricProfile": "etc-fos4-fresnel10-mid"
           }
         ],
@@ -3201,7 +3243,7 @@
         ],
         "setPieces": [
           {
-            "id": "sp1794104203794-0",
+            "id": "sp1794145864885-0",
             "name": "閲覧机",
             "kind": "box",
             "size": [
@@ -3224,7 +3266,7 @@
             "appearance": "table"
           },
           {
-            "id": "sp1794104203794-1",
+            "id": "sp1794145864885-1",
             "name": "書架",
             "kind": "box",
             "size": [
@@ -3247,7 +3289,7 @@
             "appearance": "bookshelf"
           },
           {
-            "id": "sp1794104203794-2",
+            "id": "sp1794145864885-2",
             "name": "雨の窓",
             "kind": "box",
             "size": [
@@ -3270,7 +3312,7 @@
             "appearance": "window"
           },
           {
-            "id": "sp1794104203794-3",
+            "id": "sp1794145864885-3",
             "name": "返却された本",
             "kind": "box",
             "size": [
@@ -3292,11 +3334,11 @@
             "scale": 1
           }
         ],
-        "sequenceId": "sq1794104203796-mw75wd",
+        "sequenceId": "sq1794145864887-gffbdv",
         "triggerType": "dialogue"
       },
       {
-        "id": "sc1794104203796-xv7yzl",
+        "id": "sc1794145864887-eij0gq",
         "title": "雨がやむ",
         "trigger": "雨音が止む",
         "note": "左右の地明かりを広げ、窓の青から朝の暖色へ移る。",
@@ -3306,17 +3348,17 @@
             "name": "前明かり・下手の面",
             "presetKey": "Fresnel10",
             "position": [
-              -3.8,
-              5.4,
-              0.8
+              -5.5,
+              9.2,
+              6.5
             ],
             "target": [
               -2.5,
               1.5,
               -2.4
             ],
-            "beamAngleDeg": 44,
-            "intensity": 0.065,
+            "beamAngleDeg": 28,
+            "intensity": 0.14300000000000002,
             "color": [
               1,
               0.85,
@@ -3327,6 +3369,7 @@
             "colorTempK": 3200,
             "rotationZDeg": 0,
             "enabled": true,
+            "upstageCutDeg": 3,
             "photometricProfile": "etc-fos4-fresnel10-mid"
           },
           {
@@ -3334,17 +3377,17 @@
             "name": "前明かり・上手の面",
             "presetKey": "Fresnel10",
             "position": [
-              4.4,
-              5.2,
-              0.8
+              5.5,
+              9.2,
+              6.5
             ],
             "target": [
               2.5,
               1.5,
               -2.4
             ],
-            "beamAngleDeg": 44,
-            "intensity": 0.065,
+            "beamAngleDeg": 28,
+            "intensity": 0.14300000000000002,
             "color": [
               1,
               0.85,
@@ -3355,6 +3398,7 @@
             "colorTempK": 3200,
             "rotationZDeg": 0,
             "enabled": true,
+            "upstageCutDeg": 3,
             "photometricProfile": "etc-fos4-fresnel10-mid"
           },
           {
@@ -3372,7 +3416,7 @@
               -2.9
             ],
             "beamAngleDeg": 27,
-            "intensity": 0.0825,
+            "intensity": 0,
             "color": [
               1,
               0.72,
@@ -3387,29 +3431,31 @@
           {
             "id": "f4",
             "name": "書架の面明かり",
-            "presetKey": "Fresnel8",
+            "presetKey": "Fresnel10",
             "position": [
               -5.5,
-              5.8,
-              -3.7
+              6.2,
+              -3.2
             ],
             "target": [
               -4.4,
               1.4,
-              -5.9
+              -6
             ],
-            "beamAngleDeg": 28,
-            "intensity": 0.18,
+            "beamAngleDeg": 30,
+            "intensity": 0.05,
             "color": [
               1,
-              0.82,
-              0.66
+              0.85,
+              0.72
             ],
             "gelEnabled": true,
             "whiteMix": 0.16,
             "colorTempK": 3200,
             "rotationZDeg": 0,
-            "enabled": false
+            "enabled": true,
+            "upstageCutDeg": 3,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
           },
           {
             "id": "f5",
@@ -3558,12 +3604,12 @@
               0.5
             ],
             "target": [
-              -3.5,
+              -2.5,
               1,
               -2
             ],
             "beamAngleDeg": 44,
-            "intensity": 0.15,
+            "intensity": 0.18,
             "color": [
               1,
               0.85,
@@ -3586,12 +3632,12 @@
               0.5
             ],
             "target": [
-              3.5,
+              2.5,
               1,
               -2
             ],
             "beamAngleDeg": 44,
-            "intensity": 0.15,
+            "intensity": 0.18,
             "color": [
               1,
               0.85,
@@ -3611,15 +3657,15 @@
             "position": [
               -4.5,
               6.8,
-              -5.5
+              -3.8
             ],
             "target": [
-              -3,
+              -4.5,
               1,
               -5
             ],
             "beamAngleDeg": 44,
-            "intensity": 0.1,
+            "intensity": 0.11,
             "color": [
               1,
               0.85,
@@ -3630,6 +3676,7 @@
             "colorTempK": 3200,
             "rotationZDeg": 0,
             "enabled": true,
+            "upstageCutDeg": 5,
             "photometricProfile": "etc-fos4-fresnel10-mid"
           },
           {
@@ -3639,15 +3686,15 @@
             "position": [
               4.5,
               6.8,
-              -5.5
+              -3.8
             ],
             "target": [
-              3,
+              4.5,
               1,
               -5
             ],
             "beamAngleDeg": 44,
-            "intensity": 0.1,
+            "intensity": 0.11,
             "color": [
               1,
               0.85,
@@ -3658,6 +3705,7 @@
             "colorTempK": 3200,
             "rotationZDeg": 0,
             "enabled": true,
+            "upstageCutDeg": 5,
             "photometricProfile": "etc-fos4-fresnel10-mid"
           },
           {
@@ -3675,7 +3723,7 @@
               -2.4
             ],
             "beamAngleDeg": 44,
-            "intensity": 0.11,
+            "intensity": 0.06,
             "color": [
               1,
               0.85,
@@ -3694,16 +3742,16 @@
             "presetKey": "Fresnel10",
             "position": [
               0,
-              5.8,
-              1.4
+              9.2,
+              6.5
             ],
             "target": [
               0,
               1.5,
               -2.3
             ],
-            "beamAngleDeg": 36,
-            "intensity": 0.04,
+            "beamAngleDeg": 26,
+            "intensity": 0.08800000000000001,
             "color": [
               1,
               0.85,
@@ -3714,6 +3762,7 @@
             "colorTempK": 3200,
             "rotationZDeg": 0,
             "enabled": true,
+            "upstageCutDeg": 3,
             "photometricProfile": "etc-fos4-fresnel10-mid"
           }
         ],
@@ -3747,7 +3796,7 @@
         ],
         "setPieces": [
           {
-            "id": "sp1794104203794-0",
+            "id": "sp1794145864885-0",
             "name": "閲覧机",
             "kind": "box",
             "size": [
@@ -3770,7 +3819,7 @@
             "appearance": "table"
           },
           {
-            "id": "sp1794104203794-1",
+            "id": "sp1794145864885-1",
             "name": "書架",
             "kind": "box",
             "size": [
@@ -3793,7 +3842,7 @@
             "appearance": "bookshelf"
           },
           {
-            "id": "sp1794104203794-2",
+            "id": "sp1794145864885-2",
             "name": "雨の窓",
             "kind": "box",
             "size": [
@@ -3816,7 +3865,7 @@
             "appearance": "window"
           },
           {
-            "id": "sp1794104203794-3",
+            "id": "sp1794145864885-3",
             "name": "返却された本",
             "kind": "box",
             "size": [
@@ -3838,11 +3887,11 @@
             "scale": 1
           }
         ],
-        "sequenceId": "sq1794104203796-mw75wd",
+        "sequenceId": "sq1794145864887-gffbdv",
         "triggerType": "sound"
       },
       {
-        "id": "sc1794104203797-w2e936",
+        "id": "sc1794145864887-ba4khq",
         "title": "本を持って出る",
         "trigger": "また明日",
         "note": "上手へ向かう来訪者と本を見せ、下手の司書は弱く残す。",
@@ -3852,17 +3901,17 @@
             "name": "前明かり・下手の面",
             "presetKey": "Fresnel10",
             "position": [
-              -3.8,
-              5.4,
-              0.8
+              -5.5,
+              9.2,
+              6.5
             ],
             "target": [
               -2.5,
               1.5,
               -2.4
             ],
-            "beamAngleDeg": 44,
-            "intensity": 0.025,
+            "beamAngleDeg": 28,
+            "intensity": 0.05500000000000001,
             "color": [
               1,
               0.85,
@@ -3873,6 +3922,7 @@
             "colorTempK": 3200,
             "rotationZDeg": 0,
             "enabled": true,
+            "upstageCutDeg": 3,
             "photometricProfile": "etc-fos4-fresnel10-mid"
           },
           {
@@ -3880,17 +3930,17 @@
             "name": "前明かり・上手の面",
             "presetKey": "Fresnel10",
             "position": [
-              4.4,
-              5.2,
-              0.8
+              5.5,
+              9.2,
+              6.5
             ],
             "target": [
               2.5,
               1.5,
               -2.4
             ],
-            "beamAngleDeg": 44,
-            "intensity": 0.09,
+            "beamAngleDeg": 28,
+            "intensity": 0.198,
             "color": [
               1,
               0.85,
@@ -3901,6 +3951,7 @@
             "colorTempK": 3200,
             "rotationZDeg": 0,
             "enabled": true,
+            "upstageCutDeg": 3,
             "photometricProfile": "etc-fos4-fresnel10-mid"
           },
           {
@@ -3918,7 +3969,7 @@
               -2.9
             ],
             "beamAngleDeg": 27,
-            "intensity": 0.055,
+            "intensity": 0,
             "color": [
               1,
               0.72,
@@ -3933,29 +3984,31 @@
           {
             "id": "f4",
             "name": "書架の面明かり",
-            "presetKey": "Fresnel8",
+            "presetKey": "Fresnel10",
             "position": [
               -5.5,
-              5.8,
-              -3.7
+              6.2,
+              -3.2
             ],
             "target": [
               -4.4,
               1.4,
-              -5.9
+              -6
             ],
-            "beamAngleDeg": 28,
-            "intensity": 0.18,
+            "beamAngleDeg": 30,
+            "intensity": 0.05,
             "color": [
               1,
-              0.82,
-              0.66
+              0.85,
+              0.72
             ],
             "gelEnabled": true,
             "whiteMix": 0.16,
             "colorTempK": 3200,
             "rotationZDeg": 0,
-            "enabled": false
+            "enabled": true,
+            "upstageCutDeg": 3,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
           },
           {
             "id": "f5",
@@ -4104,12 +4157,12 @@
               0.5
             ],
             "target": [
-              -3.5,
+              -2.5,
               1,
               -2
             ],
             "beamAngleDeg": 44,
-            "intensity": 0.07,
+            "intensity": 0.08,
             "color": [
               1,
               0.85,
@@ -4132,12 +4185,12 @@
               0.5
             ],
             "target": [
-              3.5,
+              2.5,
               1,
               -2
             ],
             "beamAngleDeg": 44,
-            "intensity": 0.18,
+            "intensity": 0.22,
             "color": [
               1,
               0.85,
@@ -4157,15 +4210,15 @@
             "position": [
               -4.5,
               6.8,
-              -5.5
+              -3.8
             ],
             "target": [
-              -3,
+              -4.5,
               1,
               -5
             ],
             "beamAngleDeg": 44,
-            "intensity": 0.04,
+            "intensity": 0.05,
             "color": [
               1,
               0.85,
@@ -4176,6 +4229,7 @@
             "colorTempK": 3200,
             "rotationZDeg": 0,
             "enabled": true,
+            "upstageCutDeg": 5,
             "photometricProfile": "etc-fos4-fresnel10-mid"
           },
           {
@@ -4185,15 +4239,15 @@
             "position": [
               4.5,
               6.8,
-              -5.5
+              -3.8
             ],
             "target": [
-              3,
+              4.5,
               1,
               -5
             ],
             "beamAngleDeg": 44,
-            "intensity": 0.12,
+            "intensity": 0.14,
             "color": [
               1,
               0.85,
@@ -4204,6 +4258,7 @@
             "colorTempK": 3200,
             "rotationZDeg": 0,
             "enabled": true,
+            "upstageCutDeg": 5,
             "photometricProfile": "etc-fos4-fresnel10-mid"
           },
           {
@@ -4221,7 +4276,7 @@
               -2.4
             ],
             "beamAngleDeg": 44,
-            "intensity": 0.07,
+            "intensity": 0.04,
             "color": [
               1,
               0.85,
@@ -4240,16 +4295,16 @@
             "presetKey": "Fresnel10",
             "position": [
               0,
-              5.8,
-              1.4
+              9.2,
+              6.5
             ],
             "target": [
               0,
               1.5,
               -2.3
             ],
-            "beamAngleDeg": 36,
-            "intensity": 0.025,
+            "beamAngleDeg": 26,
+            "intensity": 0.05500000000000001,
             "color": [
               1,
               0.85,
@@ -4260,6 +4315,7 @@
             "colorTempK": 3200,
             "rotationZDeg": 0,
             "enabled": true,
+            "upstageCutDeg": 3,
             "photometricProfile": "etc-fos4-fresnel10-mid"
           }
         ],
@@ -4293,7 +4349,7 @@
         ],
         "setPieces": [
           {
-            "id": "sp1794104203794-0",
+            "id": "sp1794145864885-0",
             "name": "閲覧机",
             "kind": "box",
             "size": [
@@ -4316,7 +4372,7 @@
             "appearance": "table"
           },
           {
-            "id": "sp1794104203794-1",
+            "id": "sp1794145864885-1",
             "name": "書架",
             "kind": "box",
             "size": [
@@ -4339,7 +4395,7 @@
             "appearance": "bookshelf"
           },
           {
-            "id": "sp1794104203794-2",
+            "id": "sp1794145864885-2",
             "name": "雨の窓",
             "kind": "box",
             "size": [
@@ -4362,7 +4418,7 @@
             "appearance": "window"
           },
           {
-            "id": "sp1794104203794-3",
+            "id": "sp1794145864885-3",
             "name": "返却された本",
             "kind": "box",
             "size": [
@@ -4384,11 +4440,11 @@
             "scale": 1
           }
         ],
-        "sequenceId": "sq1794104203796-mw75wd",
+        "sequenceId": "sq1794145864887-gffbdv",
         "triggerType": "dialogue"
       },
       {
-        "id": "sc1794104203797-9p3ph9",
+        "id": "sc1794145864887-slrnjr",
         "title": "開館",
         "trigger": "朝の光が広がる",
         "note": "来訪者と本は退場する。司書、机、書架、窓を朝の広い明かりで見せて終える。",
@@ -4398,17 +4454,17 @@
             "name": "前明かり・下手の面",
             "presetKey": "Fresnel10",
             "position": [
-              -3.8,
-              5.4,
-              0.8
+              -5.5,
+              9.2,
+              6.5
             ],
             "target": [
               -2.5,
               1.5,
               -2.4
             ],
-            "beamAngleDeg": 44,
-            "intensity": 0.08,
+            "beamAngleDeg": 28,
+            "intensity": 0.17600000000000002,
             "color": [
               1,
               0.85,
@@ -4419,6 +4475,7 @@
             "colorTempK": 3200,
             "rotationZDeg": 0,
             "enabled": true,
+            "upstageCutDeg": 3,
             "photometricProfile": "etc-fos4-fresnel10-mid"
           },
           {
@@ -4426,17 +4483,17 @@
             "name": "前明かり・上手の面",
             "presetKey": "Fresnel10",
             "position": [
-              4.4,
-              5.2,
-              0.8
+              5.5,
+              9.2,
+              6.5
             ],
             "target": [
               2.5,
               1.5,
               -2.4
             ],
-            "beamAngleDeg": 44,
-            "intensity": 0.04,
+            "beamAngleDeg": 28,
+            "intensity": 0.08800000000000001,
             "color": [
               1,
               0.85,
@@ -4447,6 +4504,7 @@
             "colorTempK": 3200,
             "rotationZDeg": 0,
             "enabled": true,
+            "upstageCutDeg": 3,
             "photometricProfile": "etc-fos4-fresnel10-mid"
           },
           {
@@ -4464,7 +4522,7 @@
               -2.9
             ],
             "beamAngleDeg": 27,
-            "intensity": 0.03,
+            "intensity": 0,
             "color": [
               1,
               0.72,
@@ -4479,29 +4537,31 @@
           {
             "id": "f4",
             "name": "書架の面明かり",
-            "presetKey": "Fresnel8",
+            "presetKey": "Fresnel10",
             "position": [
               -5.5,
-              5.8,
-              -3.7
+              6.2,
+              -3.2
             ],
             "target": [
               -4.4,
               1.4,
-              -5.9
+              -6
             ],
-            "beamAngleDeg": 28,
-            "intensity": 0.42,
+            "beamAngleDeg": 30,
+            "intensity": 0.05,
             "color": [
               1,
-              0.82,
-              0.66
+              0.85,
+              0.72
             ],
             "gelEnabled": true,
             "whiteMix": 0.16,
             "colorTempK": 3200,
             "rotationZDeg": 0,
-            "enabled": false
+            "enabled": true,
+            "upstageCutDeg": 3,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
           },
           {
             "id": "f5",
@@ -4650,12 +4710,12 @@
               0.5
             ],
             "target": [
-              -3.5,
+              -2.5,
               1,
               -2
             ],
             "beamAngleDeg": 44,
-            "intensity": 0.19,
+            "intensity": 0.24,
             "color": [
               1,
               0.85,
@@ -4678,12 +4738,12 @@
               0.5
             ],
             "target": [
-              3.5,
+              2.5,
               1,
               -2
             ],
             "beamAngleDeg": 44,
-            "intensity": 0.19,
+            "intensity": 0.24,
             "color": [
               1,
               0.85,
@@ -4703,15 +4763,15 @@
             "position": [
               -4.5,
               6.8,
-              -5.5
+              -3.8
             ],
             "target": [
-              -3,
+              -4.5,
               1,
               -5
             ],
             "beamAngleDeg": 44,
-            "intensity": 0.13,
+            "intensity": 0.15,
             "color": [
               1,
               0.85,
@@ -4722,6 +4782,7 @@
             "colorTempK": 3200,
             "rotationZDeg": 0,
             "enabled": true,
+            "upstageCutDeg": 5,
             "photometricProfile": "etc-fos4-fresnel10-mid"
           },
           {
@@ -4731,15 +4792,15 @@
             "position": [
               4.5,
               6.8,
-              -5.5
+              -3.8
             ],
             "target": [
-              3,
+              4.5,
               1,
               -5
             ],
             "beamAngleDeg": 44,
-            "intensity": 0.13,
+            "intensity": 0.15,
             "color": [
               1,
               0.85,
@@ -4750,6 +4811,7 @@
             "colorTempK": 3200,
             "rotationZDeg": 0,
             "enabled": true,
+            "upstageCutDeg": 5,
             "photometricProfile": "etc-fos4-fresnel10-mid"
           },
           {
@@ -4767,7 +4829,7 @@
               -2.4
             ],
             "beamAngleDeg": 44,
-            "intensity": 0.12,
+            "intensity": 0.07,
             "color": [
               1,
               0.85,
@@ -4786,16 +4848,16 @@
             "presetKey": "Fresnel10",
             "position": [
               0,
-              5.8,
-              1.4
+              9.2,
+              6.5
             ],
             "target": [
               0,
               1.5,
               -2.3
             ],
-            "beamAngleDeg": 36,
-            "intensity": 0.025,
+            "beamAngleDeg": 26,
+            "intensity": 0.05500000000000001,
             "color": [
               1,
               0.85,
@@ -4806,6 +4868,7 @@
             "colorTempK": 3200,
             "rotationZDeg": 0,
             "enabled": true,
+            "upstageCutDeg": 3,
             "photometricProfile": "etc-fos4-fresnel10-mid"
           }
         ],
@@ -4839,7 +4902,7 @@
         ],
         "setPieces": [
           {
-            "id": "sp1794104203794-0",
+            "id": "sp1794145864885-0",
             "name": "閲覧机",
             "kind": "box",
             "size": [
@@ -4862,7 +4925,7 @@
             "appearance": "table"
           },
           {
-            "id": "sp1794104203794-1",
+            "id": "sp1794145864885-1",
             "name": "書架",
             "kind": "box",
             "size": [
@@ -4885,7 +4948,7 @@
             "appearance": "bookshelf"
           },
           {
-            "id": "sp1794104203794-2",
+            "id": "sp1794145864885-2",
             "name": "雨の窓",
             "kind": "box",
             "size": [
@@ -4908,11 +4971,11 @@
             "appearance": "window"
           }
         ],
-        "sequenceId": "sq1794104203796-mw75wd",
+        "sequenceId": "sq1794145864887-gffbdv",
         "triggerType": "light"
       }
     ],
-    "activeSceneId": "sc1794104203795-uv6bzi"
+    "activeSceneId": "sc1794145864886-2hjbph"
   },
   "settings": {
     "hazeDensity": 0.23,
@@ -4920,7 +4983,7 @@
     "exposure": 1.35,
     "bloom": 0.32,
     "showHouseLights": false,
-    "quality": "medium",
+    "quality": "high",
     "cameraView": "audience"
   }
 }

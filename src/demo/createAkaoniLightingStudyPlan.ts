@@ -5,6 +5,7 @@ import { areaWashFixture } from './areaWash'
 
 const SEA_NAMES = new Set(['海の面明かり・下手', '海の面明かり・中央', '海の面明かり・上手'])
 const FRONT_NAMES = new Set(['あの女の前明かり', '浜の人物の前明かり', '赤鬼の前明かり'])
+const FOH_FRONT_GAIN = 2.2
 const GROUND_NAMES = ['地明かり・手前下手', '地明かり・手前上手', '地明かり・奥下手', '地明かり・奥上手'] as const
 const GROUND_CUES: Record<string, [number, number, number, number, number]> = {
   '波のあと': [0.25, 0.24, 0.16, 0.16, 0.10],
@@ -48,11 +49,15 @@ function reviseFixture(fixture: Fixture, scene: PlanScene): Fixture {
     const area = fixture.name === 'あの女の前明かり' ? 'left'
       : fixture.name === '赤鬼の前明かり' ? 'center' : 'right'
     const intensity = AREA_CUES[scene.title]?.[area === 'left' ? 0 : area === 'right' ? 1 : 2] ?? 0
-    return areaWashFixture(fixture, {
+    return areaWashFixture({
+      ...fixture,
+      position: [area === 'left' ? -5.5 : area === 'right' ? 5.5 : 0, 9.2, 6.5],
+      upstageCutDeg: 3,
+    }, {
       name: area === 'center' ? '前明かり・中央の面' : area === 'left' ? '前明かり・下手の面' : '前明かり・上手の面',
       target: areaTarget(scene.title, area),
-      beamAngleDeg: area === 'center' ? 36 : 44,
-      intensity,
+      beamAngleDeg: area === 'center' ? 26 : 28,
+      intensity: intensity * FOH_FRONT_GAIN,
     })
   }
   if (fixture.name === 'とんびの補助明かり') {
@@ -80,8 +85,13 @@ export function createAkaoniLightingStudyPlan() {
         const frontGround = fixture.name.includes('手前')
         const groundIndex = GROUND_NAMES.indexOf(fixture.name as typeof GROUND_NAMES[number])
         const withDistribution: Fixture = fixture.name.startsWith('地明かり・')
-          ? areaWashFixture(fixture, {
-            target: [Math.sign(fixture.position[0]) * (frontGround ? 3.5 : 3), 1, frontGround ? -2 : -5],
+          ? areaWashFixture({
+            ...fixture,
+            position: [fixture.position[0], fixture.position[1], frontGround ? fixture.position[2] : -3.8],
+            upstageCutDeg: frontGround ? undefined : 5,
+          }, {
+            target: [Math.sign(fixture.position[0]) * (frontGround ? 2.5 : 4.5), 1, frontGround ? -2 : -5],
+            beamAngleDeg: 44,
             intensity: levels && groundIndex >= 0 ? levels[groundIndex] : fixture.intensity,
           })
           : SEA_NAMES.has(fixture.name) ? {
@@ -102,8 +112,8 @@ export function createAkaoniLightingStudyPlan() {
         name: '地明かり・中央',
         position: [0, 6.8, 0.2],
       }, {
-        target: [0, 1, scene.title === '境目で足を止める' ? -4 : -2],
-        intensity: levels?.[4] ?? 0.1,
+        target: [0, 1, scene.title === '花のしるし' ? -2 : -3.5],
+        intensity: (levels?.[4] ?? 0.1) * 0.5,
       }))
       return {
         ...scene,

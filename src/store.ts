@@ -21,6 +21,7 @@ export interface Fixture {
   name: string
   presetKey: string
   photometricProfile?: 'etc-fos4-fresnel10-mid' | 'etc-s4-led-cyc-daylight-hd'
+  upstageCutDeg?: number
   position: [number, number, number]
   target: [number, number, number]
   beamAngleDeg: number

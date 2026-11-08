@@ -10,6 +10,12 @@ export const MEASURED_FRESNEL_DISPLAY_GAIN = 0.08
 const midProfile = parseIES(midIES)
 const cookieCache = new Map<string, THREE.DataTexture>()
 
+function upperCutTransmission(angleDeg: number, limitDeg?: number): number {
+  if (limitDeg === undefined) return 1
+  const t = THREE.MathUtils.clamp((angleDeg - limitDeg + 1.5) / 3, 0, 1)
+  return 1 - t * t * (3 - 2 * t)
+}
+
 function zoomRatio(fixture: Fixture): number {
   return MEASURED_FRESNEL_REFERENCE_BEAM_DEG / THREE.MathUtils.clamp(fixture.beamAngleDeg, 7, 55)
 }
@@ -30,10 +36,12 @@ export function measuredFresnelCandela(fixture: Fixture, direction: THREE.Vector
   const vertical = THREE.MathUtils.radToDeg(Math.acos(THREE.MathUtils.clamp(forward, -1, 1))) * zoomRatio(fixture)
   const horizontal = THREE.MathUtils.radToDeg(Math.atan2(direction.dot(right), direction.dot(up)))
   const ratio = zoomRatio(fixture)
+  const upperAngle = THREE.MathUtils.radToDeg(Math.atan2(direction.dot(up), forward))
   return candelaAt(midProfile, vertical, horizontal) * fixture.intensity * ratio * ratio
+    * upperCutTransmission(upperAngle, fixture.upstageCutDeg)
 }
 
-function makeCookie(beamAngleDeg: number): THREE.DataTexture {
+function makeCookie(beamAngleDeg: number, upstageCutDeg?: number): THREE.DataTexture {
   const size = 256
   const data = new Uint8Array(size * size * 4)
   const ratio = MEASURED_FRESNEL_REFERENCE_BEAM_DEG / beamAngleDeg
@@ -45,7 +53,9 @@ function makeCookie(beamAngleDeg: number): THREE.DataTexture {
       const py = ((y + 0.5) / size) * 2 - 1
       const vertical = THREE.MathUtils.radToDeg(Math.atan(Math.hypot(px, py) * tangent)) * ratio
       const horizontal = THREE.MathUtils.radToDeg(Math.atan2(px, py))
+      const upperAngle = THREE.MathUtils.radToDeg(Math.atan(py * tangent))
       const normalized = THREE.MathUtils.clamp(candelaAt(midProfile, vertical, horizontal) / midProfile.peakCandela, 0, 1)
+        * upperCutTransmission(upperAngle, upstageCutDeg)
       const value = Math.round(normalized * 255)
       const offset = (y * size + x) * 4
       data[offset] = value
@@ -64,10 +74,10 @@ function makeCookie(beamAngleDeg: number): THREE.DataTexture {
 
 export function measuredFresnelSpotlight(fixture: Fixture) {
   const beamAngleDeg = THREE.MathUtils.clamp(fixture.beamAngleDeg, 7, 55)
-  const key = beamAngleDeg.toFixed(1)
+  const key = `${beamAngleDeg.toFixed(1)}:${fixture.upstageCutDeg?.toFixed(1) ?? 'none'}`
   let map = cookieCache.get(key)
   if (!map) {
-    map = makeCookie(beamAngleDeg)
+    map = makeCookie(beamAngleDeg, fixture.upstageCutDeg)
     cookieCache.set(key, map)
   }
   const ratio = zoomRatio(fixture)

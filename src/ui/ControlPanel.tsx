@@ -352,6 +352,16 @@ function FixtureEditor({ fixture }: { fixture: Fixture }) {
         </div>
       )}
 
+      {isMeasured && <div className="row">
+        <label>上側バンドア</label>
+        <input type="checkbox" checked={fixture.upstageCutDeg !== undefined}
+          onChange={e => update({ upstageCutDeg: e.target.checked ? 5 : undefined })} />
+      </div>}
+      {isMeasured && fixture.upstageCutDeg !== undefined && <Slider
+        label="遮光の境界" value={fixture.upstageCutDeg} min={-10} max={25} step={0.5}
+        onChange={v => update({ upstageCutDeg: v })} unit="°" fmt={v => v.toFixed(1)} />}
+      {isMeasured && fixture.upstageCutDeg !== undefined && <div className="hint">光軸より上側を遮る近似です。奥壁への光漏れを見ながら調整できます。</div>}
+
       {profile.kind === 'PAR' && (
         <Slider label="器具回転" value={fixture.rotationZDeg} min={-180} max={180}
           onChange={v => update({ rotationZDeg: v })} unit="°" fmt={v => v.toFixed(0)} />
@@ -410,7 +420,7 @@ function FixtureEditor({ fixture }: { fixture: Fixture }) {
         3D上の矢印/リングハンドルで掴んで操作
       </div>
 
-      <PositionTrio label="光源" value={fixture.position} onChange={v => update({ position: v })} ranges={[[-7, 7], [0.3, 9], [-7.5, 3]]} />
+      <PositionTrio label="光源" value={fixture.position} onChange={v => update({ position: v })} ranges={[[-9, 9], [0.3, 12], [-7.5, 8]]} />
       <PositionTrio label="狙い" value={fixture.target} onChange={v => update({ target: v })} ranges={[[-7, 7], [0, 7], [-7.5, 3]]} />
 
       <div className="row" style={{ marginTop: 12 }}>

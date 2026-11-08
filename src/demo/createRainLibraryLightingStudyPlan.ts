@@ -5,16 +5,17 @@ import { MEASURED_CYC_KEY } from '../photometric/measuredCyc'
 
 const GROUND_NAMES = ['下手の地明かり', '上手の地明かり', '舞台奥・下手の地明かり', '舞台奥・上手の地明かり'] as const
 const GROUND_COLOR: Fixture['color'] = [1, 0.85, 0.72]
+const FOH_FRONT_GAIN = 2.2
 
 const GROUND_CUES: Record<string, [number, number, number, number, number]> = {
-  '閉館前': [0.16, 0.06, 0.10, 0.04, 0.06],
-  '遅い来訪者': [0.12, 0.18, 0.07, 0.10, 0.08],
-  '返された本': [0.06, 0.06, 0.04, 0.04, 0.16],
+  '閉館前': [0.20, 0.08, 0.13, 0.06, 0.08],
+  '遅い来訪者': [0.15, 0.21, 0.08, 0.13, 0.10],
+  '返された本': [0.10, 0.10, 0.05, 0.05, 0.13],
   '雷鳴': [0, 0, 0, 0, 0],
   '余白の言葉': [0.06, 0.06, 0.04, 0.04, 0.14],
-  '雨がやむ': [0.15, 0.15, 0.10, 0.10, 0.11],
-  '本を持って出る': [0.07, 0.18, 0.04, 0.12, 0.07],
-  '開館': [0.19, 0.19, 0.13, 0.13, 0.12],
+  '雨がやむ': [0.18, 0.18, 0.11, 0.11, 0.12],
+  '本を持って出る': [0.08, 0.22, 0.05, 0.14, 0.08],
+  '開館': [0.24, 0.24, 0.15, 0.15, 0.14],
 }
 const AREA_CUES: Record<string, [number, number, number]> = {
   '閉館前': [0.09, 0, 0.025],
@@ -48,10 +49,10 @@ const WINDOW_CUES: Record<string, number> = {
 }
 
 function groundTarget(name: string): Fixture['target'] {
-  if (name === '下手の地明かり') return [-3.5, 1, -2]
-  if (name === '上手の地明かり') return [3.5, 1, -2]
-  if (name === '舞台奥・下手の地明かり') return [-3, 1, -5]
-  return [3, 1, -5]
+  if (name === '下手の地明かり') return [-2.5, 1, -2]
+  if (name === '上手の地明かり') return [2.5, 1, -2]
+  if (name === '舞台奥・下手の地明かり') return [-4.5, 1, -5]
+  return [4.5, 1, -5]
 }
 
 function reviseScene(scene: PlanScene): PlanScene {
@@ -60,7 +61,12 @@ function reviseScene(scene: PlanScene): PlanScene {
   const fixtures: Fixture[] = scene.fixtures.map((fixture): Fixture => {
     const groundIndex = GROUND_NAMES.indexOf(fixture.name as typeof GROUND_NAMES[number])
     if (groundIndex >= 0) {
-      return areaWashFixture(fixture, {
+      const rear = groundIndex >= 2
+      return areaWashFixture({
+        ...fixture,
+        position: rear ? [fixture.position[0], fixture.position[1], -3.8] : fixture.position,
+        upstageCutDeg: rear ? 5 : undefined,
+      }, {
         target: groundTarget(fixture.name),
         intensity: groundLevels[groundIndex],
         color: GROUND_COLOR,
@@ -68,19 +74,33 @@ function reviseScene(scene: PlanScene): PlanScene {
     }
     if (fixture.name === '司書の前明かり' || fixture.name === '来訪者の前明かり') {
       const left = fixture.name === '司書の前明かり'
-      return areaWashFixture(fixture, {
+      return areaWashFixture({
+        ...fixture,
+        position: [left ? -5.5 : 5.5, 9.2, 6.5],
+        upstageCutDeg: 3,
+      }, {
         name: left ? '前明かり・下手の面' : '前明かり・上手の面',
         target: [left ? -2.5 : 2.5, 1.5, -2.4],
-        intensity: areaLevels[left ? 0 : 1],
+        intensity: areaLevels[left ? 0 : 1] * FOH_FRONT_GAIN,
+        beamAngleDeg: 28,
         color: GROUND_COLOR,
       })
     }
     if (fixture.name === '司書の輪郭' || fixture.name === '来訪者の輪郭') {
       return { ...fixture, enabled: false }
     }
-    if (fixture.name === '書架の面明かり') return { ...fixture, enabled: false }
+    if (fixture.name === '書架の面明かり') {
+      const intensity = scene.title === '雷鳴' ? 0 : scene.title === '返された本' || scene.title === '余白の言葉' ? 0.02 : 0.05
+      return areaWashFixture({
+        ...fixture,
+        position: [-5.5, 6.2, -3.2],
+        upstageCutDeg: 3,
+      }, {
+        target: [-4.4, 1.4, -6], beamAngleDeg: 30, intensity, color: GROUND_COLOR,
+      })
+    }
     if (fixture.name === '本と机の灯り') {
-      return { ...fixture, intensity: fixture.intensity * 0.25 }
+      return { ...fixture, intensity: 0 }
     }
     if (fixture.name === '窓からの雨明かり') {
       return {
@@ -115,15 +135,16 @@ function reviseScene(scene: PlanScene): PlanScene {
     name: '地明かり・中央',
     position: [0, 6.8, 0.5],
   }, {
-    target: [0, 1, -2.4], intensity: groundLevels[4], color: GROUND_COLOR,
+    target: [0, 1, -2.4], intensity: groundLevels[4] * 0.5, color: GROUND_COLOR,
   }))
   fixtures.push(areaWashFixture({
     ...frontTemplate,
     id: 'f-rain-front-center-study',
     name: '前明かり・中央の面',
-    position: [0, 5.8, 1.4],
+    position: [0, 9.2, 6.5],
+    upstageCutDeg: 3,
   }, {
-    target: [0, 1.5, -2.3], intensity: areaLevels[2], beamAngleDeg: 36, color: GROUND_COLOR,
+    target: [0, 1.5, -2.3], intensity: areaLevels[2] * FOH_FRONT_GAIN, beamAngleDeg: 26, color: GROUND_COLOR,
   }))
   return { ...scene, fixtures, note: SCENE_NOTES[scene.title] ?? scene.note }
 }
