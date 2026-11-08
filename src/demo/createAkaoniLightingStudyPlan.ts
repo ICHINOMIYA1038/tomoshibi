@@ -15,7 +15,7 @@ function reviseFixture(fixture: Fixture, scene: PlanScene): Fixture {
     return {
       ...fixture,
       presetKey: 'Source4_19',
-      target: performer ? [performer.position[0], 1.7, performer.position[2]] : fixture.target,
+      target: performer ? [performer.position[0], 1.4, performer.position[2]] : fixture.target,
       beamAngleDeg: 17,
       intensity: fixture.intensity * 0.015,
     }
@@ -76,7 +76,7 @@ export function createAkaoniLightingStudyPlan() {
         ...scene,
         fixtures,
         setPieces: scene.setPieces.map(piece => piece.name === '浜の地面'
-          ? { ...piece, position: [0, 0.01, -2.25], size: [12, 0.02, 7.5] }
+          ? { ...piece, position: [0, 0.01, -2], size: [16, 0.02, 12], color: '#625e57' }
           : piece),
       }
     })
