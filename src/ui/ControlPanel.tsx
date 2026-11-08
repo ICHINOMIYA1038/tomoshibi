@@ -23,6 +23,61 @@ function Slider({ label, value, min, max, step, onChange, unit, fmt }: {
   )
 }
 
+type BarnDoorSide = 'top' | 'right' | 'bottom' | 'left'
+const BARN_DOOR_SIDES: { key: BarnDoorSide; label: string }[] = [
+  { key: 'top', label: '上側' }, { key: 'right', label: '右側' },
+  { key: 'bottom', label: '下側' }, { key: 'left', label: '左側' },
+]
+
+function BarnDoorEditor({ fixture, onChange }: { fixture: Fixture; onChange: (patch: Partial<Fixture>) => void }) {
+  const active = fixture.barnDoorAngles !== undefined || fixture.upstageCutDeg !== undefined
+  const cuts = fixture.barnDoorAngles ?? (fixture.upstageCutDeg === undefined ? {} : { top: fixture.upstageCutDeg })
+  const halfField = 45 * Math.max(7, Math.min(55, fixture.beamAngleDeg)) / 28
+  const amount = (side: BarnDoorSide) => cuts[side] === undefined ? 0
+    : Math.max(0, Math.min(75, Math.round((halfField - cuts[side]) / (2 * halfField) * 100)))
+  const setAmount = (side: BarnDoorSide, value: number) => {
+    const next = { ...cuts }
+    if (value === 0) delete next[side]
+    else next[side] = halfField * (1 - value / 50)
+    onChange({ barnDoorAngles: next, upstageCutDeg: undefined })
+  }
+  const left = 26 + amount('left') * 1.28
+  const top = 26 + amount('top') * 1.28
+  const width = 128 - (amount('left') + amount('right')) * 1.28
+  const height = 128 - (amount('top') + amount('bottom')) * 1.28
+  return <section className="barn-door-editor">
+    <div className="barn-door-heading">
+      <strong>バンドアで光を切る</strong>
+      <button type="button" className={active ? 'active' : ''} aria-pressed={active}
+        onClick={() => onChange({ barnDoorAngles: active ? undefined : { top: 5 }, upstageCutDeg: undefined })}>
+        {active ? '使用中' : '使う'}
+      </button>
+    </div>
+    {active && <>
+      <div className="barn-door-preview" aria-label="照射範囲の形の目安">
+        <svg viewBox="0 0 180 180" role="img" aria-label="中央の光を四辺から遮る図">
+          <defs><clipPath id="barn-door-preview-clip"><rect x={left} y={top} width={Math.max(0, width)} height={Math.max(0, height)} /></clipPath></defs>
+          <circle cx="90" cy="90" r="64" fill="#8a7860" opacity=".26" />
+          <circle cx="90" cy="90" r="64" fill="#f9d39b" clipPath="url(#barn-door-preview-clip)" />
+          <circle cx="90" cy="90" r="3" fill="#5e432a" />
+        </svg>
+        <span>光の形の目安</span>
+      </div>
+      <div className="barn-door-actions">
+        <button type="button" onClick={() => onChange({ barnDoorAngles: { top: 2.5 }, upstageCutDeg: undefined })}>奥壁側を切る</button>
+        <button type="button" onClick={() => onChange({ barnDoorAngles: {}, upstageCutDeg: undefined })}>全開に戻す</button>
+      </div>
+      {BARN_DOOR_SIDES.map(({ key, label }) => <div className="barn-door-slider" key={key}>
+        <label htmlFor={`barn-${fixture.id}-${key}`}>{label}</label>
+        <input id={`barn-${fixture.id}-${key}`} type="range" min="0" max="75" step="1" value={amount(key)}
+          onChange={event => setAmount(key, Number(event.target.value))} />
+        <output>{amount(key)}%</output>
+      </div>)}
+      <p>数値を上げると、その方向から光を切ります。照度計にも反映します。</p>
+    </>}
+  </section>
+}
+
 function colorToHex(rgb: [number, number, number]): string {
   const c = (v: number) => Math.round(Math.max(0, Math.min(1, v)) * 255).toString(16).padStart(2, '0')
   return '#' + c(rgb[0]) + c(rgb[1]) + c(rgb[2])
@@ -295,6 +350,9 @@ function FixtureEditor({ fixture }: { fixture: Fixture }) {
             : isMeasuredCyc ? 'ETC Source Four LED CYC の配光を使用中（取付角度は試作値）'
             : `${KIND_LABELS[profile.kind]} / ${profile.fluxLumens.toLocaleString()} lm`}
         </div>
+        {fixture.position[2] > 2 && <div style={{ fontSize: 11, color: 'var(--kin)', marginTop: 5 }}>
+          客席側・舞台前から {(fixture.position[2] - 2).toFixed(1)}m・高さ {fixture.position[1].toFixed(1)}m
+        </div>}
       </div>
 
       <div className="row">
@@ -352,15 +410,7 @@ function FixtureEditor({ fixture }: { fixture: Fixture }) {
         </div>
       )}
 
-      {isMeasured && <div className="row">
-        <label>上側バンドア</label>
-        <input type="checkbox" checked={fixture.upstageCutDeg !== undefined}
-          onChange={e => update({ upstageCutDeg: e.target.checked ? 5 : undefined })} />
-      </div>}
-      {isMeasured && fixture.upstageCutDeg !== undefined && <Slider
-        label="遮光の境界" value={fixture.upstageCutDeg} min={-10} max={25} step={0.5}
-        onChange={v => update({ upstageCutDeg: v })} unit="°" fmt={v => v.toFixed(1)} />}
-      {isMeasured && fixture.upstageCutDeg !== undefined && <div className="hint">光軸より上側を遮る近似です。奥壁への光漏れを見ながら調整できます。</div>}
+      {isMeasured && <BarnDoorEditor fixture={fixture} onChange={update} />}
 
       {profile.kind === 'PAR' && (
         <Slider label="器具回転" value={fixture.rotationZDeg} min={-180} max={180}
@@ -420,7 +470,9 @@ function FixtureEditor({ fixture }: { fixture: Fixture }) {
         3D上の矢印/リングハンドルで掴んで操作
       </div>
 
-      <PositionTrio label="光源" value={fixture.position} onChange={v => update({ position: v })} ranges={[[-9, 9], [0.3, 12], [-7.5, 8]]} />
+      {fixture.position[2] > 2
+        ? <FOHPositionEditor value={fixture.position} onChange={v => update({ position: v })} />
+        : <PositionTrio label="光源" value={fixture.position} onChange={v => update({ position: v })} ranges={[[-9, 9], [0.3, 18], [-7.5, 24]]} />}
       <PositionTrio label="狙い" value={fixture.target} onChange={v => update({ target: v })} ranges={[[-7, 7], [0, 7], [-7.5, 3]]} />
 
       <div className="row" style={{ marginTop: 12 }}>
@@ -463,6 +515,45 @@ function PositionTrio({ label, value, onChange, ranges }: {
       ))}
     </>
   )
+}
+
+function FOHPositionEditor({ value, onChange }: {
+  value: [number, number, number]; onChange: (value: [number, number, number]) => void;
+}) {
+  const options = [8, 12, 16, 22]
+  const distance = value[2] - 2
+  const [distanceDraft, setDistanceDraft] = useState(distance.toFixed(1))
+  const [heightDraft, setHeightDraft] = useState(value[1].toFixed(1))
+  useEffect(() => setDistanceDraft(distance.toFixed(1)), [distance])
+  useEffect(() => setHeightDraft(value[1].toFixed(1)), [value[1]])
+  const commitDistance = () => {
+    const metres = Number(distanceDraft)
+    if (Number.isFinite(metres) && distanceDraft.trim() !== '') onChange([value[0], value[1], Math.max(3, Math.min(24, metres + 2))])
+    else setDistanceDraft(distance.toFixed(1))
+  }
+  const commitHeight = () => {
+    const metres = Number(heightDraft)
+    if (Number.isFinite(metres) && heightDraft.trim() !== '') onChange([value[0], Math.max(3, Math.min(18, metres)), value[2]])
+    else setHeightDraft(value[1].toFixed(1))
+  }
+  return <div className="foh-position-editor">
+    <strong>客席側の設置位置</strong>
+    <p>舞台前からの距離を選ぶか、会場に合わせて入力してください。</p>
+    <div className="foh-position-options">
+      {options.map(metres => <button key={metres} type="button" className={Math.abs(distance - metres) < .1 ? 'active' : ''}
+        onClick={() => onChange([value[0], metres === 22 ? 16.5 : metres === 16 ? 14.5 : metres === 12 ? 12.5 : 10, metres + 2])}>
+        {metres}m
+      </button>)}
+    </div>
+    <label>舞台前から <input type="number" min="1" max="22" step="0.5" value={distanceDraft}
+      onChange={event => setDistanceDraft(event.target.value)} onBlur={commitDistance}
+      onKeyDown={event => { if (event.key === 'Enter') event.currentTarget.blur() }} /> m</label>
+    <label>吊り高さ <input type="number" min="3" max="18" step="0.5" value={heightDraft}
+      onChange={event => setHeightDraft(event.target.value)} onBlur={commitHeight}
+      onKeyDown={event => { if (event.key === 'Enter') event.currentTarget.blur() }} /> m</label>
+    <div className="row"><label>左右</label><input type="range" min="-9" max="9" step="0.1" value={value[0]}
+      onChange={event => onChange([Number(event.target.value), value[1], value[2]])} /><span className="numval">{value[0].toFixed(1)}m</span></div>
+  </div>
 }
 
 // ============ 役者 タブ ============

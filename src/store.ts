@@ -22,6 +22,7 @@ export interface Fixture {
   presetKey: string
   photometricProfile?: 'etc-fos4-fresnel10-mid' | 'etc-s4-led-cyc-daylight-hd'
   upstageCutDeg?: number
+  barnDoorAngles?: { top?: number; right?: number; bottom?: number; left?: number }
   position: [number, number, number]
   target: [number, number, number]
   beamAngleDeg: number

@@ -18,7 +18,7 @@ function CueIcon({ type }: { type?: SceneTriggerType }) {
 }
 
 function mapX(x: number) { return MAP.left + (x + 8) * MAP.width / 16 }
-function mapY(z: number) { return z <= 2 ? MAP.top + (z + 8) * MAP.height / 10 : 550 + (z - 2) * 9 }
+function mapY(z: number) { return z <= 2 ? MAP.top + (z + 8) * MAP.height / 10 : 550 + (z - 2) * 2.5 }
 function clamp(value: number, min: number, max: number) { return Math.max(min, Math.min(max, value)) }
 function colorToHex(rgb: [number, number, number]) {
   return '#' + rgb.map(value => Math.round(clamp(value, 0, 1) * 255).toString(16).padStart(2, '0')).join('')
@@ -32,8 +32,8 @@ function mapPoint(event: PointerEvent<SVGSVGElement>, includeHouse = false): Sta
   const py = (event.clientY - rect.top) * MAP.svgHeight / rect.height
   return [
     Math.round(clamp((px - MAP.left) * 16 / MAP.width - 8, -9.2, 9.2) * 10) / 10,
-    Math.round(clamp(includeHouse && py > 550 ? 2 + (py - 550) / 9
-      : (py - MAP.top) * 10 / MAP.height - 8, -7.8, includeHouse ? 8 : 1.8) * 10) / 10,
+    Math.round(clamp(includeHouse && py > 550 ? 2 + (py - 550) / 2.5
+      : (py - MAP.top) * 10 / MAP.height - 8, -7.8, includeHouse ? 24 : 1.8) * 10) / 10,
   ]
 }
 function placeName(point: StagePoint) {
@@ -212,7 +212,7 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
     } else if (start.kind === 'fixture') {
       const fixture = useStore.getState().fixtures.find(item => item.id === start.id)
       if (fixture) updateFixture(fixture.id, {
-        position: [clamp(x, -7, 7), fixture.position[1], clamp(z, -7.5, 8)],
+        position: [clamp(x, -7, 7), fixture.position[1], clamp(z, -7.5, 24)],
       })
     } else {
       const piece = useStore.getState().setPieces.find(item => item.id === start.id)
@@ -847,7 +847,7 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
             <text x="480" y="100" textAnchor="middle" fill="#777066" fontSize="16">舞台奥</text>
             <rect x="100" y="558" width="760" height="60" fill="#ece6da" stroke="#a99a83" strokeDasharray="8 6" />
             <text x="112" y="577" fill="#716758" fontSize="14">客席側の吊り位置</text>
-            <text x="480" y="620" textAnchor="middle" fill="#777066" fontSize="14">客席側は距離を縮めて表示</text>
+            <text x="848" y="577" textAnchor="end" fill="#777066" fontSize="13">距離を縮めて表示</text>
             {showSetPieces && setPieces.map((piece, index) => {
               const active = selectedSetPiece?.id === piece.id
               const width = Math.max(28, (piece.size?.[0] ?? 1) * Math.abs(piece.scale) * MAP.width / 16)
@@ -967,9 +967,10 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
                     setLastMove({ kind: 'fixture', id: fixture.id, sceneId: scene.id, from: [fixture.position[0], fixture.position[2]] })
                     updateFixture(fixture.id, { position: [
                       clamp(fixture.position[0] + delta[0], -7, 7), fixture.position[1],
-                      clamp(fixture.position[2] + delta[1], -7.5, 8),
+                      clamp(fixture.position[2] + delta[1], -7.5, 24),
                     ] })
                   }}>
+                  <title>{fixture.name}{fixture.position[2] > 2 ? `・舞台前から ${(fixture.position[2] - 2).toFixed(1)}m` : ''}</title>
                   <circle cx={mapX(fixture.position[0])} cy={mapY(fixture.position[2])} r="21"
                     fill={active ? '#c8482d' : '#322c29'} stroke="#fffdf8" strokeWidth="3" />
                   <text x={mapX(fixture.position[0])} y={mapY(fixture.position[2]) + 6}

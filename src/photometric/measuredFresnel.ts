@@ -10,10 +10,23 @@ export const MEASURED_FRESNEL_DISPLAY_GAIN = 0.08
 const midProfile = parseIES(midIES)
 const cookieCache = new Map<string, THREE.DataTexture>()
 
-function upperCutTransmission(angleDeg: number, limitDeg?: number): number {
+type BarnDoorSide = 'top' | 'right' | 'bottom' | 'left'
+
+function cutTransmission(angleDeg: number, limitDeg?: number): number {
   if (limitDeg === undefined) return 1
   const t = THREE.MathUtils.clamp((angleDeg - limitDeg + 1.5) / 3, 0, 1)
   return 1 - t * t * (3 - 2 * t)
+}
+
+function barnDoorLimits(fixture: Fixture): Partial<Record<BarnDoorSide, number>> {
+  return fixture.barnDoorAngles ?? (fixture.upstageCutDeg === undefined ? {} : { top: fixture.upstageCutDeg })
+}
+
+function barnDoorTransmission(horizontalDeg: number, verticalDeg: number, limits: Partial<Record<BarnDoorSide, number>>): number {
+  return cutTransmission(verticalDeg, limits.top)
+    * cutTransmission(horizontalDeg, limits.right)
+    * cutTransmission(-verticalDeg, limits.bottom)
+    * cutTransmission(-horizontalDeg, limits.left)
 }
 
 function zoomRatio(fixture: Fixture): number {
@@ -36,12 +49,13 @@ export function measuredFresnelCandela(fixture: Fixture, direction: THREE.Vector
   const vertical = THREE.MathUtils.radToDeg(Math.acos(THREE.MathUtils.clamp(forward, -1, 1))) * zoomRatio(fixture)
   const horizontal = THREE.MathUtils.radToDeg(Math.atan2(direction.dot(right), direction.dot(up)))
   const ratio = zoomRatio(fixture)
-  const upperAngle = THREE.MathUtils.radToDeg(Math.atan2(direction.dot(up), forward))
+  const verticalAngle = THREE.MathUtils.radToDeg(Math.atan2(direction.dot(up), forward))
+  const horizontalAngle = THREE.MathUtils.radToDeg(Math.atan2(direction.dot(right), forward))
   return candelaAt(midProfile, vertical, horizontal) * fixture.intensity * ratio * ratio
-    * upperCutTransmission(upperAngle, fixture.upstageCutDeg)
+    * barnDoorTransmission(horizontalAngle, verticalAngle, barnDoorLimits(fixture))
 }
 
-function makeCookie(beamAngleDeg: number, upstageCutDeg?: number): THREE.DataTexture {
+function makeCookie(beamAngleDeg: number, limits: Partial<Record<BarnDoorSide, number>>): THREE.DataTexture {
   const size = 256
   const data = new Uint8Array(size * size * 4)
   const ratio = MEASURED_FRESNEL_REFERENCE_BEAM_DEG / beamAngleDeg
@@ -53,9 +67,10 @@ function makeCookie(beamAngleDeg: number, upstageCutDeg?: number): THREE.DataTex
       const py = ((y + 0.5) / size) * 2 - 1
       const vertical = THREE.MathUtils.radToDeg(Math.atan(Math.hypot(px, py) * tangent)) * ratio
       const horizontal = THREE.MathUtils.radToDeg(Math.atan2(px, py))
-      const upperAngle = THREE.MathUtils.radToDeg(Math.atan(py * tangent))
+      const verticalAngle = THREE.MathUtils.radToDeg(Math.atan(py * tangent))
+      const horizontalAngle = THREE.MathUtils.radToDeg(Math.atan(px * tangent))
       const normalized = THREE.MathUtils.clamp(candelaAt(midProfile, vertical, horizontal) / midProfile.peakCandela, 0, 1)
-        * upperCutTransmission(upperAngle, upstageCutDeg)
+        * barnDoorTransmission(horizontalAngle, verticalAngle, limits)
       const value = Math.round(normalized * 255)
       const offset = (y * size + x) * 4
       data[offset] = value
@@ -74,10 +89,18 @@ function makeCookie(beamAngleDeg: number, upstageCutDeg?: number): THREE.DataTex
 
 export function measuredFresnelSpotlight(fixture: Fixture) {
   const beamAngleDeg = THREE.MathUtils.clamp(fixture.beamAngleDeg, 7, 55)
-  const key = `${beamAngleDeg.toFixed(1)}:${fixture.upstageCutDeg?.toFixed(1) ?? 'none'}`
+  const limits = barnDoorLimits(fixture)
+  const key = `${beamAngleDeg.toFixed(1)}:${(['top', 'right', 'bottom', 'left'] as const).map(side => limits[side]?.toFixed(1) ?? 'none').join(':')}`
   let map = cookieCache.get(key)
   if (!map) {
-    map = makeCookie(beamAngleDeg, fixture.upstageCutDeg)
+    map = makeCookie(beamAngleDeg, limits)
+    if (cookieCache.size >= 128) {
+      const oldestKey = cookieCache.keys().next().value
+      if (oldestKey !== undefined) {
+        cookieCache.get(oldestKey)?.dispose()
+        cookieCache.delete(oldestKey)
+      }
+    }
     cookieCache.set(key, map)
   }
   const ratio = zoomRatio(fixture)

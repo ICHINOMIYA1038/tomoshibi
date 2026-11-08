@@ -91,8 +91,8 @@ function Beam({ fixture, hazeDensity, allowMap, castShadow }: { fixture: Fixture
   const spotlight = useMemo(() => fixtureSpotlightModel(fixture), [fixture])
   const { color, fieldAngleRad, halfAngle } = spotlight
 
-  // コーン: 光源→ターゲット方向、長さは固定 (シーン外まで届かせる)
-  const beamLength = 14
+  // 客席側からの長い照射でも、可視化する光束を狙いの先まで届かせる。
+  const beamLength = Math.max(14, new THREE.Vector3(...fixture.position).distanceTo(new THREE.Vector3(...fixture.target)) + 4)
   const baseRadius = beamLength * Math.tan(fieldAngleRad * 0.5)
 
   // ターゲット位置を target prop に追従させる

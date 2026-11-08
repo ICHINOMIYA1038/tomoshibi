@@ -5,7 +5,7 @@ import { areaWashFixture } from './areaWash'
 
 const SEA_NAMES = new Set(['海の面明かり・下手', '海の面明かり・中央', '海の面明かり・上手'])
 const FRONT_NAMES = new Set(['あの女の前明かり', '浜の人物の前明かり', '赤鬼の前明かり'])
-const FOH_FRONT_GAIN = 2.2
+const FOH_FRONT_GAIN = 2.7
 const GROUND_NAMES = ['地明かり・手前下手', '地明かり・手前上手', '地明かり・奥下手', '地明かり・奥上手'] as const
 const GROUND_CUES: Record<string, [number, number, number, number, number]> = {
   '波のあと': [0.25, 0.24, 0.16, 0.16, 0.10],
@@ -33,7 +33,7 @@ const SCENE_NOTES: Record<string, string> = {
 
 function areaTarget(sceneTitle: string, area: 'left' | 'right' | 'center'): Fixture['target'] {
   if (sceneTitle === '海の向こうへ') {
-    return [area === 'center' ? 0 : area === 'left' ? -1 : 1, 1.5, -5.5]
+    return [area === 'center' ? 0 : area === 'left' ? -1 : 1, 1.5, -3.8]
   }
   if (area === 'center') {
     return sceneTitle === '花のしるし' ? [0.9, 1.6, -2.7] : [1.2, 1.6, -3.6]
@@ -51,12 +51,12 @@ function reviseFixture(fixture: Fixture, scene: PlanScene): Fixture {
     const intensity = AREA_CUES[scene.title]?.[area === 'left' ? 0 : area === 'right' ? 1 : 2] ?? 0
     return areaWashFixture({
       ...fixture,
-      position: [area === 'left' ? -5.5 : area === 'right' ? 5.5 : 0, 9.2, 6.5],
-      upstageCutDeg: 3,
+      position: [area === 'left' ? -5.5 : area === 'right' ? 5.5 : 0, 14.5, 18],
+      barnDoorAngles: { top: 2.5 },
     }, {
       name: area === 'center' ? '前明かり・中央の面' : area === 'left' ? '前明かり・下手の面' : '前明かり・上手の面',
       target: areaTarget(scene.title, area),
-      beamAngleDeg: area === 'center' ? 26 : 28,
+      beamAngleDeg: area === 'center' ? 14 : 16,
       intensity: intensity * FOH_FRONT_GAIN,
     })
   }
@@ -88,7 +88,7 @@ export function createAkaoniLightingStudyPlan() {
           ? areaWashFixture({
             ...fixture,
             position: [fixture.position[0], fixture.position[1], frontGround ? fixture.position[2] : -3.8],
-            upstageCutDeg: frontGround ? undefined : 5,
+            barnDoorAngles: frontGround ? undefined : { top: 5 },
           }, {
             target: [Math.sign(fixture.position[0]) * (frontGround ? 2.5 : 4.5), 1, frontGround ? -2 : -5],
             beamAngleDeg: 44,
@@ -118,10 +118,15 @@ export function createAkaoniLightingStudyPlan() {
       return {
         ...scene,
         fixtures,
+        performers: scene.title === '海の向こうへ'
+          ? scene.performers.map(performer => ({ ...performer, position: [performer.position[0], performer.position[1], -3.8] }))
+          : scene.performers,
         note: SCENE_NOTES[scene.title] ?? scene.note,
         setPieces: scene.setPieces.map(piece => piece.name === '浜の地面'
           ? { ...piece, position: [0, 0.01, -2], size: [16, 0.02, 12], color: '#625e57' }
-          : piece),
+          : scene.title === '海の向こうへ' && piece.name === '舟'
+            ? { ...piece, position: [piece.position[0], piece.position[1], -3.9] }
+            : piece),
       }
     })
     const active = scenes.find(scene => scene.id === state.productionPlan.activeSceneId)!

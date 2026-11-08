@@ -5,7 +5,7 @@ import { MEASURED_CYC_KEY } from '../photometric/measuredCyc'
 
 const GROUND_NAMES = ['下手の地明かり', '上手の地明かり', '舞台奥・下手の地明かり', '舞台奥・上手の地明かり'] as const
 const GROUND_COLOR: Fixture['color'] = [1, 0.85, 0.72]
-const FOH_FRONT_GAIN = 2.2
+const FOH_FRONT_GAIN = 2.7
 
 const GROUND_CUES: Record<string, [number, number, number, number, number]> = {
   '閉館前': [0.20, 0.08, 0.13, 0.06, 0.08],
@@ -65,7 +65,7 @@ function reviseScene(scene: PlanScene): PlanScene {
       return areaWashFixture({
         ...fixture,
         position: rear ? [fixture.position[0], fixture.position[1], -3.8] : fixture.position,
-        upstageCutDeg: rear ? 5 : undefined,
+        barnDoorAngles: rear ? { top: 5 } : undefined,
       }, {
         target: groundTarget(fixture.name),
         intensity: groundLevels[groundIndex],
@@ -76,13 +76,13 @@ function reviseScene(scene: PlanScene): PlanScene {
       const left = fixture.name === '司書の前明かり'
       return areaWashFixture({
         ...fixture,
-        position: [left ? -5.5 : 5.5, 9.2, 6.5],
-        upstageCutDeg: 3,
+        position: [left ? -5.5 : 5.5, 14.5, 18],
+        barnDoorAngles: { top: 2.5 },
       }, {
         name: left ? '前明かり・下手の面' : '前明かり・上手の面',
         target: [left ? -2.5 : 2.5, 1.5, -2.4],
         intensity: areaLevels[left ? 0 : 1] * FOH_FRONT_GAIN,
-        beamAngleDeg: 28,
+        beamAngleDeg: 16,
         color: GROUND_COLOR,
       })
     }
@@ -94,7 +94,7 @@ function reviseScene(scene: PlanScene): PlanScene {
       return areaWashFixture({
         ...fixture,
         position: [-5.5, 6.2, -3.2],
-        upstageCutDeg: 3,
+        barnDoorAngles: { top: 3 },
       }, {
         target: [-4.4, 1.4, -6], beamAngleDeg: 30, intensity, color: GROUND_COLOR,
       })
@@ -141,10 +141,10 @@ function reviseScene(scene: PlanScene): PlanScene {
     ...frontTemplate,
     id: 'f-rain-front-center-study',
     name: '前明かり・中央の面',
-    position: [0, 9.2, 6.5],
-    upstageCutDeg: 3,
+    position: [0, 14.5, 18],
+    barnDoorAngles: { top: 2.5 },
   }, {
-    target: [0, 1.5, -2.3], intensity: areaLevels[2] * FOH_FRONT_GAIN, beamAngleDeg: 26, color: GROUND_COLOR,
+    target: [0, 1.5, -2.3], intensity: areaLevels[2] * FOH_FRONT_GAIN, beamAngleDeg: 14, color: GROUND_COLOR,
   }))
   return { ...scene, fixtures, note: SCENE_NOTES[scene.title] ?? scene.note }
 }
