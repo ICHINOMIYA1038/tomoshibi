@@ -364,7 +364,7 @@
     {
       "id": "f14",
       "name": "とんびの補助明かり",
-      "presetKey": "Fresnel8",
+      "presetKey": "Source4_19",
       "position": [
         -5.8,
         5.8,
@@ -375,8 +375,8 @@
         1.5,
         -2.8
       ],
-      "beamAngleDeg": 20,
-      "intensity": 0.12,
+      "beamAngleDeg": 17,
+      "intensity": 0.009,
       "color": [
         1,
         0.7200782887719634,
@@ -963,7 +963,7 @@
           {
             "id": "f14",
             "name": "とんびの補助明かり",
-            "presetKey": "Fresnel8",
+            "presetKey": "Source4_19",
             "position": [
               -5.8,
               5.8,
@@ -974,8 +974,8 @@
               1.5,
               -2.8
             ],
-            "beamAngleDeg": 20,
-            "intensity": 0.12,
+            "beamAngleDeg": 17,
+            "intensity": 0.009,
             "color": [
               1,
               0.7200782887719634,
@@ -1530,7 +1530,7 @@
           {
             "id": "f14",
             "name": "とんびの補助明かり",
-            "presetKey": "Fresnel8",
+            "presetKey": "Source4_19",
             "position": [
               -5.8,
               5.8,
@@ -1541,8 +1541,8 @@
               1.5,
               -2.8
             ],
-            "beamAngleDeg": 20,
-            "intensity": 0.12,
+            "beamAngleDeg": 17,
+            "intensity": 0.009,
             "color": [
               1,
               0.7200782887719634,
@@ -1751,7 +1751,7 @@
               -2
             ],
             "beamAngleDeg": 44,
-            "intensity": 0.2838,
+            "intensity": 0.17028,
             "color": [
               1,
               0.7200782887719634,
@@ -2097,7 +2097,7 @@
           {
             "id": "f14",
             "name": "とんびの補助明かり",
-            "presetKey": "Fresnel8",
+            "presetKey": "Source4_19",
             "position": [
               -5.8,
               5.8,
@@ -2108,8 +2108,8 @@
               1.5,
               -2.8
             ],
-            "beamAngleDeg": 20,
-            "intensity": 0.12,
+            "beamAngleDeg": 17,
+            "intensity": 0.009,
             "color": [
               1,
               0.7200782887719634,
@@ -2318,7 +2318,7 @@
               -2
             ],
             "beamAngleDeg": 44,
-            "intensity": 0.19866,
+            "intensity": 0.119196,
             "color": [
               1,
               0.7200782887719634,
@@ -2664,7 +2664,7 @@
           {
             "id": "f14",
             "name": "とんびの補助明かり",
-            "presetKey": "Fresnel8",
+            "presetKey": "Source4_19",
             "position": [
               -5.8,
               5.8,
@@ -2675,8 +2675,8 @@
               1.5,
               -2.8
             ],
-            "beamAngleDeg": 20,
-            "intensity": 0.12,
+            "beamAngleDeg": 17,
+            "intensity": 0.009,
             "color": [
               1,
               0.7200782887719634,
@@ -2890,7 +2890,7 @@
         "id": "sc1794120046931-tjmgl5",
         "title": "洞窟で向き合う",
         "trigger": "外の波音が遠のく",
-        "note": "洞窟の口を二つの岩で示す。あの女と赤鬼を内側に、ミズカネととんびを外側に置く。地明かりは4灯とも同じ色で絞る。",
+        "note": "洞窟の内側にあの女と赤鬼、外側にとんびとミズカネ。地明かりは5灯を同じ色で絞り、内側を暖色の細い光で見せる。",
         "fixtures": [
           {
             "id": "f1",
@@ -3143,19 +3143,19 @@
           {
             "id": "f10",
             "name": "洞窟の内側",
-            "presetKey": "Stairville_LEDPar64_RGBW",
+            "presetKey": "ETC_S4LED_Lustr_26",
             "position": [
               -5.3,
               6.2,
               -6
             ],
             "target": [
-              -3.6,
-              1.2,
-              -5.2
+              -3.3,
+              1.5,
+              -4.7
             ],
-            "beamAngleDeg": 25,
-            "intensity": 0.28,
+            "beamAngleDeg": 23,
+            "intensity": 0.03,
             "color": [
               0.95,
               0.68,
@@ -3253,7 +3253,7 @@
           {
             "id": "f14",
             "name": "とんびの補助明かり",
-            "presetKey": "Fresnel8",
+            "presetKey": "Source4_19",
             "position": [
               -5.8,
               5.8,
@@ -3264,8 +3264,8 @@
               1.5,
               -2.8
             ],
-            "beamAngleDeg": 20,
-            "intensity": 0.12,
+            "beamAngleDeg": 17,
+            "intensity": 0.009,
             "color": [
               1,
               0.7200782887719634,
@@ -3479,7 +3479,7 @@
         "id": "sc1794120046932-mrhokk",
         "title": "海の向こうへ",
         "trigger": "舟のきしむ音",
-        "note": "四人が舟に乗る。浜の地明かりを弱め、海の青と舟の輪郭を残す。",
+        "note": "四人が舟に乗る。浜の地明かりを弱め、前明かりを消す。海の青を背景に四人の輪郭を見せる。",
         "fixtures": [
           {
             "id": "f1",
@@ -3618,7 +3618,7 @@
             "whiteMix": 0,
             "colorTempK": 3200,
             "rotationZDeg": 0,
-            "enabled": true
+            "enabled": false
           },
           {
             "id": "f6",
@@ -3645,7 +3645,7 @@
             "whiteMix": 0,
             "colorTempK": 3200,
             "rotationZDeg": 0,
-            "enabled": true
+            "enabled": false
           },
           {
             "id": "f7",
@@ -3672,7 +3672,7 @@
             "whiteMix": 0,
             "colorTempK": 3200,
             "rotationZDeg": 0,
-            "enabled": true
+            "enabled": false
           },
           {
             "id": "f8",
@@ -3787,7 +3787,7 @@
           {
             "id": "f12",
             "name": "舟の逆光",
-            "presetKey": "Chauvet_COLORado2Solo",
+            "presetKey": "ETC_S4LED_Lustr_26",
             "position": [
               4.8,
               6.7,
@@ -3795,11 +3795,11 @@
             ],
             "target": [
               0,
-              1.2,
+              1.9,
               -5.7
             ],
-            "beamAngleDeg": 28,
-            "intensity": 0.18,
+            "beamAngleDeg": 23,
+            "intensity": 0.035,
             "color": [
               0.42,
               0.58,
@@ -3842,7 +3842,7 @@
           {
             "id": "f14",
             "name": "とんびの補助明かり",
-            "presetKey": "Fresnel8",
+            "presetKey": "Source4_19",
             "position": [
               -5.8,
               5.8,
@@ -3853,8 +3853,8 @@
               1.5,
               -2.8
             ],
-            "beamAngleDeg": 20,
-            "intensity": 0.12,
+            "beamAngleDeg": 17,
+            "intensity": 0.009,
             "color": [
               1,
               0.7200782887719634,
