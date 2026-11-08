@@ -4,6 +4,8 @@
 
 5 場面の立ち位置は[配置図](akaoni-stage-map.svg)で確認できる。配置と照明キューは[JSON データ](../public/mock/demos/akaoni.json)にも保存した。
 
+海の明かりと人物の距離を調整した[改訂案](akaoni-wash-staging-plan.md)も別に保存した。
+
 [NODA・MAP の公演紹介](https://www.nodamap.com/site/play/8)は、4 人の俳優による小空間の公演として『赤鬼』を紹介している。[国際交流基金の作品紹介](https://performingarts.jpf.go.jp/article/6240/)には、あの女・とんび・ミズカネ・赤鬼、浜辺、洞窟、海へ向かう展開が記されている。この試作の場面名、きっかけ、配置、装置、照明キューは TOMOSHIBI 向けに新しく作った。戯曲の台詞は収録していない。
 
 ## 浜・洞窟・海を少数の装置で示す
