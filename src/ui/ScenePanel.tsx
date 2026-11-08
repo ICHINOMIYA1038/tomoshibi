@@ -73,17 +73,6 @@ function CloudScenes() {
   const dirty = useIsDirty()
   const markSaved = useStore(s => s.markSavedSnapshot)
 
-  // ページ離脱前の警告 (未保存の変更がある場合のみ)
-  useEffect(() => {
-    if (!dirty) return
-    const handler = (e: BeforeUnloadEvent) => {
-      e.preventDefault()
-      e.returnValue = ''
-    }
-    window.addEventListener('beforeunload', handler)
-    return () => window.removeEventListener('beforeunload', handler)
-  }, [dirty])
-
   const confirmDiscard = (action: string) =>
     !dirty || confirm(`未保存の変更があります。${action}しますか?\n変更内容は失われます。`)
 

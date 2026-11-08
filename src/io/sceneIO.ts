@@ -110,7 +110,7 @@ export function makeShareURL(): string {
   // 開発中は localhost、本番は tomoshibi.gikyokutosyokan.com を使うのが分かりやすい
   const isLocal = /localhost|127\.0\.0\.1/.test(location.hostname)
   const origin = isLocal ? location.origin : 'https://tomoshibi.gikyokutosyokan.com'
-  return `${origin}/#scene=${b64}`
+  return `${origin}/simulator/#scene=${b64}`
 }
 export function tryLoadFromHash(): boolean {
   const m = location.hash.match(/#scene=([^&]+)/)

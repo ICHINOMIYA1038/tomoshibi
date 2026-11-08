@@ -13,7 +13,7 @@ import { XRButton, XRGLBinder } from './scene/XRSupport'
 import { ControlPanel } from './ui/ControlPanel'
 import { HelpOverlay } from './ui/HelpOverlay'
 import { SettingsModal } from './ui/SettingsModal'
-import { useStore } from './store'
+import { useIsDirty, useStore } from './store'
 import { useCloudSession } from './io/cloudSession'
 import { loginUrl, signupUrl, logoutUrl, createBillingPortal, CloudError } from './io/cloud'
 import { ScenePanel } from './ui/ScenePanel'
@@ -78,9 +78,20 @@ const isEmbed = new URLSearchParams(location.search).has('embed')
 
 export default function App() {
   const settings = useStore(s => s.settings)
+  const dirty = useIsDirty()
   const select = useStore(s => s.select)
   const view = CAMERA_VIEWS[settings.cameraView] ?? CAMERA_VIEWS.audience
   const noopMaterials = () => {}
+
+  useEffect(() => {
+    if (!dirty) return
+    const handler = (event: BeforeUnloadEvent) => {
+      event.preventDefault()
+      event.returnValue = ''
+    }
+    window.addEventListener('beforeunload', handler)
+    return () => window.removeEventListener('beforeunload', handler)
+  }, [dirty])
 
   // embed クラス付与
   useEffect(() => {

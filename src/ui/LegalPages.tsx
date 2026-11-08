@@ -418,7 +418,7 @@ function ProSuccessPage() {
         <div className="pro-flame-large">✦</div>
         <h2 className="pro-success-h">ご登録ありがとうございます!</h2>
         <p>Pro プランの決済が完了しました。<br />クラウド保存が<strong>無制限</strong>に開放されました。</p>
-        <a href="/" className="pro-subscribe-btn">シミュレーターに戻る</a>
+        <a href="/simulator/" className="pro-subscribe-btn">シミュレーターに戻る</a>
         <div className="pro-subscribe-note">領収書は登録メールアドレスに Stripe から自動送信されます</div>
       </div>
     </Layout>
@@ -432,7 +432,7 @@ function ProCancelPage() {
       <p>もう一度検討する場合は下記からどうぞ。</p>
       <div className="pro-price-card">
         <a href="/pro" className="pro-subscribe-btn">Pro プランのページに戻る</a>
-        <a href="/" className="pro-subscribe-btn" style={{ background: 'transparent', border: '1px solid rgba(212,175,111,0.35)', color: '#ffd9a3', marginTop: 10 }}>シミュレーターに戻る</a>
+        <a href="/simulator/" className="pro-subscribe-btn" style={{ background: 'transparent', border: '1px solid rgba(212,175,111,0.35)', color: '#ffd9a3', marginTop: 10 }}>シミュレーターに戻る</a>
       </div>
     </Layout>
   )

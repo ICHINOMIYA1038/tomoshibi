@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#171316" />
+  <title>TOMOSHIBI小屋 | 照明と演出プランをひとつの舞台で</title>
+  <meta name="description" content="照明・役者・舞台セットを配置し、章とシーンの流れを組み立てる。TOMOSHIBI小屋の演出プランをブラウザで始めましょう。" />
+  <link rel="canonical" href="https://tomoshibi.gikyokutosyokan.com/" />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="戯曲図書館" />
+  <meta property="og:title" content="TOMOSHIBI小屋 — 舞台の流れを、灯りとともに。" />
+  <meta property="og:description" content="照明・役者・舞台セットと、章・シーンの流れをひとつの場所で。" />
+  <meta property="og:url" content="https://tomoshibi.gikyokutosyokan.com/" />
+  <meta property="og:image" content="https://tomoshibi.gikyokutosyokan.com/og.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="TOMOSHIBI小屋 — 舞台の流れを、灯りとともに。" />
+  <meta name="twitter:description" content="照明・役者・舞台セットと、章・シーンの流れをひとつの場所で。" />
+  <meta name="twitter:image" content="https://tomoshibi.gikyokutosyokan.com/og.png" />
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='%23171316'/><path d='M32 12C25 23 20 31 20 38a12 12 0 0024 0c0-7-5-15-12-26z' fill='%23d4af6f'/></svg>" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <link rel="manifest" href="/manifest.webmanifest" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet" />
+  <script>
+    if (location.hash.startsWith('#scene=') || new URLSearchParams(location.search).has('embed') ||
+        window.webkit?.messageHandlers?.TomoshibiSession) {
+      location.replace('/simulator/' + location.search + location.hash)
+    }
+  </script>
+  <style>
+    :root { color-scheme: dark; font-family: 'Noto Sans JP', sans-serif; }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; background: #171316; color: #f5eee3; }
+    a { color: inherit; }
+    a:focus-visible { outline: 2px solid #e5c18a; outline-offset: 4px; }
+    .wrap { width: min(1190px, calc(100% - 48px)); margin: auto; }
+    .site-header { position: relative; z-index: 3; border-bottom: 1px solid #554337; }
+    .site-header .wrap { display: flex; align-items: center; justify-content: space-between; min-height: 76px; gap: 24px; }
+    .brand { display: flex; align-items: baseline; gap: 7px; text-decoration: none; font-family: 'Shippori Mincho', serif; font-size: 24px; font-weight: 700; letter-spacing: .08em; white-space: nowrap; }
+    .brand span { color: #d4af6f; font-size: 16px; }
+    .site-nav { display: flex; align-items: center; gap: clamp(18px, 3vw, 36px); }
+    .site-nav a { color: #d5c9ba; text-decoration: none; font-size: 12px; }
+    .site-nav a:hover { color: #fff5e6; }
+    .site-nav .nav-start { padding: 11px 18px; border: 1px solid #d4af6f; border-radius: 6px; color: #f3d7ac; font-weight: 700; }
+    .site-nav .nav-start:hover { background: #352c27; }
+    .hero { position: relative; overflow: hidden; padding: clamp(70px, 9vw, 130px) 0 90px; background: radial-gradient(ellipse at 77% 30%, #493127 0, #2a2020 32%, #171316 70%); }
+    .hero::before { position: absolute; inset: 0; content: ''; background: linear-gradient(125deg, transparent 49%, rgba(244,194,116,.07) 50%, transparent 65%); pointer-events: none; }
+    .hero-grid { position: relative; display: grid; grid-template-columns: minmax(0, .92fr) minmax(0, 1.08fr); align-items: center; gap: 54px; }
+    .eyebrow { display: inline-flex; align-items: center; gap: 9px; margin: 0 0 22px; color: #d7b987; font-size: 12px; font-weight: 700; letter-spacing: .16em; }
+    .eyebrow::before { width: 22px; height: 1px; background: #d7b987; content: ''; }
+    h1, h2, h3, p { margin-top: 0; }
+    h1, h2 { font-family: 'Shippori Mincho', serif; }
+    h1 { margin-bottom: 25px; font-size: clamp(39px, 5vw, 69px); line-height: 1.43; letter-spacing: .035em; }
+    h1 em { color: #ecc692; font-style: normal; }
+    .hero-copy { max-width: 540px; margin-bottom: 34px; color: #d3c7bc; font-size: 15px; line-height: 2.05; }
+    .hero-actions { display: flex; flex-wrap: wrap; gap: 12px; }
+    .button { display: inline-flex; align-items: center; justify-content: center; min-height: 54px; padding: 14px 22px; border-radius: 7px; font-size: 13px; font-weight: 700; text-decoration: none; transition: transform .18s, background .18s; }
+    .button:hover { transform: translateY(-2px); }
+    .button.primary { background: #bd513b; color: #fff9f0; }
+    .button.primary:hover { background: #d36149; }
+    .button.secondary { border: 1px solid #897156; background: #2c2524; color: #f0ddc2; }
+    .button.secondary:hover { background: #3a2e29; }
+    .hero-note { margin: 21px 0 0; color: #ac9e92; font-size: 11px; line-height: 1.8; }
+    .hero-note a { text-underline-offset: 3px; }
+    .preview { min-width: 0; overflow: hidden; border: 1px solid #9a7458; border-radius: 13px; background: #201b1d; box-shadow: 0 30px 100px #0b090ba8, 0 0 80px #c0733d1b; transform: rotate(1deg); }
+    .preview-header { display: flex; justify-content: space-between; align-items: center; height: 48px; padding: 0 18px; border-bottom: 1px solid #564238; color: #d4af6f; font-family: 'Shippori Mincho', serif; font-size: 14px; font-weight: 700; }
+    .preview-header span:last-child { color: #a69685; font-family: 'Noto Sans JP', sans-serif; font-size: 10px; font-weight: 400; }
+    .preview-content { display: grid; grid-template-columns: 32% 1fr; min-height: 420px; }
+    .preview-scenes { padding: 17px 10px; border-right: 1px solid #514239; background: #1a1719; }
+    .preview-scenes small { display: block; margin: 0 0 13px 9px; color: #aa9787; font-size: 10px; }
+    .preview-chapter { margin: 0 0 10px 7px; color: #d2b887; font-size: 11px; font-weight: 700; }
+    .preview-scene { display: grid; gap: 4px; margin: 5px 0; padding: 10px 10px; border: 1px solid #514038; border-radius: 6px; color: #e6d8c8; font-size: 11px; }
+    .preview-scene span { color: #ab9889; font-size: 9px; }
+    .preview-scene.active { border-color: #d4af6f; background: #403128; }
+    .preview-stage { position: relative; padding: 16px; background: #e8dfd1; color: #574a3d; }
+    .preview-stage-head { display: flex; justify-content: space-between; gap: 12px; color: #5d4e41; font-size: 11px; font-weight: 700; }
+    .preview-stage-head span:last-child { color: #8c7d6e; font-weight: 400; }
+    .preview-stage svg { display: block; width: 100%; height: auto; margin-top: 12px; }
+    .preview-caption { padding: 8px 14px; border-top: 1px solid #514239; color: #a79889; font-size: 10px; text-align: right; }
+    .features { padding: 72px 0 78px; background: #ece6da; color: #2e2925; }
+    .section-label { margin-bottom: 11px; color: #9b4d3b; font-size: 11px; font-weight: 700; letter-spacing: .13em; }
+    .features h2, .migration h2 { margin-bottom: 30px; font-size: clamp(26px, 3vw, 36px); line-height: 1.5; }
+    .feature-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .feature { min-height: 170px; padding: 24px; border: 1px solid #d7cbb9; border-radius: 9px; background: #f7f2e9; }
+    .feature-number { display: block; margin-bottom: 18px; color: #b9684d; font-family: 'Shippori Mincho', serif; font-size: 13px; }
+    .feature h3 { margin-bottom: 9px; font-size: 16px; }
+    .feature p { margin: 0; color: #6f6256; font-size: 12px; line-height: 1.8; }
+    .migration { padding: 76px 0 88px; border-top: 1px solid #5d473a; background: #231c1c; }
+    .migration-grid { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 40px; }
+    .migration h2 { margin-bottom: 14px; }
+    .migration p:not(.section-label) { max-width: 700px; margin-bottom: 0; color: #c8b8aa; font-size: 13px; line-height: 1.9; }
+    .site-footer { padding: 30px 0; border-top: 1px solid #554337; color: #a7998b; font-size: 11px; }
+    .site-footer .wrap { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
+    .site-footer nav { display: flex; flex-wrap: wrap; gap: 19px; }
+    .site-footer a { text-underline-offset: 3px; }
+    @media (max-width: 960px) { .hero-grid { grid-template-columns: 1fr; gap: 55px; } .preview { width: min(700px, 100%); transform: none; } }
+    @media (max-width: 640px) { .wrap { width: min(100% - 32px, 1190px); } .site-header .wrap { min-height: 64px; } .brand { font-size: 19px; } .brand span { font-size: 12px; } .site-nav { gap: 12px; } .site-nav a:not(.nav-start) { display: none; } .site-nav .nav-start { padding: 9px 11px; font-size: 11px; } .hero { padding: 55px 0 65px; } h1 { font-size: clamp(36px, 11vw, 52px); } .hero-copy { font-size: 13px; } .hero-actions { display: grid; } .button { width: 100%; } .preview-content { min-height: 300px; } .preview-scenes { padding: 12px 6px; } .preview-scene { padding: 8px 6px; font-size: 9px; } .preview-chapter { font-size: 9px; } .preview-stage { padding: 10px; } .preview-stage-head { font-size: 9px; } .features { padding: 55px 0; } .feature-grid { grid-template-columns: 1fr; } .feature { min-height: auto; } .migration { padding: 55px 0; } .migration-grid { grid-template-columns: 1fr; gap: 21px; } .site-footer .wrap { display: block; } .site-footer nav { margin-top: 14px; } }
+    @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } .button { transition: none; } }
+  </style>
+</head>
+<body>
+  <header class="site-header"><div class="wrap">
+    <a class="brand" href="/">TOMOSHIBI<span>小屋</span></a>
+    <nav class="site-nav" aria-label="サイト内の移動">
+      <a href="#できること">できること</a>
+      <a href="/simulator/">照明シミュレーター</a>
+      <a class="nav-start" href="/studio/projects/">演出プランを開く ↗</a>
+    </nav>
+  </div></header>
+  <main>
+    <section class="hero"><div class="wrap hero-grid">
+      <div>
+        <p class="eyebrow">照明と演出を、ひとつの舞台で</p>
+        <h1>舞台の流れを、<br /><em>灯りとともに。</em></h1>
+        <p class="hero-copy">照明・役者・舞台セットを配置しながら、章とシーンの流れを組み立てる。平面図と客席からの見え方を行き来して、演出プランを形にできます。</p>
+        <div class="hero-actions">
+          <a class="button primary" href="/studio/projects/">演出プランを始める　→</a>
+          <a class="button secondary" href="/studio/projects/#import">以前のプランを引き継ぐ</a>
+        </div>
+        <p class="hero-note">照明だけを組みたい方も、新しい画面で始められます。<br />従来の<a href="/simulator/">照明シミュレーター</a>も引き続き使えます。</p>
+      </div>
+      <div class="preview" aria-label="演出プラン画面のイメージ">
+        <div class="preview-header"><span>演出プラン</span><span>画面イメージ</span></div>
+        <div class="preview-content">
+          <div class="preview-scenes"><small>公演の流れ</small><div class="preview-chapter">▾　第1章</div>
+            <div class="preview-scene"><span>セリフ</span>幕開け</div>
+            <div class="preview-scene active"><span>光</span>手紙を見つける</div>
+            <div class="preview-scene"><span>音</span>夜が明ける</div>
+          </div>
+          <div class="preview-stage"><div class="preview-stage-head"><span>手紙を見つける · 平面図</span><span>照明 ON</span></div>
+            <svg viewBox="0 0 540 400" role="img" aria-label="照明、役者、舞台セットを置いた平面図">
+              <defs><radialGradient id="light"><stop stop-color="#e6c686" stop-opacity=".75"/><stop offset="1" stop-color="#e6c686" stop-opacity="0"/></radialGradient></defs>
+              <rect x="36" y="34" width="468" height="290" rx="4" fill="#f8f4ec" stroke="#776d60" stroke-width="3"/>
+              <rect x="55" y="52" width="430" height="251" fill="none" stroke="#d8cebe" stroke-dasharray="4 6"/>
+              <ellipse cx="274" cy="184" rx="164" ry="91" fill="url(#light)"/>
+              <rect x="86" y="73" width="85" height="50" rx="4" fill="#999487" stroke="#5e5a50"/><text x="128" y="103" text-anchor="middle" fill="#fff" font-size="13">机</text>
+              <rect x="375" y="201" width="65" height="44" rx="4" fill="#a6a090" stroke="#5e5a50"/><text x="407" y="228" text-anchor="middle" fill="#fff" font-size="12">扉</text>
+              <circle cx="224" cy="176" r="15" fill="#b5513d" stroke="#fff" stroke-width="4"/><text x="224" y="155" text-anchor="middle" fill="#4d4238" font-size="13">役者 A</text>
+              <circle cx="331" cy="190" r="15" fill="#b5513d" stroke="#fff" stroke-width="4"/><text x="331" y="168" text-anchor="middle" fill="#4d4238" font-size="13">役者 B</text>
+              <path d="M60 340 Q270 385 480 340" fill="none" stroke="#8e8071" stroke-width="3"/>
+              <text x="270" y="384" text-anchor="middle" fill="#8e8071" font-size="12">客席</text>
+            </svg>
+          </div>
+        </div>
+        <div class="preview-caption">章・シーン、配置、照明を同じ画面で</div>
+      </div>
+    </div></section>
+    <section class="features" id="できること"><div class="wrap">
+      <p class="section-label">できること</p><h2>組む、確かめる、通して見る。</h2>
+      <div class="feature-grid">
+        <article class="feature"><span class="feature-number">01</span><h3>照明を組む</h3><p>器具の位置や向き、明るさを調整し、客席からの見え方を確認できます。</p></article>
+        <article class="feature"><span class="feature-number">02</span><h3>場面を組み立てる</h3><p>章とシーンを並べ、役者・舞台セット・灯りの変化を場面ごとに残せます。</p></article>
+        <article class="feature"><span class="feature-number">03</span><h3>通して見る</h3><p>シーンを順に切り替え、舞台全体の流れを確かめられます。</p></article>
+      </div>
+    </div></section>
+    <section class="migration"><div class="wrap migration-grid">
+      <div><p class="section-label">以前のプランをお持ちの方へ</p><h2>保存したプランを、新しい画面へ。</h2>
+        <p>この端末に保存した旧プランは同じブラウザから、会員アカウントに保存した旧プランはログイン後にコピーできます。元のデータは残したまま引き継げます。</p></div>
+      <a class="button secondary" href="/studio/projects/#import">プランを引き継ぐ　→</a>
+    </div></section>
+  </main>
+  <footer class="site-footer"><div class="wrap"><span>© TOMOSHIBI小屋 · by 戯曲図書館</span><nav aria-label="その他のページ">
+    <a href="/simulator/">従来の照明シミュレーター</a><a href="/about">使い方</a><a href="/pro">Pro</a><a href="/contact">お問い合わせ</a><a href="/terms">利用規約</a><a href="/privacy">プライバシー</a>
+  </nav></div></footer>
+</body>
+</html>
