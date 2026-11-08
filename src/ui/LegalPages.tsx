@@ -305,7 +305,7 @@ function ProSubscribeButton() {
     return (
       <>
         <a href={loginUrl()} className="pro-subscribe-btn">ログインして申し込む</a>
-        <div className="pro-subscribe-note">戯曲 ID（戯曲図書館と共通。Google / Apple）でログインが必要です</div>
+        <div className="pro-subscribe-note">戯曲図書館アカウント (Google) でログインが必要です</div>
       </>
     )
   }

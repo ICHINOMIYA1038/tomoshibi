@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef } from 'react'
 import * as THREE from 'three'
 import { useStore, type Performer } from '../store'
 import { createStageMaterial } from '../lighting/StageMaterial'
-import { measureIlluminance } from '../photometric/illuminance'
+import { measureIlluminanceAtHit } from '../photometric/illuminance'
 import * as THREEX from 'three'
 
 // 役者 (人物) メッシュ: 胴体カプセル + 頭球 + 手足
@@ -59,14 +59,15 @@ function PerformerMeshSingle({ performer, material }: { performer: Performer; ma
     <group
       ref={groupRef}
       position={performer.position}
+      visible={performer.onStage !== false}
       onPointerOver={(e) => { e.stopPropagation(); setHover('performer', performer.id) }}
       onPointerOut={(e) => { e.stopPropagation(); setHover(null, null) }}
       onClick={(e) => {
         e.stopPropagation()
         const st = useStore.getState()
         if (st.settings.probeMode) {
-          st.setProbeMeasurement(measureIlluminance(
-            e.point, e.face?.normal ?? new THREEX.Vector3(0, 1, 0), st.fixtures,
+          st.setProbeMeasurement(measureIlluminanceAtHit(
+            e.point, e.face?.normal, e.object, st.fixtures,
           ))
         } else {
           select('performer', performer.id)

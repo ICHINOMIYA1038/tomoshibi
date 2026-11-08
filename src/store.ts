@@ -13,11 +13,13 @@ export const LIMITS = {
   performers: 30,
   setPieces: 30,
 } as const
+export const PLAN_LIMITS = { chapters: 100, scenes: 100 } as const
 
 export interface Fixture {
   id: string
   name: string
   presetKey: string
+  photometricProfile?: 'etc-fos4-fresnel10-mid'
   position: [number, number, number]
   target: [number, number, number]
   beamAngleDeg: number
@@ -35,9 +37,169 @@ export interface Performer {
   id: string
   name: string
   position: [number, number, number]
+  onStage?: boolean
   scale: number       // 身長スケール 0.7=子, 1.0=平均, 1.2=高身長
   color: string       // 服色
   pose: 'standing' | 'sitting'
+}
+
+export type StagePoint = [number, number]
+export type DirectionKind = 'move' | 'entrance' | 'exit'
+export type DirectionPreset = 'move' | 'entrance-upper' | 'entrance-lower' | 'exit-upper' | 'exit-lower'
+
+export interface StageDirection {
+  id: string
+  performerId: string
+  kind: DirectionKind
+  from: StagePoint
+  to: StagePoint
+  note: string
+}
+
+export interface ProductionPlan {
+  title: string
+  projectTitle?: string
+  workTitle?: string
+  venueTitle?: string
+  chapters?: PlanChapter[]
+  sequences?: PlanSequence[]
+  scenes: PlanScene[]
+  activeSceneId: string | null
+}
+
+export interface PlanChapter { id: string; title: string }
+export interface PlanSequence { id: string; chapterId: string; title: string }
+
+function nextChapterTitle(chapters: PlanChapter[]) {
+  const used = chapters.map(chapter => /^第(\d+)章$/.exec(chapter.title)?.[1])
+    .filter((value): value is string => value !== undefined).map(Number)
+  return `第${Math.max(0, ...used) + 1}章`
+}
+
+export interface PlanScene {
+  id: string
+  sequenceId?: string
+  title: string
+  triggerType?: SceneTriggerType
+  trigger: string
+  note: string
+  fixtures: Fixture[]
+  performers: Performer[]
+  setPieces: import('./types').SetPiece[]
+}
+
+export const SCENE_TRIGGER_LABELS = {
+  dialogue: 'セリフ', sound: '音', light: '光', other: 'その他',
+} as const
+export type SceneTriggerType = keyof typeof SCENE_TRIGGER_LABELS
+
+export type MoveSceneResult = 'moved' | 'unchanged' | 'invalid'
+
+export const emptyProductionPlan = (): ProductionPlan => ({
+  title: '', projectTitle: '', chapters: [], sequences: [], scenes: [], activeSceneId: null,
+})
+
+const sceneId = () => `sc${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
+const groupId = (prefix: string) => `${prefix}${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
+
+export function ensurePlanHierarchy(plan: ProductionPlan): ProductionPlan {
+  const projectTitle = plan.projectTitle === undefined
+    ? [plan.workTitle, plan.venueTitle].filter(Boolean).join(' / ') || '' : plan.projectTitle
+  const chapters = plan.chapters?.length ? plan.chapters : [{ id: groupId('ch'), title: '第1章' }]
+  const sequences = plan.sequences?.length ? plan.sequences : [{ id: groupId('sq'), chapterId: chapters[0].id, title: 'シーケンス 1' }]
+  const validSequenceIds = new Set(sequences.map(item => item.id))
+  const scenes = plan.scenes.map(scene => validSequenceIds.has(scene.sequenceId ?? '')
+    ? scene : { ...scene, sequenceId: sequences[0].id })
+  return { ...plan, projectTitle, chapters, sequences, scenes }
+}
+
+export function sceneDisplayTitle(plan: ProductionPlan, id: string): string {
+  const scene = plan.scenes.find(item => item.id === id)
+  if (!scene) return 'シーン'
+  const title = scene.title.trim()
+  if (title && title !== '開始' && title !== '新しいシーン' && title !== 'シーン' &&
+      !/^新しいシーン \d+$/.test(title)) return title
+  const sequence = plan.sequences?.find(item => item.id === scene.sequenceId)
+  const chapter = plan.chapters?.find(item => item.id === sequence?.chapterId)
+  const sequenceIds = new Set(plan.sequences?.filter(item => item.chapterId === chapter?.id).map(item => item.id) ?? [])
+  const number = plan.scenes.filter(item => sequenceIds.has(item.sequenceId ?? ''))
+    .findIndex(item => item.id === id) + 1
+  return `${chapter?.title.trim() || '章'}${Math.max(1, number)}`
+}
+
+function cloneFixtures(fixtures: Fixture[]): Fixture[] {
+  return fixtures.map(f => ({ ...f, position: [...f.position], target: [...f.target], color: [...f.color] }))
+}
+function clonePerformers(performers: Performer[]): Performer[] {
+  return performers.map(p => ({ ...p, position: [...p.position] }))
+}
+function cloneSetPieces(pieces: import('./types').SetPiece[]): import('./types').SetPiece[] {
+  return pieces.map(p => ({ ...p, position: [...p.position], rotation: [...p.rotation], size: p.size ? [...p.size] : undefined }))
+}
+export function sceneStage(scene: PlanScene) {
+  return {
+    fixtures: cloneFixtures(scene.fixtures),
+    performers: clonePerformers(scene.performers),
+    setPieces: cloneSetPieces(scene.setPieces),
+  }
+}
+export function sceneSnapshot(source: Pick<State, 'fixtures' | 'performers' | 'setPieces'>, title = '開始', trigger = ''): PlanScene {
+  return {
+    id: sceneId(), title, trigger, note: '',
+    fixtures: cloneFixtures(source.fixtures),
+    performers: clonePerformers(source.performers),
+    setPieces: cloneSetPieces(source.setPieces),
+  }
+}
+export function captureActiveScene(plan: ProductionPlan, source: Pick<State, 'fixtures' | 'performers' | 'setPieces'>): ProductionPlan {
+  if (!plan.activeSceneId) return plan
+  return {
+    ...plan,
+    scenes: plan.scenes.map(scene => scene.id === plan.activeSceneId ? {
+      ...scene,
+      fixtures: cloneFixtures(source.fixtures),
+      performers: clonePerformers(source.performers),
+      setPieces: cloneSetPieces(source.setPieces),
+    } : scene),
+  }
+}
+
+export function activeSceneDirections(plan: ProductionPlan, performers: Performer[]): StageDirection[] {
+  const index = plan.scenes.findIndex(scene => scene.id === plan.activeSceneId)
+  if (index < 1) return []
+  const previous = new Map(plan.scenes[index - 1].performers.map(p => [p.id, p]))
+  return performers.flatMap(performer => {
+    const previousPerformer = previous.get(performer.id)
+    if (!previousPerformer) return []
+    const wasOnStage = previousPerformer.onStage !== false
+    const isOnStage = performer.onStage !== false
+    if (!wasOnStage && !isOnStage) return []
+    const wingX = (performer.position[0] < 0 ? -1 : 1) * 8.7
+    const from: StagePoint = wasOnStage
+      ? [previousPerformer.position[0], previousPerformer.position[2]]
+      : [wingX, performer.position[2]]
+    const to: StagePoint = isOnStage
+      ? [performer.position[0], performer.position[2]]
+      : [wingX, performer.position[2]]
+    if (Math.hypot(to[0] - from[0], to[1] - from[1]) < 0.12) return []
+    const kind: DirectionKind = !wasOnStage || Math.abs(from[0]) > 8
+      ? 'entrance' : !isOnStage || Math.abs(to[0]) > 8 ? 'exit' : 'move'
+    return [{ id: `${plan.activeSceneId}-${performer.id}`, performerId: performer.id, kind, from, to, note: '' }]
+  })
+}
+
+const isMockPath = typeof location !== 'undefined' &&
+  (location.protocol === 'file:' || location.pathname === '/mock' || location.pathname.startsWith('/mock/'))
+
+export function syncEntityIds(fixtures: Fixture[], performers: Performer[]) {
+  for (const f of fixtures) {
+    const match = /^f(\d+)$/.exec(f.id)
+    if (match) nextFid = Math.max(nextFid, Number(match[1]) + 1)
+  }
+  for (const p of performers) {
+    const match = /^p(\d+)$/.exec(p.id)
+    if (match) nextPid = Math.max(nextPid, Number(match[1]) + 1)
+  }
 }
 
 export type SelectionKind = 'fixture' | 'performer' | 'setpiece' | null
@@ -116,11 +278,14 @@ export interface SceneSettings {
   dmxEnabled: boolean
   panelOpen: boolean   // モバイル用: オブジェクトパネル表示トグル
   scenePanelOpen: boolean // PC: シーン管理パネル表示トグル
+  selectedDirectionId: string | null
+  pickingDirectionId: string | null
 }
 
 interface State {
   fixtures: Fixture[]
   performers: Performer[]
+  productionPlan: ProductionPlan
   selection: Selection
   hovered: { kind: SelectionKind; id: string | null }
   settings: SceneSettings
@@ -145,6 +310,23 @@ interface State {
   addPerformer: (atPos?: [number, number, number]) => string
   removePerformer: (id: string) => void
   updatePerformer: (id: string, patch: Partial<Performer>) => void
+  updateProductionPlan: (patch: Partial<Pick<ProductionPlan, 'title' | 'projectTitle'>>) => void
+  ensureScenes: () => void
+  addScene: () => void
+  addSceneAt: (chapterId: string, beforeSceneId: string | null) => string | null
+  addChapter: () => void
+  addChapterAfter: (chapterId: string) => string | null
+  addSequence: () => void
+  updateChapter: (id: string, title: string) => void
+  updateSequence: (id: string, title: string) => void
+  selectScene: (id: string) => void
+  updateScene: (id: string, patch: Partial<Pick<PlanScene, 'title' | 'triggerType' | 'trigger' | 'note'>>) => void
+  removeScene: (id: string) => void
+  removeScenes: (ids: string[]) => number
+  removeChapter: (id: string) => boolean
+  moveScene: (id: string, targetId: string, position: 'before' | 'after') => MoveSceneResult
+  moveSceneToChapter: (id: string, chapterId: string) => MoveSceneResult
+  moveChapter: (id: string, targetId: string, position: 'before' | 'after') => MoveSceneResult
 
   select: (kind: SelectionKind, id: string | null, handle?: 'position' | 'target') => void
   setHover: (kind: SelectionKind, id: string | null) => void
@@ -232,13 +414,14 @@ function initialPerformers(): Performer[] {
   return [defaultPerformer([0, 0, -1])]
 }
 
-export function computeSceneSnapshot(s: Pick<State, 'fixtures' | 'performers' | 'setPieces'>): string {
-  return JSON.stringify({ f: s.fixtures, p: s.performers, sp: s.setPieces })
+export function computeSceneSnapshot(s: Pick<State, 'fixtures' | 'performers' | 'setPieces' | 'productionPlan'>): string {
+  return JSON.stringify({ f: s.fixtures, p: s.performers, sp: s.setPieces, plan: s.productionPlan })
 }
 
 export const useStore = create<State>((set, get) => ({
   fixtures: initialFixtures(),
   performers: initialPerformers(),
+  productionPlan: emptyProductionPlan(),
   savedSnapshot: null,
   markSavedSnapshot: () => {
     const s = get()
@@ -302,11 +485,13 @@ export const useStore = create<State>((set, get) => ({
     settingsTab: 'scene',
     quality: detectInitialQuality(),
     // 初回訪問のみヘルプを自動表示 (2回目以降はユーザーが「?」で開く)
-    showHelp: typeof localStorage !== 'undefined' ? !localStorage.getItem('tomoshibi.helpSeen') : true,
+    showHelp: !isMockPath && (typeof localStorage !== 'undefined' ? !localStorage.getItem('tomoshibi.helpSeen') : true),
     probeMode: false,
     dmxEnabled: false,
     panelOpen: typeof window !== 'undefined' ? window.innerWidth >= 768 : true,
-    scenePanelOpen: true, // PC は既定で表示
+    scenePanelOpen: !isMockPath && (typeof window !== 'undefined' ? window.innerWidth > 768 : true),
+    selectedDirectionId: null,
+    pickingDirectionId: null,
   },
 
   addFixture: (presetKey, atPos) => {
@@ -356,7 +541,10 @@ export const useStore = create<State>((set, get) => ({
     const ang = cur * 0.7
     const pos = atPos ?? [Math.cos(ang) * r, 0, -1 + Math.sin(ang) * r * 0.5]
     const p = defaultPerformer(pos)
-    set(s => ({ performers: [...s.performers, p], selection: { kind: 'performer', id: p.id } }))
+    set(s => ({
+      performers: [...s.performers, p],
+      selection: { kind: 'performer', id: p.id },
+    }))
     return p.id
   },
   removePerformer: (id) => set(s => ({
@@ -367,10 +555,321 @@ export const useStore = create<State>((set, get) => ({
     performers: s.performers.map(p => p.id === id ? { ...p, ...patch } : p),
   })),
 
+  updateProductionPlan: (patch) => set(s => ({
+    productionPlan: { ...s.productionPlan, ...patch },
+  })),
+  ensureScenes: () => set(s => {
+    if (s.productionPlan.scenes.length) return { productionPlan: ensurePlanHierarchy(s.productionPlan) }
+    const scene = sceneSnapshot(s, isMockPath ? '' : '開始')
+    const plan = ensurePlanHierarchy({ ...s.productionPlan, scenes: [scene], activeSceneId: scene.id })
+    return { productionPlan: plan }
+  }),
+  addScene: () => set(s => {
+    const plan = ensurePlanHierarchy(captureActiveScene(s.productionPlan, s))
+    const index = plan.scenes.findIndex(scene => scene.id === plan.activeSceneId)
+    if (index < 0 || plan.scenes.length >= PLAN_LIMITS.scenes) return {}
+    const scene = { ...sceneSnapshot(s, '新しいシーン'), sequenceId: plan.scenes[index].sequenceId }
+    const scenes = [...plan.scenes]
+    scenes.splice(index + 1, 0, scene)
+    return { productionPlan: { ...plan, scenes, activeSceneId: scene.id }, selection: { kind: null, id: null } }
+  }),
+  addSceneAt: (chapterId, beforeSceneId) => {
+    let addedId: string | null = null
+    set(s => {
+      const plan = ensurePlanHierarchy(captureActiveScene(s.productionPlan, s))
+      if (plan.scenes.length >= PLAN_LIMITS.scenes || !plan.chapters?.some(item => item.id === chapterId)) return {}
+      const sequenceIds = new Set(plan.sequences?.filter(item => item.chapterId === chapterId).map(item => item.id) ?? [])
+      const chapterScenes = plan.scenes.filter(item => sequenceIds.has(item.sequenceId ?? ''))
+      const beforeIndex = beforeSceneId === null ? chapterScenes.length
+        : chapterScenes.findIndex(item => item.id === beforeSceneId)
+      if (beforeIndex < 0) return {}
+      const before = chapterScenes[beforeIndex]
+      const previous = chapterScenes[beforeIndex - 1]
+      const basis = previous ?? before
+      const sequence = plan.sequences?.find(item => item.id === (before?.sequenceId ?? previous?.sequenceId))
+        ?? plan.sequences?.find(item => item.chapterId === chapterId)
+      if (!sequence) return {}
+      const insertIndex = before ? plan.scenes.findIndex(item => item.id === before.id)
+        : previous ? plan.scenes.findIndex(item => item.id === previous.id) + 1
+          : plan.scenes.findIndex(item => {
+            const itemChapterId = plan.sequences?.find(group => group.id === item.sequenceId)?.chapterId
+            return (plan.chapters?.findIndex(chapter => chapter.id === itemChapterId) ?? -1) >
+              (plan.chapters?.findIndex(chapter => chapter.id === chapterId) ?? -1)
+          })
+      const newScene = { ...sceneSnapshot(basis ? sceneStage(basis) : s, isMockPath ? '' : '新しいシーン'), sequenceId: sequence.id }
+      const scenes = [...plan.scenes]
+      scenes.splice(insertIndex < 0 ? scenes.length : insertIndex, 0, newScene)
+      addedId = newScene.id
+      return {
+        productionPlan: { ...plan, scenes, activeSceneId: newScene.id },
+        ...sceneStage(newScene),
+        selection: { kind: null, id: null },
+      }
+    })
+    return addedId
+  },
+  addChapter: () => set(s => {
+    const plan = ensurePlanHierarchy(captureActiveScene(s.productionPlan, s))
+    if (plan.scenes.length >= PLAN_LIMITS.scenes || (plan.chapters?.length ?? 0) >= PLAN_LIMITS.chapters) return {}
+    const active = plan.scenes.find(scene => scene.id === plan.activeSceneId)
+    const activeSequence = plan.sequences?.find(sequence => sequence.id === active?.sequenceId)
+    const chapterIndex = plan.chapters?.findIndex(chapter => chapter.id === activeSequence?.chapterId) ?? -1
+    if (chapterIndex < 0) return {}
+    const chapter = { id: groupId('ch'), title: nextChapterTitle(plan.chapters ?? []) }
+    const sequence = { id: groupId('sq'), chapterId: chapter.id, title: 'シーケンス 1' }
+    const scene = { ...sceneSnapshot(s, '新しいシーン'), sequenceId: sequence.id }
+    const chapters = [...plan.chapters!]
+    chapters.splice(chapterIndex + 1, 0, chapter)
+    const nextChapterId = plan.chapters?.[chapterIndex + 1]?.id
+    const sequenceIndex = nextChapterId
+      ? plan.sequences!.findIndex(item => item.chapterId === nextChapterId) : plan.sequences!.length
+    const sequences = [...plan.sequences!]
+    sequences.splice(sequenceIndex, 0, sequence)
+    const nextSceneIndex = plan.scenes.findIndex(item => sequences.slice(sequenceIndex + 1)
+      .some(group => group.id === item.sequenceId))
+    const scenes = [...plan.scenes]
+    scenes.splice(nextSceneIndex < 0 ? scenes.length : nextSceneIndex, 0, scene)
+    return { productionPlan: { ...plan, chapters, sequences, scenes, activeSceneId: scene.id }, selection: { kind: null, id: null } }
+  }),
+  addChapterAfter: (chapterId) => {
+    let addedId: string | null = null
+    set(s => {
+      const plan = ensurePlanHierarchy(captureActiveScene(s.productionPlan, s))
+      const chapterIndex = plan.chapters?.findIndex(item => item.id === chapterId) ?? -1
+      if (chapterIndex < 0 || plan.scenes.length >= PLAN_LIMITS.scenes ||
+        (plan.chapters?.length ?? 0) >= PLAN_LIMITS.chapters) return {}
+      const nextChapter = plan.chapters?.[chapterIndex + 1]
+      const chapter = { id: groupId('ch'), title: nextChapterTitle(plan.chapters!) }
+      const sequence = { id: groupId('sq'), chapterId: chapter.id, title: 'シーケンス 1' }
+      const nextSequenceIndex = nextChapter
+        ? plan.sequences!.findIndex(item => item.chapterId === nextChapter.id) : plan.sequences!.length
+      const sequenceIndex = nextSequenceIndex < 0 ? plan.sequences!.length : nextSequenceIndex
+      const nextChapterIds = new Set(plan.chapters!.slice(chapterIndex + 1).map(item => item.id))
+      const sceneIndex = plan.scenes.findIndex(item => nextChapterIds.has(
+        plan.sequences!.find(group => group.id === item.sequenceId)?.chapterId ?? ''))
+      const insertIndex = sceneIndex < 0 ? plan.scenes.length : sceneIndex
+      const previousChapterSequenceIds = new Set(plan.sequences!.filter(item => item.chapterId === chapterId).map(item => item.id))
+      const chapterScenes = plan.scenes.filter(item => previousChapterSequenceIds.has(item.sequenceId ?? ''))
+      const basis = chapterScenes[chapterScenes.length - 1] ?? plan.scenes[insertIndex - 1] ?? plan.scenes[insertIndex]
+      const scene = { ...sceneSnapshot(basis ? sceneStage(basis) : s, isMockPath ? '' : '新しいシーン'), sequenceId: sequence.id }
+      const chapters = [...plan.chapters!]
+      chapters.splice(chapterIndex + 1, 0, chapter)
+      const sequences = [...plan.sequences!]
+      sequences.splice(sequenceIndex, 0, sequence)
+      const scenes = [...plan.scenes]
+      scenes.splice(insertIndex, 0, scene)
+      addedId = chapter.id
+      return {
+        productionPlan: { ...plan, chapters, sequences, scenes, activeSceneId: scene.id },
+        ...sceneStage(scene),
+        selection: { kind: null, id: null },
+      }
+    })
+    return addedId
+  },
+  addSequence: () => set(s => {
+    const plan = ensurePlanHierarchy(captureActiveScene(s.productionPlan, s))
+    if (plan.scenes.length >= PLAN_LIMITS.scenes) return {}
+    const active = plan.scenes.find(scene => scene.id === plan.activeSceneId)
+    const sequenceIndex = plan.sequences?.findIndex(item => item.id === active?.sequenceId) ?? -1
+    if (sequenceIndex < 0) return {}
+    const chapterId = plan.sequences![sequenceIndex].chapterId
+    const count = plan.sequences!.filter(item => item.chapterId === chapterId).length
+    const sequence = { id: groupId('sq'), chapterId, title: `シーケンス ${count + 1}` }
+    const scene = { ...sceneSnapshot(s, '新しいシーン'), sequenceId: sequence.id }
+    const sequences = [...plan.sequences!]
+    sequences.splice(sequenceIndex + 1, 0, sequence)
+    const nextSequenceIds = new Set(sequences.slice(sequenceIndex + 2).map(item => item.id))
+    const nextSceneIndex = plan.scenes.findIndex(item => nextSequenceIds.has(item.sequenceId ?? ''))
+    const scenes = [...plan.scenes]
+    scenes.splice(nextSceneIndex < 0 ? scenes.length : nextSceneIndex, 0, scene)
+    return { productionPlan: { ...plan, sequences, scenes, activeSceneId: scene.id }, selection: { kind: null, id: null } }
+  }),
+  updateChapter: (id, title) => set(s => ({ productionPlan: {
+    ...s.productionPlan,
+    chapters: s.productionPlan.chapters?.map(item => item.id === id ? { ...item, title } : item),
+  } })),
+  updateSequence: (id, title) => set(s => ({ productionPlan: {
+    ...s.productionPlan,
+    sequences: s.productionPlan.sequences?.map(item => item.id === id ? { ...item, title } : item),
+  } })),
+  selectScene: (id) => set(s => {
+    if (id === s.productionPlan.activeSceneId) return {}
+    const plan = ensurePlanHierarchy(captureActiveScene(s.productionPlan, s))
+    const scene = plan.scenes.find(item => item.id === id)
+    if (!scene) return {}
+    return {
+      productionPlan: { ...plan, activeSceneId: id },
+      ...sceneStage(scene),
+      selection: { kind: null, id: null },
+    }
+  }),
+  updateScene: (id, patch) => set(s => ({
+    productionPlan: {
+      ...s.productionPlan,
+      scenes: s.productionPlan.scenes.map(scene => scene.id === id ? { ...scene, ...patch } : scene),
+    },
+  })),
+  removeScene: (id) => set(s => {
+    const plan = ensurePlanHierarchy(captureActiveScene(s.productionPlan, s))
+    if (plan.scenes.length <= 1) return {}
+    const index = plan.scenes.findIndex(scene => scene.id === id)
+    if (index < 0) return {}
+    const scenes = plan.scenes.filter(scene => scene.id !== id)
+    const active = id === plan.activeSceneId ? scenes[Math.max(0, index - 1)] : scenes.find(scene => scene.id === plan.activeSceneId)
+    if (!active) return {}
+    return {
+      productionPlan: {
+        ...plan, scenes, activeSceneId: active.id,
+        sequences: isMockPath ? plan.sequences : plan.sequences?.filter(group => scenes.some(scene => scene.sequenceId === group.id)),
+        chapters: isMockPath ? plan.chapters : plan.chapters?.filter(chapter => plan.sequences?.some(group =>
+          group.chapterId === chapter.id && scenes.some(scene => scene.sequenceId === group.id))),
+      },
+      ...sceneStage(active),
+      selection: { kind: null, id: null },
+    }
+  }),
+  removeScenes: (ids) => {
+    const selected = new Set(ids)
+    let removed = 0
+    set(s => {
+      const plan = ensurePlanHierarchy(captureActiveScene(s.productionPlan, s))
+      const scenes = plan.scenes.filter(scene => !selected.has(scene.id))
+      if (scenes.length === plan.scenes.length) return {}
+      removed = plan.scenes.length - scenes.length
+      if (!scenes.length) {
+        const sequence = plan.sequences?.find(item => item.chapterId === plan.chapters?.[0].id) ?? plan.sequences![0]
+        scenes.push({ ...sceneSnapshot({ fixtures: [], performers: [], setPieces: [] }, isMockPath ? '' : '開始'),
+          sequenceId: sequence.id })
+      }
+      const previousIndex = plan.scenes.findIndex(scene => scene.id === plan.activeSceneId)
+      const active = scenes.find(scene => scene.id === plan.activeSceneId)
+        ?? [...plan.scenes.slice(0, previousIndex)].reverse().find(scene => !selected.has(scene.id))
+        ?? scenes[0]
+      return {
+        productionPlan: { ...plan, scenes, activeSceneId: active.id },
+        ...sceneStage(active),
+        selection: { kind: null, id: null },
+      }
+    })
+    return removed
+  },
+  removeChapter: (id) => {
+    let removed = false
+    set(s => {
+      const plan = ensurePlanHierarchy(captureActiveScene(s.productionPlan, s))
+      if ((plan.chapters?.length ?? 0) <= 1 || !plan.chapters?.some(chapter => chapter.id === id)) return {}
+      const chapters = plan.chapters.filter(chapter => chapter.id !== id)
+      const sequences = plan.sequences?.filter(sequence => sequence.chapterId !== id) ?? []
+      const retainedIds = new Set(sequences.map(sequence => sequence.id))
+      const scenes = plan.scenes.filter(scene => retainedIds.has(scene.sequenceId ?? ''))
+      if (!scenes.length) {
+        const sequence = sequences[0] ?? { id: groupId('sq'), chapterId: chapters[0].id, title: 'シーケンス 1' }
+        if (!sequences.length) sequences.push(sequence)
+        scenes.push({ ...sceneSnapshot({ fixtures: [], performers: [], setPieces: [] }, isMockPath ? '' : '開始'),
+          sequenceId: sequence.id })
+      }
+      const oldIndex = plan.scenes.findIndex(scene => scene.id === plan.activeSceneId)
+      const active = scenes.find(scene => scene.id === plan.activeSceneId)
+        ?? [...plan.scenes.slice(0, oldIndex)].reverse().find(scene => retainedIds.has(scene.sequenceId ?? ''))
+        ?? scenes[0]
+      removed = true
+      return {
+        productionPlan: { ...plan, chapters, sequences, scenes, activeSceneId: active.id },
+        ...sceneStage(active),
+        selection: { kind: null, id: null },
+      }
+    })
+    return removed
+  },
+  moveScene: (id, targetId, position) => {
+    let result: MoveSceneResult = 'invalid'
+    set(s => {
+      const plan = ensurePlanHierarchy(captureActiveScene(s.productionPlan, s))
+      const moving = plan.scenes.find(item => item.id === id)
+      const target = plan.scenes.find(item => item.id === targetId)
+      if (!moving || !target) return {}
+      if (id === targetId) { result = 'unchanged'; return {} }
+      const sourceChapterId = plan.sequences?.find(item => item.id === moving.sequenceId)?.chapterId
+      const targetChapterId = plan.sequences?.find(item => item.id === target.sequenceId)?.chapterId
+      if (!sourceChapterId || !targetChapterId) return {}
+      const scenes = plan.scenes.filter(item => item.id !== id)
+      const targetIndex = scenes.findIndex(item => item.id === targetId)
+      scenes.splice(targetIndex + (position === 'after' ? 1 : 0), 0,
+        moving.sequenceId === target.sequenceId ? moving : { ...moving, sequenceId: target.sequenceId })
+      if (scenes.every((item, index) => item.id === plan.scenes[index].id && item.sequenceId === plan.scenes[index].sequenceId)) {
+        result = 'unchanged'; return {}
+      }
+      result = 'moved'
+      return { productionPlan: { ...plan, scenes } }
+    })
+    return result
+  },
+  moveSceneToChapter: (id, chapterId) => {
+    let result: MoveSceneResult = 'invalid'
+    set(s => {
+      const plan = ensurePlanHierarchy(captureActiveScene(s.productionPlan, s))
+      const moving = plan.scenes.find(item => item.id === id)
+      const targetChapter = plan.chapters?.find(item => item.id === chapterId)
+      if (!moving || !targetChapter) return {}
+      const sourceChapterId = plan.sequences?.find(item => item.id === moving.sequenceId)?.chapterId
+      if (!sourceChapterId) return {}
+      const targetSequences = plan.sequences?.filter(item => item.chapterId === chapterId) ?? []
+      const sequence = targetSequences[targetSequences.length - 1] ?? {
+        id: groupId('sq'), chapterId, title: 'シーケンス 1',
+      }
+      const sequenceIds = new Set(targetSequences.map(item => item.id))
+      const scenes = plan.scenes.filter(item => item.id !== id)
+      let lastIndex = -1
+      scenes.forEach((item, index) => { if (sequenceIds.has(item.sequenceId ?? '')) lastIndex = index })
+      const chapterIndex = plan.chapters?.findIndex(item => item.id === chapterId) ?? -1
+      const nextChapterIds = new Set(plan.chapters?.slice(chapterIndex + 1).map(item => item.id) ?? [])
+      const insertIndex = lastIndex >= 0 ? lastIndex + 1 : scenes.findIndex(item =>
+        nextChapterIds.has(plan.sequences?.find(group => group.id === item.sequenceId)?.chapterId ?? ''))
+      scenes.splice(insertIndex < 0 ? scenes.length : insertIndex, 0, { ...moving, sequenceId: sequence.id })
+      if (scenes.every((item, index) => item.id === plan.scenes[index].id && item.sequenceId === plan.scenes[index].sequenceId)) {
+        result = 'unchanged'; return {}
+      }
+      result = 'moved'
+      return { productionPlan: {
+        ...plan,
+        sequences: targetSequences.length ? plan.sequences : [...(plan.sequences ?? []), sequence],
+        scenes,
+      } }
+    })
+    return result
+  },
+  moveChapter: (id, targetId, position) => {
+    let result: MoveSceneResult = 'invalid'
+    set(s => {
+      const plan = ensurePlanHierarchy(captureActiveScene(s.productionPlan, s))
+      const moving = plan.chapters?.find(chapter => chapter.id === id)
+      const target = plan.chapters?.find(chapter => chapter.id === targetId)
+      if (!moving || !target) return {}
+      if (id === targetId) { result = 'unchanged'; return {} }
+      const chapters = plan.chapters!.filter(chapter => chapter.id !== id)
+      const targetIndex = chapters.findIndex(chapter => chapter.id === targetId)
+      chapters.splice(targetIndex + (position === 'after' ? 1 : 0), 0, moving)
+      if (chapters.every((chapter, index) => chapter.id === plan.chapters?.[index].id)) {
+        result = 'unchanged'; return {}
+      }
+      const sequences = chapters.flatMap(chapter => plan.sequences?.filter(sequence => sequence.chapterId === chapter.id) ?? [])
+      const scenes = chapters.flatMap(chapter => {
+        const ids = new Set(sequences.filter(sequence => sequence.chapterId === chapter.id).map(sequence => sequence.id))
+        return plan.scenes.filter(scene => ids.has(scene.sequenceId ?? ''))
+      })
+      result = 'moved'
+      return { productionPlan: { ...plan, chapters, sequences, scenes } }
+    })
+    return result
+  },
+
   select: (kind, id, handle) => set({ selection: { kind, id, fixtureHandle: handle ?? 'position' } }),
   setHover: (kind, id) => set({ hovered: { kind, id } }),
 
-  updateSettings: (patch) => set(s => ({ settings: { ...s.settings, ...patch } })),
+  updateSettings: (patch) => {
+    set(s => ({ settings: { ...s.settings, ...patch } }))
+  },
 
   loadPreset: (name) => {
     nextFid = 1
@@ -416,7 +915,7 @@ export const useStore = create<State>((set, get) => ({
     // プリセット読込時は装置 (setPieces) も初期状態に戻す
     // 'empty' のみ装置も空にする (完全リセット), 他はデフォルト平台2枚を再配置
     const setPieces = name === 'empty' ? [] : initialSetPieces()
-    set({ fixtures, performers, setPieces, selection: { kind: null, id: null } })
+    set({ fixtures, performers, setPieces, productionPlan: emptyProductionPlan(), selection: { kind: null, id: null } })
   },
 }))
 

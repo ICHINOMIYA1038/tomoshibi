@@ -1,7 +1,9 @@
-import { useState, useRef, type ReactNode } from 'react'
+import { useEffect, useState, useRef, type ReactNode } from 'react'
 import { useStore, type Fixture, type Performer } from '../store'
 import { FIXTURE_PROFILES, FIXTURE_PRESETS_BY_KIND, KIND_LABELS, type FixtureKind } from '../lighting/fixtureTypes'
+import type { SetPiece, SetPieceAppearance } from '../types'
 import { useDraggablePanel } from './useDraggablePanel'
+import { MEASURED_FRESNEL_KEY } from '../photometric/measuredFresnel'
 
 // 演劇関係者向け TOP パネル
 // タブ: 器具 / 役者 のみ。設定は ⚙ から SettingsModal で開く
@@ -32,20 +34,36 @@ function hexToRgb(hex: string): [number, number, number] {
   ]
 }
 
-export function ControlPanel() {
+export function ControlPanel({ planOpen = false }: { planOpen?: boolean }) {
   const settings = useStore(s => s.settings)
   const update = useStore(s => s.updateSettings)
   const tab = settings.uiTab
   const open = settings.panelOpen
+  const selection = useStore(s => s.selection)
+  const previousSelection = useRef({ kind: selection.kind, id: selection.id })
   const dragStartY = useRef<number | null>(null)
   const dragDelta = useRef(0)
-  const isMobile = typeof window !== 'undefined' && window.matchMedia('(max-width: 768px)').matches
+  const isMobile = typeof window !== 'undefined' && window.innerWidth <= 960
+  const isMockPreview = typeof location !== 'undefined' &&
+    (location.protocol === 'file:' || location.pathname === '/mock' || location.pathname.startsWith('/mock/'))
 
   // PC のみドラッグ可能、モバイルは下からのボトムシート挙動を維持
   const { panelProps, handleProps } = useDraggablePanel('object', {
     x: typeof window !== 'undefined' ? window.innerWidth - 372 : 600,
     y: 12,
   })
+
+  useEffect(() => {
+    if (selection.kind === previousSelection.current.kind && selection.id === previousSelection.current.id) return
+    previousSelection.current = { kind: selection.kind, id: selection.id }
+    const nextTab = selection.kind === 'fixture' ? 'fixtures'
+      : selection.kind === 'performer' ? 'performers'
+      : selection.kind === 'setpiece' ? 'props' : null
+    if (nextTab && nextTab !== useStore.getState().settings.uiTab) update({ uiTab: nextTab })
+    if (isMockPreview && nextTab) requestAnimationFrame(() => {
+      document.querySelector('.object-panel .panel-body')?.scrollTo({ top: 0, behavior: 'instant' })
+    })
+  }, [selection.kind, selection.id, update, isMockPreview])
 
   const onHeaderTouchStart = (e: React.TouchEvent) => {
     dragStartY.current = e.touches[0].clientY
@@ -74,27 +92,33 @@ export function ControlPanel() {
       </button>
       <div
         className={'panel object-panel' + (open ? ' open' : ' closed')}
-        {...(isMobile ? {} : panelProps)}
+        {...(isMobile || isMockPreview ? {} : panelProps)}
       >
         <div
           className="panel-header"
           {...(isMobile
             ? { onTouchStart: onHeaderTouchStart, onTouchMove: onHeaderTouchMove, onTouchEnd: onHeaderTouchEnd }
-            : handleProps)}
+            : isMockPreview ? {} : handleProps)}
         >
-          <div className="panel-title">オブジェクト</div>
+          <div className="panel-title">舞台の編集</div>
           <div className="panel-actions">
+            <button className="icon-btn" title="シーンの保存・読込" aria-label="シーンの保存・読込"
+              onClick={() => update({ scenePanelOpen: true, panelOpen: false })}>保存</button>
             <button className="icon-btn" title="設定" onClick={() => update({ settingsOpen: true })}>⚙</button>
             <button className="icon-btn" title="ヘルプ" onClick={() => update({ showHelp: true })}>?</button>
           </div>
         </div>
+        {isMockPreview && <div className="panel-purpose">
+          <span>{selection.kind ? '選択中のものをここで編集できます' : '種類を選んで舞台に追加できます'}</span>
+          <button type="button" onClick={() => update({ panelOpen: false })}>平面図に戻る</button>
+        </div>}
         <div className="panel-tabs">
-          <TabButton id="fixtures" label="器具" />
+          <TabButton id="fixtures" label={isMockPreview ? '照明' : '器具'} />
           <TabButton id="performers" label="役者" />
-          <TabButton id="props" label="装置" />
+          <TabButton id="props" label={isMockPreview ? '舞台セット' : '装置'} />
         </div>
 
-        {tab === 'fixtures' && <FixturesPanel />}
+        {tab === 'fixtures' && <FixturesPanel planOpen={planOpen} />}
         {tab === 'performers' && <PerformersPanel />}
         {tab === 'props' && <PropsPanel />}
       </div>
@@ -154,7 +178,7 @@ function BulkBar({ count, allOn, onToggleAll, onClear, children }: {
 }
 
 // ============ 器具 タブ ============
-function FixturesPanel() {
+function FixturesPanel({ planOpen }: { planOpen: boolean }) {
   const fixtures = useStore(s => s.fixtures)
   const selection = useStore(s => s.selection)
   const selected = fixtures.find(f => f.id === selection.id && selection.kind === 'fixture')
@@ -177,6 +201,7 @@ function FixturesPanel() {
 
   return (
     <div className="panel-body">
+      {planOpen && <p className="fixture-scope-note">照明の変更は現在のシーンに反映されます。</p>}
       <h3>器具を追加</h3>
       <div className="row">
         <label>種別</label>
@@ -244,7 +269,7 @@ function FixturesPanel() {
         {fixtures.length === 0 && <div className="empty-hint">「+ 追加」で配置してください</div>}
       </div>
 
-      {selected && <FixtureEditor fixture={selected} />}
+      {selected && <div className="selected-editor"><FixtureEditor fixture={selected} /></div>}
     </div>
   )
 }
@@ -254,7 +279,8 @@ function FixtureEditor({ fixture }: { fixture: Fixture }) {
   const update = (patch: Partial<Fixture>) => useStore.getState().updateFixture(fixture.id, patch)
   const remove = useStore(s => s.removeFixture)
   const dup = useStore(s => s.duplicateFixture)
-  const isLED = profile.source !== 'tungsten'
+  const isMeasured = fixture.photometricProfile === MEASURED_FRESNEL_KEY
+  const isLED = profile.source !== 'tungsten' || isMeasured
 
   return (
     <>
@@ -262,7 +288,7 @@ function FixtureEditor({ fixture }: { fixture: Fixture }) {
       <div className="callout">
         <b>{fixture.name}</b>
         <div style={{ fontSize: 10, color: '#998468', marginTop: 2, fontFamily: 'var(--font-sans)' }}>
-          {KIND_LABELS[profile.kind]} / {profile.fluxLumens.toLocaleString()} lm
+          {isMeasured ? 'ETC fos/4 Fresnel 10 Mid の配光を使用中（光の色は試作値）' : `${KIND_LABELS[profile.kind]} / ${profile.fluxLumens.toLocaleString()} lm`}
         </div>
       </div>
 
@@ -274,6 +300,19 @@ function FixtureEditor({ fixture }: { fixture: Fixture }) {
       <Slider label="調光" value={fixture.intensity} min={0} max={1.5}
         onChange={v => update({ intensity: v })}
         fmt={v => Math.round((v / 1.5) * 100).toString()} unit="%" />
+
+      {fixture.presetKey === 'Fresnel10' && (
+        <div className="row">
+          <label>配光</label>
+          <select
+            value={fixture.photometricProfile ?? ''}
+            onChange={e => update({ photometricProfile: e.target.value === MEASURED_FRESNEL_KEY ? MEASURED_FRESNEL_KEY : undefined })}
+          >
+            <option value="">標準の近似</option>
+            <option value={MEASURED_FRESNEL_KEY}>ETC Fresnel 10 Mid の配光</option>
+          </select>
+        </div>
+      )}
 
       {profile.beamAdjustable ? (
         <Slider
@@ -300,7 +339,7 @@ function FixtureEditor({ fixture }: { fixture: Fixture }) {
           onChange={v => update({ rotationZDeg: v })} unit="°" fmt={v => v.toFixed(0)} />
       )}
 
-      <h3>{isLED ? '色 (LED)' : 'ジェル'}</h3>
+      <h3>{isMeasured ? '光の色（試作）' : isLED ? '色 (LED)' : 'ジェル'}</h3>
       {!isLED && (
         <div className="row">
           <label>ジェル装着</label>
@@ -312,7 +351,7 @@ function FixtureEditor({ fixture }: { fixture: Fixture }) {
         <input
           type="color"
           value={colorToHex(fixture.color)}
-          onChange={e => update({ color: hexToRgb(e.target.value), gelEnabled: true })}
+          onChange={e => update({ color: hexToRgb(e.target.value), gelEnabled: !isMeasured })}
         />
         <span className="numval" style={{ flex: 1, textAlign: 'left' }}>{colorToHex(fixture.color)}</span>
       </div>
@@ -442,8 +481,13 @@ function PerformersPanel() {
               onChange={() => bulk.toggle(p.id)}
               title="一括選択"
             />
-            <div className="dot" style={{ background: p.color }} />
+            <div className="dot" style={{ background: p.onStage === false ? '#555' : p.color }} />
             <span className="name">{p.name}</span>
+            <input type="checkbox" checked={p.onStage !== false}
+              onClick={e => e.stopPropagation()}
+              onChange={e => update(p.id, { onStage: e.target.checked })}
+              title="このシーンで舞台上"
+              aria-label={`${p.name}をこのシーンで舞台上に表示`} />
             <button
               className="danger small"
               onClick={(e) => { e.stopPropagation(); remove(p.id) }}
@@ -455,7 +499,7 @@ function PerformersPanel() {
       </div>
 
       {selected && (
-        <>
+        <div className="selected-editor">
           <h3>選択中</h3>
           <div className="callout">
             <b>{selected.name}</b>
@@ -468,6 +512,11 @@ function PerformersPanel() {
             <input type="text" value={selected.name} onChange={e => update(selected.id, { name: e.target.value })} />
           </div>
           <div className="row">
+            <label>舞台上</label>
+            <input type="checkbox" checked={selected.onStage !== false}
+              onChange={e => update(selected.id, { onStage: e.target.checked })} />
+          </div>
+          <div className="row">
             <label>服色</label>
             <input type="color" value={selected.color} onChange={e => update(selected.id, { color: e.target.value })} />
           </div>
@@ -478,7 +527,7 @@ function PerformersPanel() {
           <div className="row" style={{ marginTop: 12 }}>
             <button className="danger" onClick={() => remove(selected.id)} style={{ flex: 1 }}>削除</button>
           </div>
-        </>
+        </div>
       )}
     </div>
   )
@@ -492,7 +541,23 @@ function PropsPanel() {
   const select = useStore(s => s.select)
   const addPrim = useStore(s => s.addPrimitiveSetPiece)
   const remove = useStore(s => s.removeSetPiece)
-  const update = (id: string, patch: any) => useStore.getState().updateSetPiece(id, patch)
+  const update = (id: string, patch: Partial<SetPiece>) => useStore.getState().updateSetPiece(id, patch)
+  const addAppearance = (appearance: Exclude<SetPieceAppearance, 'basic'>) => {
+    const presets: Record<Exclude<SetPieceAppearance, 'basic'>, { name: string; size: [number, number, number]; color: string }> = {
+      bench: { name: 'ベンチ', size: [2.8, 0.9, 0.85], color: '#765c48' },
+      door: { name: '扉', size: [1.45, 2.2, 0.22], color: '#555767' },
+      suitcase: { name: '鞄', size: [0.72, 0.48, 0.4], color: '#a86d48' },
+      table: { name: '机', size: [2.2, 0.8, 1.1], color: '#75523c' },
+      bookshelf: { name: '書架', size: [2.3, 2.7, 0.5], color: '#4c3a35' },
+      window: { name: '窓', size: [2.5, 2.8, 0.16], color: '#5c6774' },
+    }
+    const preset = presets[appearance]
+    const id = addPrim('box')
+    const position = useStore.getState().setPieces.find(piece => piece.id === id)?.position
+    if (position) update(id, {
+      ...preset, appearance, position: [position[0], preset.size[1] / 2, position[2]],
+    })
+  }
   const bulk = useBulkSelection(pieces.map(p => p.id))
 
   const bulkDelete = () => {
@@ -509,6 +574,16 @@ function PropsPanel() {
         <button onClick={() => addPrim('box')} style={{ flex: 1 }}>箱馬</button>
         <button onClick={() => addPrim('platform')} style={{ flex: 1 }}>平台</button>
         <button onClick={() => addPrim('riser')} style={{ flex: 1 }}>高台</button>
+      </div>
+      <div className="row" style={{ gap: 4 }}>
+        <button onClick={() => addAppearance('bench')} style={{ flex: 1 }}>ベンチ</button>
+        <button onClick={() => addAppearance('door')} style={{ flex: 1 }}>扉</button>
+        <button onClick={() => addAppearance('suitcase')} style={{ flex: 1 }}>鞄</button>
+      </div>
+      <div className="row" style={{ gap: 4 }}>
+        <button onClick={() => addAppearance('table')} style={{ flex: 1 }}>机</button>
+        <button onClick={() => addAppearance('bookshelf')} style={{ flex: 1 }}>書架</button>
+        <button onClick={() => addAppearance('window')} style={{ flex: 1 }}>窓</button>
       </div>
 
       <h3>一覧 ({pieces.length})</h3>
@@ -532,7 +607,8 @@ function PropsPanel() {
             />
             <div className="dot" style={{ background: p.color ?? '#876040' }} />
             <span className="name">{p.name}</span>
-            <span className="kind">{p.kind}</span>
+            <span className="kind">{p.appearance && p.appearance !== 'basic'
+              ? { bench: 'ベンチ', door: '扉', suitcase: '鞄', table: '机', bookshelf: '書架', window: '窓' }[p.appearance] : p.kind}</span>
             <button
               className="danger small"
               onClick={(e) => { e.stopPropagation(); remove(p.id) }}
@@ -543,8 +619,8 @@ function PropsPanel() {
         {pieces.length === 0 && <div className="empty-hint">「箱馬 / 平台 / 高台」を追加してください</div>}
       </div>
 
-      {selected && selected.kind !== 'gltf' && (
-        <>
+      {selected && (
+        <div className="selected-editor">
           <h3>選択中</h3>
           <div className="callout">
             <b>{selected.name}</b>
@@ -556,16 +632,28 @@ function PropsPanel() {
             <label>名前</label>
             <input type="text" value={selected.name} onChange={e => update(selected.id, { name: e.target.value })} />
           </div>
-          <div className="row">
+          {selected.kind !== 'gltf' && <div className="row">
             <label>色</label>
             <input type="color" value={selected.color ?? '#876040'} onChange={e => update(selected.id, { color: e.target.value })} />
-          </div>
+          </div>}
+          {selected.kind !== 'gltf' && <div className="row">
+            <label>見た目</label>
+            <select value={selected.appearance ?? 'basic'} onChange={e => update(selected.id, { appearance: e.target.value as SetPieceAppearance })}>
+              <option value="basic">基本形</option>
+              <option value="bench">ベンチ</option>
+              <option value="door">扉</option>
+              <option value="suitcase">鞄</option>
+              <option value="table">机</option>
+              <option value="bookshelf">書架</option>
+              <option value="window">窓</option>
+            </select>
+          </div>}
           {selected.size && (
             <>
               <Slider label="幅" value={selected.size[0]} min={0.2} max={4} step={0.05}
                 onChange={v => update(selected.id, { size: [v, selected.size![1], selected.size![2]] })}
                 fmt={v => `${v.toFixed(2)}m`} />
-              <Slider label="高" value={selected.size[1]} min={0.1} max={2} step={0.05}
+              <Slider label="高" value={selected.size[1]} min={0.1} max={3} step={0.05}
                 onChange={v => update(selected.id, { size: [selected.size![0], v, selected.size![2]] })}
                 fmt={v => `${v.toFixed(2)}m`} />
               <Slider label="奥行" value={selected.size[2]} min={0.2} max={4} step={0.05}
@@ -582,7 +670,7 @@ function PropsPanel() {
           <div className="row" style={{ marginTop: 12 }}>
             <button className="danger" onClick={() => remove(selected.id)} style={{ flex: 1 }}>削除</button>
           </div>
-        </>
+        </div>
       )}
     </div>
   )

@@ -1,28 +1,12 @@
-// 照度 (lux) 計算: 各フィクスチャの直接光の積分
-// I (cd) = peak luminous intensity * beamProfile(angle)
-// E (lux) = I / d² * cos(θ_incidence)
-// (面に対する入射角の余弦補正を含む)
+// 器具から測定面への直接光。影・客電・材質の反射は含めない。
 
 import * as THREE from 'three'
 import type { Fixture } from '../store'
-import { FIXTURE_PROFILES } from '../lighting/fixtureTypes'
+import { cycBeamAttenuation, fixtureSpotlightColor, fixtureSpotlightModel } from '../lighting/spotlightModel'
+import { hasMeasuredFresnel, measuredFresnelCandela } from './measuredFresnel'
 
-// super-Gaussian (シェーダと同じ式)
-function beamIntensity(
-  angleRad: number,
-  beamHalfRad: number,
-  fieldHalfRad: number,
-  flatness: number,
-  peak: number,
-): number {
-  if (angleRad >= fieldHalfRad * 1.06) return 0
-  const sigma = beamHalfRad / Math.pow(Math.LN2, 1 / (2 * flatness))
-  const core = Math.exp(-Math.pow(angleRad / sigma, 2 * flatness))
-  const centerW = Math.exp(-Math.pow(angleRad / (beamHalfRad * 0.3 + 1e-6), 2))
-  const cutoff = 1 - smoothstep(fieldHalfRad, fieldHalfRad * 1.06, angleRad)
-  return (core + peak * centerW) * cutoff
-}
 function smoothstep(a: number, b: number, x: number) {
+  if (a === b) return x >= b ? 1 : 0
   const t = Math.max(0, Math.min(1, (x - a) / (b - a)))
   return t * t * (3 - 2 * t)
 }
@@ -31,7 +15,7 @@ export interface FixtureContribution {
   fixtureId: string
   fixtureName: string
   illuminanceLux: number       // この光源単体の照度寄与
-  intensityCandela: number     // ピーク光度 × ビームプロファイル
+  intensityCandela: number     // 測定方向の光度
   distanceM: number
   withinBeam: boolean
   color: [number, number, number]
@@ -54,11 +38,13 @@ export function measureIlluminance(
 ): IlluminanceMeasurement {
   const contributions: FixtureContribution[] = []
   let totalLux = 0
-  const accumColor: [number, number, number] = [0, 0, 0]
+  const accumColor = new THREE.Color(0, 0, 0)
+  const normal = surfaceNormal.clone().normalize()
 
   for (const f of fixtures) {
     if (!f.enabled) continue
-    const profile = FIXTURE_PROFILES[f.presetKey]
+    const measured = hasMeasuredFresnel(f)
+    const spotlight = measured ? null : fixtureSpotlightModel(f)
     const pos = new THREE.Vector3(...f.position)
     const tgt = new THREE.Vector3(...f.target)
     const axis = new THREE.Vector3().subVectors(tgt, pos).normalize()
@@ -66,51 +52,56 @@ export function measureIlluminance(
     const toSurf = new THREE.Vector3().subVectors(worldPos, pos)
     const dist = toSurf.length()
     if (dist < 0.05) continue
-    const L = toSurf.clone().normalize()  // light→surface
-    // ビーム軸との角度
-    const cosA = L.dot(axis)
-    if (cosA <= 0) continue
-    const angle = Math.acos(Math.max(-1, Math.min(1, cosA)))
+    const lightToSurface = toSurf.clone().divideScalar(dist)
+    const angleCos = lightToSurface.dot(axis)
+    const coneCos = spotlight ? Math.cos(spotlight.halfAngle) : -1
+    const penumbraCos = spotlight ? Math.cos(spotlight.halfAngle * (1 - spotlight.penumbra)) : 1
+    let spotAttenuation = measured ? 1 : smoothstep(coneCos, penumbraCos, angleCos)
+    if (spotlight?.beamShape === 'cyc' && spotAttenuation > 0) {
+      const up = new THREE.Vector3(0, 1, 0)
+      const right = new THREE.Vector3().crossVectors(axis, up).normalize()
+      const vertical = new THREE.Vector3().crossVectors(right, axis).normalize()
+      const axialDistance = toSurf.dot(axis)
+      const scale = axialDistance * Math.tan(spotlight.halfAngle)
+      if (scale > 0) {
+        const horizontalCoord = toSurf.dot(right) / scale
+        const verticalCoord = toSurf.dot(vertical) / scale
+        spotAttenuation *= cycBeamAttenuation(horizontalCoord, verticalCoord)
+      }
+    }
+    if (spotAttenuation <= 0) continue
 
-    const beamHalfRad = (f.beamAngleDeg * Math.PI) / 360
-    const fieldHalfRad = ((f.beamAngleDeg / profile.beamAngleDeg) * profile.fieldAngleDeg * Math.PI) / 360
-    const bp = beamIntensity(angle, beamHalfRad, fieldHalfRad, profile.flatness, profile.peak)
-    if (bp <= 0) continue
-
-    // ピーク光度 (cd) = 全光束 / ビーム立体角
-    const beamRad = beamHalfRad
-    const solidAngle = 2 * Math.PI * (1 - Math.cos(beamRad)) + 1e-3
-    const peakCandela = profile.fluxLumens / solidAngle
-    const intensityCd = peakCandela * bp * f.intensity
-
-    // 面の法線との入射角余弦
-    const cosI = Math.max(0, -L.dot(surfaceNormal))
+    const cosI = Math.max(0, -lightToSurface.dot(normal))
     if (cosI <= 0) continue
 
-    // E = I / d² × cos(θ)
-    const lux = (intensityCd / (dist * dist)) * cosI
+    const intensityCd = measured
+      ? measuredFresnelCandela(f, lightToSurface)
+      : spotlight!.intensityCandela * spotAttenuation
+    if (intensityCd <= 0) continue
+    const distanceAttenuation = 1 / Math.max(Math.pow(dist, spotlight?.decay ?? 2), 0.01)
+    const incident = intensityCd * distanceAttenuation * cosI
+    const color = measured ? fixtureSpotlightColor(f) : spotlight!.color
+    const colorLuminance = 0.2126 * color.r + 0.7152 * color.g + 0.0722 * color.b
+    const lux = incident * colorLuminance
+    const colorSrgb = color.clone().convertLinearToSRGB()
 
     contributions.push({
       fixtureId: f.id,
       fixtureName: f.name,
       illuminanceLux: lux,
-      intensityCandela: intensityCd,
+      intensityCandela: intensityCd * colorLuminance,
       distanceM: dist,
-      withinBeam: angle < beamHalfRad,
-      color: f.color,
+      withinBeam: angleCos >= Math.cos(THREE.MathUtils.degToRad(f.beamAngleDeg) / 2),
+      color: [colorSrgb.r, colorSrgb.g, colorSrgb.b],
     })
     totalLux += lux
-    accumColor[0] += f.color[0] * lux
-    accumColor[1] += f.color[1] * lux
-    accumColor[2] += f.color[2] * lux
+    accumColor.r += color.r * incident
+    accumColor.g += color.g * incident
+    accumColor.b += color.b * incident
   }
 
-  // 合成色の正規化
-  if (totalLux > 1e-6) {
-    accumColor[0] /= totalLux
-    accumColor[1] /= totalLux
-    accumColor[2] /= totalLux
-  }
+  const maxColor = Math.max(accumColor.r, accumColor.g, accumColor.b)
+  if (maxColor > 0) accumColor.multiplyScalar(1 / maxColor).convertLinearToSRGB()
 
   // 単純近似輝度: 床は拡散反射 ~18% (gray card) と仮定
   const reflectance = 0.18
@@ -124,8 +115,20 @@ export function measureIlluminance(
     totalLux,
     totalCdM2Approx,
     contributions,
-    blendedColor: accumColor,
+    blendedColor: [accumColor.r, accumColor.g, accumColor.b],
   }
+}
+
+export function measureIlluminanceAtHit(
+  point: THREE.Vector3,
+  faceNormal: THREE.Vector3 | undefined,
+  object: THREE.Object3D,
+  fixtures: Fixture[],
+): IlluminanceMeasurement {
+  const normal = faceNormal
+    ? faceNormal.clone().applyMatrix3(new THREE.Matrix3().getNormalMatrix(object.matrixWorld)).normalize()
+    : new THREE.Vector3(0, 1, 0)
+  return measureIlluminance(point, normal, fixtures)
 }
 
 // lux → fc (foot-candle) 変換

@@ -28,7 +28,8 @@
       "whiteMix": 0,
       "colorTempK": 3200,
       "rotationZDeg": 0,
-      "enabled": true
+      "enabled": true,
+      "photometricProfile": "etc-fos4-fresnel10-mid"
     },
     {
       "id": "f2",
@@ -55,7 +56,8 @@
       "whiteMix": 0,
       "colorTempK": 3200,
       "rotationZDeg": 0,
-      "enabled": true
+      "enabled": true,
+      "photometricProfile": "etc-fos4-fresnel10-mid"
     },
     {
       "id": "f3",
@@ -82,7 +84,8 @@
       "whiteMix": 0,
       "colorTempK": 3200,
       "rotationZDeg": 0,
-      "enabled": true
+      "enabled": true,
+      "photometricProfile": "etc-fos4-fresnel10-mid"
     },
     {
       "id": "f4",
@@ -109,7 +112,8 @@
       "whiteMix": 0,
       "colorTempK": 3200,
       "rotationZDeg": 0,
-      "enabled": true
+      "enabled": true,
+      "photometricProfile": "etc-fos4-fresnel10-mid"
     },
     {
       "id": "f5",
@@ -592,7 +596,8 @@
             "whiteMix": 0,
             "colorTempK": 3200,
             "rotationZDeg": 0,
-            "enabled": true
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
           },
           {
             "id": "f2",
@@ -619,7 +624,8 @@
             "whiteMix": 0,
             "colorTempK": 3200,
             "rotationZDeg": 0,
-            "enabled": true
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
           },
           {
             "id": "f3",
@@ -646,7 +652,8 @@
             "whiteMix": 0,
             "colorTempK": 3200,
             "rotationZDeg": 0,
-            "enabled": true
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
           },
           {
             "id": "f4",
@@ -673,7 +680,8 @@
             "whiteMix": 0,
             "colorTempK": 3200,
             "rotationZDeg": 0,
-            "enabled": true
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
           },
           {
             "id": "f5",
@@ -1124,7 +1132,8 @@
             "whiteMix": 0,
             "colorTempK": 3200,
             "rotationZDeg": 0,
-            "enabled": true
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
           },
           {
             "id": "f2",
@@ -1151,7 +1160,8 @@
             "whiteMix": 0,
             "colorTempK": 3200,
             "rotationZDeg": 0,
-            "enabled": true
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
           },
           {
             "id": "f3",
@@ -1178,7 +1188,8 @@
             "whiteMix": 0,
             "colorTempK": 3200,
             "rotationZDeg": 0,
-            "enabled": true
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
           },
           {
             "id": "f4",
@@ -1205,7 +1216,8 @@
             "whiteMix": 0,
             "colorTempK": 3200,
             "rotationZDeg": 0,
-            "enabled": true
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
           },
           {
             "id": "f5",
@@ -1656,7 +1668,8 @@
             "whiteMix": 0,
             "colorTempK": 3200,
             "rotationZDeg": 0,
-            "enabled": true
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
           },
           {
             "id": "f2",
@@ -1683,7 +1696,8 @@
             "whiteMix": 0,
             "colorTempK": 3200,
             "rotationZDeg": 0,
-            "enabled": true
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
           },
           {
             "id": "f3",
@@ -1710,7 +1724,8 @@
             "whiteMix": 0,
             "colorTempK": 3200,
             "rotationZDeg": 0,
-            "enabled": true
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
           },
           {
             "id": "f4",
@@ -1737,7 +1752,8 @@
             "whiteMix": 0,
             "colorTempK": 3200,
             "rotationZDeg": 0,
-            "enabled": true
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
           },
           {
             "id": "f5",
@@ -2188,7 +2204,8 @@
             "whiteMix": 0,
             "colorTempK": 3200,
             "rotationZDeg": 0,
-            "enabled": true
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
           },
           {
             "id": "f2",
@@ -2215,7 +2232,8 @@
             "whiteMix": 0,
             "colorTempK": 3200,
             "rotationZDeg": 0,
-            "enabled": true
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
           },
           {
             "id": "f3",
@@ -2242,7 +2260,8 @@
             "whiteMix": 0,
             "colorTempK": 3200,
             "rotationZDeg": 0,
-            "enabled": true
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
           },
           {
             "id": "f4",
@@ -2269,7 +2288,8 @@
             "whiteMix": 0,
             "colorTempK": 3200,
             "rotationZDeg": 0,
-            "enabled": true
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
           },
           {
             "id": "f5",
@@ -2742,7 +2762,8 @@
             "whiteMix": 0,
             "colorTempK": 3200,
             "rotationZDeg": 0,
-            "enabled": true
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
           },
           {
             "id": "f2",
@@ -2769,7 +2790,8 @@
             "whiteMix": 0,
             "colorTempK": 3200,
             "rotationZDeg": 0,
-            "enabled": true
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
           },
           {
             "id": "f3",
@@ -2796,7 +2818,8 @@
             "whiteMix": 0,
             "colorTempK": 3200,
             "rotationZDeg": 0,
-            "enabled": true
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
           },
           {
             "id": "f4",
@@ -2823,7 +2846,8 @@
             "whiteMix": 0,
             "colorTempK": 3200,
             "rotationZDeg": 0,
-            "enabled": true
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
           },
           {
             "id": "f5",
@@ -3296,7 +3320,8 @@
             "whiteMix": 0,
             "colorTempK": 3200,
             "rotationZDeg": 0,
-            "enabled": true
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
           },
           {
             "id": "f2",
@@ -3323,7 +3348,8 @@
             "whiteMix": 0,
             "colorTempK": 3200,
             "rotationZDeg": 0,
-            "enabled": true
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
           },
           {
             "id": "f3",
@@ -3350,7 +3376,8 @@
             "whiteMix": 0,
             "colorTempK": 3200,
             "rotationZDeg": 0,
-            "enabled": true
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
           },
           {
             "id": "f4",
@@ -3377,7 +3404,8 @@
             "whiteMix": 0,
             "colorTempK": 3200,
             "rotationZDeg": 0,
-            "enabled": true
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
           },
           {
             "id": "f5",
