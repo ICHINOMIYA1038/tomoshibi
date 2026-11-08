@@ -18,7 +18,6 @@ function reviseFixture(fixture: Fixture, scene: PlanScene): Fixture {
       target: performer ? [performer.position[0], 1.4, performer.position[2]] : fixture.target,
       beamAngleDeg: 17,
       intensity: fixture.intensity * 0.015,
-      enabled: scene.title === '海の向こうへ' ? false : fixture.enabled,
     }
   }
   if (fixture.name === '赤鬼の輪郭') {
@@ -28,33 +27,6 @@ function reviseFixture(fixture: Fixture, scene: PlanScene): Fixture {
       target: [fixture.target[0], 1.7, fixture.target[2]],
       beamAngleDeg: 23,
       intensity: fixture.intensity * 0.025,
-    }
-  }
-  if (fixture.name === 'とんびの補助明かり') {
-    return {
-      ...fixture,
-      presetKey: 'Source4_19',
-      target: [-4.2, 1.5, -2.8],
-      beamAngleDeg: 17,
-      intensity: 0.009,
-    }
-  }
-  if (scene.title === '海の向こうへ' && fixture.name === '舟の逆光') {
-    return {
-      ...fixture,
-      presetKey: 'ETC_S4LED_Lustr_26',
-      target: [0, 1.9, -5.7],
-      beamAngleDeg: 23,
-      intensity: 0.035,
-    }
-  }
-  if (scene.title === '洞窟で向き合う' && fixture.name === '洞窟の内側') {
-    return {
-      ...fixture,
-      presetKey: 'ETC_S4LED_Lustr_26',
-      target: [-3.3, 1.5, -4.7],
-      beamAngleDeg: 23,
-      intensity: 0.03,
     }
   }
   if (scene.title === '花のしるし' && fixture.name.startsWith('地明かり・')) {
@@ -68,17 +40,15 @@ export function createAkaoniLightingStudyPlan() {
   useStore.setState(state => {
     const scenes: PlanScene[] = state.productionPlan.scenes.map(scene => {
       const ground = scene.fixtures.filter(fixture => fixture.name.startsWith('地明かり・'))
-      const centerFocus = scene.title === '境目で足を止める' || scene.title === '花のしるし'
       const fixtures = scene.fixtures.map(fixture => {
         const frontGround = fixture.name.includes('手前')
-        const leftFrontScale = centerFocus && fixture.name === '地明かり・手前下手' ? 0.6 : 1
         const withDistribution: Fixture = fixture.name.startsWith('地明かり・')
           ? {
             ...fixture,
             photometricProfile: MEASURED_FRESNEL_KEY,
             target: [Math.sign(fixture.position[0]) * (frontGround ? 3.5 : 3), 1, frontGround ? -2 : -5],
             beamAngleDeg: 44,
-            intensity: fixture.intensity * GROUND_POWER_SCALE * leftFrontScale,
+            intensity: fixture.intensity * GROUND_POWER_SCALE,
           }
           : SEA_NAMES.has(fixture.name) ? {
             ...fixture,
@@ -105,11 +75,6 @@ export function createAkaoniLightingStudyPlan() {
       return {
         ...scene,
         fixtures,
-        note: scene.title === '洞窟で向き合う'
-          ? '洞窟の内側にあの女と赤鬼、外側にとんびとミズカネ。地明かりは5灯を同じ色で絞り、内側を暖色の細い光で見せる。'
-          : scene.title === '海の向こうへ'
-            ? '四人が舟に乗る。浜の地明かりを弱め、前明かりを消す。海の青を背景に四人の輪郭を見せる。'
-            : scene.note,
         setPieces: scene.setPieces.map(piece => piece.name === '浜の地面'
           ? { ...piece, position: [0, 0.01, -2], size: [16, 0.02, 12], color: '#625e57' }
           : piece),
