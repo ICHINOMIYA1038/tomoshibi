@@ -26,7 +26,7 @@
 | 顔前面の照度：ミズカネ | 30.7 lux | 19.5 lux |
 | 顔前面の照度：赤鬼 | 49.7 lux | 23.4 lux |
 
-数値は器具の直接光の推定値で、影、環境光、材質の反射、露出は含まない。[前の改訂案の診断 JSON](lighting-reviews/akaoni-wash-current-model-2026-11-08.json)と[試作案の診断 JSON](lighting-reviews/akaoni-study-2026-11-08.json)に計算条件と SHA-256 を保存した。
+数値は器具の直接光の推定値で、影、環境光、材質の反射、露出は含まない。試作背景灯の光束は仮置きの `5000 lm` で、配光マップによる光束の減少も校正していない。**表の lux は試作モデル内の比較値であり、実機の照度予測ではない。** [前の改訂案の診断 JSON](lighting-reviews/akaoni-wash-current-model-2026-11-08.json)と[試作案の診断 JSON](lighting-reviews/akaoni-study-2026-11-08.json)に計算条件と SHA-256 を保存した。
 
 ## 残る確認
 
