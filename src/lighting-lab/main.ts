@@ -282,7 +282,7 @@ const probes = [
 
 async function start(): Promise<void> {
   const [demoResponse, fresnelResponse, cycResponse] = await Promise.all([
-    fetch('/mock/demos/akaoni-study.json'),
+    fetch('/lighting-lab/data/akaoni-study-baseline.json'),
     fetch('/lighting-lab/data/etc-fos4-fresnel10-daylight-mid.ies'),
     fetch('/lighting-lab/data/etc-s4-led-cyc-daylight-hd.ies'),
   ])
