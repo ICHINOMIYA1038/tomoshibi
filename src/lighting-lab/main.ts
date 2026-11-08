@@ -16,19 +16,16 @@ app.innerHTML = `
     <div>
       <div class="eyebrow">TOMOSHIBI 小屋 / LIGHTING LAB</div>
       <h1>同じ舞台で、光の広がりを比べる</h1>
-      <p>「花のしるし」の灯具位置と舞台配置を使い、円錐近似とメーカー測光データを同じ視点で表示します。実際の舞台写真との照合はこれからです。</p>
+      <p>「花のしるし」の舞台で、複数の光を重ねた地明かりと背景の見え方を比べます。下には実際の舞台写真も用意しました。</p>
       <span class="status" id="status">測光データを読み込み中</span>
     </div>
     <nav class="links"><a href="/mock/?demo=akaoni-study">元の演出を開く</a><a href="/mock/projects/">プロジェクト一覧</a></nav>
   </header>
   <div class="toolbar">
-    <div class="toolgroup" id="cue-controls"><span class="label">点灯条件</span>
-      <button data-cue="blackout" aria-pressed="false">消灯</button>
-      <button data-cue="single" aria-pressed="false">地明かり 1 灯</button>
+    <div class="toolgroup" id="cue-controls"><span class="label">複数灯で比較</span>
       <button data-cue="wash" aria-pressed="false">地明かり 4 灯</button>
-      <button data-cue="cyc" aria-pressed="false">背景 3 灯</button>
-      <button data-cue="combined" aria-pressed="true">全 7 灯</button>
-      <button data-cue="combined6" aria-pressed="false">背景 6 灯の配置案</button>
+      <button data-cue="combined" aria-pressed="true">地明かり 4 灯 + 背景 3 灯</button>
+      <button data-cue="combined6" aria-pressed="false">地明かり 4 灯 + 背景 6 灯</button>
     </div>
     <div class="toolgroup" id="view-controls"><span class="label">視点</span>
       <button data-view="audience" aria-pressed="true">客席</button>
@@ -36,15 +33,24 @@ app.innerHTML = `
     </div>
     <label class="exposure">表示の明るさ <input id="exposure" type="range" min="0.5" max="2.5" step="0.1" value="1.3" /><output id="exposure-value">1.3</output></label>
   </div>
+  <details class="diagnostics" id="diagnostics"><summary>1 灯ずつの確認・消灯</summary><div class="toolgroup" id="diagnostic-controls">
+    <button data-cue="blackout" aria-pressed="false">消灯</button>
+    <button data-cue="single" aria-pressed="false">地明かり 1 灯</button>
+    <button data-cue="cyc" aria-pressed="false">背景 3 灯のみ</button>
+  </div></details>
   <div class="compare">
     <section class="pane"><div class="pane-head"><h2>円錐近似</h2><small>現在の SpotLight 方式を単純化</small></div><div class="viewport" id="cone-view"></div><div class="pane-foot">ビーム角から作った円形の光。計算にはメーカーの配光表を使いません。表示の明るさは校正前です。</div></section>
     <section class="pane"><div class="pane-head"><h2>実機の測光配光</h2><small>ETC の IES ファイル / 直接光</small></div><div class="viewport" id="measured-view"></div><div class="pane-foot">床・背景・人物の明るさを同じ配光表から計算。反射光と正確な影は未実装です。</div></section>
   </div>
   <div class="lower">
     <section class="card"><h2>測光モデルの照度</h2><p>同じ計算を画面の光と測定点に使っています。単位は lux。実測値ではありません。</p><div class="meter" id="meter"></div></section>
-    <section class="card reference"><div><h2>実際の舞台写真と比べる</h2><p>客席から撮った写真を、この端末だけで表示できます。露出と撮影位置が分かる写真を使うと差を見つけやすくなります。</p><label class="upload">写真を選ぶ<input id="reference-file" type="file" accept="image/*" /></label><img id="reference-image" alt="比較用の舞台写真" /></div></section>
+    <section class="card reference"><div><h2>実際の舞台写真を見る</h2><p>別作品の写真です。1 灯の円形の光は自然に生じます。複数灯を合わせたときの床・俳優の顔・背景の見え方を参考にしてください。</p>
+      <div class="photo-choices"><button data-photo="warm" aria-pressed="true">暖色の芝居</button><button data-photo="red" aria-pressed="false">赤い背景</button></div>
+      <figure><img id="reference-image" src="/lighting-lab/reference/and-then-there-were-none-1280.jpg" alt="『そして誰もいなくなった』の舞台。複数の俳優とセット全体を暖色の明かりが照らしている" /><figcaption id="reference-caption">『そして誰もいなくなった』（Monomoy Theatre、2013）。写真: Heather Jessup / SarahSierszyn。<a href="https://commons.wikimedia.org/wiki/File:%22AND_THEN_THERE_WERE_NONE%22_-_a_play_during_its_performance_on_the_stage.jpg" target="_blank" rel="noreferrer">原典</a> · <a href="https://creativecommons.org/licenses/by/2.0/" target="_blank" rel="noreferrer">CC BY 2.0</a>。表示用に縮小。</figcaption></figure>
+      <label class="upload">別の写真を表示<input id="reference-file" type="file" accept="image/*" /></label><span class="upload-note">選んだ写真はこの端末内だけで表示します。</span>
+    </div></section>
   </div>
-  <p class="notes">測光データは ETC fos/4 Fresnel 10 Daylight Flood と Source Four LED CYC Daylight HD Series 2。デモの灯具位置と調光率を利用しています。「背景 6 灯の配置案」は３灯の合計出力を６灯へ分けた仮案です。器具の交換、色、ホリゾント灯の取付角度、材質は現場と照合していません。CYC の最大光度方向をデモの狙いへ合わせた試験表示です。</p>
+  <p class="notes">測光データは ETC fos/4 Fresnel 10 Daylight Flood と Source Four LED CYC Daylight HD Series 2。デモの灯具位置と調光率を利用しています。「背景 6 灯の配置案」は 3 灯の合計出力を 6 灯へ分けた仮案です。器具の交換、色、ホリゾント灯の取付角度、材質は現場と照合していません。CYC の最大光度方向をデモの狙いへ合わせた試験表示です。舞台写真は別作品のため、画像の明るさや色を画面と直接照合できません。</p>
   <p class="source">測光データ: <a href="https://www.etcconnect.com/products/entertainment-fixtures/fos/4-fresnel/documentation.aspx" target="_blank" rel="noreferrer">ETC fos/4 Fresnel</a> / <a href="https://www.etcconnect.com/Products/Entertainment-Fixtures/Source-Four-LED-Adapters/Documentation.aspx" target="_blank" rel="noreferrer">ETC Source Four LED CYC</a></p>
 `
 
@@ -60,6 +66,7 @@ let view: View = 'audience'
 let exposure = 1.3
 const initialQuery = new URLSearchParams(location.search)
 if (cueButtons.some(button => button.dataset.cue === initialQuery.get('cue'))) cue = initialQuery.get('cue') as Cue
+if (cue === 'blackout' || cue === 'single' || cue === 'cyc') document.querySelector<HTMLDetailsElement>('#diagnostics')!.open = true
 if (initialQuery.get('view') === 'aerial') view = 'aerial'
 const initialExposure = Number(initialQuery.get('exposure'))
 if (initialQuery.has('exposure') && Number.isFinite(initialExposure)) exposure = THREE.MathUtils.clamp(initialExposure, 0.5, 2.5)
@@ -344,14 +351,44 @@ async function start(): Promise<void> {
   draw()
 }
 
+const referenceImage = document.querySelector<HTMLImageElement>('#reference-image')!
+const referenceCaption = document.querySelector<HTMLElement>('#reference-caption')!
+const photoButtons = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-photo]'))
+const referencePhotos = {
+  warm: {
+    src: '/lighting-lab/reference/and-then-there-were-none-1280.jpg',
+    alt: '『そして誰もいなくなった』の舞台。複数の俳優とセット全体を暖色の明かりが照らしている',
+    caption: '『そして誰もいなくなった』（Monomoy Theatre、2013）。写真: Heather Jessup / SarahSierszyn。<a href="https://commons.wikimedia.org/wiki/File:%22AND_THEN_THERE_WERE_NONE%22_-_a_play_during_its_performance_on_the_stage.jpg" target="_blank" rel="noreferrer">原典</a> · <a href="https://creativecommons.org/licenses/by/2.0/" target="_blank" rel="noreferrer">CC BY 2.0</a>。表示用に縮小。',
+  },
+  red: {
+    src: '/lighting-lab/reference/only-a-girl-1280.jpg',
+    alt: '『Only A Girl』の舞台。複数の俳優の背後に赤い背景が続き、床には光の形も見える',
+    caption: '『Only A Girl』（2021）。写真: BJCHK。<a href="https://commons.wikimedia.org/wiki/File:Only_A_Girl,_a_theatre_production_by_Lindsey_McAlister_(2021).jpg" target="_blank" rel="noreferrer">原典</a> · <a href="https://creativecommons.org/publicdomain/zero/1.0/" target="_blank" rel="noreferrer">CC0</a>。表示用に縮小。',
+  },
+} as const
+
+for (const button of photoButtons) button.addEventListener('click', () => {
+  const photo = referencePhotos[button.dataset.photo as keyof typeof referencePhotos]
+  if (!photo) return
+  if (referenceImage.dataset.url) {
+    URL.revokeObjectURL(referenceImage.dataset.url)
+    delete referenceImage.dataset.url
+  }
+  referenceImage.src = photo.src
+  referenceImage.alt = photo.alt
+  referenceCaption.innerHTML = photo.caption
+  photoButtons.forEach(item => item.setAttribute('aria-pressed', String(item === button)))
+})
+
 document.querySelector<HTMLInputElement>('#reference-file')!.addEventListener('change', event => {
   const file = (event.target as HTMLInputElement).files?.[0]
   if (!file) return
-  const image = document.querySelector<HTMLImageElement>('#reference-image')!
-  if (image.dataset.url) URL.revokeObjectURL(image.dataset.url)
-  image.dataset.url = URL.createObjectURL(file)
-  image.src = image.dataset.url
-  image.classList.add('visible')
+  if (referenceImage.dataset.url) URL.revokeObjectURL(referenceImage.dataset.url)
+  referenceImage.dataset.url = URL.createObjectURL(file)
+  referenceImage.src = referenceImage.dataset.url
+  referenceImage.alt = file.name
+  referenceCaption.textContent = `この端末で選んだ写真: ${file.name}`
+  photoButtons.forEach(item => item.setAttribute('aria-pressed', 'false'))
 })
 
 start().catch(error => {

@@ -56,7 +56,7 @@ Three.js は WebGL / WebGPU の上で動く描画ライブラリです。独自�
 
 再現する条件は次の 5 つです。
 
-1. **灯具**: 実機の配光、出力、調光時の色、アクセサリーを記録する。IES 配光ファイルだけでは、衣裳や肌に現れる色は決まらない。[照明学会 IES の TM-30](https://ies.org/products/technical-memorandum-ies-method-for-evaluating-light-source-color-rendition/)は光源による色の忠実度や色域の変化も扱う。ホリゾント灯は取付位置と隣の灯具との重なりも記録する。[ETC のホリゾント灯資料](https://www.etcconnect.com/webdocs/Fixtures/MyETCPhotometrics/Content/Cyc.htm)は、壁の寸法・設置距離・重なりから灯数と間隔を決めている。
+1. **灯具**: 実機の配光、出力、調光時の色、アクセサリーを記録する。IES 配光ファイルだけでは、衣裳や肌に現れる色は決まらない。[Illuminating Engineering Society の TM-30](https://ies.org/products/technical-memorandum-ies-method-for-evaluating-light-source-color-rendition/)は光源による色の忠実度や色域の変化も扱う。ホリゾント灯は取付位置と隣の灯具との重なりも記録する。[ETC のホリゾント灯資料](https://www.etcconnect.com/webdocs/Fixtures/MyETCPhotometrics/Content/Cyc.htm)は、壁の寸法・設置距離・重なりから灯数と間隔を決めている。
 2. **舞台**: 床、幕、壁、衣裳、肌、舞台セットの形と反射特性を揃える。単色の板や単純な人形だけで画質を判定しない。
 3. **光の伝わり方**: 直接光、遮蔽、影、反射光を分けて確認する。ヘイズがある場面だけ、空気中に見える光を加える。
 4. **表示**: 線形の光量で合成し、露出と画面への色変換を固定する。[Three.js の色管理](https://threejs.org/manual/pages/color-management.html)も、照明計算と画面表示で色空間を分けている。
@@ -90,4 +90,19 @@ Three.js は WebGL / WebGPU の上で動く描画ライブラリです。独自�
 
 この比較は測光データの使い道を確かめる試作です。CYC の最大光度方向をデモの狙いへ合わせていますが、実機の取付角度は未確認です。人物とセットの形・材質は簡略化しており、反射光と正確な影も含みません。画面の明るさは現場写真に校正していません。したがって、現在の画像と lux は**実際の舞台の再現結果ではありません**。
 
-次は実機の取付角度と現場写真を基準に、背景の上下方向と人物の顔を照合します。そこまで揃えてから、描画方式の変更が必要か判断します。
+### 舞台写真を使った見た目の確認
+
+1 灯の照射範囲が円形になること自体は自然です。地明かりの品質を判断する対象は、複数灯を重ねたときの床・俳優・背景の見え方です。比較ページでは複数灯の組合せを先に表示し、1 灯と消灯は診断用の折りたたみメニューへ移しました。
+
+ページには、別作品の舞台写真を 2 枚入れました。どちらも画面で切り替えて見られます。
+
+| 写真 | 見る点 | 出典と利用条件 |
+| --- | --- | --- |
+| 『そして誰もいなくなった』（Monomoy Theatre、2013） | 暖色の明かりが舞台全体と複数の俳優をどう見せているか。床の明暗と顔の読みやすさ。 | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:%22AND_THEN_THERE_WERE_NONE%22_-_a_play_during_its_performance_on_the_stage.jpg)。写真クレジットは Heather Jessup、公開者は SarahSierszyn。[CC BY 2.0](https://creativecommons.org/licenses/by/2.0/)。掲載画像は横幅 1,280 px に縮小。 |
+| 『Only A Girl』（2021） | 赤い背景の連続した色、俳優の輪郭、床に残る光の形。 | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Only_A_Girl,_a_theatre_production_by_Lindsey_McAlister_(2021).jpg)。撮影者 BJCHK。[CC0](https://creativecommons.org/publicdomain/zero/1.0/)。掲載画像は横幅 1,280 px に縮小。 |
+
+写真には照明器具の機種・位置・調光値と舞台材質の情報がなく、『花のしるし』とは別の舞台です。したがって、これらは**見た目の参考**であり、同じピクセル値や lux を目標とする校正データではありません。赤い背景の写真では床に光の形も見えます。円形が少しでも見えたら失敗とせず、俳優の可読性と意図した明暗を含めて判断します。
+
+写真と現在の比較画面を見比べると、背景上端に繰り返す山形と、人物の平板な見え方が大きな違いです。まず背景灯の向き・間隔・重なりを検証し、人物の材質、影、反射光を加えて確認します。灯数だけを増やしても山形が消えないことは、6 灯案の画面でも確認できました。
+
+次は『花のしるし』の灯具の取付角度と実演写真を揃え、背景の上下方向と人物の顔を照合します。その条件が揃ってから、描画方式の変更が必要か判断します。
