@@ -3,8 +3,8 @@ import { FIXTURE_PROFILES } from '../lighting/fixtureTypes'
 import { illuminanceAt, parseIES, prepareFixture, type LabFixture, type MeasuredFixture, type Vector3Tuple } from './photometry'
 import './style.css'
 
-type Cue = 'blackout' | 'single' | 'wash' | 'cyc' | 'combined' | 'combined6'
-type View = 'audience' | 'aerial'
+type Cue = 'blackout' | 'single' | 'singleVertical' | 'wash' | 'cyc' | 'combined' | 'combined6'
+type View = 'audience' | 'aerial' | 'top'
 type SetPiece = { name: string; kind: string; size: Vector3Tuple; color: string; position: Vector3Tuple }
 type Performer = { name: string; position: Vector3Tuple; color: string; onStage: boolean; scale: number }
 type DemoScene = { title: string; fixtures: LabFixture[]; setPieces: SetPiece[]; performers: Performer[] }
@@ -30,27 +30,29 @@ app.innerHTML = `
     <div class="toolgroup" id="view-controls"><span class="label">視点</span>
       <button data-view="audience" aria-pressed="true">客席</button>
       <button data-view="aerial" aria-pressed="false">俯瞰</button>
+      <button data-view="top" aria-pressed="false">真上</button>
     </div>
     <label class="exposure">表示の明るさ <input id="exposure" type="range" min="0.5" max="2.5" step="0.1" value="1.3" /><output id="exposure-value">1.3</output></label>
   </div>
   <details class="diagnostics" id="diagnostics"><summary>1 灯ずつの確認・消灯</summary><div class="toolgroup" id="diagnostic-controls">
     <button data-cue="blackout" aria-pressed="false">消灯</button>
-    <button data-cue="single" aria-pressed="false">地明かり 1 灯</button>
+    <button data-cue="single" aria-pressed="false">1 灯・実配置</button>
+    <button data-cue="singleVertical" aria-pressed="false">1 灯・垂直テスト</button>
     <button data-cue="cyc" aria-pressed="false">背景 3 灯のみ</button>
-  </div></details>
+  </div><p>垂直テストは灯具を床の真上に仮置きします。「真上」視点では配光の輪郭を確認できます。</p></details>
   <div class="compare">
     <section class="pane"><div class="pane-head"><h2>円錐近似</h2><small>現在の SpotLight 方式を単純化</small></div><div class="viewport" id="cone-view"></div><div class="pane-foot">ビーム角から作った円形の光。計算にはメーカーの配光表を使いません。表示の明るさは校正前です。</div></section>
-    <section class="pane"><div class="pane-head"><h2>実機の測光配光</h2><small>ETC の IES ファイル / 直接光</small></div><div class="viewport" id="measured-view"></div><div class="pane-foot">床・背景・人物の明るさを同じ配光表から計算。反射光と正確な影は未実装です。</div></section>
+    <section class="pane"><div class="pane-head"><h2>実機の測光配光</h2><small>ETC Fresnel 10 Mid / 直接光</small></div><div class="viewport" id="measured-view"></div><div class="pane-foot">地明かりにはデモのビーム角 28°に合う Mid 配光を使用。床・背景・人物を同じ配光表から計算しています。</div></section>
   </div>
   <div class="lower">
     <section class="card"><h2>測光モデルの照度</h2><p>同じ計算を画面の光と測定点に使っています。単位は lux。実測値ではありません。</p><div class="meter" id="meter"></div></section>
-    <section class="card reference"><div><h2>実際の舞台写真を見る</h2><p>別作品の写真です。1 灯の円形の光は自然に生じます。複数灯を合わせたときの床・俳優の顔・背景の見え方を参考にしてください。</p>
+    <section class="card reference"><div><h2>実際の舞台写真を見る</h2><p>別作品の写真です。真上から照らす 1 灯の光も、斜めの床では楕円に見えます。複数灯を合わせたときの床・俳優の顔・背景も比べてください。</p>
       <div class="photo-choices"><button data-photo="warm" aria-pressed="true">暖色の芝居</button><button data-photo="red" aria-pressed="false">赤い背景</button></div>
       <figure><img id="reference-image" src="/lighting-lab/reference/and-then-there-were-none-1280.jpg" alt="『そして誰もいなくなった』の舞台。複数の俳優とセット全体を暖色の明かりが照らしている" /><figcaption id="reference-caption">『そして誰もいなくなった』（Monomoy Theatre、2013）。写真: Heather Jessup / SarahSierszyn。<a href="https://commons.wikimedia.org/wiki/File:%22AND_THEN_THERE_WERE_NONE%22_-_a_play_during_its_performance_on_the_stage.jpg" target="_blank" rel="noreferrer">原典</a> · <a href="https://creativecommons.org/licenses/by/2.0/" target="_blank" rel="noreferrer">CC BY 2.0</a>。表示用に縮小。</figcaption></figure>
       <label class="upload">別の写真を表示<input id="reference-file" type="file" accept="image/*" /></label><span class="upload-note">選んだ写真はこの端末内だけで表示します。</span>
     </div></section>
   </div>
-  <p class="notes">測光データは ETC fos/4 Fresnel 10 Daylight Flood と Source Four LED CYC Daylight HD Series 2。デモの灯具位置と調光率を利用しています。「背景 6 灯の配置案」は 3 灯の合計出力を 6 灯へ分けた仮案です。器具の交換、色、ホリゾント灯の取付角度、材質は現場と照合していません。CYC の最大光度方向をデモの狙いへ合わせた試験表示です。舞台写真は別作品のため、画像の明るさや色を画面と直接照合できません。</p>
+  <p class="notes">測光データは ETC fos/4 Fresnel 10 Daylight Mid と Source Four LED CYC Daylight HD Series 2。デモの灯具位置と調光率を利用しています。「背景 6 灯の配置案」は 3 灯の合計出力を 6 灯へ分けた仮案です。器具の交換、色、ホリゾント灯の取付角度、材質は現場と照合していません。CYC の最大光度方向をデモの狙いへ合わせた試験表示です。舞台写真は別作品のため、画像の明るさや色を画面と直接照合できません。</p>
   <p class="source">測光データ: <a href="https://www.etcconnect.com/products/entertainment-fixtures/fos/4-fresnel/documentation.aspx" target="_blank" rel="noreferrer">ETC fos/4 Fresnel</a> / <a href="https://www.etcconnect.com/Products/Entertainment-Fixtures/Source-Four-LED-Adapters/Documentation.aspx" target="_blank" rel="noreferrer">ETC Source Four LED CYC</a></p>
 `
 
@@ -66,8 +68,8 @@ let view: View = 'audience'
 let exposure = 1.3
 const initialQuery = new URLSearchParams(location.search)
 if (cueButtons.some(button => button.dataset.cue === initialQuery.get('cue'))) cue = initialQuery.get('cue') as Cue
-if (cue === 'blackout' || cue === 'single' || cue === 'cyc') document.querySelector<HTMLDetailsElement>('#diagnostics')!.open = true
-if (initialQuery.get('view') === 'aerial') view = 'aerial'
+if (cue === 'blackout' || cue === 'single' || cue === 'singleVertical' || cue === 'cyc') document.querySelector<HTMLDetailsElement>('#diagnostics')!.open = true
+if (initialQuery.get('view') === 'aerial' || initialQuery.get('view') === 'top') view = initialQuery.get('view') as View
 const initialExposure = Number(initialQuery.get('exposure'))
 if (initialQuery.has('exposure') && Number.isFinite(initialExposure)) exposure = THREE.MathUtils.clamp(initialExposure, 0.5, 2.5)
 cueButtons.forEach(button => button.setAttribute('aria-pressed', String(button.dataset.cue === cue)))
@@ -78,13 +80,14 @@ exposureValue.value = exposure.toFixed(1)
 const views: Record<View, { position: Vector3Tuple; target: Vector3Tuple }> = {
   audience: { position: [0, 2.5, 10], target: [0, 2.5, -2] },
   aerial: { position: [0, 13, 4], target: [0, 0.6, -3] },
+  top: { position: [0, 18, -3], target: [0, 0, -3] },
 }
 
 function selected(fixture: LabFixture, activeCue: Cue): boolean {
   if (activeCue === 'blackout') return false
   const wash = fixture.name.startsWith('地明かり')
   const cyc = fixture.name.startsWith('海の面明かり')
-  if (activeCue === 'single') return fixture.name === '地明かり・手前下手'
+  if (activeCue === 'single' || activeCue === 'singleVertical') return fixture.name === '地明かり・手前下手'
   if (activeCue === 'wash') return wash
   if (activeCue === 'cyc') return cyc
   return wash || cyc
@@ -280,7 +283,7 @@ const probes = [
 async function start(): Promise<void> {
   const [demoResponse, fresnelResponse, cycResponse] = await Promise.all([
     fetch('/mock/demos/akaoni-study.json'),
-    fetch('/lighting-lab/data/etc-fos4-fresnel10-daylight-flood.ies'),
+    fetch('/lighting-lab/data/etc-fos4-fresnel10-daylight-mid.ies'),
     fetch('/lighting-lab/data/etc-s4-led-cyc-daylight-hd.ies'),
   ])
   if (![demoResponse, fresnelResponse, cycResponse].every(response => response.ok)) throw new Error('デモまたは測光ファイルを読み込めませんでした')
@@ -307,9 +310,13 @@ async function start(): Promise<void> {
       ? [...originals.filter(fixture => fixture.name.startsWith('地明かり')), ...sixCycLayout(originals)]
       : originals.filter(fixture => selected(fixture, cue))
     const fixtures = source.map(fixture => prepareFixture(
-      fixture,
+      cue === 'singleVertical' ? {
+        ...fixture,
+        position: [0, 4.5, -2.9],
+        target: [0, 0.08, -2.9],
+      } : fixture,
       fixture.presetKey === 'CycWashStudy' ? cyc : fresnel,
-      fixture.presetKey === 'CycWashStudy' ? 'ETC Source Four LED CYC' : 'ETC fos/4 Fresnel 10',
+      fixture.presetKey === 'CycWashStudy' ? 'ETC Source Four LED CYC' : 'ETC fos/4 Fresnel 10 Mid',
     ))
     const scenes = [buildScene('cone', demo, fixtures), buildScene('measured', demo, fixtures)]
     pair.forEach((item, index) => {
@@ -320,6 +327,7 @@ async function start(): Promise<void> {
       item.renderer.toneMappingExposure = index === 0 ? 0.45 * exposure : exposure
       item.camera.aspect = rect.width / Math.max(1, rect.height)
       item.camera.position.set(...views[view].position)
+      item.camera.up.set(0, view === 'top' ? 0 : 1, view === 'top' ? -1 : 0)
       item.camera.lookAt(...views[view].target)
       item.camera.updateProjectionMatrix()
       item.renderer.render(item.scene, item.camera)
@@ -328,12 +336,18 @@ async function start(): Promise<void> {
       const result = illuminanceAt(new THREE.Vector3(...probe.point), new THREE.Vector3(...probe.normal), fixtures)
       return `<div class="meter-cell"><b>${probe.label}</b><span>${result.lux.toFixed(1)}</span><em>lux</em></div>`
     }).join('')
-    status.textContent = `${fixtures.length} 灯を表示中 · 実機配光は ETC の測光値`
+    status.textContent = cue === 'singleVertical'
+      ? '検証用: 1 灯を床の真上に仮置き · 実機配光は ETC の測光値'
+      : `${fixtures.length} 灯を表示中 · 実機配光は ETC の測光値`
   }
 
   for (const button of cueButtons) button.addEventListener('click', () => {
     cue = button.dataset.cue as Cue
     cueButtons.forEach(item => item.setAttribute('aria-pressed', String(item === button)))
+    if (cue === 'singleVertical') {
+      view = 'top'
+      viewButtons.forEach(item => item.setAttribute('aria-pressed', String(item.dataset.view === view)))
+    }
     draw()
   })
   for (const button of viewButtons) button.addEventListener('click', () => {

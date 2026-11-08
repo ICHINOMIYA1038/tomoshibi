@@ -3,6 +3,7 @@
 .diagnostics{margin:-4px 0 14px;color:#a9a29b;font-size:12px}
 .diagnostics summary{width:max-content;cursor:pointer;padding:5px 3px}
 .diagnostics .toolgroup{padding:8px 0 2px}
+.diagnostics p{font-size:11px;line-height:1.5;color:#8f8981;margin:5px 0 0}
 .photo-choices{display:flex;gap:7px;margin-bottom:10px}
 .photo-choices button{border:1px solid #49403a;background:#242125;color:#d4c9ba;padding:8px 12px;border-radius:7px;font-size:12px;cursor:pointer}
 .photo-choices button[aria-pressed="true"]{border-color:#c7a267;background:#473823;color:#fff0d7}
