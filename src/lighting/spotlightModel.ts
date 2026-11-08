@@ -2,6 +2,7 @@ import * as THREE from 'three'
 import type { Fixture } from '../store'
 import { FIXTURE_PROFILES, kelvinToRGB } from './fixtureTypes'
 import { hasMeasuredFresnel, measuredFresnelSpotlight } from '../photometric/measuredFresnel'
+import { hasMeasuredCyc, measuredCycSpotlight } from '../photometric/measuredCyc'
 
 export const SPOT_PENUMBRA = 0.6
 export const SPOT_DECAY = 2
@@ -35,6 +36,15 @@ export function fixtureSpotlightColor(fixture: Fixture): THREE.Color {
 }
 
 export function fixtureSpotlightModel(fixture: Fixture) {
+  if (hasMeasuredCyc(fixture)) {
+    return {
+      color: fixtureSpotlightColor(fixture),
+      ...measuredCycSpotlight(fixture),
+      penumbra: 0.01,
+      decay: SPOT_DECAY,
+      beamShape: undefined as 'cyc' | undefined,
+    }
+  }
   if (hasMeasuredFresnel(fixture)) {
     const measured = measuredFresnelSpotlight(fixture)
     return {

@@ -15,7 +15,7 @@ function zoomRatio(fixture: Fixture): number {
 }
 
 export function hasMeasuredFresnel(fixture: Fixture): boolean {
-  return fixture.photometricProfile === MEASURED_FRESNEL_KEY
+  return fixture.presetKey === 'Fresnel10' && fixture.photometricProfile === MEASURED_FRESNEL_KEY
 }
 
 export function measuredFresnelCandela(fixture: Fixture, direction: THREE.Vector3): number {

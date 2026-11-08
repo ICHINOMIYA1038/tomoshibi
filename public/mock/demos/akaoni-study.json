@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "name": "赤鬼｜浜辺の照明試作",
+  "name": "赤鬼｜測光配光の照明試作",
   "savedAt": "2026-11-08T06:40:46.933Z",
   "fixtures": [
     {
@@ -118,7 +118,7 @@
     {
       "id": "f5",
       "name": "あの女の前明かり",
-      "presetKey": "Fresnel8",
+      "presetKey": "Source4_26",
       "position": [
         -4.5,
         5.8,
@@ -126,11 +126,11 @@
       ],
       "target": [
         -2.1,
-        1.35,
+        1.7,
         -2.2
       ],
-      "beamAngleDeg": 28,
-      "intensity": 0.52,
+      "beamAngleDeg": 23,
+      "intensity": 0.0312,
       "color": [
         1,
         0.7200782887719634,
@@ -145,19 +145,19 @@
     {
       "id": "f6",
       "name": "浜の人物の前明かり",
-      "presetKey": "Fresnel8",
+      "presetKey": "Source4_26",
       "position": [
         4.5,
         5.8,
         1.4
       ],
       "target": [
-        3.9,
-        1.35,
-        -2.6
+        4.6,
+        1.7,
+        -1.8
       ],
-      "beamAngleDeg": 28,
-      "intensity": 0.42,
+      "beamAngleDeg": 23,
+      "intensity": 0.025199999999999997,
       "color": [
         1,
         0.7200782887719634,
@@ -172,7 +172,7 @@
     {
       "id": "f7",
       "name": "赤鬼の前明かり",
-      "presetKey": "Fresnel8",
+      "presetKey": "Source4_26",
       "position": [
         1,
         5.8,
@@ -180,11 +180,11 @@
       ],
       "target": [
         3,
-        1.35,
+        1.7,
         -4.2
       ],
-      "beamAngleDeg": 26,
-      "intensity": 0.2,
+      "beamAngleDeg": 23,
+      "intensity": 0.012,
       "color": [
         1,
         0.7200782887719634,
@@ -199,19 +199,19 @@
     {
       "id": "f8",
       "name": "海の面明かり・下手",
-      "presetKey": "Chauvet_COLORado2Solo",
+      "presetKey": "CycWashStudy",
       "position": [
         -3.3,
-        6.8,
-        -6
+        6.6,
+        -2.5
       ],
       "target": [
         -3.3,
-        2.2,
-        -7.2
+        3.45,
+        -7.6
       ],
-      "beamAngleDeg": 30,
-      "intensity": 0.132,
+      "beamAngleDeg": 40,
+      "intensity": 0.09504,
       "color": [
         0.28,
         0.43,
@@ -221,7 +221,8 @@
       "whiteMix": 0,
       "colorTempK": 6500,
       "rotationZDeg": 0,
-      "enabled": true
+      "enabled": true,
+      "photometricProfile": "etc-s4-led-cyc-daylight-hd"
     },
     {
       "id": "f9",
@@ -280,19 +281,19 @@
     {
       "id": "f11",
       "name": "海の面明かり・上手",
-      "presetKey": "Chauvet_COLORado2Solo",
+      "presetKey": "CycWashStudy",
       "position": [
         3.3,
-        6.8,
-        -6
+        6.6,
+        -2.5
       ],
       "target": [
         3.3,
-        2.2,
-        -7.2
+        3.45,
+        -7.6
       ],
-      "beamAngleDeg": 30,
-      "intensity": 0.132,
+      "beamAngleDeg": 40,
+      "intensity": 0.09504,
       "color": [
         0.28,
         0.43,
@@ -302,7 +303,8 @@
       "whiteMix": 0,
       "colorTempK": 6500,
       "rotationZDeg": 0,
-      "enabled": true
+      "enabled": true,
+      "photometricProfile": "etc-s4-led-cyc-daylight-hd"
     },
     {
       "id": "f12",
@@ -334,19 +336,19 @@
     {
       "id": "f13",
       "name": "海の面明かり・中央",
-      "presetKey": "Chauvet_COLORado2Solo",
+      "presetKey": "CycWashStudy",
       "position": [
         0,
-        6.8,
-        -6
+        6.6,
+        -2.5
       ],
       "target": [
         0,
-        2.2,
-        -7.2
+        3.45,
+        -7.6
       ],
-      "beamAngleDeg": 30,
-      "intensity": 0.17600000000000002,
+      "beamAngleDeg": 40,
+      "intensity": 0.12672,
       "color": [
         0.28,
         0.43,
@@ -356,7 +358,8 @@
       "whiteMix": 0,
       "colorTempK": 6500,
       "rotationZDeg": 0,
-      "enabled": true
+      "enabled": true,
+      "photometricProfile": "etc-s4-led-cyc-daylight-hd"
     },
     {
       "id": "f14",
@@ -532,7 +535,7 @@
   ],
   "productionPlan": {
     "title": "",
-    "projectTitle": "赤鬼｜浜辺の照明試作",
+    "projectTitle": "赤鬼｜測光配光の照明試作",
     "chapters": [
       {
         "id": "ch1794120046930-khz30r",
@@ -686,7 +689,7 @@
           {
             "id": "f5",
             "name": "あの女の前明かり",
-            "presetKey": "Fresnel8",
+            "presetKey": "Source4_26",
             "position": [
               -4.5,
               5.8,
@@ -694,11 +697,11 @@
             ],
             "target": [
               -2.1,
-              1.35,
+              1.7,
               -2.2
             ],
-            "beamAngleDeg": 28,
-            "intensity": 0.52,
+            "beamAngleDeg": 23,
+            "intensity": 0.0312,
             "color": [
               1,
               0.7200782887719634,
@@ -713,7 +716,7 @@
           {
             "id": "f6",
             "name": "浜の人物の前明かり",
-            "presetKey": "Fresnel8",
+            "presetKey": "Source4_26",
             "position": [
               4.5,
               5.8,
@@ -721,11 +724,11 @@
             ],
             "target": [
               3.9,
-              1.35,
+              1.7,
               -2.6
             ],
-            "beamAngleDeg": 28,
-            "intensity": 0.42,
+            "beamAngleDeg": 23,
+            "intensity": 0.025199999999999997,
             "color": [
               1,
               0.7200782887719634,
@@ -740,19 +743,19 @@
           {
             "id": "f7",
             "name": "赤鬼の前明かり",
-            "presetKey": "Fresnel8",
+            "presetKey": "Source4_26",
             "position": [
               1,
               5.8,
               1.4
             ],
             "target": [
-              3,
-              1.35,
+              8.7,
+              1.7,
               -4.2
             ],
-            "beamAngleDeg": 26,
-            "intensity": 0.3,
+            "beamAngleDeg": 23,
+            "intensity": 0.018,
             "color": [
               1,
               0.7200782887719634,
@@ -767,19 +770,19 @@
           {
             "id": "f8",
             "name": "海の面明かり・下手",
-            "presetKey": "Chauvet_COLORado2Solo",
+            "presetKey": "CycWashStudy",
             "position": [
               -3.3,
-              6.8,
-              -6
+              6.6,
+              -2.5
             ],
             "target": [
               -3.3,
-              2.2,
-              -7.2
+              3.45,
+              -7.6
             ],
-            "beamAngleDeg": 30,
-            "intensity": 0.096,
+            "beamAngleDeg": 40,
+            "intensity": 0.06912,
             "color": [
               0.28,
               0.43,
@@ -789,7 +792,8 @@
             "whiteMix": 0,
             "colorTempK": 6500,
             "rotationZDeg": 0,
-            "enabled": true
+            "enabled": true,
+            "photometricProfile": "etc-s4-led-cyc-daylight-hd"
           },
           {
             "id": "f9",
@@ -848,19 +852,19 @@
           {
             "id": "f11",
             "name": "海の面明かり・上手",
-            "presetKey": "Chauvet_COLORado2Solo",
+            "presetKey": "CycWashStudy",
             "position": [
               3.3,
-              6.8,
-              -6
+              6.6,
+              -2.5
             ],
             "target": [
               3.3,
-              2.2,
-              -7.2
+              3.45,
+              -7.6
             ],
-            "beamAngleDeg": 30,
-            "intensity": 0.096,
+            "beamAngleDeg": 40,
+            "intensity": 0.06912,
             "color": [
               0.28,
               0.43,
@@ -870,7 +874,8 @@
             "whiteMix": 0,
             "colorTempK": 6500,
             "rotationZDeg": 0,
-            "enabled": true
+            "enabled": true,
+            "photometricProfile": "etc-s4-led-cyc-daylight-hd"
           },
           {
             "id": "f12",
@@ -902,19 +907,19 @@
           {
             "id": "f13",
             "name": "海の面明かり・中央",
-            "presetKey": "Chauvet_COLORado2Solo",
+            "presetKey": "CycWashStudy",
             "position": [
               0,
-              6.8,
-              -6
+              6.6,
+              -2.5
             ],
             "target": [
               0,
-              2.2,
-              -7.2
+              3.45,
+              -7.6
             ],
-            "beamAngleDeg": 30,
-            "intensity": 0.128,
+            "beamAngleDeg": 40,
+            "intensity": 0.09215999999999999,
             "color": [
               0.28,
               0.43,
@@ -924,7 +929,8 @@
             "whiteMix": 0,
             "colorTempK": 6500,
             "rotationZDeg": 0,
-            "enabled": true
+            "enabled": true,
+            "photometricProfile": "etc-s4-led-cyc-daylight-hd"
           },
           {
             "id": "f14",
@@ -1222,7 +1228,7 @@
           {
             "id": "f5",
             "name": "あの女の前明かり",
-            "presetKey": "Fresnel8",
+            "presetKey": "Source4_26",
             "position": [
               -4.5,
               5.8,
@@ -1230,11 +1236,11 @@
             ],
             "target": [
               -2.1,
-              1.35,
+              1.7,
               -2.2
             ],
-            "beamAngleDeg": 28,
-            "intensity": 0.52,
+            "beamAngleDeg": 23,
+            "intensity": 0.0312,
             "color": [
               1,
               0.7200782887719634,
@@ -1249,19 +1255,19 @@
           {
             "id": "f6",
             "name": "浜の人物の前明かり",
-            "presetKey": "Fresnel8",
+            "presetKey": "Source4_26",
             "position": [
               4.5,
               5.8,
               1.4
             ],
             "target": [
-              3.9,
-              1.35,
-              -2.6
+              4.6,
+              1.7,
+              -1.8
             ],
-            "beamAngleDeg": 28,
-            "intensity": 0.42,
+            "beamAngleDeg": 23,
+            "intensity": 0.025199999999999997,
             "color": [
               1,
               0.7200782887719634,
@@ -1276,7 +1282,7 @@
           {
             "id": "f7",
             "name": "赤鬼の前明かり",
-            "presetKey": "Fresnel8",
+            "presetKey": "Source4_26",
             "position": [
               1,
               5.8,
@@ -1284,11 +1290,11 @@
             ],
             "target": [
               3,
-              1.35,
+              1.7,
               -4.2
             ],
-            "beamAngleDeg": 26,
-            "intensity": 0.2,
+            "beamAngleDeg": 23,
+            "intensity": 0.012,
             "color": [
               1,
               0.7200782887719634,
@@ -1303,19 +1309,19 @@
           {
             "id": "f8",
             "name": "海の面明かり・下手",
-            "presetKey": "Chauvet_COLORado2Solo",
+            "presetKey": "CycWashStudy",
             "position": [
               -3.3,
-              6.8,
-              -6
+              6.6,
+              -2.5
             ],
             "target": [
               -3.3,
-              2.2,
-              -7.2
+              3.45,
+              -7.6
             ],
-            "beamAngleDeg": 30,
-            "intensity": 0.132,
+            "beamAngleDeg": 40,
+            "intensity": 0.09504,
             "color": [
               0.28,
               0.43,
@@ -1325,7 +1331,8 @@
             "whiteMix": 0,
             "colorTempK": 6500,
             "rotationZDeg": 0,
-            "enabled": true
+            "enabled": true,
+            "photometricProfile": "etc-s4-led-cyc-daylight-hd"
           },
           {
             "id": "f9",
@@ -1384,19 +1391,19 @@
           {
             "id": "f11",
             "name": "海の面明かり・上手",
-            "presetKey": "Chauvet_COLORado2Solo",
+            "presetKey": "CycWashStudy",
             "position": [
               3.3,
-              6.8,
-              -6
+              6.6,
+              -2.5
             ],
             "target": [
               3.3,
-              2.2,
-              -7.2
+              3.45,
+              -7.6
             ],
-            "beamAngleDeg": 30,
-            "intensity": 0.132,
+            "beamAngleDeg": 40,
+            "intensity": 0.09504,
             "color": [
               0.28,
               0.43,
@@ -1406,7 +1413,8 @@
             "whiteMix": 0,
             "colorTempK": 6500,
             "rotationZDeg": 0,
-            "enabled": true
+            "enabled": true,
+            "photometricProfile": "etc-s4-led-cyc-daylight-hd"
           },
           {
             "id": "f12",
@@ -1438,19 +1446,19 @@
           {
             "id": "f13",
             "name": "海の面明かり・中央",
-            "presetKey": "Chauvet_COLORado2Solo",
+            "presetKey": "CycWashStudy",
             "position": [
               0,
-              6.8,
-              -6
+              6.6,
+              -2.5
             ],
             "target": [
               0,
-              2.2,
-              -7.2
+              3.45,
+              -7.6
             ],
-            "beamAngleDeg": 30,
-            "intensity": 0.17600000000000002,
+            "beamAngleDeg": 40,
+            "intensity": 0.12672,
             "color": [
               0.28,
               0.43,
@@ -1460,7 +1468,8 @@
             "whiteMix": 0,
             "colorTempK": 6500,
             "rotationZDeg": 0,
-            "enabled": true
+            "enabled": true,
+            "photometricProfile": "etc-s4-led-cyc-daylight-hd"
           },
           {
             "id": "f14",
@@ -1758,7 +1767,7 @@
           {
             "id": "f5",
             "name": "あの女の前明かり",
-            "presetKey": "Fresnel8",
+            "presetKey": "Source4_26",
             "position": [
               -4.5,
               5.8,
@@ -1766,11 +1775,11 @@
             ],
             "target": [
               0.6,
-              1.35,
+              1.7,
               -3
             ],
-            "beamAngleDeg": 28,
-            "intensity": 0.52,
+            "beamAngleDeg": 23,
+            "intensity": 0.0312,
             "color": [
               1,
               0.7200782887719634,
@@ -1785,19 +1794,19 @@
           {
             "id": "f6",
             "name": "浜の人物の前明かり",
-            "presetKey": "Fresnel8",
+            "presetKey": "Source4_26",
             "position": [
               4.5,
               5.8,
               1.4
             ],
             "target": [
-              3.9,
-              1.35,
-              -2.6
+              4.6,
+              1.7,
+              -1.8
             ],
-            "beamAngleDeg": 28,
-            "intensity": 0.42,
+            "beamAngleDeg": 23,
+            "intensity": 0.025199999999999997,
             "color": [
               1,
               0.7200782887719634,
@@ -1812,7 +1821,7 @@
           {
             "id": "f7",
             "name": "赤鬼の前明かり",
-            "presetKey": "Fresnel8",
+            "presetKey": "Source4_26",
             "position": [
               1,
               5.8,
@@ -1820,11 +1829,11 @@
             ],
             "target": [
               2.2,
-              1.35,
+              1.7,
               -4.1
             ],
-            "beamAngleDeg": 26,
-            "intensity": 0.28,
+            "beamAngleDeg": 23,
+            "intensity": 0.016800000000000002,
             "color": [
               1,
               0.7200782887719634,
@@ -1839,19 +1848,19 @@
           {
             "id": "f8",
             "name": "海の面明かり・下手",
-            "presetKey": "Chauvet_COLORado2Solo",
+            "presetKey": "CycWashStudy",
             "position": [
               -3.3,
-              6.8,
-              -6
+              6.6,
+              -2.5
             ],
             "target": [
               -3.3,
-              2.2,
-              -7.2
+              3.45,
+              -7.6
             ],
-            "beamAngleDeg": 30,
-            "intensity": 0.132,
+            "beamAngleDeg": 40,
+            "intensity": 0.09504,
             "color": [
               0.28,
               0.43,
@@ -1861,7 +1870,8 @@
             "whiteMix": 0,
             "colorTempK": 6500,
             "rotationZDeg": 0,
-            "enabled": true
+            "enabled": true,
+            "photometricProfile": "etc-s4-led-cyc-daylight-hd"
           },
           {
             "id": "f9",
@@ -1920,19 +1930,19 @@
           {
             "id": "f11",
             "name": "海の面明かり・上手",
-            "presetKey": "Chauvet_COLORado2Solo",
+            "presetKey": "CycWashStudy",
             "position": [
               3.3,
-              6.8,
-              -6
+              6.6,
+              -2.5
             ],
             "target": [
               3.3,
-              2.2,
-              -7.2
+              3.45,
+              -7.6
             ],
-            "beamAngleDeg": 30,
-            "intensity": 0.132,
+            "beamAngleDeg": 40,
+            "intensity": 0.09504,
             "color": [
               0.28,
               0.43,
@@ -1942,7 +1952,8 @@
             "whiteMix": 0,
             "colorTempK": 6500,
             "rotationZDeg": 0,
-            "enabled": true
+            "enabled": true,
+            "photometricProfile": "etc-s4-led-cyc-daylight-hd"
           },
           {
             "id": "f12",
@@ -1974,19 +1985,19 @@
           {
             "id": "f13",
             "name": "海の面明かり・中央",
-            "presetKey": "Chauvet_COLORado2Solo",
+            "presetKey": "CycWashStudy",
             "position": [
               0,
-              6.8,
-              -6
+              6.6,
+              -2.5
             ],
             "target": [
               0,
-              2.2,
-              -7.2
+              3.45,
+              -7.6
             ],
-            "beamAngleDeg": 30,
-            "intensity": 0.17600000000000002,
+            "beamAngleDeg": 40,
+            "intensity": 0.12672,
             "color": [
               0.28,
               0.43,
@@ -1996,7 +2007,8 @@
             "whiteMix": 0,
             "colorTempK": 6500,
             "rotationZDeg": 0,
-            "enabled": true
+            "enabled": true,
+            "photometricProfile": "etc-s4-led-cyc-daylight-hd"
           },
           {
             "id": "f14",
@@ -2397,7 +2409,8 @@
             "whiteMix": 0,
             "colorTempK": 6500,
             "rotationZDeg": 0,
-            "enabled": true
+            "enabled": true,
+            "photometricProfile": "etc-s4-led-cyc-daylight-hd"
           },
           {
             "id": "f9",
@@ -2478,7 +2491,8 @@
             "whiteMix": 0,
             "colorTempK": 6500,
             "rotationZDeg": 0,
-            "enabled": true
+            "enabled": true,
+            "photometricProfile": "etc-s4-led-cyc-daylight-hd"
           },
           {
             "id": "f12",
@@ -2532,7 +2546,8 @@
             "whiteMix": 0,
             "colorTempK": 6500,
             "rotationZDeg": 0,
-            "enabled": true
+            "enabled": true,
+            "photometricProfile": "etc-s4-led-cyc-daylight-hd"
           },
           {
             "id": "f14",
@@ -2852,7 +2867,7 @@
           {
             "id": "f5",
             "name": "あの女の前明かり",
-            "presetKey": "Fresnel8",
+            "presetKey": "Source4_26",
             "position": [
               -4.5,
               5.8,
@@ -2860,11 +2875,11 @@
             ],
             "target": [
               -2.8,
-              1.35,
+              1.7,
               -4.6
             ],
-            "beamAngleDeg": 28,
-            "intensity": 0.36,
+            "beamAngleDeg": 23,
+            "intensity": 0.021599999999999998,
             "color": [
               1,
               0.7200782887719634,
@@ -2879,7 +2894,7 @@
           {
             "id": "f6",
             "name": "浜の人物の前明かり",
-            "presetKey": "Fresnel8",
+            "presetKey": "Source4_26",
             "position": [
               4.5,
               5.8,
@@ -2887,11 +2902,11 @@
             ],
             "target": [
               -0.5,
-              1.35,
+              1.7,
               -3.8
             ],
-            "beamAngleDeg": 28,
-            "intensity": 0.32,
+            "beamAngleDeg": 23,
+            "intensity": 0.0192,
             "color": [
               1,
               0.7200782887719634,
@@ -2906,7 +2921,7 @@
           {
             "id": "f7",
             "name": "赤鬼の前明かり",
-            "presetKey": "Fresnel8",
+            "presetKey": "Source4_26",
             "position": [
               1,
               5.8,
@@ -2914,11 +2929,11 @@
             ],
             "target": [
               -3.8,
-              1.35,
+              1.7,
               -5.1
             ],
-            "beamAngleDeg": 26,
-            "intensity": 0.3,
+            "beamAngleDeg": 23,
+            "intensity": 0.018,
             "color": [
               1,
               0.7200782887719634,
@@ -2933,19 +2948,19 @@
           {
             "id": "f8",
             "name": "海の面明かり・下手",
-            "presetKey": "Chauvet_COLORado2Solo",
+            "presetKey": "CycWashStudy",
             "position": [
               -3.3,
-              6.8,
-              -6
+              6.6,
+              -2.5
             ],
             "target": [
               -3.3,
-              2.2,
-              -7.2
+              3.45,
+              -7.6
             ],
-            "beamAngleDeg": 30,
-            "intensity": 0.024,
+            "beamAngleDeg": 40,
+            "intensity": 0.01728,
             "color": [
               0.28,
               0.43,
@@ -2955,7 +2970,8 @@
             "whiteMix": 0,
             "colorTempK": 6500,
             "rotationZDeg": 0,
-            "enabled": true
+            "enabled": true,
+            "photometricProfile": "etc-s4-led-cyc-daylight-hd"
           },
           {
             "id": "f9",
@@ -3014,19 +3030,19 @@
           {
             "id": "f11",
             "name": "海の面明かり・上手",
-            "presetKey": "Chauvet_COLORado2Solo",
+            "presetKey": "CycWashStudy",
             "position": [
               3.3,
-              6.8,
-              -6
+              6.6,
+              -2.5
             ],
             "target": [
               3.3,
-              2.2,
-              -7.2
+              3.45,
+              -7.6
             ],
-            "beamAngleDeg": 30,
-            "intensity": 0.024,
+            "beamAngleDeg": 40,
+            "intensity": 0.01728,
             "color": [
               0.28,
               0.43,
@@ -3036,7 +3052,8 @@
             "whiteMix": 0,
             "colorTempK": 6500,
             "rotationZDeg": 0,
-            "enabled": true
+            "enabled": true,
+            "photometricProfile": "etc-s4-led-cyc-daylight-hd"
           },
           {
             "id": "f12",
@@ -3068,19 +3085,19 @@
           {
             "id": "f13",
             "name": "海の面明かり・中央",
-            "presetKey": "Chauvet_COLORado2Solo",
+            "presetKey": "CycWashStudy",
             "position": [
               0,
-              6.8,
-              -6
+              6.6,
+              -2.5
             ],
             "target": [
               0,
-              2.2,
-              -7.2
+              3.45,
+              -7.6
             ],
-            "beamAngleDeg": 30,
-            "intensity": 0.032,
+            "beamAngleDeg": 40,
+            "intensity": 0.023039999999999998,
             "color": [
               0.28,
               0.43,
@@ -3090,7 +3107,8 @@
             "whiteMix": 0,
             "colorTempK": 6500,
             "rotationZDeg": 0,
-            "enabled": true
+            "enabled": true,
+            "photometricProfile": "etc-s4-led-cyc-daylight-hd"
           },
           {
             "id": "f14",
@@ -3410,7 +3428,7 @@
           {
             "id": "f5",
             "name": "あの女の前明かり",
-            "presetKey": "Fresnel8",
+            "presetKey": "Source4_26",
             "position": [
               -4.5,
               5.8,
@@ -3421,8 +3439,8 @@
               1.7,
               -5.7
             ],
-            "beamAngleDeg": 28,
-            "intensity": 0.42,
+            "beamAngleDeg": 23,
+            "intensity": 0.025199999999999997,
             "color": [
               1,
               0.7200782887719634,
@@ -3437,19 +3455,19 @@
           {
             "id": "f6",
             "name": "浜の人物の前明かり",
-            "presetKey": "Fresnel8",
+            "presetKey": "Source4_26",
             "position": [
               4.5,
               5.8,
               1.4
             ],
             "target": [
-              0.6,
+              0.5,
               1.7,
               -5.7
             ],
-            "beamAngleDeg": 28,
-            "intensity": 0.38,
+            "beamAngleDeg": 23,
+            "intensity": 0.0228,
             "color": [
               1,
               0.7200782887719634,
@@ -3464,7 +3482,7 @@
           {
             "id": "f7",
             "name": "赤鬼の前明かり",
-            "presetKey": "Fresnel8",
+            "presetKey": "Source4_26",
             "position": [
               1,
               5.8,
@@ -3475,8 +3493,8 @@
               1.7,
               -5.7
             ],
-            "beamAngleDeg": 26,
-            "intensity": 0.36,
+            "beamAngleDeg": 23,
+            "intensity": 0.021599999999999998,
             "color": [
               1,
               0.7200782887719634,
@@ -3491,19 +3509,19 @@
           {
             "id": "f8",
             "name": "海の面明かり・下手",
-            "presetKey": "Chauvet_COLORado2Solo",
+            "presetKey": "CycWashStudy",
             "position": [
               -3.3,
-              6.8,
-              -6
+              6.6,
+              -2.5
             ],
             "target": [
               -3.3,
-              2.2,
-              -7.2
+              3.45,
+              -7.6
             ],
-            "beamAngleDeg": 30,
-            "intensity": 0.168,
+            "beamAngleDeg": 40,
+            "intensity": 0.12096,
             "color": [
               0.28,
               0.43,
@@ -3513,7 +3531,8 @@
             "whiteMix": 0,
             "colorTempK": 6500,
             "rotationZDeg": 0,
-            "enabled": true
+            "enabled": true,
+            "photometricProfile": "etc-s4-led-cyc-daylight-hd"
           },
           {
             "id": "f9",
@@ -3572,19 +3591,19 @@
           {
             "id": "f11",
             "name": "海の面明かり・上手",
-            "presetKey": "Chauvet_COLORado2Solo",
+            "presetKey": "CycWashStudy",
             "position": [
               3.3,
-              6.8,
-              -6
+              6.6,
+              -2.5
             ],
             "target": [
               3.3,
-              2.2,
-              -7.2
+              3.45,
+              -7.6
             ],
-            "beamAngleDeg": 30,
-            "intensity": 0.168,
+            "beamAngleDeg": 40,
+            "intensity": 0.12096,
             "color": [
               0.28,
               0.43,
@@ -3594,7 +3613,8 @@
             "whiteMix": 0,
             "colorTempK": 6500,
             "rotationZDeg": 0,
-            "enabled": true
+            "enabled": true,
+            "photometricProfile": "etc-s4-led-cyc-daylight-hd"
           },
           {
             "id": "f12",
@@ -3626,19 +3646,19 @@
           {
             "id": "f13",
             "name": "海の面明かり・中央",
-            "presetKey": "Chauvet_COLORado2Solo",
+            "presetKey": "CycWashStudy",
             "position": [
               0,
-              6.8,
-              -6
+              6.6,
+              -2.5
             ],
             "target": [
               0,
-              2.2,
-              -7.2
+              3.45,
+              -7.6
             ],
-            "beamAngleDeg": 30,
-            "intensity": 0.22400000000000003,
+            "beamAngleDeg": 40,
+            "intensity": 0.16128,
             "color": [
               0.28,
               0.43,
@@ -3648,7 +3668,8 @@
             "whiteMix": 0,
             "colorTempK": 6500,
             "rotationZDeg": 0,
-            "enabled": true
+            "enabled": true,
+            "photometricProfile": "etc-s4-led-cyc-daylight-hd"
           },
           {
             "id": "f14",

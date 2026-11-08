@@ -5,6 +5,7 @@ import { useStore, type Fixture } from '../store'
 import { cycBeamAttenuation, fixtureSpotlightModel } from '../lighting/spotlightModel'
 import { FIXTURE_PROFILES } from '../lighting/fixtureTypes'
 import { hasMeasuredFresnel } from '../photometric/measuredFresnel'
+import { hasMeasuredCyc } from '../photometric/measuredCyc'
 
 const cycMap = new THREE.DataTexture(new Uint8Array(Array.from({ length: 64 * 64 }, (_, index) => {
   const x = ((index % 64) + 0.5) / 32 - 1
@@ -63,7 +64,7 @@ export function Beams() {
   // 投影画像と影は同じフラグメントシェーダーのテクスチャ枠を使うため、端末の上限に収める。
   const textureBudget = Math.max(0, maxTextures - 4)
   const mapped = new Set(active
-    .filter(f => hasMeasuredFresnel(f) || FIXTURE_PROFILES[f.presetKey]?.beamShape === 'cyc')
+    .filter(f => hasMeasuredFresnel(f) || hasMeasuredCyc(f) || FIXTURE_PROFILES[f.presetKey]?.beamShape === 'cyc')
     .slice(0, textureBudget)
     .map(f => f.id))
   const shadowLimit = Math.max(0, textureBudget - mapped.size)

@@ -4,6 +4,7 @@ import { FIXTURE_PROFILES, FIXTURE_PRESETS_BY_KIND, KIND_LABELS, type FixtureKin
 import type { SetPiece, SetPieceAppearance } from '../types'
 import { useDraggablePanel } from './useDraggablePanel'
 import { MEASURED_FRESNEL_KEY } from '../photometric/measuredFresnel'
+import { MEASURED_CYC_KEY } from '../photometric/measuredCyc'
 
 // 演劇関係者向け TOP パネル
 // タブ: 器具 / 役者 のみ。設定は ⚙ から SettingsModal で開く
@@ -280,6 +281,7 @@ function FixtureEditor({ fixture }: { fixture: Fixture }) {
   const remove = useStore(s => s.removeFixture)
   const dup = useStore(s => s.duplicateFixture)
   const isMeasured = fixture.photometricProfile === MEASURED_FRESNEL_KEY
+  const isMeasuredCyc = fixture.photometricProfile === MEASURED_CYC_KEY
   const isLED = profile.source !== 'tungsten' || isMeasured
 
   return (
@@ -288,7 +290,9 @@ function FixtureEditor({ fixture }: { fixture: Fixture }) {
       <div className="callout">
         <b>{fixture.name}</b>
         <div style={{ fontSize: 10, color: '#998468', marginTop: 2, fontFamily: 'var(--font-sans)' }}>
-          {isMeasured ? 'ETC fos/4 Fresnel 10 Mid の配光を使用中（光の色は試作値）' : `${KIND_LABELS[profile.kind]} / ${profile.fluxLumens.toLocaleString()} lm`}
+          {isMeasured ? 'ETC fos/4 Fresnel 10 Mid の配光を使用中（光の色は試作値）'
+            : isMeasuredCyc ? 'ETC Source Four LED CYC の配光を使用中（取付角度は試作値）'
+            : `${KIND_LABELS[profile.kind]} / ${profile.fluxLumens.toLocaleString()} lm`}
         </div>
       </div>
 
@@ -314,6 +318,19 @@ function FixtureEditor({ fixture }: { fixture: Fixture }) {
         </div>
       )}
 
+      {fixture.presetKey === 'CycWashStudy' && (
+        <div className="row">
+          <label>配光</label>
+          <select
+            value={isMeasuredCyc ? MEASURED_CYC_KEY : ''}
+            onChange={e => update({ photometricProfile: e.target.value === MEASURED_CYC_KEY ? MEASURED_CYC_KEY : undefined })}
+          >
+            <option value="">標準の近似</option>
+            <option value={MEASURED_CYC_KEY}>ETC LED CYC の配光</option>
+          </select>
+        </div>
+      )}
+
       {profile.beamAdjustable ? (
         <Slider
           label="ズーム"
@@ -329,7 +346,7 @@ function FixtureEditor({ fixture }: { fixture: Fixture }) {
         <div className="row">
           <label>ビーム角</label>
           <span className="numval" style={{ flex: 1, textAlign: 'left', color: '#998468' }}>
-            {profile.beamAngleDeg}° (固定)
+            {isMeasuredCyc ? 'IES 配光データに従う' : `${profile.beamAngleDeg}° (固定)`}
           </span>
         </div>
       )}

@@ -4,6 +4,7 @@ import * as THREE from 'three'
 import type { Fixture } from '../store'
 import { cycBeamAttenuation, fixtureSpotlightColor, fixtureSpotlightModel } from '../lighting/spotlightModel'
 import { hasMeasuredFresnel, measuredFresnelCandela } from './measuredFresnel'
+import { hasMeasuredCyc, measuredCycCandela } from './measuredCyc'
 
 function smoothstep(a: number, b: number, x: number) {
   if (a === b) return x >= b ? 1 : 0
@@ -43,7 +44,7 @@ export function measureIlluminance(
 
   for (const f of fixtures) {
     if (!f.enabled) continue
-    const measured = hasMeasuredFresnel(f)
+    const measured = hasMeasuredFresnel(f) || hasMeasuredCyc(f)
     const spotlight = measured ? null : fixtureSpotlightModel(f)
     const pos = new THREE.Vector3(...f.position)
     const tgt = new THREE.Vector3(...f.target)
@@ -75,7 +76,7 @@ export function measureIlluminance(
     if (cosI <= 0) continue
 
     const intensityCd = measured
-      ? measuredFresnelCandela(f, lightToSurface)
+      ? hasMeasuredFresnel(f) ? measuredFresnelCandela(f, lightToSurface) : measuredCycCandela(f, lightToSurface)
       : spotlight!.intensityCandela * spotAttenuation
     if (intensityCd <= 0) continue
     const distanceAttenuation = 1 / Math.max(Math.pow(dist, spotlight?.decay ?? 2), 0.01)
@@ -91,7 +92,7 @@ export function measureIlluminance(
       illuminanceLux: lux,
       intensityCandela: intensityCd * colorLuminance,
       distanceM: dist,
-      withinBeam: angleCos >= Math.cos(THREE.MathUtils.degToRad(f.beamAngleDeg) / 2),
+      withinBeam: hasMeasuredCyc(f) || angleCos >= Math.cos(THREE.MathUtils.degToRad(f.beamAngleDeg) / 2),
       color: [colorSrgb.r, colorSrgb.g, colorSrgb.b],
     })
     totalLux += lux
