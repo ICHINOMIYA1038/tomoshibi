@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import { resolve } from 'node:path'
 
 // tomoshibi.gikyokutosyokan.com 配信想定
 // サブドメインのルート配信なので base は '/'
@@ -14,6 +15,10 @@ export default defineConfig({
     sourcemap: false,
     chunkSizeWarningLimit: 1500,
     rollupOptions: {
+      input: {
+        main: resolve(import.meta.dirname, 'index.html'),
+        lightingLab: resolve(import.meta.dirname, 'lighting-lab/index.html'),
+      },
       output: {
         manualChunks: {
           three: ['three'],

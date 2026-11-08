@@ -1,0 +1,93 @@
+# 照明シミュレーションの描画方式をどう選ぶか
+
+確認日: 2026-11-08（JST）。対象は TOMOSHIBI の照明プレビューと照度計です。
+
+## 結論
+
+現行画面の限界には Three.js の描画方式が関係しています。ただし、光源データと計算式も揃っていません。先に同じ灯具・舞台・カメラ条件を用意し、複数方式で画質、照度、操作速度を比較します。その結果で描画方式を選びます。
+
+開発の第一候補は、編集時の Three.js を維持し、高品質な静止画プレビューを追加する構成です。採用は比較結果で決めます。
+
+## 現行実装で確認したこと
+
+| 項目 | 現状 | 画面への影響 |
+| --- | --- | --- |
+| 器具の配光 | 描画は `SpotLight` の円錐状配光。照度計は独自の `beamIntensity()`。 | 同じ灯具でも画面と lux が別の分布になる。 |
+| IES | `iesParser.ts` は IES ファイルを読み、配光曲線を表示する。描画と照度計はそのデータを参照しない。 | 実機の非対称配光やホリゾント灯の広がりを再現できない。 |
+| 減衰 | 描画の `SpotLight` は `decay={1.7}`。照度計は距離の二乗で減衰する。 | 距離を変えた時の明るさが一致しない。 |
+| 光の回り込み | 照度計は直接光のみ。画面も現在は `RenderPipeline` を使用しない標準描画。 | 反射光や柔らかい影を比較する基準がない。 |
+| 材質と形 | 床、人物、背景は簡略化した模型。 | 光源を改善しても、人の顔や舞台美術の見え方に限界が残る。 |
+
+これらはリポジトリの `src/scene/Beams.tsx`、`src/photometric/illuminance.ts`、`src/photometric/iesParser.ts` と [画質差の記録](lighting-quality-gap-2026-11-08.md)で確認しました。照度計の数値は現時点では実機予測値として扱いません。
+
+## 候補の比較
+
+| 方式 | TOMOSHIBI での使い方 | 期待できること | 確認が必要なこと |
+| --- | --- | --- | --- |
+| Three.js + 現行 WebGL | 編集中の即時プレビューを改善する。測光データから光度を計算し、画面と照度計で共用する。 | 現在の操作画面を活かせる。舞台の移動やシーン切替に追従しやすい。 | 多数灯具、非対称配光、柔らかい影、間接光の表現。独自実装と性能の負担。 |
+| Three.js + WebGPU | [IESSpotLight](https://threejs.org/docs/pages/IESSpotLight.html) と [IESLoader](https://threejs.org/docs/pages/IESLoader.html) を使う試作を作る。 | IES の角度別配光を描画へ渡せる。 | 現行の Three.js 0.169 と React Three Fiber 8 からの更新、対象ブラウザ・端末での動作と速度。IESSpotLight は WebGPU 専用。 |
+| Three.js + パストレーシング | 編集を止めた時に画質が収束するプレビューを試す。[three-gpu-pathtracer](https://github.com/gkjohnson/three-gpu-pathtracer)を候補とする。 | 反射光、面光源、柔らかい影の改善を試せる。 | WebGPU 対応、更新作業、材質や照明の対応範囲、場面切替時の収束時間。2026-11-02 の[公開版](https://github.com/gkjohnson/three-gpu-pathtracer/releases)は Three.js r187 が必要。実機 IES と lux の一致は別途検証が必要。 |
+| Blender Cycles | 同じ場面から比較用の静止画を生成する。[IES テクスチャ](https://docs.blender.org/manual/en/4.3/render/shader_nodes/textures/ies.html)を使う。 | 実機配光を使った高品質画像の基準を作れる。 | シーンデータの受け渡し、レンダリング時間、出力画像と Web 画面の色合わせ。リアルタイム編集には使わない。 |
+| Radiance | 固定点の照度・輝度を独立に照合する。[公式サイト](https://www.radiance-online.org/)は検証済みの照明シミュレーションツールとして案内している。 | TOMOSHIBI の計算結果を外部の計算結果と比べられる。 | 舞台模型・材質・光源データの変換。画面操作用の描画エンジンにはしない。 |
+| Unreal Engine | IES、DMX、パストレーシングを使った別環境の比較対象とする。[IES](https://dev.epicgames.com/documentation/unreal-engine/using-ies-light-profiles-in-unreal-engine)、[パストレーサー](https://dev.epicgames.com/documentation/en-us/unreal-engine/path-tracer-in-unreal-engine)を参照。 | 大規模な舞台の高画質な映像を作れる可能性がある。 | Web アプリとの連携、制作・運用負担。パストレーサーは現時点で macOS 非対応なので、この Mac での試作には使えない。[Epic の説明](https://dev.epicgames.com/documentation/twinmotion/path-tracer-requirements-for-twinmotion?lang=en-US) |
+| Capture / Vision | GDTF・MVR 形式で専門ツールへ渡す経路を検討する。[Capture の IES 読込](https://www.capture.se/Manual/en-UK/2026/DesignTab.html)、[Vision のデータ交換](https://app-help.vectorworks.net/2025/Vision/Vision_help/Vision/Data_exchange_for_previsualization.htm)を参照。 | 照明卓と連携する現場のプレビューへ橋渡しできる。 | 書き出し形式、灯具・シーンの対応、ツール利用条件。TOMOSHIBI の画面を直接改善する手段ではない。 |
+
+## C 言語や低レベル API で自作する場合
+
+Three.js は WebGL / WebGPU の上で動く描画ライブラリです。独自の計算やシェーダーを書く余地があります。C を WebAssembly に変換した場合も、ブラウザでの GPU 描画は WebGL / WebGPU の API を通ります。[Emscripten の WebGL 対応](https://emscripten.org/docs/porting/multimedia_and_graphics/OpenGL-support.html)と[WebGPU 対応](https://emscripten.org/docs/porting/multimedia_and_graphics/WebGPU-support.html)がその経路を示しています。
+
+| 自作する範囲 | 使い道 | 開発上の判断 |
+| --- | --- | --- |
+| C / WebAssembly で照明計算 | IES の補間、照度計、遮蔽判定を共通の数値計算にする。 | CPU 計算や外部ツールとの共用には有効。画面の光・影は別に実装する。TypeScript で速度が足りないか測ってから移す。 |
+| Three.js 内の独自 GLSL シェーダー | 既存の舞台操作と 3D 模型を使い、IES の水平・鉛直配光、材質、影を描く。 | 最初の試作に適する。現行の `ShaderMaterial` に近い方式。灯具が増えた場合や間接光の計算には性能上の限界がある。 |
+| WebGL 2 を直接使う独自描画器 | 描画パス、光源データ、影、色変換をすべて制御する。 | ライブラリ由来の制約を取り除けるが、3D 模型の表示、選択、カメラ、材質も自前で保守する。[WebGL 2 仕様](https://registry.khronos.org/webgl/specs/latest/2.0/)に従う。 |
+| WebGPU と WGSL を直接使う独自描画器 | IES 配光と、GPU の並列計算による高品質な光のプレビューを作る。 | 多灯具の計算やパストレーシングに拡張できる。[WebGPU](https://developer.mozilla.org/en-US/docs/Web/API/WebGPU_API)は対象ブラウザによって利用可否が異なるため、WebGL 側の表示経路が必要。[WGSL 仕様](https://gpuweb.github.io/gpuweb/wgsl/)を参照。 |
+| C / C++ 製の独自 CPU レンダラー | 写真に近い静止画をサーバーまたはローカルで生成する。 | アルゴリズムの自由度は高い。レンダラー全体の検証と保守が必要で、編集中の即時表示には向かない。既存の Blender / Radiance と画質・計算値を比較して判断する。 |
+
+実装の境界は「舞台とシーンを編集する UI」「灯具の測光データ」「画像を描く処理」に分けます。最初の試作では UI と 3D 模型の操作を維持し、照明シェーダーを自作します。
+
+別の WebGPU 描画器を試す場合は、同じシーンデータを別のキャンバスへ渡します。これで 2 種類の描画結果を同一条件で比べられます。
+
+光の計算では IES の水平角・鉛直角から光度 `I(θ, φ)` を引き、直接光の照度を `I(θ, φ) × 入射角の余弦 ÷ 距離²` で求めます。画面側と照度計は同じ配光表を参照します。影、反射光、色、露出は別々に検証します。C や WebGPU を採用しても、この入力と検証は必要です。
+
+## 比較実験の条件
+
+目標は、**客席から見た舞台の明るさ・色・陰影・視線の集まり方を、実際の照明計画に近づけること**です。lux は照らされた面の値です。観客が見る明るさには、材質、面の向き、反射光も関係します。[Radiance の説明](https://www.radiance-online.org/learning/documentation/book/rwrextras/ch1/ch1.pdf/at_download/file)は、光源の測光データと輝度の計算を重視しています。
+
+再現する条件は次の 5 つです。
+
+1. **灯具**: 実機の配光、出力、調光時の色、アクセサリーを記録する。IES 配光ファイルだけでは、衣裳や肌に現れる色は決まらない。[照明学会 IES の TM-30](https://ies.org/products/technical-memorandum-ies-method-for-evaluating-light-source-color-rendition/)は光源による色の忠実度や色域の変化も扱う。ホリゾント灯は取付位置と隣の灯具との重なりも記録する。[ETC のホリゾント灯資料](https://www.etcconnect.com/webdocs/Fixtures/MyETCPhotometrics/Content/Cyc.htm)は、壁の寸法・設置距離・重なりから灯数と間隔を決めている。
+2. **舞台**: 床、幕、壁、衣裳、肌、舞台セットの形と反射特性を揃える。単色の板や単純な人形だけで画質を判定しない。
+3. **光の伝わり方**: 直接光、遮蔽、影、反射光を分けて確認する。ヘイズがある場面だけ、空気中に見える光を加える。
+4. **表示**: 線形の光量で合成し、露出と画面への色変換を固定する。[Three.js の色管理](https://threejs.org/manual/pages/color-management.html)も、照明計算と画面表示で色空間を分けている。
+5. **評価**: 客席から同じ位置・条件で撮った写真、測定点の lux、可能なら背景と顔の輝度を揃えて比較する。写真の露出とホワイトバランスを記録し、照明設計者が舞台としての違和感を評価する。
+
+一般的な画面は実際の舞台の輝度範囲をそのまま表示できません。写真も肉眼の見え方とは異なります。写真との比較では露出・色変換を固定し、客席での印象は別に確認します。床の照度が均一でも、人物の顔が読めない、背景に山形のむらが見える、演出上必要な暗さが失われる場合は改善が必要です。
+
+『花のしるし』から、床・人物・赤い布・背景が同時に見える場面を 1 つ固定します。実機データを取得できる前明かりとホリゾント灯を各 1 種以上選び、IES の角度別光度と器具の向きを共有データにします。灯具の出力、舞台寸法、材質、カメラ位置、露出を固定します。
+
+各方式で次を記録します。
+
+1. 灯具を 1 台ずつ点灯した時の床・背景・顔の見え方と、全灯点灯時のむら。
+2. 同じ測定点の lux。実測値かメーカーの配光図がある場合は、その条件と照合する。
+3. 客席視点の画像。基準写真が撮れる場合は、露出とホワイトバランスを揃えて比較する。
+4. シーン切替と灯具移動の応答時間。編集操作が止まらないかを確認する。
+5. 影の柔らかさ、人物・布の読みやすさ、背景の均一さを照明設計者が評価する。
+
+実測値と基準写真が未入手なら、評価結果には「内部モデル間の比較」と明記します。数値が揃っても見た目が悪ければ、形・材質・露出を含めて原因を調べます。
+
+## 比較ページの構成と次の試作
+
+既存の舞台データを変更せず、比較ページを別パスに作りました。測光側では IES 配光と照度表示が同じ光度データを使います。現行アプリの照度計にはまだ反映していません。次の試作候補は WebGPU の IES 表示と高品質プレビューです。同一視点で画質と速度を比べ、必要なら Blender Cycles を静止画の比較基準にします。
+
+方式を決める基準は、実機に近い照度分布、舞台として納得できる見え方、シーン編集時の応答速度の 3 点です。
+
+## 比較ページで分かったこと
+
+`/lighting-lab/` に比較ページを作りました。『花のしるし』の舞台・役者・7 灯の位置と調光率を使い、円錐状の `SpotLight` とメーカー IES 配光による直接光を同じ客席視点で表示します。測光値は [ETC fos/4 Fresnel 10 Daylight Flood](https://www.etcconnect.com/products/entertainment-fixtures/fos/4-fresnel/documentation.aspx) と [Source Four LED CYC Daylight HD Series 2](https://www.etcconnect.com/Products/Entertainment-Fixtures/Source-Four-LED-Adapters/Documentation.aspx)の公開ファイルです。元のデモと実機は同一器具ではありません。
+
+背景は元の 3 灯と、合計出力を変えずに 6 灯へ分けた配置案を選べます。背景中段の測定点では、下手・中央・上手の順に 3 灯が 28.9 / 35.1 / 27.4 lux、6 灯案が 28.8 / 28.0 / 27.3 lux でした。**中段の左右差は小さくなりましたが、背景上部のむらは残りました。** [3 灯の画像](lighting-reviews/lighting-lab-three-cyc-2026-11-08.png)と[6 灯案の画像](lighting-reviews/lighting-lab-six-cyc-2026-11-08.png)を保存しています。
+
+この比較は測光データの使い道を確かめる試作です。CYC の最大光度方向をデモの狙いへ合わせていますが、実機の取付角度は未確認です。人物とセットの形・材質は簡略化しており、反射光と正確な影も含みません。画面の明るさは現場写真に校正していません。したがって、現在の画像と lux は**実際の舞台の再現結果ではありません**。
+
+次は実機の取付角度と現場写真を基準に、背景の上下方向と人物の顔を照合します。そこまで揃えてから、描画方式の変更が必要か判断します。
