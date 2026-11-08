@@ -3577,6 +3577,16 @@ body.embed .workspace-switch { display: none; }
 }
 .unified-shell.workspace-layout .object-panel .selected-editor > h3:first-child { margin-top: 8px; }
 .unified-shell.workspace-layout .object-panel .selected-editor .row { min-width: 0; }
+.pose-presets { display: grid; gap: 7px; margin: 12px 0; }
+.pose-presets > span { color: var(--ink-secondary); font-size: 12px; }
+.pose-presets > div { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+.pose-presets button {
+  min-height: 38px; padding: 7px 5px; border: 1px solid var(--panel-edge-strong);
+  border-radius: 6px; background: #1d1a1d; color: var(--ink-secondary);
+  font: 12px var(--font-sans); cursor: pointer;
+}
+.pose-presets button.active { border-color: var(--kin); background: rgba(212,175,111,.2); color: var(--ink-primary); }
+.pose-presets button:focus-visible { outline: 2px solid var(--kin); outline-offset: 2px; }
 .unified-shell.workspace-layout .plan-map-caption .plan-inspect-button { margin-left: auto; min-height: 26px; padding: 3px 8px; border: 1px solid rgba(212,175,111,.45); border-radius: 5px; background: rgba(212,175,111,.1); color: var(--kin); font: 10px var(--font-sans); cursor: pointer; }
 .unified-shell.workspace-layout .plan-outline-scene-fields {
   flex: none;

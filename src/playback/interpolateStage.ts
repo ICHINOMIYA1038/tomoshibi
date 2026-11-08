@@ -41,7 +41,8 @@ export function interpolateStage(from: PlanScene, to: PlanScene, progress: numbe
     const newPosition = next?.position ?? [wingX(person.position[0]), person.position[1], person.position[2]] as [number, number, number]
     const start = old?.onStage === false ? [wingX(oldPosition[0]), oldPosition[1], oldPosition[2]] as [number, number, number] : oldPosition
     const end = next?.onStage === false ? [wingX(newPosition[0]), newPosition[1], newPosition[2]] as [number, number, number] : newPosition
-    return [{ ...person, position: lerp3(start, end, t), onStage: old?.onStage !== false || next?.onStage !== false }]
+    return [{ ...person, position: lerp3(start, end, t), pose: t < .5 ? old?.pose ?? person.pose : next?.pose ?? person.pose,
+      onStage: old?.onStage !== false || next?.onStage !== false }]
   })
 
   const oldPieces = new Map(from.setPieces.map(item => [item.id, item]))

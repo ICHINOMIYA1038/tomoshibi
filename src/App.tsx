@@ -29,6 +29,7 @@ import { FIXTURE_PROFILES, type FixtureProfile } from './lighting/fixtureTypes'
 import { tryLoadFromHash } from './io/sceneIO'
 import { createShowcasePlan } from './demo/createShowcasePlan'
 import { createRainLibraryPlan } from './demo/createRainLibraryPlan'
+import { createRainLibraryLightingStudyPlan } from './demo/createRainLibraryLightingStudyPlan'
 import { createAkaoniPlan } from './demo/createAkaoniPlan'
 import { createAkaoniWashPlan } from './demo/createAkaoniWashPlan'
 import { createAkaoniLightingStudyPlan } from './demo/createAkaoniLightingStudyPlan'
@@ -185,11 +186,12 @@ export default function App() {
   useEffect(() => {
     const loadedFromHash = tryLoadFromHash()
     const demo = !loadedFromHash ? requestedDemo() : null
-    const wantsDemo = demo === '1' || demo === '2' || demo === 'akaoni' || demo === 'akaoni-wash' || demo === 'akaoni-study'
+    const wantsDemo = demo === '1' || demo === '2' || demo === 'rain-library-study' || demo === 'akaoni' || demo === 'akaoni-wash' || demo === 'akaoni-study'
     const loadDemo = wantsDemo && preserveMockDraftBeforeDemo()
     if (wantsDemo && !loadDemo) setWorkspaceFeedback('前のプランを保存できなかったため、デモを開きませんでした。')
     if (loadDemo && demo === '1') createShowcasePlan()
     else if (loadDemo && demo === '2') createRainLibraryPlan()
+    else if (loadDemo && demo === 'rain-library-study') createRainLibraryLightingStudyPlan()
     else if (loadDemo && demo === 'akaoni') createAkaoniPlan()
     else if (loadDemo && demo === 'akaoni-wash') createAkaoniWashPlan()
     else if (loadDemo && demo === 'akaoni-study') createAkaoniLightingStudyPlan()

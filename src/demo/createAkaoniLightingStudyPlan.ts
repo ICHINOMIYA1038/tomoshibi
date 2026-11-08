@@ -1,22 +1,22 @@
 import { useStore, type Fixture, type PlanScene } from '../store'
 import { createAkaoniWashPlan } from './createAkaoniWashPlan'
-import { MEASURED_FRESNEL_KEY } from '../photometric/measuredFresnel'
 import { MEASURED_CYC_KEY } from '../photometric/measuredCyc'
+import { areaWashFixture } from './areaWash'
 
 const SEA_NAMES = new Set(['海の面明かり・下手', '海の面明かり・中央', '海の面明かり・上手'])
 const FRONT_NAMES = new Set(['あの女の前明かり', '浜の人物の前明かり', '赤鬼の前明かり'])
 const GROUND_NAMES = ['地明かり・手前下手', '地明かり・手前上手', '地明かり・奥下手', '地明かり・奥上手'] as const
 const GROUND_CUES: Record<string, [number, number, number, number, number]> = {
   '波のあと': [0.25, 0.24, 0.16, 0.16, 0.10],
-  '浜に現れた影': [0.17, 0.24, 0.08, 0.20, 0.08],
-  '境目で足を止める': [0.08, 0.13, 0.04, 0.10, 0.18],
-  '花のしるし': [0.06, 0.07, 0.03, 0.05, 0.22],
-  '洞窟で向き合う': [0.08, 0.015, 0.15, 0.015, 0.04],
+  '浜に現れた影': [0.11, 0.26, 0.06, 0.21, 0.06],
+  '境目で足を止める': [0.05, 0.10, 0.06, 0.14, 0.15],
+  '花のしるし': [0.07, 0.08, 0.01, 0.02, 0.23],
+  '洞窟で向き合う': [0.10, 0.005, 0.16, 0.005, 0.025],
   '海の向こうへ': [0.01, 0.01, 0.03, 0.03, 0.045],
 }
 const AREA_CUES: Record<string, [number, number, number]> = {
   '波のあと': [0.10, 0.10, 0],
-  '浜に現れた影': [0.08, 0.08, 0],
+  '浜に現れた影': [0.06, 0.10, 0],
   '境目で足を止める': [0.025, 0.03, 0.08],
   '花のしるし': [0.02, 0.02, 0.10],
   '洞窟で向き合う': [0.08, 0.015, 0],
@@ -48,16 +48,12 @@ function reviseFixture(fixture: Fixture, scene: PlanScene): Fixture {
     const area = fixture.name === 'あの女の前明かり' ? 'left'
       : fixture.name === '赤鬼の前明かり' ? 'center' : 'right'
     const intensity = AREA_CUES[scene.title]?.[area === 'left' ? 0 : area === 'right' ? 1 : 2] ?? 0
-    return {
-      ...fixture,
+    return areaWashFixture(fixture, {
       name: area === 'center' ? '前明かり・中央の面' : area === 'left' ? '前明かり・下手の面' : '前明かり・上手の面',
-      presetKey: 'Fresnel10',
-      photometricProfile: MEASURED_FRESNEL_KEY,
       target: areaTarget(scene.title, area),
       beamAngleDeg: area === 'center' ? 36 : 44,
       intensity,
-      enabled: intensity > 0,
-    }
+    })
   }
   if (fixture.name === 'とんびの補助明かり') {
     return { ...fixture, enabled: false }
@@ -84,13 +80,10 @@ export function createAkaoniLightingStudyPlan() {
         const frontGround = fixture.name.includes('手前')
         const groundIndex = GROUND_NAMES.indexOf(fixture.name as typeof GROUND_NAMES[number])
         const withDistribution: Fixture = fixture.name.startsWith('地明かり・')
-          ? {
-            ...fixture,
-            photometricProfile: MEASURED_FRESNEL_KEY,
+          ? areaWashFixture(fixture, {
             target: [Math.sign(fixture.position[0]) * (frontGround ? 3.5 : 3), 1, frontGround ? -2 : -5],
-            beamAngleDeg: 44,
             intensity: levels && groundIndex >= 0 ? levels[groundIndex] : fixture.intensity,
-          }
+          })
           : SEA_NAMES.has(fixture.name) ? {
             ...fixture,
             presetKey: 'CycWashStudy',
@@ -103,16 +96,15 @@ export function createAkaoniLightingStudyPlan() {
         return reviseFixture(withDistribution, scene)
       })
       const template = ground.find(fixture => fixture.name === '地明かり・手前下手')!
-      fixtures.push({
+      fixtures.push(areaWashFixture({
         ...template,
         id: 'f-ground-center-study',
         name: '地明かり・中央',
-        photometricProfile: MEASURED_FRESNEL_KEY,
         position: [0, 6.8, 0.2],
-        target: [0, 1, -2],
-        beamAngleDeg: 44,
+      }, {
+        target: [0, 1, scene.title === '境目で足を止める' ? -4 : -2],
         intensity: levels?.[4] ?? 0.1,
-      })
+      }))
       return {
         ...scene,
         fixtures,

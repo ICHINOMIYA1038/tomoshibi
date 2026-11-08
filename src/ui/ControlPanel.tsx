@@ -5,6 +5,7 @@ import type { SetPiece, SetPieceAppearance } from '../types'
 import { useDraggablePanel } from './useDraggablePanel'
 import { MEASURED_FRESNEL_KEY } from '../photometric/measuredFresnel'
 import { MEASURED_CYC_KEY } from '../photometric/measuredCyc'
+import { PERFORMER_POSES } from '../performerPoses'
 
 // 演劇関係者向け TOP パネル
 // タブ: 器具 / 役者 のみ。設定は ⚙ から SettingsModal で開く
@@ -532,6 +533,15 @@ function PerformersPanel() {
             <label>舞台上</label>
             <input type="checkbox" checked={selected.onStage !== false}
               onChange={e => update(selected.id, { onStage: e.target.checked })} />
+          </div>
+          <div className="pose-presets" role="group" aria-label={`${selected.name}のポーズ`}>
+            <span>ポーズ</span>
+            <div>
+              {PERFORMER_POSES.map(pose => <button key={pose.value} type="button"
+                className={(selected.pose ?? 'standing') === pose.value ? 'active' : ''}
+                aria-pressed={(selected.pose ?? 'standing') === pose.value}
+                onClick={() => update(selected.id, { pose: pose.value })}>{pose.label}</button>)}
+            </div>
           </div>
           <div className="row">
             <label>服色</label>

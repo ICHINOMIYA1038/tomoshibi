@@ -1,0 +1,4926 @@
+{
+  "version": 2,
+  "name": "雨を待つ図書室｜面明かり試作",
+  "savedAt": "2026-11-08T02:16:43.804Z",
+  "fixtures": [
+    {
+      "id": "f1",
+      "name": "前明かり・下手の面",
+      "presetKey": "Fresnel10",
+      "position": [
+        -3.8,
+        5.4,
+        0.8
+      ],
+      "target": [
+        -2.5,
+        1.5,
+        -2.4
+      ],
+      "beamAngleDeg": 44,
+      "intensity": 0.025,
+      "color": [
+        1,
+        0.85,
+        0.72
+      ],
+      "gelEnabled": true,
+      "whiteMix": 0.22,
+      "colorTempK": 3200,
+      "rotationZDeg": 0,
+      "enabled": true,
+      "photometricProfile": "etc-fos4-fresnel10-mid"
+    },
+    {
+      "id": "f2",
+      "name": "前明かり・上手の面",
+      "presetKey": "Fresnel10",
+      "position": [
+        4.4,
+        5.2,
+        0.8
+      ],
+      "target": [
+        2.5,
+        1.5,
+        -2.4
+      ],
+      "beamAngleDeg": 44,
+      "intensity": 0.025,
+      "color": [
+        1,
+        0.85,
+        0.72
+      ],
+      "gelEnabled": true,
+      "whiteMix": 0.25,
+      "colorTempK": 3200,
+      "rotationZDeg": 0,
+      "enabled": true,
+      "photometricProfile": "etc-fos4-fresnel10-mid"
+    },
+    {
+      "id": "f3",
+      "name": "本と机の灯り",
+      "presetKey": "Chauvet_COLORado2Solo",
+      "position": [
+        -1.1,
+        6.8,
+        0
+      ],
+      "target": [
+        -0.5,
+        0.85,
+        -2.9
+      ],
+      "beamAngleDeg": 27,
+      "intensity": 0.095,
+      "color": [
+        1,
+        0.72,
+        0.43
+      ],
+      "gelEnabled": true,
+      "whiteMix": 0.12,
+      "colorTempK": 6500,
+      "rotationZDeg": 0,
+      "enabled": true
+    },
+    {
+      "id": "f4",
+      "name": "書架の面明かり",
+      "presetKey": "Fresnel8",
+      "position": [
+        -5.5,
+        5.8,
+        -3.7
+      ],
+      "target": [
+        -4.4,
+        1.4,
+        -5.9
+      ],
+      "beamAngleDeg": 28,
+      "intensity": 0.18,
+      "color": [
+        1,
+        0.82,
+        0.66
+      ],
+      "gelEnabled": true,
+      "whiteMix": 0.16,
+      "colorTempK": 3200,
+      "rotationZDeg": 0,
+      "enabled": false
+    },
+    {
+      "id": "f5",
+      "name": "窓からの雨明かり",
+      "presetKey": "CycWashStudy",
+      "position": [
+        4.2,
+        6.6,
+        -2.5
+      ],
+      "target": [
+        4.2,
+        3.45,
+        -7.6
+      ],
+      "beamAngleDeg": 40,
+      "intensity": 0.09,
+      "color": [
+        0.45,
+        0.66,
+        1
+      ],
+      "gelEnabled": true,
+      "whiteMix": 0.04,
+      "colorTempK": 6500,
+      "rotationZDeg": 0,
+      "enabled": true,
+      "photometricProfile": "etc-s4-led-cyc-daylight-hd"
+    },
+    {
+      "id": "f6",
+      "name": "司書の輪郭",
+      "presetKey": "Stairville_LEDPar64_RGBW",
+      "position": [
+        -4.5,
+        6.3,
+        -6.3
+      ],
+      "target": [
+        -1.4,
+        1.3,
+        -2.1
+      ],
+      "beamAngleDeg": 25,
+      "intensity": 0.25,
+      "color": [
+        0.65,
+        0.78,
+        1
+      ],
+      "gelEnabled": true,
+      "whiteMix": 0.06,
+      "colorTempK": 6500,
+      "rotationZDeg": 0,
+      "enabled": false
+    },
+    {
+      "id": "f7",
+      "name": "来訪者の輪郭",
+      "presetKey": "Stairville_LEDPar64_RGBW",
+      "position": [
+        4.5,
+        6.3,
+        -6.3
+      ],
+      "target": [
+        1.8,
+        1.3,
+        -2
+      ],
+      "beamAngleDeg": 25,
+      "intensity": 0.28,
+      "color": [
+        0.52,
+        0.72,
+        1
+      ],
+      "gelEnabled": true,
+      "whiteMix": 0.04,
+      "colorTempK": 6500,
+      "rotationZDeg": 0,
+      "enabled": false
+    },
+    {
+      "id": "f8",
+      "name": "稲光",
+      "presetKey": "Chauvet_COLORado2Solo",
+      "position": [
+        5.5,
+        4.5,
+        -5.2
+      ],
+      "target": [
+        4.1,
+        1.7,
+        -6.5
+      ],
+      "beamAngleDeg": 12,
+      "intensity": 0.07,
+      "color": [
+        0.82,
+        0.9,
+        1
+      ],
+      "gelEnabled": true,
+      "whiteMix": 0.22,
+      "colorTempK": 6500,
+      "rotationZDeg": 0,
+      "enabled": false
+    },
+    {
+      "id": "f9",
+      "name": "夜明けの逆光",
+      "presetKey": "CycWashStudy",
+      "position": [
+        0,
+        6.6,
+        -2.5
+      ],
+      "target": [
+        0,
+        3.45,
+        -7.6
+      ],
+      "beamAngleDeg": 40,
+      "intensity": 0.06,
+      "color": [
+        1,
+        0.72,
+        0.45
+      ],
+      "gelEnabled": true,
+      "whiteMix": 0.1,
+      "colorTempK": 6500,
+      "rotationZDeg": 0,
+      "enabled": false,
+      "photometricProfile": "etc-s4-led-cyc-daylight-hd"
+    },
+    {
+      "id": "f10",
+      "name": "下手の地明かり",
+      "presetKey": "Fresnel10",
+      "position": [
+        -4.7,
+        6.8,
+        0.5
+      ],
+      "target": [
+        -3.5,
+        1,
+        -2
+      ],
+      "beamAngleDeg": 44,
+      "intensity": 0.06,
+      "color": [
+        1,
+        0.85,
+        0.72
+      ],
+      "gelEnabled": true,
+      "whiteMix": 0,
+      "colorTempK": 3200,
+      "rotationZDeg": 0,
+      "enabled": true,
+      "photometricProfile": "etc-fos4-fresnel10-mid"
+    },
+    {
+      "id": "f11",
+      "name": "上手の地明かり",
+      "presetKey": "Fresnel10",
+      "position": [
+        4.7,
+        6.8,
+        0.5
+      ],
+      "target": [
+        3.5,
+        1,
+        -2
+      ],
+      "beamAngleDeg": 44,
+      "intensity": 0.06,
+      "color": [
+        1,
+        0.85,
+        0.72
+      ],
+      "gelEnabled": true,
+      "whiteMix": 0,
+      "colorTempK": 3200,
+      "rotationZDeg": 0,
+      "enabled": true,
+      "photometricProfile": "etc-fos4-fresnel10-mid"
+    },
+    {
+      "id": "f12",
+      "name": "舞台奥・下手の地明かり",
+      "presetKey": "Fresnel10",
+      "position": [
+        -4.5,
+        6.8,
+        -5.5
+      ],
+      "target": [
+        -3,
+        1,
+        -5
+      ],
+      "beamAngleDeg": 44,
+      "intensity": 0.04,
+      "color": [
+        1,
+        0.85,
+        0.72
+      ],
+      "gelEnabled": true,
+      "whiteMix": 0,
+      "colorTempK": 3200,
+      "rotationZDeg": 0,
+      "enabled": true,
+      "photometricProfile": "etc-fos4-fresnel10-mid"
+    },
+    {
+      "id": "f13",
+      "name": "舞台奥・上手の地明かり",
+      "presetKey": "Fresnel10",
+      "position": [
+        4.5,
+        6.8,
+        -5.5
+      ],
+      "target": [
+        3,
+        1,
+        -5
+      ],
+      "beamAngleDeg": 44,
+      "intensity": 0.04,
+      "color": [
+        1,
+        0.85,
+        0.72
+      ],
+      "gelEnabled": true,
+      "whiteMix": 0,
+      "colorTempK": 3200,
+      "rotationZDeg": 0,
+      "enabled": true,
+      "photometricProfile": "etc-fos4-fresnel10-mid"
+    },
+    {
+      "id": "f-rain-ground-center-study",
+      "name": "地明かり・中央",
+      "presetKey": "Fresnel10",
+      "position": [
+        0,
+        6.8,
+        0.5
+      ],
+      "target": [
+        0,
+        1,
+        -2.4
+      ],
+      "beamAngleDeg": 44,
+      "intensity": 0.16,
+      "color": [
+        1,
+        0.85,
+        0.72
+      ],
+      "gelEnabled": true,
+      "whiteMix": 0,
+      "colorTempK": 3200,
+      "rotationZDeg": 0,
+      "enabled": true,
+      "photometricProfile": "etc-fos4-fresnel10-mid"
+    },
+    {
+      "id": "f-rain-front-center-study",
+      "name": "前明かり・中央の面",
+      "presetKey": "Fresnel10",
+      "position": [
+        0,
+        5.8,
+        1.4
+      ],
+      "target": [
+        0,
+        1.5,
+        -2.3
+      ],
+      "beamAngleDeg": 36,
+      "intensity": 0.09,
+      "color": [
+        1,
+        0.85,
+        0.72
+      ],
+      "gelEnabled": true,
+      "whiteMix": 0.22,
+      "colorTempK": 3200,
+      "rotationZDeg": 0,
+      "enabled": true,
+      "photometricProfile": "etc-fos4-fresnel10-mid"
+    }
+  ],
+  "performers": [
+    {
+      "id": "p1",
+      "name": "司書",
+      "position": [
+        -1.5,
+        0,
+        -1.7
+      ],
+      "scale": 1,
+      "color": "#8b665e",
+      "pose": "standing",
+      "onStage": true
+    },
+    {
+      "id": "p2",
+      "name": "来訪者",
+      "position": [
+        1.8,
+        0,
+        -1.8
+      ],
+      "scale": 1,
+      "color": "#667c8c",
+      "pose": "standing",
+      "onStage": true
+    }
+  ],
+  "setPieces": [
+    {
+      "id": "sp1794104203794-0",
+      "name": "閲覧机",
+      "kind": "box",
+      "size": [
+        2.4,
+        0.8,
+        1.2
+      ],
+      "color": "#715241",
+      "position": [
+        -0.5,
+        0.4,
+        -2.9
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": 1,
+      "appearance": "table"
+    },
+    {
+      "id": "sp1794104203794-1",
+      "name": "書架",
+      "kind": "box",
+      "size": [
+        2.3,
+        2.7,
+        0.55
+      ],
+      "color": "#4b3833",
+      "position": [
+        -4.4,
+        1.35,
+        -6.1
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": 1,
+      "appearance": "bookshelf"
+    },
+    {
+      "id": "sp1794104203794-2",
+      "name": "雨の窓",
+      "kind": "box",
+      "size": [
+        2.6,
+        2.8,
+        0.16
+      ],
+      "color": "#5b6877",
+      "position": [
+        4.1,
+        1.4,
+        -6.6
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": 1,
+      "appearance": "window"
+    },
+    {
+      "id": "sp1794104203794-3",
+      "name": "返却された本",
+      "kind": "box",
+      "size": [
+        0.48,
+        0.12,
+        0.34
+      ],
+      "color": "#b28a57",
+      "position": [
+        -0.5,
+        0.86,
+        -2.9
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": 1
+    }
+  ],
+  "productionPlan": {
+    "title": "",
+    "projectTitle": "雨を待つ図書室｜面明かり試作",
+    "chapters": [
+      {
+        "id": "ch1794104203794-y63uzx",
+        "title": "第一章・閉館"
+      },
+      {
+        "id": "ch1794104203796-0ziym2",
+        "title": "第二章・夜明け"
+      }
+    ],
+    "sequences": [
+      {
+        "id": "sq1794104203794-rwn2p5",
+        "chapterId": "ch1794104203794-y63uzx",
+        "title": "シーケンス 1"
+      },
+      {
+        "id": "sq1794104203796-mw75wd",
+        "chapterId": "ch1794104203796-0ziym2",
+        "title": "シーケンス 1"
+      }
+    ],
+    "scenes": [
+      {
+        "id": "sc1794104203794-3bqdt7",
+        "title": "閉館前",
+        "trigger": "",
+        "note": "司書のいる下手と本を見せ、上手の窓は青く残す。",
+        "fixtures": [
+          {
+            "id": "f1",
+            "name": "前明かり・下手の面",
+            "presetKey": "Fresnel10",
+            "position": [
+              -3.8,
+              5.4,
+              0.8
+            ],
+            "target": [
+              -2.5,
+              1.5,
+              -2.4
+            ],
+            "beamAngleDeg": 44,
+            "intensity": 0.09,
+            "color": [
+              1,
+              0.85,
+              0.72
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0.22,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          },
+          {
+            "id": "f2",
+            "name": "前明かり・上手の面",
+            "presetKey": "Fresnel10",
+            "position": [
+              4.4,
+              5.2,
+              0.8
+            ],
+            "target": [
+              2.5,
+              1.5,
+              -2.4
+            ],
+            "beamAngleDeg": 44,
+            "intensity": 0,
+            "color": [
+              1,
+              0.85,
+              0.72
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0.25,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": false,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          },
+          {
+            "id": "f3",
+            "name": "本と机の灯り",
+            "presetKey": "Chauvet_COLORado2Solo",
+            "position": [
+              -1.1,
+              6.8,
+              0
+            ],
+            "target": [
+              -0.5,
+              0.85,
+              -2.9
+            ],
+            "beamAngleDeg": 27,
+            "intensity": 0.075,
+            "color": [
+              1,
+              0.72,
+              0.43
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0.12,
+            "colorTempK": 6500,
+            "rotationZDeg": 0,
+            "enabled": true
+          },
+          {
+            "id": "f4",
+            "name": "書架の面明かり",
+            "presetKey": "Fresnel8",
+            "position": [
+              -5.5,
+              5.8,
+              -3.7
+            ],
+            "target": [
+              -4.4,
+              1.4,
+              -5.9
+            ],
+            "beamAngleDeg": 28,
+            "intensity": 0.48,
+            "color": [
+              1,
+              0.82,
+              0.66
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0.16,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": false
+          },
+          {
+            "id": "f5",
+            "name": "窓からの雨明かり",
+            "presetKey": "CycWashStudy",
+            "position": [
+              4.2,
+              6.6,
+              -2.5
+            ],
+            "target": [
+              4.2,
+              3.45,
+              -7.6
+            ],
+            "beamAngleDeg": 40,
+            "intensity": 0.1,
+            "color": [
+              0.45,
+              0.66,
+              1
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0.04,
+            "colorTempK": 6500,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "photometricProfile": "etc-s4-led-cyc-daylight-hd"
+          },
+          {
+            "id": "f6",
+            "name": "司書の輪郭",
+            "presetKey": "Stairville_LEDPar64_RGBW",
+            "position": [
+              -4.5,
+              6.3,
+              -6.3
+            ],
+            "target": [
+              -1.4,
+              1.3,
+              -2.1
+            ],
+            "beamAngleDeg": 25,
+            "intensity": 0.25,
+            "color": [
+              0.65,
+              0.78,
+              1
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0.06,
+            "colorTempK": 6500,
+            "rotationZDeg": 0,
+            "enabled": false
+          },
+          {
+            "id": "f7",
+            "name": "来訪者の輪郭",
+            "presetKey": "Stairville_LEDPar64_RGBW",
+            "position": [
+              4.5,
+              6.3,
+              -6.3
+            ],
+            "target": [
+              2,
+              1.3,
+              -2.7
+            ],
+            "beamAngleDeg": 25,
+            "intensity": 0.28,
+            "color": [
+              0.52,
+              0.72,
+              1
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0.04,
+            "colorTempK": 6500,
+            "rotationZDeg": 0,
+            "enabled": false
+          },
+          {
+            "id": "f8",
+            "name": "稲光",
+            "presetKey": "Chauvet_COLORado2Solo",
+            "position": [
+              5.5,
+              4.5,
+              -5.2
+            ],
+            "target": [
+              4.1,
+              1.7,
+              -6.5
+            ],
+            "beamAngleDeg": 12,
+            "intensity": 0.07,
+            "color": [
+              0.82,
+              0.9,
+              1
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0.22,
+            "colorTempK": 6500,
+            "rotationZDeg": 0,
+            "enabled": false
+          },
+          {
+            "id": "f9",
+            "name": "夜明けの逆光",
+            "presetKey": "CycWashStudy",
+            "position": [
+              0,
+              6.6,
+              -2.5
+            ],
+            "target": [
+              0,
+              3.45,
+              -7.6
+            ],
+            "beamAngleDeg": 40,
+            "intensity": 0.06,
+            "color": [
+              1,
+              0.72,
+              0.45
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0.1,
+            "colorTempK": 6500,
+            "rotationZDeg": 0,
+            "enabled": false,
+            "photometricProfile": "etc-s4-led-cyc-daylight-hd"
+          },
+          {
+            "id": "f10",
+            "name": "下手の地明かり",
+            "presetKey": "Fresnel10",
+            "position": [
+              -4.7,
+              6.8,
+              0.5
+            ],
+            "target": [
+              -3.5,
+              1,
+              -2
+            ],
+            "beamAngleDeg": 44,
+            "intensity": 0.16,
+            "color": [
+              1,
+              0.85,
+              0.72
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          },
+          {
+            "id": "f11",
+            "name": "上手の地明かり",
+            "presetKey": "Fresnel10",
+            "position": [
+              4.7,
+              6.8,
+              0.5
+            ],
+            "target": [
+              3.5,
+              1,
+              -2
+            ],
+            "beamAngleDeg": 44,
+            "intensity": 0.06,
+            "color": [
+              1,
+              0.85,
+              0.72
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          },
+          {
+            "id": "f12",
+            "name": "舞台奥・下手の地明かり",
+            "presetKey": "Fresnel10",
+            "position": [
+              -4.5,
+              6.8,
+              -5.5
+            ],
+            "target": [
+              -3,
+              1,
+              -5
+            ],
+            "beamAngleDeg": 44,
+            "intensity": 0.1,
+            "color": [
+              1,
+              0.85,
+              0.72
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          },
+          {
+            "id": "f13",
+            "name": "舞台奥・上手の地明かり",
+            "presetKey": "Fresnel10",
+            "position": [
+              4.5,
+              6.8,
+              -5.5
+            ],
+            "target": [
+              3,
+              1,
+              -5
+            ],
+            "beamAngleDeg": 44,
+            "intensity": 0.04,
+            "color": [
+              1,
+              0.85,
+              0.72
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          },
+          {
+            "id": "f-rain-ground-center-study",
+            "name": "地明かり・中央",
+            "presetKey": "Fresnel10",
+            "position": [
+              0,
+              6.8,
+              0.5
+            ],
+            "target": [
+              0,
+              1,
+              -2.4
+            ],
+            "beamAngleDeg": 44,
+            "intensity": 0.06,
+            "color": [
+              1,
+              0.85,
+              0.72
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          },
+          {
+            "id": "f-rain-front-center-study",
+            "name": "前明かり・中央の面",
+            "presetKey": "Fresnel10",
+            "position": [
+              0,
+              5.8,
+              1.4
+            ],
+            "target": [
+              0,
+              1.5,
+              -2.3
+            ],
+            "beamAngleDeg": 36,
+            "intensity": 0.025,
+            "color": [
+              1,
+              0.85,
+              0.72
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0.22,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          }
+        ],
+        "performers": [
+          {
+            "id": "p1",
+            "name": "司書",
+            "position": [
+              -1.5,
+              0,
+              -1.7
+            ],
+            "scale": 1,
+            "color": "#8b665e",
+            "pose": "standing",
+            "onStage": true
+          },
+          {
+            "id": "p2",
+            "name": "来訪者",
+            "position": [
+              8.7,
+              0,
+              -2.4
+            ],
+            "scale": 1,
+            "color": "#667c8c",
+            "pose": "standing",
+            "onStage": false
+          }
+        ],
+        "setPieces": [
+          {
+            "id": "sp1794104203794-0",
+            "name": "閲覧机",
+            "kind": "box",
+            "size": [
+              2.4,
+              0.8,
+              1.2
+            ],
+            "color": "#715241",
+            "position": [
+              -0.5,
+              0.4,
+              -2.9
+            ],
+            "rotation": [
+              0,
+              0,
+              0
+            ],
+            "scale": 1,
+            "appearance": "table"
+          },
+          {
+            "id": "sp1794104203794-1",
+            "name": "書架",
+            "kind": "box",
+            "size": [
+              2.3,
+              2.7,
+              0.55
+            ],
+            "color": "#4b3833",
+            "position": [
+              -4.4,
+              1.35,
+              -6.1
+            ],
+            "rotation": [
+              0,
+              0,
+              0
+            ],
+            "scale": 1,
+            "appearance": "bookshelf"
+          },
+          {
+            "id": "sp1794104203794-2",
+            "name": "雨の窓",
+            "kind": "box",
+            "size": [
+              2.6,
+              2.8,
+              0.16
+            ],
+            "color": "#5b6877",
+            "position": [
+              4.1,
+              1.4,
+              -6.6
+            ],
+            "rotation": [
+              0,
+              0,
+              0
+            ],
+            "scale": 1,
+            "appearance": "window"
+          },
+          {
+            "id": "sp1794104203794-3",
+            "name": "返却された本",
+            "kind": "box",
+            "size": [
+              0.48,
+              0.12,
+              0.34
+            ],
+            "color": "#b28a57",
+            "position": [
+              -0.5,
+              0.86,
+              -2.9
+            ],
+            "rotation": [
+              0,
+              0,
+              0
+            ],
+            "scale": 1
+          }
+        ],
+        "sequenceId": "sq1794104203794-rwn2p5"
+      },
+      {
+        "id": "sc1794104203795-l1bcrt",
+        "title": "遅い来訪者",
+        "trigger": "扉の鈴",
+        "note": "来訪者が上手から入る。上手の地明かりを広げ、司書と本も見失わない。",
+        "fixtures": [
+          {
+            "id": "f1",
+            "name": "前明かり・下手の面",
+            "presetKey": "Fresnel10",
+            "position": [
+              -3.8,
+              5.4,
+              0.8
+            ],
+            "target": [
+              -2.5,
+              1.5,
+              -2.4
+            ],
+            "beamAngleDeg": 44,
+            "intensity": 0.07,
+            "color": [
+              1,
+              0.85,
+              0.72
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0.22,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          },
+          {
+            "id": "f2",
+            "name": "前明かり・上手の面",
+            "presetKey": "Fresnel10",
+            "position": [
+              4.4,
+              5.2,
+              0.8
+            ],
+            "target": [
+              2.5,
+              1.5,
+              -2.4
+            ],
+            "beamAngleDeg": 44,
+            "intensity": 0.09,
+            "color": [
+              1,
+              0.85,
+              0.72
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0.25,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          },
+          {
+            "id": "f3",
+            "name": "本と机の灯り",
+            "presetKey": "Chauvet_COLORado2Solo",
+            "position": [
+              -1.1,
+              6.8,
+              0
+            ],
+            "target": [
+              -0.5,
+              0.85,
+              -2.9
+            ],
+            "beamAngleDeg": 27,
+            "intensity": 0.075,
+            "color": [
+              1,
+              0.72,
+              0.43
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0.12,
+            "colorTempK": 6500,
+            "rotationZDeg": 0,
+            "enabled": true
+          },
+          {
+            "id": "f4",
+            "name": "書架の面明かり",
+            "presetKey": "Fresnel8",
+            "position": [
+              -5.5,
+              5.8,
+              -3.7
+            ],
+            "target": [
+              -4.4,
+              1.4,
+              -5.9
+            ],
+            "beamAngleDeg": 28,
+            "intensity": 0.48,
+            "color": [
+              1,
+              0.82,
+              0.66
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0.16,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": false
+          },
+          {
+            "id": "f5",
+            "name": "窓からの雨明かり",
+            "presetKey": "CycWashStudy",
+            "position": [
+              4.2,
+              6.6,
+              -2.5
+            ],
+            "target": [
+              4.2,
+              3.45,
+              -7.6
+            ],
+            "beamAngleDeg": 40,
+            "intensity": 0.1,
+            "color": [
+              0.45,
+              0.66,
+              1
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0.04,
+            "colorTempK": 6500,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "photometricProfile": "etc-s4-led-cyc-daylight-hd"
+          },
+          {
+            "id": "f6",
+            "name": "司書の輪郭",
+            "presetKey": "Stairville_LEDPar64_RGBW",
+            "position": [
+              -4.5,
+              6.3,
+              -6.3
+            ],
+            "target": [
+              -1.4,
+              1.3,
+              -2.1
+            ],
+            "beamAngleDeg": 25,
+            "intensity": 0.25,
+            "color": [
+              0.65,
+              0.78,
+              1
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0.06,
+            "colorTempK": 6500,
+            "rotationZDeg": 0,
+            "enabled": false
+          },
+          {
+            "id": "f7",
+            "name": "来訪者の輪郭",
+            "presetKey": "Stairville_LEDPar64_RGBW",
+            "position": [
+              4.5,
+              6.3,
+              -6.3
+            ],
+            "target": [
+              3.1,
+              1.3,
+              -2.5
+            ],
+            "beamAngleDeg": 25,
+            "intensity": 0.28,
+            "color": [
+              0.52,
+              0.72,
+              1
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0.04,
+            "colorTempK": 6500,
+            "rotationZDeg": 0,
+            "enabled": false
+          },
+          {
+            "id": "f8",
+            "name": "稲光",
+            "presetKey": "Chauvet_COLORado2Solo",
+            "position": [
+              5.5,
+              4.5,
+              -5.2
+            ],
+            "target": [
+              4.1,
+              1.7,
+              -6.5
+            ],
+            "beamAngleDeg": 12,
+            "intensity": 0.07,
+            "color": [
+              0.82,
+              0.9,
+              1
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0.22,
+            "colorTempK": 6500,
+            "rotationZDeg": 0,
+            "enabled": false
+          },
+          {
+            "id": "f9",
+            "name": "夜明けの逆光",
+            "presetKey": "CycWashStudy",
+            "position": [
+              0,
+              6.6,
+              -2.5
+            ],
+            "target": [
+              0,
+              3.45,
+              -7.6
+            ],
+            "beamAngleDeg": 40,
+            "intensity": 0.06,
+            "color": [
+              1,
+              0.72,
+              0.45
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0.1,
+            "colorTempK": 6500,
+            "rotationZDeg": 0,
+            "enabled": false,
+            "photometricProfile": "etc-s4-led-cyc-daylight-hd"
+          },
+          {
+            "id": "f10",
+            "name": "下手の地明かり",
+            "presetKey": "Fresnel10",
+            "position": [
+              -4.7,
+              6.8,
+              0.5
+            ],
+            "target": [
+              -3.5,
+              1,
+              -2
+            ],
+            "beamAngleDeg": 44,
+            "intensity": 0.12,
+            "color": [
+              1,
+              0.85,
+              0.72
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          },
+          {
+            "id": "f11",
+            "name": "上手の地明かり",
+            "presetKey": "Fresnel10",
+            "position": [
+              4.7,
+              6.8,
+              0.5
+            ],
+            "target": [
+              3.5,
+              1,
+              -2
+            ],
+            "beamAngleDeg": 44,
+            "intensity": 0.18,
+            "color": [
+              1,
+              0.85,
+              0.72
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          },
+          {
+            "id": "f12",
+            "name": "舞台奥・下手の地明かり",
+            "presetKey": "Fresnel10",
+            "position": [
+              -4.5,
+              6.8,
+              -5.5
+            ],
+            "target": [
+              -3,
+              1,
+              -5
+            ],
+            "beamAngleDeg": 44,
+            "intensity": 0.07,
+            "color": [
+              1,
+              0.85,
+              0.72
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          },
+          {
+            "id": "f13",
+            "name": "舞台奥・上手の地明かり",
+            "presetKey": "Fresnel10",
+            "position": [
+              4.5,
+              6.8,
+              -5.5
+            ],
+            "target": [
+              3,
+              1,
+              -5
+            ],
+            "beamAngleDeg": 44,
+            "intensity": 0.1,
+            "color": [
+              1,
+              0.85,
+              0.72
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          },
+          {
+            "id": "f-rain-ground-center-study",
+            "name": "地明かり・中央",
+            "presetKey": "Fresnel10",
+            "position": [
+              0,
+              6.8,
+              0.5
+            ],
+            "target": [
+              0,
+              1,
+              -2.4
+            ],
+            "beamAngleDeg": 44,
+            "intensity": 0.08,
+            "color": [
+              1,
+              0.85,
+              0.72
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          },
+          {
+            "id": "f-rain-front-center-study",
+            "name": "前明かり・中央の面",
+            "presetKey": "Fresnel10",
+            "position": [
+              0,
+              5.8,
+              1.4
+            ],
+            "target": [
+              0,
+              1.5,
+              -2.3
+            ],
+            "beamAngleDeg": 36,
+            "intensity": 0.025,
+            "color": [
+              1,
+              0.85,
+              0.72
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0.22,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          }
+        ],
+        "performers": [
+          {
+            "id": "p1",
+            "name": "司書",
+            "position": [
+              -1.5,
+              0,
+              -1.7
+            ],
+            "scale": 1,
+            "color": "#8b665e",
+            "pose": "standing",
+            "onStage": true
+          },
+          {
+            "id": "p2",
+            "name": "来訪者",
+            "position": [
+              3.5,
+              0,
+              -2.4
+            ],
+            "scale": 1,
+            "color": "#667c8c",
+            "pose": "standing",
+            "onStage": true
+          }
+        ],
+        "setPieces": [
+          {
+            "id": "sp1794104203794-0",
+            "name": "閲覧机",
+            "kind": "box",
+            "size": [
+              2.4,
+              0.8,
+              1.2
+            ],
+            "color": "#715241",
+            "position": [
+              -0.5,
+              0.4,
+              -2.9
+            ],
+            "rotation": [
+              0,
+              0,
+              0
+            ],
+            "scale": 1,
+            "appearance": "table"
+          },
+          {
+            "id": "sp1794104203794-1",
+            "name": "書架",
+            "kind": "box",
+            "size": [
+              2.3,
+              2.7,
+              0.55
+            ],
+            "color": "#4b3833",
+            "position": [
+              -4.4,
+              1.35,
+              -6.1
+            ],
+            "rotation": [
+              0,
+              0,
+              0
+            ],
+            "scale": 1,
+            "appearance": "bookshelf"
+          },
+          {
+            "id": "sp1794104203794-2",
+            "name": "雨の窓",
+            "kind": "box",
+            "size": [
+              2.6,
+              2.8,
+              0.16
+            ],
+            "color": "#5b6877",
+            "position": [
+              4.1,
+              1.4,
+              -6.6
+            ],
+            "rotation": [
+              0,
+              0,
+              0
+            ],
+            "scale": 1,
+            "appearance": "window"
+          },
+          {
+            "id": "sp1794104203794-3",
+            "name": "返却された本",
+            "kind": "box",
+            "size": [
+              0.48,
+              0.12,
+              0.34
+            ],
+            "color": "#b28a57",
+            "position": [
+              -0.5,
+              0.86,
+              -2.9
+            ],
+            "rotation": [
+              0,
+              0,
+              0
+            ],
+            "scale": 1
+          }
+        ],
+        "sequenceId": "sq1794104203794-rwn2p5",
+        "triggerType": "sound"
+      },
+      {
+        "id": "sc1794104203795-uv6bzi",
+        "title": "返された本",
+        "trigger": "この本を、返しに来ました",
+        "note": "二人と机上の本を中央の同じ面の中で見せる。書架は落とす。",
+        "fixtures": [
+          {
+            "id": "f1",
+            "name": "前明かり・下手の面",
+            "presetKey": "Fresnel10",
+            "position": [
+              -3.8,
+              5.4,
+              0.8
+            ],
+            "target": [
+              -2.5,
+              1.5,
+              -2.4
+            ],
+            "beamAngleDeg": 44,
+            "intensity": 0.025,
+            "color": [
+              1,
+              0.85,
+              0.72
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0.22,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          },
+          {
+            "id": "f2",
+            "name": "前明かり・上手の面",
+            "presetKey": "Fresnel10",
+            "position": [
+              4.4,
+              5.2,
+              0.8
+            ],
+            "target": [
+              2.5,
+              1.5,
+              -2.4
+            ],
+            "beamAngleDeg": 44,
+            "intensity": 0.025,
+            "color": [
+              1,
+              0.85,
+              0.72
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0.25,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          },
+          {
+            "id": "f3",
+            "name": "本と机の灯り",
+            "presetKey": "Chauvet_COLORado2Solo",
+            "position": [
+              -1.1,
+              6.8,
+              0
+            ],
+            "target": [
+              -0.5,
+              0.85,
+              -2.9
+            ],
+            "beamAngleDeg": 27,
+            "intensity": 0.095,
+            "color": [
+              1,
+              0.72,
+              0.43
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0.12,
+            "colorTempK": 6500,
+            "rotationZDeg": 0,
+            "enabled": true
+          },
+          {
+            "id": "f4",
+            "name": "書架の面明かり",
+            "presetKey": "Fresnel8",
+            "position": [
+              -5.5,
+              5.8,
+              -3.7
+            ],
+            "target": [
+              -4.4,
+              1.4,
+              -5.9
+            ],
+            "beamAngleDeg": 28,
+            "intensity": 0.18,
+            "color": [
+              1,
+              0.82,
+              0.66
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0.16,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": false
+          },
+          {
+            "id": "f5",
+            "name": "窓からの雨明かり",
+            "presetKey": "CycWashStudy",
+            "position": [
+              4.2,
+              6.6,
+              -2.5
+            ],
+            "target": [
+              4.2,
+              3.45,
+              -7.6
+            ],
+            "beamAngleDeg": 40,
+            "intensity": 0.09,
+            "color": [
+              0.45,
+              0.66,
+              1
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0.04,
+            "colorTempK": 6500,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "photometricProfile": "etc-s4-led-cyc-daylight-hd"
+          },
+          {
+            "id": "f6",
+            "name": "司書の輪郭",
+            "presetKey": "Stairville_LEDPar64_RGBW",
+            "position": [
+              -4.5,
+              6.3,
+              -6.3
+            ],
+            "target": [
+              -1.4,
+              1.3,
+              -2.1
+            ],
+            "beamAngleDeg": 25,
+            "intensity": 0.25,
+            "color": [
+              0.65,
+              0.78,
+              1
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0.06,
+            "colorTempK": 6500,
+            "rotationZDeg": 0,
+            "enabled": false
+          },
+          {
+            "id": "f7",
+            "name": "来訪者の輪郭",
+            "presetKey": "Stairville_LEDPar64_RGBW",
+            "position": [
+              4.5,
+              6.3,
+              -6.3
+            ],
+            "target": [
+              1.8,
+              1.3,
+              -2
+            ],
+            "beamAngleDeg": 25,
+            "intensity": 0.28,
+            "color": [
+              0.52,
+              0.72,
+              1
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0.04,
+            "colorTempK": 6500,
+            "rotationZDeg": 0,
+            "enabled": false
+          },
+          {
+            "id": "f8",
+            "name": "稲光",
+            "presetKey": "Chauvet_COLORado2Solo",
+            "position": [
+              5.5,
+              4.5,
+              -5.2
+            ],
+            "target": [
+              4.1,
+              1.7,
+              -6.5
+            ],
+            "beamAngleDeg": 12,
+            "intensity": 0.07,
+            "color": [
+              0.82,
+              0.9,
+              1
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0.22,
+            "colorTempK": 6500,
+            "rotationZDeg": 0,
+            "enabled": false
+          },
+          {
+            "id": "f9",
+            "name": "夜明けの逆光",
+            "presetKey": "CycWashStudy",
+            "position": [
+              0,
+              6.6,
+              -2.5
+            ],
+            "target": [
+              0,
+              3.45,
+              -7.6
+            ],
+            "beamAngleDeg": 40,
+            "intensity": 0.06,
+            "color": [
+              1,
+              0.72,
+              0.45
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0.1,
+            "colorTempK": 6500,
+            "rotationZDeg": 0,
+            "enabled": false,
+            "photometricProfile": "etc-s4-led-cyc-daylight-hd"
+          },
+          {
+            "id": "f10",
+            "name": "下手の地明かり",
+            "presetKey": "Fresnel10",
+            "position": [
+              -4.7,
+              6.8,
+              0.5
+            ],
+            "target": [
+              -3.5,
+              1,
+              -2
+            ],
+            "beamAngleDeg": 44,
+            "intensity": 0.06,
+            "color": [
+              1,
+              0.85,
+              0.72
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          },
+          {
+            "id": "f11",
+            "name": "上手の地明かり",
+            "presetKey": "Fresnel10",
+            "position": [
+              4.7,
+              6.8,
+              0.5
+            ],
+            "target": [
+              3.5,
+              1,
+              -2
+            ],
+            "beamAngleDeg": 44,
+            "intensity": 0.06,
+            "color": [
+              1,
+              0.85,
+              0.72
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          },
+          {
+            "id": "f12",
+            "name": "舞台奥・下手の地明かり",
+            "presetKey": "Fresnel10",
+            "position": [
+              -4.5,
+              6.8,
+              -5.5
+            ],
+            "target": [
+              -3,
+              1,
+              -5
+            ],
+            "beamAngleDeg": 44,
+            "intensity": 0.04,
+            "color": [
+              1,
+              0.85,
+              0.72
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          },
+          {
+            "id": "f13",
+            "name": "舞台奥・上手の地明かり",
+            "presetKey": "Fresnel10",
+            "position": [
+              4.5,
+              6.8,
+              -5.5
+            ],
+            "target": [
+              3,
+              1,
+              -5
+            ],
+            "beamAngleDeg": 44,
+            "intensity": 0.04,
+            "color": [
+              1,
+              0.85,
+              0.72
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          },
+          {
+            "id": "f-rain-ground-center-study",
+            "name": "地明かり・中央",
+            "presetKey": "Fresnel10",
+            "position": [
+              0,
+              6.8,
+              0.5
+            ],
+            "target": [
+              0,
+              1,
+              -2.4
+            ],
+            "beamAngleDeg": 44,
+            "intensity": 0.16,
+            "color": [
+              1,
+              0.85,
+              0.72
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          },
+          {
+            "id": "f-rain-front-center-study",
+            "name": "前明かり・中央の面",
+            "presetKey": "Fresnel10",
+            "position": [
+              0,
+              5.8,
+              1.4
+            ],
+            "target": [
+              0,
+              1.5,
+              -2.3
+            ],
+            "beamAngleDeg": 36,
+            "intensity": 0.09,
+            "color": [
+              1,
+              0.85,
+              0.72
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0.22,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          }
+        ],
+        "performers": [
+          {
+            "id": "p1",
+            "name": "司書",
+            "position": [
+              -1.5,
+              0,
+              -1.7
+            ],
+            "scale": 1,
+            "color": "#8b665e",
+            "pose": "standing",
+            "onStage": true
+          },
+          {
+            "id": "p2",
+            "name": "来訪者",
+            "position": [
+              1.8,
+              0,
+              -1.8
+            ],
+            "scale": 1,
+            "color": "#667c8c",
+            "pose": "standing",
+            "onStage": true
+          }
+        ],
+        "setPieces": [
+          {
+            "id": "sp1794104203794-0",
+            "name": "閲覧机",
+            "kind": "box",
+            "size": [
+              2.4,
+              0.8,
+              1.2
+            ],
+            "color": "#715241",
+            "position": [
+              -0.5,
+              0.4,
+              -2.9
+            ],
+            "rotation": [
+              0,
+              0,
+              0
+            ],
+            "scale": 1,
+            "appearance": "table"
+          },
+          {
+            "id": "sp1794104203794-1",
+            "name": "書架",
+            "kind": "box",
+            "size": [
+              2.3,
+              2.7,
+              0.55
+            ],
+            "color": "#4b3833",
+            "position": [
+              -4.4,
+              1.35,
+              -6.1
+            ],
+            "rotation": [
+              0,
+              0,
+              0
+            ],
+            "scale": 1,
+            "appearance": "bookshelf"
+          },
+          {
+            "id": "sp1794104203794-2",
+            "name": "雨の窓",
+            "kind": "box",
+            "size": [
+              2.6,
+              2.8,
+              0.16
+            ],
+            "color": "#5b6877",
+            "position": [
+              4.1,
+              1.4,
+              -6.6
+            ],
+            "rotation": [
+              0,
+              0,
+              0
+            ],
+            "scale": 1,
+            "appearance": "window"
+          },
+          {
+            "id": "sp1794104203794-3",
+            "name": "返却された本",
+            "kind": "box",
+            "size": [
+              0.48,
+              0.12,
+              0.34
+            ],
+            "color": "#b28a57",
+            "position": [
+              -0.5,
+              0.86,
+              -2.9
+            ],
+            "rotation": [
+              0,
+              0,
+              0
+            ],
+            "scale": 1
+          }
+        ],
+        "sequenceId": "sq1794104203794-rwn2p5",
+        "triggerType": "dialogue"
+      },
+      {
+        "id": "sc1794104203795-qf6vvi",
+        "title": "雷鳴",
+        "trigger": "近くで雷が鳴る",
+        "note": "地明かりと前明かりを消す。窓と二人の輪郭を冷たい光で浮かべ、本と書架は暗くする。",
+        "fixtures": [
+          {
+            "id": "f1",
+            "name": "前明かり・下手の面",
+            "presetKey": "Fresnel10",
+            "position": [
+              -3.8,
+              5.4,
+              0.8
+            ],
+            "target": [
+              -2.5,
+              1.5,
+              -2.4
+            ],
+            "beamAngleDeg": 44,
+            "intensity": 0,
+            "color": [
+              1,
+              0.85,
+              0.72
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0.22,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": false,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          },
+          {
+            "id": "f2",
+            "name": "前明かり・上手の面",
+            "presetKey": "Fresnel10",
+            "position": [
+              4.4,
+              5.2,
+              0.8
+            ],
+            "target": [
+              2.5,
+              1.5,
+              -2.4
+            ],
+            "beamAngleDeg": 44,
+            "intensity": 0,
+            "color": [
+              1,
+              0.85,
+              0.72
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0.25,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": false,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          },
+          {
+            "id": "f3",
+            "name": "本と机の灯り",
+            "presetKey": "Chauvet_COLORado2Solo",
+            "position": [
+              -1.1,
+              6.8,
+              0
+            ],
+            "target": [
+              -0.5,
+              0.85,
+              -2.9
+            ],
+            "beamAngleDeg": 27,
+            "intensity": 0.095,
+            "color": [
+              1,
+              0.72,
+              0.43
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0.12,
+            "colorTempK": 6500,
+            "rotationZDeg": 0,
+            "enabled": false
+          },
+          {
+            "id": "f4",
+            "name": "書架の面明かり",
+            "presetKey": "Fresnel8",
+            "position": [
+              -5.5,
+              5.8,
+              -3.7
+            ],
+            "target": [
+              -4.4,
+              1.4,
+              -5.9
+            ],
+            "beamAngleDeg": 28,
+            "intensity": 0.18,
+            "color": [
+              1,
+              0.82,
+              0.66
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0.16,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": false
+          },
+          {
+            "id": "f5",
+            "name": "窓からの雨明かり",
+            "presetKey": "CycWashStudy",
+            "position": [
+              4.2,
+              6.6,
+              -2.5
+            ],
+            "target": [
+              4.2,
+              3.45,
+              -7.6
+            ],
+            "beamAngleDeg": 40,
+            "intensity": 0.15,
+            "color": [
+              0.45,
+              0.66,
+              1
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0.04,
+            "colorTempK": 6500,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "photometricProfile": "etc-s4-led-cyc-daylight-hd"
+          },
+          {
+            "id": "f6",
+            "name": "司書の輪郭",
+            "presetKey": "Stairville_LEDPar64_RGBW",
+            "position": [
+              -4.5,
+              6.3,
+              -6.3
+            ],
+            "target": [
+              -1.4,
+              1.3,
+              -2.1
+            ],
+            "beamAngleDeg": 25,
+            "intensity": 0.42,
+            "color": [
+              0.65,
+              0.78,
+              1
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0.06,
+            "colorTempK": 6500,
+            "rotationZDeg": 0,
+            "enabled": false
+          },
+          {
+            "id": "f7",
+            "name": "来訪者の輪郭",
+            "presetKey": "Stairville_LEDPar64_RGBW",
+            "position": [
+              4.5,
+              6.3,
+              -6.3
+            ],
+            "target": [
+              1.8,
+              1.3,
+              -2
+            ],
+            "beamAngleDeg": 25,
+            "intensity": 0.42,
+            "color": [
+              0.52,
+              0.72,
+              1
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0.04,
+            "colorTempK": 6500,
+            "rotationZDeg": 0,
+            "enabled": false
+          },
+          {
+            "id": "f8",
+            "name": "稲光",
+            "presetKey": "Chauvet_COLORado2Solo",
+            "position": [
+              5.5,
+              4.5,
+              -5.2
+            ],
+            "target": [
+              4.1,
+              1.7,
+              -6.5
+            ],
+            "beamAngleDeg": 12,
+            "intensity": 0.07,
+            "color": [
+              0.82,
+              0.9,
+              1
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0.22,
+            "colorTempK": 6500,
+            "rotationZDeg": 0,
+            "enabled": true
+          },
+          {
+            "id": "f9",
+            "name": "夜明けの逆光",
+            "presetKey": "CycWashStudy",
+            "position": [
+              0,
+              6.6,
+              -2.5
+            ],
+            "target": [
+              0,
+              3.45,
+              -7.6
+            ],
+            "beamAngleDeg": 40,
+            "intensity": 0.06,
+            "color": [
+              1,
+              0.72,
+              0.45
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0.1,
+            "colorTempK": 6500,
+            "rotationZDeg": 0,
+            "enabled": false,
+            "photometricProfile": "etc-s4-led-cyc-daylight-hd"
+          },
+          {
+            "id": "f10",
+            "name": "下手の地明かり",
+            "presetKey": "Fresnel10",
+            "position": [
+              -4.7,
+              6.8,
+              0.5
+            ],
+            "target": [
+              -3.5,
+              1,
+              -2
+            ],
+            "beamAngleDeg": 44,
+            "intensity": 0,
+            "color": [
+              1,
+              0.85,
+              0.72
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": false,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          },
+          {
+            "id": "f11",
+            "name": "上手の地明かり",
+            "presetKey": "Fresnel10",
+            "position": [
+              4.7,
+              6.8,
+              0.5
+            ],
+            "target": [
+              3.5,
+              1,
+              -2
+            ],
+            "beamAngleDeg": 44,
+            "intensity": 0,
+            "color": [
+              1,
+              0.85,
+              0.72
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": false,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          },
+          {
+            "id": "f12",
+            "name": "舞台奥・下手の地明かり",
+            "presetKey": "Fresnel10",
+            "position": [
+              -4.5,
+              6.8,
+              -5.5
+            ],
+            "target": [
+              -3,
+              1,
+              -5
+            ],
+            "beamAngleDeg": 44,
+            "intensity": 0,
+            "color": [
+              1,
+              0.85,
+              0.72
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": false,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          },
+          {
+            "id": "f13",
+            "name": "舞台奥・上手の地明かり",
+            "presetKey": "Fresnel10",
+            "position": [
+              4.5,
+              6.8,
+              -5.5
+            ],
+            "target": [
+              3,
+              1,
+              -5
+            ],
+            "beamAngleDeg": 44,
+            "intensity": 0,
+            "color": [
+              1,
+              0.85,
+              0.72
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": false,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          },
+          {
+            "id": "f-rain-ground-center-study",
+            "name": "地明かり・中央",
+            "presetKey": "Fresnel10",
+            "position": [
+              0,
+              6.8,
+              0.5
+            ],
+            "target": [
+              0,
+              1,
+              -2.4
+            ],
+            "beamAngleDeg": 44,
+            "intensity": 0,
+            "color": [
+              1,
+              0.85,
+              0.72
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": false,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          },
+          {
+            "id": "f-rain-front-center-study",
+            "name": "前明かり・中央の面",
+            "presetKey": "Fresnel10",
+            "position": [
+              0,
+              5.8,
+              1.4
+            ],
+            "target": [
+              0,
+              1.5,
+              -2.3
+            ],
+            "beamAngleDeg": 36,
+            "intensity": 0,
+            "color": [
+              1,
+              0.85,
+              0.72
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0.22,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": false,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          }
+        ],
+        "performers": [
+          {
+            "id": "p1",
+            "name": "司書",
+            "position": [
+              -1.5,
+              0,
+              -1.7
+            ],
+            "scale": 1,
+            "color": "#8b665e",
+            "pose": "standing",
+            "onStage": true
+          },
+          {
+            "id": "p2",
+            "name": "来訪者",
+            "position": [
+              1.8,
+              0,
+              -1.8
+            ],
+            "scale": 1,
+            "color": "#667c8c",
+            "pose": "standing",
+            "onStage": true
+          }
+        ],
+        "setPieces": [
+          {
+            "id": "sp1794104203794-0",
+            "name": "閲覧机",
+            "kind": "box",
+            "size": [
+              2.4,
+              0.8,
+              1.2
+            ],
+            "color": "#715241",
+            "position": [
+              -0.5,
+              0.4,
+              -2.9
+            ],
+            "rotation": [
+              0,
+              0,
+              0
+            ],
+            "scale": 1,
+            "appearance": "table"
+          },
+          {
+            "id": "sp1794104203794-1",
+            "name": "書架",
+            "kind": "box",
+            "size": [
+              2.3,
+              2.7,
+              0.55
+            ],
+            "color": "#4b3833",
+            "position": [
+              -4.4,
+              1.35,
+              -6.1
+            ],
+            "rotation": [
+              0,
+              0,
+              0
+            ],
+            "scale": 1,
+            "appearance": "bookshelf"
+          },
+          {
+            "id": "sp1794104203794-2",
+            "name": "雨の窓",
+            "kind": "box",
+            "size": [
+              2.6,
+              2.8,
+              0.16
+            ],
+            "color": "#5b6877",
+            "position": [
+              4.1,
+              1.4,
+              -6.6
+            ],
+            "rotation": [
+              0,
+              0,
+              0
+            ],
+            "scale": 1,
+            "appearance": "window"
+          },
+          {
+            "id": "sp1794104203794-3",
+            "name": "返却された本",
+            "kind": "box",
+            "size": [
+              0.48,
+              0.12,
+              0.34
+            ],
+            "color": "#b28a57",
+            "position": [
+              -0.5,
+              0.86,
+              -2.9
+            ],
+            "rotation": [
+              0,
+              0,
+              0
+            ],
+            "scale": 1
+          }
+        ],
+        "sequenceId": "sq1794104203794-rwn2p5",
+        "triggerType": "sound"
+      },
+      {
+        "id": "sc1794104203796-o9mh1b",
+        "title": "余白の言葉",
+        "trigger": "続きを、読んでください",
+        "note": "中央の地明かりと前明かりを戻し、二人と机上の本を見せる。",
+        "fixtures": [
+          {
+            "id": "f1",
+            "name": "前明かり・下手の面",
+            "presetKey": "Fresnel10",
+            "position": [
+              -3.8,
+              5.4,
+              0.8
+            ],
+            "target": [
+              -2.5,
+              1.5,
+              -2.4
+            ],
+            "beamAngleDeg": 44,
+            "intensity": 0.025,
+            "color": [
+              1,
+              0.85,
+              0.72
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0.22,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          },
+          {
+            "id": "f2",
+            "name": "前明かり・上手の面",
+            "presetKey": "Fresnel10",
+            "position": [
+              4.4,
+              5.2,
+              0.8
+            ],
+            "target": [
+              2.5,
+              1.5,
+              -2.4
+            ],
+            "beamAngleDeg": 44,
+            "intensity": 0.025,
+            "color": [
+              1,
+              0.85,
+              0.72
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0.25,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          },
+          {
+            "id": "f3",
+            "name": "本と机の灯り",
+            "presetKey": "Chauvet_COLORado2Solo",
+            "position": [
+              -1.1,
+              6.8,
+              0
+            ],
+            "target": [
+              -0.5,
+              0.85,
+              -2.9
+            ],
+            "beamAngleDeg": 27,
+            "intensity": 0.0825,
+            "color": [
+              1,
+              0.72,
+              0.43
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0.12,
+            "colorTempK": 6500,
+            "rotationZDeg": 0,
+            "enabled": true
+          },
+          {
+            "id": "f4",
+            "name": "書架の面明かり",
+            "presetKey": "Fresnel8",
+            "position": [
+              -5.5,
+              5.8,
+              -3.7
+            ],
+            "target": [
+              -4.4,
+              1.4,
+              -5.9
+            ],
+            "beamAngleDeg": 28,
+            "intensity": 0.18,
+            "color": [
+              1,
+              0.82,
+              0.66
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0.16,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": false
+          },
+          {
+            "id": "f5",
+            "name": "窓からの雨明かり",
+            "presetKey": "CycWashStudy",
+            "position": [
+              4.2,
+              6.6,
+              -2.5
+            ],
+            "target": [
+              4.2,
+              3.45,
+              -7.6
+            ],
+            "beamAngleDeg": 40,
+            "intensity": 0.07,
+            "color": [
+              0.45,
+              0.66,
+              1
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0.04,
+            "colorTempK": 6500,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "photometricProfile": "etc-s4-led-cyc-daylight-hd"
+          },
+          {
+            "id": "f6",
+            "name": "司書の輪郭",
+            "presetKey": "Stairville_LEDPar64_RGBW",
+            "position": [
+              -4.5,
+              6.3,
+              -6.3
+            ],
+            "target": [
+              -1.4,
+              1.3,
+              -2.1
+            ],
+            "beamAngleDeg": 25,
+            "intensity": 0.18,
+            "color": [
+              0.65,
+              0.78,
+              1
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0.06,
+            "colorTempK": 6500,
+            "rotationZDeg": 0,
+            "enabled": false
+          },
+          {
+            "id": "f7",
+            "name": "来訪者の輪郭",
+            "presetKey": "Stairville_LEDPar64_RGBW",
+            "position": [
+              4.5,
+              6.3,
+              -6.3
+            ],
+            "target": [
+              1.8,
+              1.3,
+              -2
+            ],
+            "beamAngleDeg": 25,
+            "intensity": 0.18,
+            "color": [
+              0.52,
+              0.72,
+              1
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0.04,
+            "colorTempK": 6500,
+            "rotationZDeg": 0,
+            "enabled": false
+          },
+          {
+            "id": "f8",
+            "name": "稲光",
+            "presetKey": "Chauvet_COLORado2Solo",
+            "position": [
+              5.5,
+              4.5,
+              -5.2
+            ],
+            "target": [
+              4.1,
+              1.7,
+              -6.5
+            ],
+            "beamAngleDeg": 12,
+            "intensity": 0.07,
+            "color": [
+              0.82,
+              0.9,
+              1
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0.22,
+            "colorTempK": 6500,
+            "rotationZDeg": 0,
+            "enabled": false
+          },
+          {
+            "id": "f9",
+            "name": "夜明けの逆光",
+            "presetKey": "CycWashStudy",
+            "position": [
+              0,
+              6.6,
+              -2.5
+            ],
+            "target": [
+              0,
+              3.45,
+              -7.6
+            ],
+            "beamAngleDeg": 40,
+            "intensity": 0.06,
+            "color": [
+              1,
+              0.72,
+              0.45
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0.1,
+            "colorTempK": 6500,
+            "rotationZDeg": 0,
+            "enabled": false,
+            "photometricProfile": "etc-s4-led-cyc-daylight-hd"
+          },
+          {
+            "id": "f10",
+            "name": "下手の地明かり",
+            "presetKey": "Fresnel10",
+            "position": [
+              -4.7,
+              6.8,
+              0.5
+            ],
+            "target": [
+              -3.5,
+              1,
+              -2
+            ],
+            "beamAngleDeg": 44,
+            "intensity": 0.06,
+            "color": [
+              1,
+              0.85,
+              0.72
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          },
+          {
+            "id": "f11",
+            "name": "上手の地明かり",
+            "presetKey": "Fresnel10",
+            "position": [
+              4.7,
+              6.8,
+              0.5
+            ],
+            "target": [
+              3.5,
+              1,
+              -2
+            ],
+            "beamAngleDeg": 44,
+            "intensity": 0.06,
+            "color": [
+              1,
+              0.85,
+              0.72
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          },
+          {
+            "id": "f12",
+            "name": "舞台奥・下手の地明かり",
+            "presetKey": "Fresnel10",
+            "position": [
+              -4.5,
+              6.8,
+              -5.5
+            ],
+            "target": [
+              -3,
+              1,
+              -5
+            ],
+            "beamAngleDeg": 44,
+            "intensity": 0.04,
+            "color": [
+              1,
+              0.85,
+              0.72
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          },
+          {
+            "id": "f13",
+            "name": "舞台奥・上手の地明かり",
+            "presetKey": "Fresnel10",
+            "position": [
+              4.5,
+              6.8,
+              -5.5
+            ],
+            "target": [
+              3,
+              1,
+              -5
+            ],
+            "beamAngleDeg": 44,
+            "intensity": 0.04,
+            "color": [
+              1,
+              0.85,
+              0.72
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          },
+          {
+            "id": "f-rain-ground-center-study",
+            "name": "地明かり・中央",
+            "presetKey": "Fresnel10",
+            "position": [
+              0,
+              6.8,
+              0.5
+            ],
+            "target": [
+              0,
+              1,
+              -2.4
+            ],
+            "beamAngleDeg": 44,
+            "intensity": 0.14,
+            "color": [
+              1,
+              0.85,
+              0.72
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          },
+          {
+            "id": "f-rain-front-center-study",
+            "name": "前明かり・中央の面",
+            "presetKey": "Fresnel10",
+            "position": [
+              0,
+              5.8,
+              1.4
+            ],
+            "target": [
+              0,
+              1.5,
+              -2.3
+            ],
+            "beamAngleDeg": 36,
+            "intensity": 0.08,
+            "color": [
+              1,
+              0.85,
+              0.72
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0.22,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          }
+        ],
+        "performers": [
+          {
+            "id": "p1",
+            "name": "司書",
+            "position": [
+              -1.5,
+              0,
+              -1.7
+            ],
+            "scale": 1,
+            "color": "#8b665e",
+            "pose": "standing",
+            "onStage": true
+          },
+          {
+            "id": "p2",
+            "name": "来訪者",
+            "position": [
+              1.8,
+              0,
+              -1.8
+            ],
+            "scale": 1,
+            "color": "#667c8c",
+            "pose": "standing",
+            "onStage": true
+          }
+        ],
+        "setPieces": [
+          {
+            "id": "sp1794104203794-0",
+            "name": "閲覧机",
+            "kind": "box",
+            "size": [
+              2.4,
+              0.8,
+              1.2
+            ],
+            "color": "#715241",
+            "position": [
+              -0.5,
+              0.4,
+              -2.9
+            ],
+            "rotation": [
+              0,
+              0,
+              0
+            ],
+            "scale": 1,
+            "appearance": "table"
+          },
+          {
+            "id": "sp1794104203794-1",
+            "name": "書架",
+            "kind": "box",
+            "size": [
+              2.3,
+              2.7,
+              0.55
+            ],
+            "color": "#4b3833",
+            "position": [
+              -4.4,
+              1.35,
+              -6.1
+            ],
+            "rotation": [
+              0,
+              0,
+              0
+            ],
+            "scale": 1,
+            "appearance": "bookshelf"
+          },
+          {
+            "id": "sp1794104203794-2",
+            "name": "雨の窓",
+            "kind": "box",
+            "size": [
+              2.6,
+              2.8,
+              0.16
+            ],
+            "color": "#5b6877",
+            "position": [
+              4.1,
+              1.4,
+              -6.6
+            ],
+            "rotation": [
+              0,
+              0,
+              0
+            ],
+            "scale": 1,
+            "appearance": "window"
+          },
+          {
+            "id": "sp1794104203794-3",
+            "name": "返却された本",
+            "kind": "box",
+            "size": [
+              0.48,
+              0.12,
+              0.34
+            ],
+            "color": "#b28a57",
+            "position": [
+              -0.5,
+              0.86,
+              -2.9
+            ],
+            "rotation": [
+              0,
+              0,
+              0
+            ],
+            "scale": 1
+          }
+        ],
+        "sequenceId": "sq1794104203796-mw75wd",
+        "triggerType": "dialogue"
+      },
+      {
+        "id": "sc1794104203796-xv7yzl",
+        "title": "雨がやむ",
+        "trigger": "雨音が止む",
+        "note": "左右の地明かりを広げ、窓の青から朝の暖色へ移る。",
+        "fixtures": [
+          {
+            "id": "f1",
+            "name": "前明かり・下手の面",
+            "presetKey": "Fresnel10",
+            "position": [
+              -3.8,
+              5.4,
+              0.8
+            ],
+            "target": [
+              -2.5,
+              1.5,
+              -2.4
+            ],
+            "beamAngleDeg": 44,
+            "intensity": 0.065,
+            "color": [
+              1,
+              0.85,
+              0.72
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0.22,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          },
+          {
+            "id": "f2",
+            "name": "前明かり・上手の面",
+            "presetKey": "Fresnel10",
+            "position": [
+              4.4,
+              5.2,
+              0.8
+            ],
+            "target": [
+              2.5,
+              1.5,
+              -2.4
+            ],
+            "beamAngleDeg": 44,
+            "intensity": 0.065,
+            "color": [
+              1,
+              0.85,
+              0.72
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0.25,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          },
+          {
+            "id": "f3",
+            "name": "本と机の灯り",
+            "presetKey": "Chauvet_COLORado2Solo",
+            "position": [
+              -1.1,
+              6.8,
+              0
+            ],
+            "target": [
+              -0.5,
+              0.85,
+              -2.9
+            ],
+            "beamAngleDeg": 27,
+            "intensity": 0.0825,
+            "color": [
+              1,
+              0.72,
+              0.43
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0.12,
+            "colorTempK": 6500,
+            "rotationZDeg": 0,
+            "enabled": true
+          },
+          {
+            "id": "f4",
+            "name": "書架の面明かり",
+            "presetKey": "Fresnel8",
+            "position": [
+              -5.5,
+              5.8,
+              -3.7
+            ],
+            "target": [
+              -4.4,
+              1.4,
+              -5.9
+            ],
+            "beamAngleDeg": 28,
+            "intensity": 0.18,
+            "color": [
+              1,
+              0.82,
+              0.66
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0.16,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": false
+          },
+          {
+            "id": "f5",
+            "name": "窓からの雨明かり",
+            "presetKey": "CycWashStudy",
+            "position": [
+              4.2,
+              6.6,
+              -2.5
+            ],
+            "target": [
+              4.2,
+              3.45,
+              -7.6
+            ],
+            "beamAngleDeg": 40,
+            "intensity": 0.05,
+            "color": [
+              0.45,
+              0.66,
+              1
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0.04,
+            "colorTempK": 6500,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "photometricProfile": "etc-s4-led-cyc-daylight-hd"
+          },
+          {
+            "id": "f6",
+            "name": "司書の輪郭",
+            "presetKey": "Stairville_LEDPar64_RGBW",
+            "position": [
+              -4.5,
+              6.3,
+              -6.3
+            ],
+            "target": [
+              -1.4,
+              1.3,
+              -2.1
+            ],
+            "beamAngleDeg": 25,
+            "intensity": 0.18,
+            "color": [
+              0.65,
+              0.78,
+              1
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0.06,
+            "colorTempK": 6500,
+            "rotationZDeg": 0,
+            "enabled": false
+          },
+          {
+            "id": "f7",
+            "name": "来訪者の輪郭",
+            "presetKey": "Stairville_LEDPar64_RGBW",
+            "position": [
+              4.5,
+              6.3,
+              -6.3
+            ],
+            "target": [
+              1.8,
+              1.3,
+              -2
+            ],
+            "beamAngleDeg": 25,
+            "intensity": 0.18,
+            "color": [
+              0.52,
+              0.72,
+              1
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0.04,
+            "colorTempK": 6500,
+            "rotationZDeg": 0,
+            "enabled": false
+          },
+          {
+            "id": "f8",
+            "name": "稲光",
+            "presetKey": "Chauvet_COLORado2Solo",
+            "position": [
+              5.5,
+              4.5,
+              -5.2
+            ],
+            "target": [
+              4.1,
+              1.7,
+              -6.5
+            ],
+            "beamAngleDeg": 12,
+            "intensity": 0.07,
+            "color": [
+              0.82,
+              0.9,
+              1
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0.22,
+            "colorTempK": 6500,
+            "rotationZDeg": 0,
+            "enabled": false
+          },
+          {
+            "id": "f9",
+            "name": "夜明けの逆光",
+            "presetKey": "CycWashStudy",
+            "position": [
+              0,
+              6.6,
+              -2.5
+            ],
+            "target": [
+              0,
+              3.45,
+              -7.6
+            ],
+            "beamAngleDeg": 40,
+            "intensity": 0.06,
+            "color": [
+              1,
+              0.72,
+              0.45
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0.1,
+            "colorTempK": 6500,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "photometricProfile": "etc-s4-led-cyc-daylight-hd"
+          },
+          {
+            "id": "f10",
+            "name": "下手の地明かり",
+            "presetKey": "Fresnel10",
+            "position": [
+              -4.7,
+              6.8,
+              0.5
+            ],
+            "target": [
+              -3.5,
+              1,
+              -2
+            ],
+            "beamAngleDeg": 44,
+            "intensity": 0.15,
+            "color": [
+              1,
+              0.85,
+              0.72
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          },
+          {
+            "id": "f11",
+            "name": "上手の地明かり",
+            "presetKey": "Fresnel10",
+            "position": [
+              4.7,
+              6.8,
+              0.5
+            ],
+            "target": [
+              3.5,
+              1,
+              -2
+            ],
+            "beamAngleDeg": 44,
+            "intensity": 0.15,
+            "color": [
+              1,
+              0.85,
+              0.72
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          },
+          {
+            "id": "f12",
+            "name": "舞台奥・下手の地明かり",
+            "presetKey": "Fresnel10",
+            "position": [
+              -4.5,
+              6.8,
+              -5.5
+            ],
+            "target": [
+              -3,
+              1,
+              -5
+            ],
+            "beamAngleDeg": 44,
+            "intensity": 0.1,
+            "color": [
+              1,
+              0.85,
+              0.72
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          },
+          {
+            "id": "f13",
+            "name": "舞台奥・上手の地明かり",
+            "presetKey": "Fresnel10",
+            "position": [
+              4.5,
+              6.8,
+              -5.5
+            ],
+            "target": [
+              3,
+              1,
+              -5
+            ],
+            "beamAngleDeg": 44,
+            "intensity": 0.1,
+            "color": [
+              1,
+              0.85,
+              0.72
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          },
+          {
+            "id": "f-rain-ground-center-study",
+            "name": "地明かり・中央",
+            "presetKey": "Fresnel10",
+            "position": [
+              0,
+              6.8,
+              0.5
+            ],
+            "target": [
+              0,
+              1,
+              -2.4
+            ],
+            "beamAngleDeg": 44,
+            "intensity": 0.11,
+            "color": [
+              1,
+              0.85,
+              0.72
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          },
+          {
+            "id": "f-rain-front-center-study",
+            "name": "前明かり・中央の面",
+            "presetKey": "Fresnel10",
+            "position": [
+              0,
+              5.8,
+              1.4
+            ],
+            "target": [
+              0,
+              1.5,
+              -2.3
+            ],
+            "beamAngleDeg": 36,
+            "intensity": 0.04,
+            "color": [
+              1,
+              0.85,
+              0.72
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0.22,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          }
+        ],
+        "performers": [
+          {
+            "id": "p1",
+            "name": "司書",
+            "position": [
+              -0.8,
+              0,
+              -1.7
+            ],
+            "scale": 1,
+            "color": "#8b665e",
+            "pose": "standing",
+            "onStage": true
+          },
+          {
+            "id": "p2",
+            "name": "来訪者",
+            "position": [
+              0.9,
+              0,
+              -1.7
+            ],
+            "scale": 1,
+            "color": "#667c8c",
+            "pose": "standing",
+            "onStage": true
+          }
+        ],
+        "setPieces": [
+          {
+            "id": "sp1794104203794-0",
+            "name": "閲覧机",
+            "kind": "box",
+            "size": [
+              2.4,
+              0.8,
+              1.2
+            ],
+            "color": "#715241",
+            "position": [
+              -0.5,
+              0.4,
+              -2.9
+            ],
+            "rotation": [
+              0,
+              0,
+              0
+            ],
+            "scale": 1,
+            "appearance": "table"
+          },
+          {
+            "id": "sp1794104203794-1",
+            "name": "書架",
+            "kind": "box",
+            "size": [
+              2.3,
+              2.7,
+              0.55
+            ],
+            "color": "#4b3833",
+            "position": [
+              -4.4,
+              1.35,
+              -6.1
+            ],
+            "rotation": [
+              0,
+              0,
+              0
+            ],
+            "scale": 1,
+            "appearance": "bookshelf"
+          },
+          {
+            "id": "sp1794104203794-2",
+            "name": "雨の窓",
+            "kind": "box",
+            "size": [
+              2.6,
+              2.8,
+              0.16
+            ],
+            "color": "#5b6877",
+            "position": [
+              4.1,
+              1.4,
+              -6.6
+            ],
+            "rotation": [
+              0,
+              0,
+              0
+            ],
+            "scale": 1,
+            "appearance": "window"
+          },
+          {
+            "id": "sp1794104203794-3",
+            "name": "返却された本",
+            "kind": "box",
+            "size": [
+              0.48,
+              0.12,
+              0.34
+            ],
+            "color": "#b28a57",
+            "position": [
+              -0.5,
+              0.86,
+              -2.9
+            ],
+            "rotation": [
+              0,
+              0,
+              0
+            ],
+            "scale": 1
+          }
+        ],
+        "sequenceId": "sq1794104203796-mw75wd",
+        "triggerType": "sound"
+      },
+      {
+        "id": "sc1794104203797-w2e936",
+        "title": "本を持って出る",
+        "trigger": "また明日",
+        "note": "上手へ向かう来訪者と本を見せ、下手の司書は弱く残す。",
+        "fixtures": [
+          {
+            "id": "f1",
+            "name": "前明かり・下手の面",
+            "presetKey": "Fresnel10",
+            "position": [
+              -3.8,
+              5.4,
+              0.8
+            ],
+            "target": [
+              -2.5,
+              1.5,
+              -2.4
+            ],
+            "beamAngleDeg": 44,
+            "intensity": 0.025,
+            "color": [
+              1,
+              0.85,
+              0.72
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0.22,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          },
+          {
+            "id": "f2",
+            "name": "前明かり・上手の面",
+            "presetKey": "Fresnel10",
+            "position": [
+              4.4,
+              5.2,
+              0.8
+            ],
+            "target": [
+              2.5,
+              1.5,
+              -2.4
+            ],
+            "beamAngleDeg": 44,
+            "intensity": 0.09,
+            "color": [
+              1,
+              0.85,
+              0.72
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0.25,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          },
+          {
+            "id": "f3",
+            "name": "本と机の灯り",
+            "presetKey": "Chauvet_COLORado2Solo",
+            "position": [
+              -1.1,
+              6.8,
+              0
+            ],
+            "target": [
+              -0.5,
+              0.85,
+              -2.9
+            ],
+            "beamAngleDeg": 27,
+            "intensity": 0.055,
+            "color": [
+              1,
+              0.72,
+              0.43
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0.12,
+            "colorTempK": 6500,
+            "rotationZDeg": 0,
+            "enabled": true
+          },
+          {
+            "id": "f4",
+            "name": "書架の面明かり",
+            "presetKey": "Fresnel8",
+            "position": [
+              -5.5,
+              5.8,
+              -3.7
+            ],
+            "target": [
+              -4.4,
+              1.4,
+              -5.9
+            ],
+            "beamAngleDeg": 28,
+            "intensity": 0.18,
+            "color": [
+              1,
+              0.82,
+              0.66
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0.16,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": false
+          },
+          {
+            "id": "f5",
+            "name": "窓からの雨明かり",
+            "presetKey": "CycWashStudy",
+            "position": [
+              4.2,
+              6.6,
+              -2.5
+            ],
+            "target": [
+              4.2,
+              3.45,
+              -7.6
+            ],
+            "beamAngleDeg": 40,
+            "intensity": 0.04,
+            "color": [
+              0.45,
+              0.66,
+              1
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0.04,
+            "colorTempK": 6500,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "photometricProfile": "etc-s4-led-cyc-daylight-hd"
+          },
+          {
+            "id": "f6",
+            "name": "司書の輪郭",
+            "presetKey": "Stairville_LEDPar64_RGBW",
+            "position": [
+              -4.5,
+              6.3,
+              -6.3
+            ],
+            "target": [
+              -1.4,
+              1.3,
+              -2.1
+            ],
+            "beamAngleDeg": 25,
+            "intensity": 0.18,
+            "color": [
+              0.65,
+              0.78,
+              1
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0.06,
+            "colorTempK": 6500,
+            "rotationZDeg": 0,
+            "enabled": false
+          },
+          {
+            "id": "f7",
+            "name": "来訪者の輪郭",
+            "presetKey": "Stairville_LEDPar64_RGBW",
+            "position": [
+              4.5,
+              6.3,
+              -6.3
+            ],
+            "target": [
+              3.5,
+              1.3,
+              -1.6
+            ],
+            "beamAngleDeg": 25,
+            "intensity": 0.25,
+            "color": [
+              0.52,
+              0.72,
+              1
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0.04,
+            "colorTempK": 6500,
+            "rotationZDeg": 0,
+            "enabled": false
+          },
+          {
+            "id": "f8",
+            "name": "稲光",
+            "presetKey": "Chauvet_COLORado2Solo",
+            "position": [
+              5.5,
+              4.5,
+              -5.2
+            ],
+            "target": [
+              4.1,
+              1.7,
+              -6.5
+            ],
+            "beamAngleDeg": 12,
+            "intensity": 0.07,
+            "color": [
+              0.82,
+              0.9,
+              1
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0.22,
+            "colorTempK": 6500,
+            "rotationZDeg": 0,
+            "enabled": false
+          },
+          {
+            "id": "f9",
+            "name": "夜明けの逆光",
+            "presetKey": "CycWashStudy",
+            "position": [
+              0,
+              6.6,
+              -2.5
+            ],
+            "target": [
+              0,
+              3.45,
+              -7.6
+            ],
+            "beamAngleDeg": 40,
+            "intensity": 0.06,
+            "color": [
+              1,
+              0.72,
+              0.45
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0.1,
+            "colorTempK": 6500,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "photometricProfile": "etc-s4-led-cyc-daylight-hd"
+          },
+          {
+            "id": "f10",
+            "name": "下手の地明かり",
+            "presetKey": "Fresnel10",
+            "position": [
+              -4.7,
+              6.8,
+              0.5
+            ],
+            "target": [
+              -3.5,
+              1,
+              -2
+            ],
+            "beamAngleDeg": 44,
+            "intensity": 0.07,
+            "color": [
+              1,
+              0.85,
+              0.72
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          },
+          {
+            "id": "f11",
+            "name": "上手の地明かり",
+            "presetKey": "Fresnel10",
+            "position": [
+              4.7,
+              6.8,
+              0.5
+            ],
+            "target": [
+              3.5,
+              1,
+              -2
+            ],
+            "beamAngleDeg": 44,
+            "intensity": 0.18,
+            "color": [
+              1,
+              0.85,
+              0.72
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          },
+          {
+            "id": "f12",
+            "name": "舞台奥・下手の地明かり",
+            "presetKey": "Fresnel10",
+            "position": [
+              -4.5,
+              6.8,
+              -5.5
+            ],
+            "target": [
+              -3,
+              1,
+              -5
+            ],
+            "beamAngleDeg": 44,
+            "intensity": 0.04,
+            "color": [
+              1,
+              0.85,
+              0.72
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          },
+          {
+            "id": "f13",
+            "name": "舞台奥・上手の地明かり",
+            "presetKey": "Fresnel10",
+            "position": [
+              4.5,
+              6.8,
+              -5.5
+            ],
+            "target": [
+              3,
+              1,
+              -5
+            ],
+            "beamAngleDeg": 44,
+            "intensity": 0.12,
+            "color": [
+              1,
+              0.85,
+              0.72
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          },
+          {
+            "id": "f-rain-ground-center-study",
+            "name": "地明かり・中央",
+            "presetKey": "Fresnel10",
+            "position": [
+              0,
+              6.8,
+              0.5
+            ],
+            "target": [
+              0,
+              1,
+              -2.4
+            ],
+            "beamAngleDeg": 44,
+            "intensity": 0.07,
+            "color": [
+              1,
+              0.85,
+              0.72
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          },
+          {
+            "id": "f-rain-front-center-study",
+            "name": "前明かり・中央の面",
+            "presetKey": "Fresnel10",
+            "position": [
+              0,
+              5.8,
+              1.4
+            ],
+            "target": [
+              0,
+              1.5,
+              -2.3
+            ],
+            "beamAngleDeg": 36,
+            "intensity": 0.025,
+            "color": [
+              1,
+              0.85,
+              0.72
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0.22,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          }
+        ],
+        "performers": [
+          {
+            "id": "p1",
+            "name": "司書",
+            "position": [
+              -0.8,
+              0,
+              -1.7
+            ],
+            "scale": 1,
+            "color": "#8b665e",
+            "pose": "standing",
+            "onStage": true
+          },
+          {
+            "id": "p2",
+            "name": "来訪者",
+            "position": [
+              4.1,
+              0,
+              -1.5
+            ],
+            "scale": 1,
+            "color": "#667c8c",
+            "pose": "standing",
+            "onStage": true
+          }
+        ],
+        "setPieces": [
+          {
+            "id": "sp1794104203794-0",
+            "name": "閲覧机",
+            "kind": "box",
+            "size": [
+              2.4,
+              0.8,
+              1.2
+            ],
+            "color": "#715241",
+            "position": [
+              -0.5,
+              0.4,
+              -2.9
+            ],
+            "rotation": [
+              0,
+              0,
+              0
+            ],
+            "scale": 1,
+            "appearance": "table"
+          },
+          {
+            "id": "sp1794104203794-1",
+            "name": "書架",
+            "kind": "box",
+            "size": [
+              2.3,
+              2.7,
+              0.55
+            ],
+            "color": "#4b3833",
+            "position": [
+              -4.4,
+              1.35,
+              -6.1
+            ],
+            "rotation": [
+              0,
+              0,
+              0
+            ],
+            "scale": 1,
+            "appearance": "bookshelf"
+          },
+          {
+            "id": "sp1794104203794-2",
+            "name": "雨の窓",
+            "kind": "box",
+            "size": [
+              2.6,
+              2.8,
+              0.16
+            ],
+            "color": "#5b6877",
+            "position": [
+              4.1,
+              1.4,
+              -6.6
+            ],
+            "rotation": [
+              0,
+              0,
+              0
+            ],
+            "scale": 1,
+            "appearance": "window"
+          },
+          {
+            "id": "sp1794104203794-3",
+            "name": "返却された本",
+            "kind": "box",
+            "size": [
+              0.48,
+              0.12,
+              0.34
+            ],
+            "color": "#b28a57",
+            "position": [
+              3.9,
+              1.05,
+              -1.5
+            ],
+            "rotation": [
+              0,
+              0,
+              0
+            ],
+            "scale": 1
+          }
+        ],
+        "sequenceId": "sq1794104203796-mw75wd",
+        "triggerType": "dialogue"
+      },
+      {
+        "id": "sc1794104203797-9p3ph9",
+        "title": "開館",
+        "trigger": "朝の光が広がる",
+        "note": "来訪者と本は退場する。司書、机、書架、窓を朝の広い明かりで見せて終える。",
+        "fixtures": [
+          {
+            "id": "f1",
+            "name": "前明かり・下手の面",
+            "presetKey": "Fresnel10",
+            "position": [
+              -3.8,
+              5.4,
+              0.8
+            ],
+            "target": [
+              -2.5,
+              1.5,
+              -2.4
+            ],
+            "beamAngleDeg": 44,
+            "intensity": 0.08,
+            "color": [
+              1,
+              0.85,
+              0.72
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0.22,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          },
+          {
+            "id": "f2",
+            "name": "前明かり・上手の面",
+            "presetKey": "Fresnel10",
+            "position": [
+              4.4,
+              5.2,
+              0.8
+            ],
+            "target": [
+              2.5,
+              1.5,
+              -2.4
+            ],
+            "beamAngleDeg": 44,
+            "intensity": 0.04,
+            "color": [
+              1,
+              0.85,
+              0.72
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0.25,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          },
+          {
+            "id": "f3",
+            "name": "本と机の灯り",
+            "presetKey": "Chauvet_COLORado2Solo",
+            "position": [
+              -1.1,
+              6.8,
+              0
+            ],
+            "target": [
+              -0.5,
+              0.85,
+              -2.9
+            ],
+            "beamAngleDeg": 27,
+            "intensity": 0.03,
+            "color": [
+              1,
+              0.72,
+              0.43
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0.12,
+            "colorTempK": 6500,
+            "rotationZDeg": 0,
+            "enabled": true
+          },
+          {
+            "id": "f4",
+            "name": "書架の面明かり",
+            "presetKey": "Fresnel8",
+            "position": [
+              -5.5,
+              5.8,
+              -3.7
+            ],
+            "target": [
+              -4.4,
+              1.4,
+              -5.9
+            ],
+            "beamAngleDeg": 28,
+            "intensity": 0.42,
+            "color": [
+              1,
+              0.82,
+              0.66
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0.16,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": false
+          },
+          {
+            "id": "f5",
+            "name": "窓からの雨明かり",
+            "presetKey": "CycWashStudy",
+            "position": [
+              4.2,
+              6.6,
+              -2.5
+            ],
+            "target": [
+              4.2,
+              3.45,
+              -7.6
+            ],
+            "beamAngleDeg": 40,
+            "intensity": 0.015,
+            "color": [
+              0.45,
+              0.66,
+              1
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0.04,
+            "colorTempK": 6500,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "photometricProfile": "etc-s4-led-cyc-daylight-hd"
+          },
+          {
+            "id": "f6",
+            "name": "司書の輪郭",
+            "presetKey": "Stairville_LEDPar64_RGBW",
+            "position": [
+              -4.5,
+              6.3,
+              -6.3
+            ],
+            "target": [
+              -1.4,
+              1.3,
+              -2.1
+            ],
+            "beamAngleDeg": 25,
+            "intensity": 0.18,
+            "color": [
+              0.65,
+              0.78,
+              1
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0.06,
+            "colorTempK": 6500,
+            "rotationZDeg": 0,
+            "enabled": false
+          },
+          {
+            "id": "f7",
+            "name": "来訪者の輪郭",
+            "presetKey": "Stairville_LEDPar64_RGBW",
+            "position": [
+              4.5,
+              6.3,
+              -6.3
+            ],
+            "target": [
+              3.5,
+              1.3,
+              -1.6
+            ],
+            "beamAngleDeg": 25,
+            "intensity": 0.25,
+            "color": [
+              0.52,
+              0.72,
+              1
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0.04,
+            "colorTempK": 6500,
+            "rotationZDeg": 0,
+            "enabled": false
+          },
+          {
+            "id": "f8",
+            "name": "稲光",
+            "presetKey": "Chauvet_COLORado2Solo",
+            "position": [
+              5.5,
+              4.5,
+              -5.2
+            ],
+            "target": [
+              4.1,
+              1.7,
+              -6.5
+            ],
+            "beamAngleDeg": 12,
+            "intensity": 0.07,
+            "color": [
+              0.82,
+              0.9,
+              1
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0.22,
+            "colorTempK": 6500,
+            "rotationZDeg": 0,
+            "enabled": false
+          },
+          {
+            "id": "f9",
+            "name": "夜明けの逆光",
+            "presetKey": "CycWashStudy",
+            "position": [
+              0,
+              6.6,
+              -2.5
+            ],
+            "target": [
+              0,
+              3.45,
+              -7.6
+            ],
+            "beamAngleDeg": 40,
+            "intensity": 0.06,
+            "color": [
+              1,
+              0.72,
+              0.45
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0.1,
+            "colorTempK": 6500,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "photometricProfile": "etc-s4-led-cyc-daylight-hd"
+          },
+          {
+            "id": "f10",
+            "name": "下手の地明かり",
+            "presetKey": "Fresnel10",
+            "position": [
+              -4.7,
+              6.8,
+              0.5
+            ],
+            "target": [
+              -3.5,
+              1,
+              -2
+            ],
+            "beamAngleDeg": 44,
+            "intensity": 0.19,
+            "color": [
+              1,
+              0.85,
+              0.72
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          },
+          {
+            "id": "f11",
+            "name": "上手の地明かり",
+            "presetKey": "Fresnel10",
+            "position": [
+              4.7,
+              6.8,
+              0.5
+            ],
+            "target": [
+              3.5,
+              1,
+              -2
+            ],
+            "beamAngleDeg": 44,
+            "intensity": 0.19,
+            "color": [
+              1,
+              0.85,
+              0.72
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          },
+          {
+            "id": "f12",
+            "name": "舞台奥・下手の地明かり",
+            "presetKey": "Fresnel10",
+            "position": [
+              -4.5,
+              6.8,
+              -5.5
+            ],
+            "target": [
+              -3,
+              1,
+              -5
+            ],
+            "beamAngleDeg": 44,
+            "intensity": 0.13,
+            "color": [
+              1,
+              0.85,
+              0.72
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          },
+          {
+            "id": "f13",
+            "name": "舞台奥・上手の地明かり",
+            "presetKey": "Fresnel10",
+            "position": [
+              4.5,
+              6.8,
+              -5.5
+            ],
+            "target": [
+              3,
+              1,
+              -5
+            ],
+            "beamAngleDeg": 44,
+            "intensity": 0.13,
+            "color": [
+              1,
+              0.85,
+              0.72
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          },
+          {
+            "id": "f-rain-ground-center-study",
+            "name": "地明かり・中央",
+            "presetKey": "Fresnel10",
+            "position": [
+              0,
+              6.8,
+              0.5
+            ],
+            "target": [
+              0,
+              1,
+              -2.4
+            ],
+            "beamAngleDeg": 44,
+            "intensity": 0.12,
+            "color": [
+              1,
+              0.85,
+              0.72
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          },
+          {
+            "id": "f-rain-front-center-study",
+            "name": "前明かり・中央の面",
+            "presetKey": "Fresnel10",
+            "position": [
+              0,
+              5.8,
+              1.4
+            ],
+            "target": [
+              0,
+              1.5,
+              -2.3
+            ],
+            "beamAngleDeg": 36,
+            "intensity": 0.025,
+            "color": [
+              1,
+              0.85,
+              0.72
+            ],
+            "gelEnabled": true,
+            "whiteMix": 0.22,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          }
+        ],
+        "performers": [
+          {
+            "id": "p1",
+            "name": "司書",
+            "position": [
+              -0.8,
+              0,
+              -1.7
+            ],
+            "scale": 1,
+            "color": "#8b665e",
+            "pose": "standing",
+            "onStage": true
+          },
+          {
+            "id": "p2",
+            "name": "来訪者",
+            "position": [
+              8.7,
+              0,
+              -1.5
+            ],
+            "scale": 1,
+            "color": "#667c8c",
+            "pose": "standing",
+            "onStage": false
+          }
+        ],
+        "setPieces": [
+          {
+            "id": "sp1794104203794-0",
+            "name": "閲覧机",
+            "kind": "box",
+            "size": [
+              2.4,
+              0.8,
+              1.2
+            ],
+            "color": "#715241",
+            "position": [
+              -0.5,
+              0.4,
+              -2.9
+            ],
+            "rotation": [
+              0,
+              0,
+              0
+            ],
+            "scale": 1,
+            "appearance": "table"
+          },
+          {
+            "id": "sp1794104203794-1",
+            "name": "書架",
+            "kind": "box",
+            "size": [
+              2.3,
+              2.7,
+              0.55
+            ],
+            "color": "#4b3833",
+            "position": [
+              -4.4,
+              1.35,
+              -6.1
+            ],
+            "rotation": [
+              0,
+              0,
+              0
+            ],
+            "scale": 1,
+            "appearance": "bookshelf"
+          },
+          {
+            "id": "sp1794104203794-2",
+            "name": "雨の窓",
+            "kind": "box",
+            "size": [
+              2.6,
+              2.8,
+              0.16
+            ],
+            "color": "#5b6877",
+            "position": [
+              4.1,
+              1.4,
+              -6.6
+            ],
+            "rotation": [
+              0,
+              0,
+              0
+            ],
+            "scale": 1,
+            "appearance": "window"
+          }
+        ],
+        "sequenceId": "sq1794104203796-mw75wd",
+        "triggerType": "light"
+      }
+    ],
+    "activeSceneId": "sc1794104203795-uv6bzi"
+  },
+  "settings": {
+    "hazeDensity": 0.23,
+    "ambient": 0.08,
+    "exposure": 1.35,
+    "bloom": 0.32,
+    "showHouseLights": false,
+    "quality": "medium",
+    "cameraView": "audience"
+  }
+}

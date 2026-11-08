@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import * as THREE from 'three'
 import { FIXTURE_PROFILES, kelvinToRGB } from './lighting/fixtureTypes'
+import type { PerformerPose } from './performerPoses'
 
 let nextFid = 1
 let nextPid = 1
@@ -40,7 +41,7 @@ export interface Performer {
   onStage?: boolean
   scale: number       // 身長スケール 0.7=子, 1.0=平均, 1.2=高身長
   color: string       // 服色
-  pose: 'standing' | 'sitting'
+  pose: PerformerPose
 }
 
 export type StagePoint = [number, number]
@@ -1010,6 +1011,15 @@ export interface PackedOccluder {
 export function performerToOccluders(p: Performer): PackedOccluder[] {
   const [x, y, z] = p.position
   const s = p.scale
+  if (p.pose === 'lying') {
+    return [{ pos: [x, y + 0.2 * s, z], axis: [1, 0, 0], radius: 0.22 * s, halfHeight: 0.55 * s }]
+  }
+  if (p.pose === 'sitting') {
+    return [{ pos: [x, y + 0.68 * s, z], axis: [0, 1, 0], radius: 0.27 * s, halfHeight: 0.3 * s }]
+  }
+  if (p.pose === 'kneeling') {
+    return [{ pos: [x, y + 0.84 * s, z], axis: [0, 1, 0], radius: 0.27 * s, halfHeight: 0.34 * s }]
+  }
   return [
     // 胴体 (カプセル)
     { pos: [x, y + 1.0 * s, z], axis: [0, 1, 0], radius: 0.28 * s, halfHeight: 0.35 * s },
