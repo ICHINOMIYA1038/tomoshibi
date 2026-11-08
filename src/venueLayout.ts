@@ -4,7 +4,7 @@ export const DEFAULT_VENUE_LAYOUT: VenueLayout = {
   stageShape: 'proscenium', stageWidth: 16, stageDepth: 12, targetCapacity: 0,
 }
 
-export function stageFootprint(layout: VenueLayout = DEFAULT_VENUE_LAYOUT): StagePoint[] {
+export function stageLocalFootprint(layout: VenueLayout = DEFAULT_VENUE_LAYOUT): StagePoint[] {
   if (layout.stageShape === 'custom' && (layout.stageVertices?.length ?? 0) >= 3) return layout.stageVertices!
   const width = layout.stageWidth
   const depth = layout.stageDepth
@@ -23,6 +23,11 @@ export function stageFootprint(layout: VenueLayout = DEFAULT_VENUE_LAYOUT): Stag
       [-width * .25, shoulder], [-width * .48, shoulder]]
   }
   return [[-width / 2, rear], [width / 2, rear], [width / 2, front], [-width / 2, front]]
+}
+
+export function stageFootprint(layout: VenueLayout = DEFAULT_VENUE_LAYOUT): StagePoint[] {
+  const [dx, dz] = layout.stageOffset ?? [0, 0]
+  return stageLocalFootprint(layout).map(([x, z]) => [x + dx, z + dz])
 }
 
 export function pointInStage(x: number, z: number, outline: StagePoint[]): boolean {

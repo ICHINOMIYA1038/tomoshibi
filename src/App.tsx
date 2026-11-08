@@ -105,6 +105,7 @@ export default function App() {
   const settings = useStore(s => s.settings)
   const hasAudienceBlocks = useStore(s => (s.productionPlan.audienceBlocks?.length ?? 0) > 0)
   const audienceBlocks = useStore(s => s.productionPlan.audienceBlocks ?? [])
+  const venueLayout = useStore(s => s.productionPlan.venueLayout)
   const select = useStore(s => s.select)
   const scenePath = useStore(s => {
     const plan = s.productionPlan
@@ -140,11 +141,14 @@ export default function App() {
     return Math.abs(block.position[0]) + Math.abs(Math.cos(angle)) * halfWidth + Math.abs(Math.sin(angle)) * halfDepth
   }))
   const houseSpan = maxSeatZ - minSeatZ
+  const [stageDx, stageDz] = venueLayout?.stageOffset ?? [0, 0]
+  const baseView = CAMERA_VIEWS[settings.cameraView] ?? CAMERA_VIEWS.audience
   const view = settings.cameraView === 'house' && (maxSeatZ > 15 || minSeatZ < -10 || maxSeatX > 10)
     ? { pos: [0, Math.max(24, houseSpan * .85, maxSeatX * 1.5),
         Math.max(27, maxSeatZ + 14, maxSeatX * 1.5)] as [number, number, number],
-      target: [0, .5, (maxSeatZ + minSeatZ) / 2] as [number, number, number] }
-    : CAMERA_VIEWS[settings.cameraView] ?? CAMERA_VIEWS.audience
+      target: [stageDx / 2, .5, (maxSeatZ + minSeatZ + stageDz) / 2] as [number, number, number] }
+    : { pos: [baseView.pos[0] + stageDx, baseView.pos[1], baseView.pos[2] + stageDz] as [number, number, number],
+      target: [baseView.target[0] + stageDx, baseView.target[1], baseView.target[2] + stageDz] as [number, number, number] }
   const noopMaterials = () => {}
 
   useEffect(() => {

@@ -2,11 +2,11 @@ import { useEffect, useMemo, useRef } from 'react'
 import * as THREE from 'three'
 import { createStageMaterial } from '../lighting/StageMaterial'
 import { useStore } from '../store'
-import { DEFAULT_VENUE_LAYOUT, stageFootprint } from '../venueLayout'
+import { DEFAULT_VENUE_LAYOUT, stageLocalFootprint } from '../venueLayout'
 
 export function Stage({ onMaterialsReady }: { onMaterialsReady: (mats: THREE.ShaderMaterial[]) => void }) {
   const layout = useStore(state => state.productionPlan.venueLayout ?? DEFAULT_VENUE_LAYOUT)
-  const outline = useMemo(() => stageFootprint(layout), [layout])
+  const outline = useMemo(() => stageLocalFootprint(layout), [layout])
   const floorGeom = useMemo(() => {
     const shape = new THREE.Shape()
     outline.forEach(([x, z], index) => index ? shape.lineTo(x, -z) : shape.moveTo(x, -z))
@@ -61,7 +61,7 @@ export function Stage({ onMaterialsReady }: { onMaterialsReady: (mats: THREE.Sha
   }
 
   return (
-    <group>
+    <group position={[layout.stageOffset?.[0] ?? 0, 0, layout.stageOffset?.[1] ?? 0]}>
       <mesh geometry={floorGeom} material={floorMat} receiveShadow />
       {framed && <>
         <mesh position={[0, 4, rear + 1]} material={wallMat} receiveShadow>

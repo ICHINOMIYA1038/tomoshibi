@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import * as THREE from 'three'
 import { FIXTURE_PROFILES, kelvinToRGB } from './lighting/fixtureTypes'
+import { DEFAULT_VENUE_LAYOUT, pointInStage, stageFootprint, stageLocalFootprint } from './venueLayout'
 import type { PerformerPose } from './performerPoses'
 
 let nextFid = 1
@@ -78,6 +79,7 @@ export interface VenueLayout {
   stageWidth: number
   stageDepth: number
   stageVertices?: StagePoint[]
+  stageOffset?: StagePoint
   targetCapacity: number
 }
 
@@ -340,6 +342,7 @@ interface State {
   updateAudienceBlock: (id: string, patch: Partial<AudienceBlock>) => void
   removeAudienceBlock: (id: string) => void
   updateVenueLayout: (patch: Partial<VenueLayout>) => void
+  moveStageTo: (offset: StagePoint) => void
   ensureScenes: () => void
   addScene: () => void
   addSceneAt: (chapterId: string, beforeSceneId: string | null) => string | null
@@ -615,6 +618,45 @@ export const useStore = create<State>((set, get) => ({
     venueLayout: { stageShape: 'proscenium', stageWidth: 16, stageDepth: 12,
       targetCapacity: 0, ...s.productionPlan.venueLayout, ...patch },
   } })),
+  moveStageTo: (requested) => set(s => {
+    if (!requested.every(Number.isFinite)) return {}
+    const layout = s.productionPlan.venueLayout ?? DEFAULT_VENUE_LAYOUT
+    const local = stageLocalFootprint(layout)
+    const minX = Math.min(...local.map(point => point[0]))
+    const maxX = Math.max(...local.map(point => point[0]))
+    const minZ = Math.min(...local.map(point => point[1]))
+    const maxZ = Math.max(...local.map(point => point[1]))
+    const next: StagePoint = [
+      Math.max(-24 - minX, Math.min(24 - maxX, requested[0])),
+      Math.max(-21 - minZ, Math.min(35 - maxZ, requested[1])),
+    ]
+    const current = layout.stageOffset ?? [0, 0]
+    const dx = next[0] - current[0]
+    const dz = next[1] - current[1]
+    if (!dx && !dz) return {}
+    const outline = stageFootprint(layout)
+    const shift = (stage: Pick<State, 'fixtures' | 'performers' | 'setPieces'>) => ({
+      fixtures: stage.fixtures.map(fixture => ({
+        ...fixture,
+        position: pointInStage(fixture.position[0], fixture.position[2], outline)
+          ? [fixture.position[0] + dx, fixture.position[1], fixture.position[2] + dz] as Fixture['position']
+          : fixture.position,
+        target: [fixture.target[0] + dx, fixture.target[1], fixture.target[2] + dz] as Fixture['target'],
+      })),
+      performers: stage.performers.map(person => ({
+        ...person, position: [person.position[0] + dx, person.position[1], person.position[2] + dz] as Performer['position'],
+      })),
+      setPieces: stage.setPieces.map(piece => ({
+        ...piece, position: [piece.position[0] + dx, piece.position[1], piece.position[2] + dz] as typeof piece.position,
+      })),
+    })
+    const captured = captureActiveScene(s.productionPlan, s)
+    const scenes = captured.scenes.map(scene => ({ ...scene, ...shift(scene) }))
+    return {
+      productionPlan: { ...captured, venueLayout: { ...layout, stageOffset: next }, scenes },
+      ...shift(s),
+    }
+  }),
   ensureScenes: () => set(s => {
     if (s.productionPlan.scenes.length) return { productionPlan: ensurePlanHierarchy(s.productionPlan) }
     const scene = sceneSnapshot(s, isMockPath ? '' : '開始')

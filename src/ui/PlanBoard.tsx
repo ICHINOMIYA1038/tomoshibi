@@ -97,8 +97,6 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
   const moveSceneToChapter = useStore(s => s.moveSceneToChapter)
   const moveChapter = useStore(s => s.moveChapter)
   const addPerformer = useStore(s => s.addPerformer)
-  const addFixture = useStore(s => s.addFixture)
-  const addPrimitiveSetPiece = useStore(s => s.addPrimitiveSetPiece)
   const updatePerformer = useStore(s => s.updatePerformer)
   const updateFixture = useStore(s => s.updateFixture)
   const updateSetPiece = useStore(s => s.updateSetPiece)
@@ -177,18 +175,6 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
   const selectedTab = selectedPerformer ? 'performers' : selectedFixture ? 'fixtures' : 'props'
   const selectedPath = directions.find(item => item.performerId === selectedPerformer?.id)
   const stageIsEmpty = performers.length === 0 && fixtures.length === 0 && setPieces.length === 0
-
-  const quickAdd = (kind: 'performer' | 'fixture' | 'setpiece') => {
-    const id = kind === 'performer' ? addPerformer()
-      : kind === 'fixture' ? addFixture('Fresnel8') : addPrimitiveSetPiece('box')
-    if (!id) return
-    if (kind === 'fixture') setShowFixtures(true)
-    if (kind === 'setpiece') setShowSetPieces(true)
-    updateSettings({ uiTab: kind === 'performer' ? 'performers' : kind === 'fixture' ? 'fixtures' : 'props', panelOpen: true })
-    setFeedback(kind === 'performer' ? '役者を舞台に置きました。平面図で動かし、編集パネルで名前を付けられます。'
-      : kind === 'fixture' ? '照明を追加しました。平面図で設置位置と光の狙いを動かせます。'
-        : '箱馬を置きました。平面図で動かし、編集パネルで名前を付けられます。')
-  }
 
   const selectActor = (id: string) => {
     select('performer', id)
@@ -811,20 +797,13 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
                 : '丸や四角をドラッグして移動。選ぶと編集パネルで詳しく変更できます'}</span>
           {persistent && selectedName && <button className="plan-inspect-button" onClick={() =>
             updateSettings({ uiTab: selectedTab, panelOpen: true })}>名前・設定を編集</button>}
+          {persistent && lastMove && <button type="button" className="plan-map-undo" onClick={undoMove}>↶ 移動を戻す</button>}
+          {persistent && <button type="button" className="plan-audience-button" onClick={() => setAudienceEditorOpen(true)}>
+            舞台・客席を編集
+          </button>}
           {persistent && <button type="button" className="plan-pane-close plan-map-close"
             aria-label="平面図を閉じる" title="平面図を閉じる" onClick={onCloseMap}>×</button>}
         </div>
-        {persistent && <div className="plan-map-actionbar" role="group" aria-label="今のシーンの舞台に追加">
-          <strong>舞台に置く</strong>
-          <button type="button" onClick={() => quickAdd('performer')}>＋ 役者</button>
-          <button type="button" onClick={() => quickAdd('fixture')}>＋ 照明</button>
-          <button type="button" onClick={() => quickAdd('setpiece')}>＋ 箱馬</button>
-          <button type="button" className="plan-audience-button" onClick={() => setAudienceEditorOpen(true)}>
-            舞台・客席を配置{plan.audienceBlocks?.length ? `（${plan.audienceBlocks.reduce((count, block) => count + block.rows * block.seatsPerRow, 0)}席）` : ''}
-          </button>
-          {lastMove && <button type="button" className="plan-map-undo" onClick={undoMove}>↶ 移動を戻す</button>}
-          <small>追加後、平面図で移動できます</small>
-        </div>}
         <div className="plan-map-layerbar" role="group" aria-label="平面図の表示">
           <span>図に表示</span>
           <button type="button" className={showSetPieces ? 'active' : ''} aria-pressed={showSetPieces}
@@ -855,23 +834,14 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
               {persistent ? sceneDisplayTitle(plan, scene.id).slice(0, 40)
                 : `${sequenceSceneIndex + 1} / ${sequenceScenes.length}　${scene.title.slice(0, 32)}`}
             </text>
-            <rect x="8" y="70" width="92" height="480" fill="#e5ddd0" stroke="#8e8273" />
-            <rect x="860" y="70" width="92" height="480" fill="#e5ddd0" stroke="#8e8273" />
-            <rect x="100" y="70" width="760" height="480"
-              fill={(plan.venueLayout?.stageShape ?? 'proscenium') === 'proscenium' ? '#fffdf8' : '#ddd6cc'}
-              stroke="#3b342b" strokeWidth="3" />
+            <rect x="8" y="70" width="944" height="480" fill="#e5ddd0" stroke="#8e8273" />
             <line x1="100" x2="860" y1="230" y2="230" stroke="#ded6c9" strokeDasharray="6 7" />
             <line x1="100" x2="860" y1="390" y2="390" stroke="#ded6c9" strokeDasharray="6 7" />
-            <text x="54" y="110" textAnchor="middle" fill="#5b5349" fontSize="17">下手袖</text>
-            <text x="906" y="110" textAnchor="middle" fill="#5b5349" fontSize="17">上手袖</text>
-            <text x="480" y="100" textAnchor="middle" fill="#777066" fontSize="16">舞台奥</text>
             <rect x="100" y="558" width="760" height="60" fill="#ece6da" stroke="#a99a83" strokeDasharray="8 6" />
             <text x="112" y="577" fill="#716758" fontSize="14">客席側の吊り位置</text>
             <text x="848" y="577" textAnchor="end" fill="#777066" fontSize="13">距離を縮めて表示</text>
-            {(plan.venueLayout?.stageShape ?? 'proscenium') !== 'proscenium' && <polygon
-              points={stageFootprint(plan.venueLayout ?? DEFAULT_VENUE_LAYOUT)
-                .map(([x, z]) => `${mapX(x)},${stageMapY(z)}`).join(' ')}
-              fill="#fffdf8" stroke="#967447" strokeWidth="5" />}
+            <polygon points={stageOutline.map(([x, z]) => `${mapX(x)},${stageMapY(z)}`).join(' ')}
+              fill="#fffdf8" stroke="#967447" strokeWidth="5" />
             {showSetPieces && setPieces.map((piece, index) => {
               const active = selectedSetPiece?.id === piece.id
               const width = Math.max(28, (piece.size?.[0] ?? 1) * Math.abs(piece.scale) * MAP.width / (mapBounds.right - mapBounds.left))
