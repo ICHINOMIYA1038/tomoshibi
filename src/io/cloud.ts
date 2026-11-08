@@ -59,6 +59,19 @@ export interface CloudSceneMeta {
   createdAt?: string
 }
 
+export interface CloudProjectMeta {
+  id: string
+  name: string
+  revision: number
+  origin?: string | null
+  updatedAt: string
+  createdAt?: string
+}
+
+export interface CloudProject extends CloudProjectMeta {
+  data: SerializedScene
+}
+
 export class CloudError extends Error {
   status: number
   constructor(message: string, status: number) {
@@ -164,6 +177,26 @@ export function markServiceSeen(): void {
 
 export function listCloudScenes() {
   return req<{ items: CloudSceneMeta[] }>('/scenes').then(r => r.items)
+}
+
+export function listCloudProjects() {
+  return req<{ items: CloudProjectMeta[] }>('/projects').then(result => result.items)
+}
+
+export function fetchCloudProject(id: string) {
+  return req<CloudProject>(`/projects/${id}`)
+}
+
+export function createCloudProject(name: string, data: SerializedScene) {
+  return req<CloudProjectMeta>('/projects', {
+    method: 'POST', body: JSON.stringify({ name, data }),
+  })
+}
+
+export function updateCloudProject(id: string, revision: number, name: string, data: SerializedScene) {
+  return req<CloudProjectMeta>(`/projects/${id}`, {
+    method: 'PUT', body: JSON.stringify({ name, data, revision }),
+  })
 }
 
 export function saveCloudSceneNew(name: string) {

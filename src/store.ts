@@ -106,6 +106,7 @@ function nextChapterTitle(chapters: PlanChapter[]) {
 
 export interface PlanScene {
   id: string
+  legacySourceKey?: string
   sequenceId?: string
   title: string
   triggerType?: SceneTriggerType
@@ -114,7 +115,10 @@ export interface PlanScene {
   fixtures: Fixture[]
   performers: Performer[]
   setPieces: import('./types').SetPiece[]
+  look?: SceneLook
 }
+
+export type SceneLook = Partial<Pick<SceneSettings, 'hazeDensity' | 'ambient' | 'exposure' | 'bloom' | 'showHouseLights'>>
 
 export const SCENE_TRIGGER_LABELS = {
   dialogue: 'セリフ', sound: '音', light: '光', other: 'その他',
@@ -171,15 +175,27 @@ export function sceneStage(scene: PlanScene) {
     setPieces: cloneSetPieces(scene.setPieces),
   }
 }
-export function sceneSnapshot(source: Pick<State, 'fixtures' | 'performers' | 'setPieces'>, title = '開始', trigger = ''): PlanScene {
+function captureLook(settings?: Partial<SceneSettings>): SceneLook | undefined {
+  if (!settings) return undefined
+  return {
+    hazeDensity: settings.hazeDensity,
+    ambient: settings.ambient,
+    exposure: settings.exposure,
+    bloom: settings.bloom,
+    showHouseLights: settings.showHouseLights,
+  }
+}
+
+export function sceneSnapshot(source: Pick<State, 'fixtures' | 'performers' | 'setPieces'> & { settings?: Partial<SceneSettings> }, title = '開始', trigger = ''): PlanScene {
   return {
     id: sceneId(), title, trigger, note: '',
     fixtures: cloneFixtures(source.fixtures),
     performers: clonePerformers(source.performers),
     setPieces: cloneSetPieces(source.setPieces),
+    look: captureLook(source.settings),
   }
 }
-export function captureActiveScene(plan: ProductionPlan, source: Pick<State, 'fixtures' | 'performers' | 'setPieces'>): ProductionPlan {
+export function captureActiveScene(plan: ProductionPlan, source: Pick<State, 'fixtures' | 'performers' | 'setPieces'> & { settings?: Partial<SceneSettings> }): ProductionPlan {
   if (!plan.activeSceneId) return plan
   return {
     ...plan,
@@ -188,6 +204,7 @@ export function captureActiveScene(plan: ProductionPlan, source: Pick<State, 'fi
       fixtures: cloneFixtures(source.fixtures),
       performers: clonePerformers(source.performers),
       setPieces: cloneSetPieces(source.setPieces),
+      look: captureLook(source.settings) ?? scene.look,
     } : scene),
   }
 }
@@ -800,6 +817,7 @@ export const useStore = create<State>((set, get) => ({
     return {
       productionPlan: { ...plan, activeSceneId: id },
       ...sceneStage(scene),
+      settings: scene.look ? { ...s.settings, ...scene.look } : s.settings,
       selection: { kind: null, id: null },
     }
   }),

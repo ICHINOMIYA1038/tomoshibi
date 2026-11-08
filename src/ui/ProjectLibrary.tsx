@@ -1,15 +1,16 @@
 import { useEffect, useRef, useState } from 'react'
 import { useIsDirty, useStore } from '../store'
 import { deleteSceneLS, exportScene, listSavedScenes, loadSceneLS, type SerializedScene } from '../io/sceneIO'
-import { getActiveSavedProjectName, setActiveSavedProjectName } from '../io/mockProjectSession'
+import { getActiveCloudProject, getActiveSavedProjectName, setActiveCloudProject, setActiveSavedProjectName } from '../io/mockProjectSession'
 import { flushMockAutosave, resetMockWorkspace } from '../io/mockWorkspace'
 import { VENUE_STUDY_LINKS } from '../demo/createVenueStudyPlans'
 import { audienceSeatPositions } from '../audienceLayout'
 import { DEFAULT_VENUE_LAYOUT, stageFootprint } from '../venueLayout'
 import { workspaceBasePath } from '../io/workspacePath'
-import { fetchCloudScene, listCloudScenes, loginUrl, type CloudSceneMeta } from '../io/cloud'
+import { fetchCloudProject, fetchCloudScene, listCloudProjects, listCloudScenes, loginUrl, updateCloudProject, type CloudProjectMeta, type CloudSceneMeta } from '../io/cloud'
 import { useCloudSession } from '../io/cloudSession'
-import { copyLegacyScene, importedProjectName, listLegacyLocalScenes } from '../io/legacyMigration'
+import { appendLegacyLocalScenes, copyLegacyScene, ensureLegacyLocalProject, importedProjectName, listLegacyLocalScenes } from '../io/legacyMigration'
+import { importScene } from '../io/sceneIO'
 
 type LibraryItem = { key: string; scene: SerializedScene; draft: boolean }
 
@@ -107,6 +108,9 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
   const dirty = useIsDirty()
   const { user, loading: sessionLoading } = useCloudSession()
   const [projects, setProjects] = useState(listSavedScenes)
+  const [memberProjects, setMemberProjects] = useState<CloudProjectMeta[]>([])
+  const [memberBusy, setMemberBusy] = useState(false)
+  const [memberError, setMemberError] = useState('')
   const [legacyLocal, setLegacyLocal] = useState(listLegacyLocalScenes)
   const [cloudItems, setCloudItems] = useState<CloudSceneMeta[]>([])
   const [cloudLoading, setCloudLoading] = useState(false)
@@ -121,6 +125,35 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
   const markSaved = useStore(s => s.markSavedSnapshot)
   const loadPreset = useStore(s => s.loadPreset)
   const savedName = getActiveSavedProjectName()
+  useEffect(() => {
+    try {
+      const migratedName = ensureLegacyLocalProject()
+      setProjects(listSavedScenes())
+      if (migratedName && !getActiveSavedProjectName() && !getActiveCloudProject()) setSelectedKey(migratedName)
+    }
+    catch { setFeedback('以前の端末内プランをまとめられませんでした。元データは残っています。') }
+  }, [])
+  useEffect(() => {
+    if (sessionLoading || !user) { setMemberProjects([]); return }
+    let cancelled = false
+    setMemberBusy(true)
+    listCloudProjects().then(async items => {
+      const legacy = items.find(item => item.origin === 'legacy-scenes-v1')
+      const local = listLegacyLocalScenes()
+      if (legacy && local.items.length) {
+        try {
+          const full = await fetchCloudProject(legacy.id)
+          const merged = appendLegacyLocalScenes(full.data, local.items)
+          if (merged) {
+            const updated = await updateCloudProject(legacy.id, full.revision, full.name, merged)
+            items = items.map(item => item.id === legacy.id ? { ...item, ...updated } : item)
+          }
+        } catch { if (!cancelled) setMemberError('端末内の旧プランをクラウドへ追加できませんでした。元データは残っています。') }
+      }
+      if (!cancelled) { setMemberProjects(items); setMemberBusy(false) }
+    }).catch(() => { if (!cancelled) { setMemberError('会員のプロジェクトを読み込めませんでした。'); setMemberBusy(false) } })
+    return () => { cancelled = true }
+  }, [sessionLoading, user?.id])
   useEffect(() => {
     if (!importOpen) return
     setLegacyLocal(listLegacyLocalScenes())
@@ -155,6 +188,7 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
     if (item.draft) { onOpenEditor(); return }
     if (!flushMockAutosave() && !window.confirm('現在の変更を保存できませんでした。別のプロジェクトを開きますか？')) return
     loadSceneLS(item.scene.name)
+    setActiveCloudProject(null)
     setActiveSavedProjectName(item.scene.name)
     markSaved()
     resetMockWorkspace()
@@ -165,9 +199,24 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
     loadPreset('empty')
     useStore.getState().ensureScenes()
     setActiveSavedProjectName(null)
+    setActiveCloudProject(null)
     markSaved()
     resetMockWorkspace()
     onOpenEditor()
+  }
+  const openMemberProject = async (item: CloudProjectMeta) => {
+    if (!flushMockAutosave()) { setMemberError('現在の変更を端末に保存できませんでした。'); return }
+    setMemberBusy(true)
+    try {
+      const full = await fetchCloudProject(item.id)
+      importScene(full.data)
+      setActiveSavedProjectName(null)
+      setActiveCloudProject({ id: full.id, name: full.name, revision: full.revision })
+      markSaved()
+      resetMockWorkspace()
+      onOpenEditor()
+    } catch { setMemberError('プロジェクトを開けませんでした。もう一度お試しください。') }
+    finally { setMemberBusy(false) }
   }
   const remove = (name: string) => {
     if (!window.confirm(`「${name}」をこの端末から削除しますか？`)) return
@@ -227,22 +276,30 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
   return <main className="project-library">
     <header className="project-library-header">
       <a href="/" className="project-library-brand">TOMOSHIBI<span>小屋</span></a>
-      <span className="project-library-storage">この端末に保存</span>
+      <span className="project-library-storage">{user ? '会員のプロジェクトと端末内の保存' : 'この端末に保存'}</span>
     </header>
     <div className="project-library-workspace">
       <aside className="project-library-rail" aria-label="プロジェクト一覧">
         <div className="project-library-rail-head"><h1>プロジェクト</h1><p>編集する舞台を選んでください。</p></div>
         <button className="project-library-create" onClick={create}>＋ 新しいプロジェクトを作る</button>
-        <button className="project-library-import" onClick={() => { setImportOpen(true); setImportFeedback('') }}>
-          以前のプランを引き継ぐ <span>→</span>
-        </button>
+        {user && <>
+          <div className="project-library-list-head">会員のプロジェクト</div>
+          {memberBusy && <p className="project-library-list-empty">読み込み中…</p>}
+          {memberError && <p className="project-library-feedback" role="status">{memberError}</p>}
+          <div className="project-library-list">
+            {memberProjects.map(item => <button key={item.id} className="project-library-list-item"
+              disabled={memberBusy} onClick={() => openMemberProject(item)}>
+              <strong>{item.name}</strong><span>{savedDate(item.updatedAt)}<small>開く →</small></span>
+            </button>)}
+          </div>
+        </>}
         <div className="project-library-list-head">会場配置のサンプル</div>
         <div className="project-library-study-list">
           {VENUE_STUDY_LINKS.map(study => <a key={study.kind} href={`${workspaceBasePath()}/?demo=venue-${study.kind}`}>
             <strong>{study.label}</strong><span>{study.detail}　↗</span>
           </a>)}
         </div>
-        <div className="project-library-list-head">{items.length ? `${items.length}件のプロジェクト` : '保存したプロジェクト'}</div>
+        <div className="project-library-list-head">{items.length ? `この端末のプロジェクト ${items.length}件` : 'この端末のプロジェクト'}</div>
         {items.length ? <div className="project-library-list">
           {items.map(item => <button key={item.key}
             className={'project-library-list-item' + (selected?.key === item.key ? ' selected' : '')}

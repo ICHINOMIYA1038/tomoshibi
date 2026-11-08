@@ -1,6 +1,6 @@
 import { useSyncExternalStore } from 'react'
 import { exportScene, importScene, listSavedScenes, saveSceneLS, saveSerializedSceneLS, type SerializedScene } from './sceneIO'
-import { getActiveSavedProjectName, setActiveSavedProjectName } from './mockProjectSession'
+import { getActiveCloudProject, getActiveSavedProjectName, setActiveCloudProject, setActiveSavedProjectName } from './mockProjectSession'
 import { useStore } from '../store'
 
 const SESSION_KEY = 'tomoshibi.mock.workspace.v1'
@@ -18,7 +18,7 @@ type Snapshot = {
   settings: Pick<State['settings'], 'hazeDensity' | 'ambient' | 'exposure' | 'bloom' | 'showHouseLights'>
 }
 type SaveStatus = 'saved' | 'saving' | 'error'
-type ViewState = { canUndo: boolean; canRedo: boolean; saveStatus: SaveStatus }
+type ViewState = { canUndo: boolean; canRedo: boolean; saveStatus: SaveStatus; cloudDirty: boolean }
 
 let installed = false
 let applyingHistory = false
@@ -28,8 +28,9 @@ let lastSignature = ''
 let lastRecordedAt = 0
 let saveTimer: ReturnType<typeof setTimeout> | null = null
 let saveStatus: SaveStatus = 'saved'
+let cloudDirty = false
 let demoBaseline: string | null = null
-let viewState: ViewState = { canUndo: false, canRedo: false, saveStatus }
+let viewState: ViewState = { canUndo: false, canRedo: false, saveStatus, cloudDirty }
 const listeners = new Set<() => void>()
 
 function capture(state: State): string {
@@ -63,7 +64,7 @@ function signature(state: State): string {
 }
 
 function publish() {
-  viewState = { canUndo: cursor > 0, canRedo: cursor < history.length - 1, saveStatus }
+  viewState = { canUndo: cursor > 0, canRedo: cursor < history.length - 1, saveStatus, cloudDirty }
   listeners.forEach(listener => listener())
 }
 
@@ -167,6 +168,7 @@ function record(state: State) {
   }
   lastSignature = nextSignature
   lastRecordedAt = now
+  if (getActiveCloudProject()) cloudDirty = true
   scheduleSave()
 }
 
@@ -176,16 +178,19 @@ export function initMockWorkspace(restore = true) {
     try {
       const raw = localStorage.getItem(SESSION_KEY)
       if (raw) {
-        const session = JSON.parse(raw) as { scene?: SerializedScene; activeSavedName?: string | null; demoBaseline?: string | null }
+        const session = JSON.parse(raw) as { scene?: SerializedScene; activeSavedName?: string | null; activeCloudProject?: ReturnType<typeof getActiveCloudProject>; cloudDirty?: boolean; demoBaseline?: string | null }
         if (session.scene && (session.scene.version === 1 || session.scene.version === 2)) {
           importScene(session.scene)
           setActiveSavedProjectName(typeof session.activeSavedName === 'string' ? session.activeSavedName : null)
+          setActiveCloudProject(session.activeCloudProject?.id && Number.isInteger(session.activeCloudProject.revision)
+            ? session.activeCloudProject : null)
+          cloudDirty = session.cloudDirty === true
           demoBaseline = session.demoBaseline ?? null
           useStore.getState().markSavedSnapshot()
         }
       }
     } catch {}
-  } else { setActiveSavedProjectName(null); demoBaseline = null }
+  } else { setActiveSavedProjectName(null); setActiveCloudProject(null); cloudDirty = false; demoBaseline = null }
   history = [capture(useStore.getState())]
   cursor = 0
   lastSignature = signature(useStore.getState())
@@ -202,7 +207,8 @@ export function flushMockAutosave(): boolean {
     const projectTitle = useStore.getState().productionPlan.projectTitle?.trim()
     const scene = exportScene(name || projectTitle || '編集中のプロジェクト')
     if (name) saveSceneLS(name)
-    localStorage.setItem(SESSION_KEY, JSON.stringify({ version: 1, activeSavedName: name, scene, demoBaseline }))
+    localStorage.setItem(SESSION_KEY, JSON.stringify({ version: 1, activeSavedName: name,
+      activeCloudProject: getActiveCloudProject(), cloudDirty, scene, demoBaseline }))
     useStore.getState().markSavedSnapshot()
     saveStatus = 'saved'
     publish()
@@ -217,6 +223,7 @@ export function flushMockAutosave(): boolean {
 export function resetMockWorkspace() {
   if (!installed) return
   demoBaseline = null
+  cloudDirty = false
   if (saveTimer) { clearTimeout(saveTimer); saveTimer = null }
   history = [capture(useStore.getState())]
   cursor = 0
@@ -225,6 +232,13 @@ export function resetMockWorkspace() {
   flushMockAutosave()
   publish()
 }
+
+export function markCloudSaved(expectedSnapshot?: string) {
+  if (!expectedSnapshot || expectedSnapshot === capture(useStore.getState())) cloudDirty = false
+  flushMockAutosave()
+}
+
+export function currentWorkspaceSnapshot() { return capture(useStore.getState()) }
 
 function restoreHistory(index: number) {
   if (index < 0 || index >= history.length) return

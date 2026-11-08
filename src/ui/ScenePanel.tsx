@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useStore, useIsDirty } from '../store'
-import { importScene } from '../io/sceneIO'
+import { exportScene, importScene } from '../io/sceneIO'
 import {
   listSavedScenes, saveSceneLS, loadSceneLS, deleteSceneLS, makeShareURL, downloadSceneJSON,
 } from '../io/sceneIO'
@@ -11,8 +11,9 @@ import {
 } from '../io/cloud'
 import { useCloudSession } from '../io/cloudSession'
 import { useDraggablePanel } from './useDraggablePanel'
-import { getActiveSavedProjectName, setActiveSavedProjectName } from '../io/mockProjectSession'
-import { flushMockAutosave, resetMockWorkspace } from '../io/mockWorkspace'
+import { getActiveCloudProject, getActiveSavedProjectName, setActiveCloudProject, setActiveSavedProjectName } from '../io/mockProjectSession'
+import { currentWorkspaceSnapshot, flushMockAutosave, markCloudSaved, resetMockWorkspace } from '../io/mockWorkspace'
+import { createCloudProject } from '../io/cloud'
 import { isWorkspacePath } from '../io/workspacePath'
 
 const FALLBACK_MAX_SCENES = 3
@@ -40,12 +41,48 @@ export function ScenePanel() {
       </div>
       <div className="panel-body scene-body">
         <LocalScenes />
+        {isMockPreview && <CloudProjectCreate />}
         {!isMockPreview && <CloudScenes />}
         {!isMockPreview && <SceneSharing />}
       </div>
     </div>
     </>
   )
+}
+
+function CloudProjectCreate() {
+  const { user, loading } = useCloudSession()
+  const projectTitle = useStore(state => state.productionPlan.projectTitle)
+  const [name, setName] = useState(projectTitle || '')
+  const [busy, setBusy] = useState(false)
+  const [message, setMessage] = useState('')
+  const active = getActiveCloudProject()
+  if (loading) return null
+  if (!user) return <section className="scene-section"><header className="scene-section-h"><span>会員のプロジェクト</span></header>
+    <p className="scene-local-note">ログインすると、プロジェクトをクラウドに保存して別の端末でも開けます。</p>
+    <a href={loginUrl()}>ログインする →</a></section>
+  if (active) return <section className="scene-section"><header className="scene-section-h"><span>会員のプロジェクト</span></header>
+    <p className="scene-local-note">「{active.name}」は編集後にクラウドへ自動保存されます。</p></section>
+  const save = async () => {
+    const title = name.trim() || projectTitle?.trim()
+    if (!title) { setMessage('プロジェクト名を入力してください。'); return }
+    setBusy(true); setMessage('')
+    try {
+      useStore.getState().updateProductionPlan({ projectTitle: title })
+      const snapshot = currentWorkspaceSnapshot()
+      const created = await createCloudProject(title, exportScene(title))
+      setActiveCloudProject({ id: created.id, name: created.name, revision: created.revision })
+      markCloudSaved(snapshot)
+      setMessage('会員のプロジェクトに保存しました。以後の編集は自動保存されます。')
+    } catch (error) { setMessage(error instanceof CloudError ? error.message : 'クラウドに保存できませんでした。端末内のデータは残っています。') }
+    finally { setBusy(false) }
+  }
+  return <section className="scene-section"><header className="scene-section-h"><span>会員のプロジェクト</span></header>
+    <label className="project-save-label">プロジェクト名
+      <input className="scene-name-input" value={name} maxLength={60} placeholder="例：秋公演 A劇場" onChange={event => setName(event.target.value)} /></label>
+    <div className="scene-actions"><button className="scene-cta primary" disabled={busy} onClick={save}>{busy ? '保存中…' : 'クラウドに保存'}</button></div>
+    {message && <p className="scene-local-note" role="status">{message}</p>}
+  </section>
 }
 
 function LocalScenes() {

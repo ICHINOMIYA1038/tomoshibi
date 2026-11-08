@@ -19,8 +19,10 @@ import { loginUrl, signupUrl, logoutUrl, createBillingPortal, CloudError } from 
 import { ScenePanel } from './ui/ScenePanel'
 import { PlanBoard } from './ui/PlanBoard'
 import { ProjectLibrary } from './ui/ProjectLibrary'
-import { getActiveSavedProjectName } from './io/mockProjectSession'
-import { consumeWorkspaceHandoff, flushMockAutosave, initMockWorkspace, markMockDemoBaseline, preserveMockDraftBeforeDemo, redoMockWorkspace, undoMockWorkspace, useMockWorkspaceState } from './io/mockWorkspace'
+import { getActiveCloudProject, getActiveSavedProjectName, setActiveCloudProject } from './io/mockProjectSession'
+import { consumeWorkspaceHandoff, currentWorkspaceSnapshot, flushMockAutosave, initMockWorkspace, markCloudSaved, markMockDemoBaseline, preserveMockDraftBeforeDemo, redoMockWorkspace, undoMockWorkspace, useMockWorkspaceState } from './io/mockWorkspace'
+import { exportScene } from './io/sceneIO'
+import { updateCloudProject } from './io/cloud'
 import { StagePlayback } from './ui/StagePlayback'
 import { DirectionPaths } from './scene/DirectionPaths'
 import { WebGLErrorBoundary } from './ui/WebGLErrorBoundary'
@@ -319,6 +321,7 @@ export default function App() {
 
   return (
     <div className={'unified-shell' + (planOpen ? ' plan-open' : '') + (settings.panelOpen ? ' panel-open' : '') + (playbackOpen ? ' playback-open' : '') + (isMockPreview ? ' workspace-layout' : '') + (mapVisible ? '' : ' map-hidden') + (outlineVisible ? ' outline-visible' : '')}>
+      {isMockPreview && <CloudProjectAutosave />}
       <div className="canvas-wrap">
        <WebGLErrorBoundary>
         <Canvas
@@ -463,13 +466,49 @@ export default function App() {
   )
 }
 
+function CloudProjectAutosave() {
+  const { user } = useCloudSession()
+  const { cloudDirty, saveStatus } = useMockWorkspaceState()
+  const [attempt, setAttempt] = useState(0)
+  const [error, setError] = useState('')
+  const failedSnapshot = useRef('')
+  useEffect(() => {
+    const active = getActiveCloudProject()
+    if (!user || !active || !cloudDirty || saveStatus !== 'saved') return
+    const snapshot = currentWorkspaceSnapshot()
+    if (snapshot === failedSnapshot.current) return
+    const timer = window.setTimeout(async () => {
+      const current = getActiveCloudProject()
+      if (!current || current.id !== active.id) return
+      const name = useStore.getState().productionPlan.projectTitle?.trim() || current.name
+      try {
+        const updated = await updateCloudProject(current.id, current.revision, name, exportScene(name))
+        if (getActiveCloudProject()?.id !== current.id) return
+        setActiveCloudProject({ id: current.id, name: updated.name, revision: updated.revision })
+        markCloudSaved(snapshot)
+        setError('')
+        failedSnapshot.current = ''
+        setAttempt(value => value + 1)
+      } catch (cause) {
+        failedSnapshot.current = snapshot
+        setError(cause instanceof CloudError && cause.status === 409
+          ? '別の端末で更新されています。この端末の変更は残っています。ページを開き直して内容を確認してください。'
+          : 'クラウドに保存できませんでした。この端末には保存されています。')
+      }
+    }, 2200)
+    return () => window.clearTimeout(timer)
+  }, [user?.id, cloudDirty, saveStatus, attempt])
+  return error ? <div className="project-library-feedback" role="alert" style={{ position: 'fixed', right: 16, bottom: 16, zIndex: 1000, maxWidth: 340 }}>{error}</div> : null
+}
+
 function MockProjectTitle({ title }: { title?: string }) {
-  const { saveStatus } = useMockWorkspaceState()
+  const { saveStatus, cloudDirty } = useMockWorkspaceState()
+  const cloud = getActiveCloudProject()
   return <>
     <strong className="workspace-project-title" title={title?.trim() || '名称未設定のプロジェクト'}>
       {title?.trim() || '名称未設定'}</strong>
     <span className={'workspace-save-state' + (saveStatus !== 'saved' ? ' changed' : '')} role="status">
-      {saveStatus === 'saving' ? '自動保存中…' : saveStatus === 'error' ? '保存できません' : 'この端末に保存済み'}</span>
+      {saveStatus === 'saving' ? '自動保存中…' : saveStatus === 'error' ? '保存できません' : cloud ? cloudDirty ? '端末に保存済み・クラウド同期待ち' : 'クラウドに保存済み' : 'この端末に保存済み'}</span>
   </>
 }
 

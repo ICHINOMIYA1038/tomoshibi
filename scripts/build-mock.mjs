@@ -47,6 +47,8 @@ await writeFile(new URL('./mock/projects/index.html', dist), projectsHtml)
 
 const studioHtml = html
   .replace('<title>演出プラン試作 | TOMOSHIBI小屋</title>', '<title>演出プラン | TOMOSHIBI小屋</title>')
+  .replace('ブラウザで使える舞台照明シミュレーター', '照明と演出を組み立てる舞台プラン')
+  .replace('舞台照明のプランを 3D で組み立てて、見え方を確かめられます。', '照明・役者・舞台セットを配置し、章とシーンの流れを確かめられます。')
   .replace('href="https://tomoshibi.gikyokutosyokan.com/mock/"', 'href="https://tomoshibi.gikyokutosyokan.com/studio/"')
   .replace('    <meta name="robots" content="noindex, nofollow" />\n', '')
 const studioDir = new URL('../public/studio/', import.meta.url)

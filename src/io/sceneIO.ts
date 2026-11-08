@@ -5,7 +5,7 @@
 
 import {
   useStore, syncEntityIds, emptyProductionPlan, captureActiveScene, ensurePlanHierarchy, sceneSnapshot, sceneStage, PLAN_LIMITS,
-  type Fixture, type Performer, type SceneSettings, type ProductionPlan, type AudienceBlock, type VenueLayout, type SceneTriggerType, type StagePoint,
+  type Fixture, type Performer, type SceneSettings, type SceneLook, type ProductionPlan, type AudienceBlock, type VenueLayout, type SceneTriggerType, type StagePoint,
 } from '../store'
 import type { SetPiece } from '../types'
 import { isWorkspacePath } from './workspacePath'
@@ -72,7 +72,7 @@ export function importScene(scene: SerializedScene) {
     performers: stage.performers,
     setPieces: stage.setPieces,
     productionPlan: plan,
-    settings: { ...s.settings, ...scene.settings },
+    settings: { ...s.settings, ...scene.settings, ...active?.look },
     selection: { kind: null, id: null },
   }))
 }
@@ -142,15 +142,25 @@ function normalizeProductionPlan(raw: unknown, fixtures: Fixture[], performers: 
         performers: Array.isArray(rawScene.performers) ? rawScene.performers : performers,
         setPieces: Array.isArray(rawScene.setPieces) ? rawScene.setPieces : setPieces,
       }
+      const rawLook = rawScene.look
+      const look: SceneLook | undefined = rawLook && typeof rawLook === 'object' ? {
+        hazeDensity: typeof rawLook.hazeDensity === 'number' && Number.isFinite(rawLook.hazeDensity) ? rawLook.hazeDensity : undefined,
+        ambient: typeof rawLook.ambient === 'number' && Number.isFinite(rawLook.ambient) ? rawLook.ambient : undefined,
+        exposure: typeof rawLook.exposure === 'number' && Number.isFinite(rawLook.exposure) ? rawLook.exposure : undefined,
+        bloom: typeof rawLook.bloom === 'number' && Number.isFinite(rawLook.bloom) ? rawLook.bloom : undefined,
+        showHouseLights: typeof rawLook.showHouseLights === 'boolean' ? rawLook.showHouseLights : undefined,
+      } : undefined
       return [{
         ...sceneSnapshot(source),
         id: rawScene.id,
+        legacySourceKey: typeof rawScene.legacySourceKey === 'string' ? rawScene.legacySourceKey.slice(0, 200) : undefined,
         sequenceId: typeof rawScene.sequenceId === 'string' ? rawScene.sequenceId : undefined,
         title: typeof rawScene.title === 'string' ? rawScene.title.slice(0, 60) : 'シーン',
         triggerType: (['dialogue', 'sound', 'light', 'other'] as const).includes(rawScene.triggerType as SceneTriggerType)
           ? rawScene.triggerType as SceneTriggerType : undefined,
         trigger: typeof rawScene.trigger === 'string' ? rawScene.trigger.slice(0, 160) : '',
         note: typeof rawScene.note === 'string' ? rawScene.note.slice(0, 1000) : '',
+        look,
       }]
     })
     const activeSceneId = scenes.some(scene => scene.id === data.activeSceneId)

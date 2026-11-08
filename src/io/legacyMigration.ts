@@ -78,3 +78,68 @@ export function copyLegacyScene(source: unknown, sourceKey: string): { name: str
   } catch {}
   return { name, alreadyCopied: false }
 }
+
+export function buildLegacyLocalProject(items: LegacyLocalItem[], name = '引き継いだ照明プラン'): SerializedScene | null {
+  if (!items.length) return null
+  const first = items[0].scene
+  const scenes = items.map(item => ({
+    ...sceneSnapshot({
+      fixtures: item.scene.fixtures,
+      performers: item.scene.performers,
+      setPieces: item.scene.setPieces ?? [],
+      settings: item.scene.settings,
+    }, item.scene.name),
+    legacySourceKey: item.key,
+  }))
+  const plan = ensurePlanHierarchy({
+    ...emptyProductionPlan(), projectTitle: name, scenes, activeSceneId: scenes[0].id,
+  })
+  return {
+    version: 2, name, savedAt: new Date().toISOString(),
+    fixtures: first.fixtures, performers: first.performers, setPieces: first.setPieces ?? [],
+    settings: first.settings ?? {}, productionPlan: plan,
+  }
+}
+
+export function ensureLegacyLocalProject(): string | null {
+  const source = listLegacyLocalScenes()
+  if (!source.items.length) return null
+  const saved = listSavedScenes()
+  const existing = saved.find(item => item.productionPlan?.scenes.some(scene => scene.legacySourceKey?.startsWith('local:')))
+  const name = existing?.name ?? availableName('引き継いだ照明プラン', new Set(saved.map(item => item.name)))
+  const built = buildLegacyLocalProject(source.items, name)
+  if (!built) return null
+  const known = new Set(existing?.productionPlan?.scenes.map(scene => scene.legacySourceKey) ?? [])
+  const additions = built.productionPlan?.scenes.filter(scene => !known.has(scene.legacySourceKey)) ?? []
+  if (existing && !additions.length) return name
+  if (existing?.productionPlan) {
+    built.productionPlan = {
+      ...existing.productionPlan,
+      scenes: [...existing.productionPlan.scenes, ...additions],
+    }
+    built.fixtures = existing.fixtures
+    built.performers = existing.performers
+    built.setPieces = existing.setPieces
+    built.settings = existing.settings
+  }
+  saveSerializedSceneLS(built)
+  return name
+}
+
+export function appendLegacyLocalScenes(project: SerializedScene, items: LegacyLocalItem[]): SerializedScene | null {
+  const incoming = buildLegacyLocalProject(items, project.name)
+  if (!incoming?.productionPlan?.scenes.length || !project.productionPlan?.scenes.length) return null
+  const known = new Set(project.productionPlan.scenes.map(scene => scene.legacySourceKey))
+  const sequenceId = project.productionPlan.sequences?.[0]?.id
+  const additions = incoming.productionPlan.scenes.filter(scene => !known.has(scene.legacySourceKey))
+    .map(scene => ({ ...scene, sequenceId }))
+  if (!additions.length) return null
+  if (project.productionPlan.scenes.length + additions.length > 100) throw new Error('旧プランの合計が100シーンを超えています。')
+  return {
+    ...project,
+    productionPlan: {
+      ...project.productionPlan,
+      scenes: [...project.productionPlan.scenes, ...additions],
+    },
+  }
+}
