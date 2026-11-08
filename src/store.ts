@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import * as THREE from 'three'
 import { FIXTURE_PROFILES, kelvinToRGB } from './lighting/fixtureTypes'
 import { DEFAULT_VENUE_LAYOUT, pointInStage, stageFootprint, stageLocalFootprint } from './venueLayout'
+import { isWorkspacePath } from './io/workspacePath'
 import type { PerformerPose } from './performerPoses'
 
 let nextFid = 1
@@ -215,8 +216,7 @@ export function activeSceneDirections(plan: ProductionPlan, performers: Performe
   })
 }
 
-const isMockPath = typeof location !== 'undefined' &&
-  (location.protocol === 'file:' || location.pathname === '/mock' || location.pathname.startsWith('/mock/'))
+const isMockPath = isWorkspacePath()
 
 export function syncEntityIds(fixtures: Fixture[], performers: Performer[]) {
   for (const f of fixtures) {

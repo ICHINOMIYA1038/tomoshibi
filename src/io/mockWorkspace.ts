@@ -4,6 +4,7 @@ import { getActiveSavedProjectName, setActiveSavedProjectName } from './mockProj
 import { useStore } from '../store'
 
 const SESSION_KEY = 'tomoshibi.mock.workspace.v1'
+const HANDOFF_KEY = 'tomoshibi.workspace.handoff.v1'
 const HISTORY_LIMIT = 60
 const COALESCE_MS = 500
 const SAVE_DELAY_MS = 650
@@ -119,6 +120,23 @@ export function preserveMockDraftBeforeDemo(): boolean {
     return true
   } catch {
     return false
+  }
+}
+
+export function consumeWorkspaceHandoff(): 'none' | 'imported' | 'error' {
+  if (new URLSearchParams(location.search).get('copy') !== 'current') return 'none'
+  try {
+    const raw = sessionStorage.getItem(HANDOFF_KEY)
+    if (!raw || !preserveMockDraftBeforeDemo()) return 'error'
+    const scene = JSON.parse(raw) as SerializedScene
+    if ((scene.version !== 1 && scene.version !== 2) || !Array.isArray(scene.fixtures) || !Array.isArray(scene.performers)) return 'error'
+    importScene(scene)
+    useStore.getState().ensureScenes()
+    useStore.getState().updateProductionPlan({ projectTitle: scene.name || '現在の舞台プラン' })
+    sessionStorage.removeItem(HANDOFF_KEY)
+    return 'imported'
+  } catch {
+    return 'error'
   }
 }
 

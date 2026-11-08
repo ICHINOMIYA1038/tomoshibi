@@ -8,6 +8,7 @@ import {
   type Fixture, type Performer, type SceneSettings, type ProductionPlan, type AudienceBlock, type VenueLayout, type SceneTriggerType, type StagePoint,
 } from '../store'
 import type { SetPiece } from '../types'
+import { isWorkspacePath } from './workspacePath'
 
 export interface SerializedScene {
   version: 1 | 2
@@ -207,8 +208,7 @@ function normalizeProductionPlan(raw: unknown, fixtures: Fixture[], performers: 
 }
 
 // ---- localStorage 多数保存 ----
-const mockPath = typeof location !== 'undefined' &&
-  (location.protocol === 'file:' || location.pathname === '/mock' || location.pathname.startsWith('/mock/'))
+const mockPath = isWorkspacePath()
 const LS_KEY = mockPath ? 'syoumei.mock.scenes' : 'syoumei.scenes'
 
 export function listSavedScenes(): SerializedScene[] {

@@ -20,7 +20,7 @@ import { ScenePanel } from './ui/ScenePanel'
 import { PlanBoard } from './ui/PlanBoard'
 import { ProjectLibrary } from './ui/ProjectLibrary'
 import { getActiveSavedProjectName } from './io/mockProjectSession'
-import { flushMockAutosave, initMockWorkspace, markMockDemoBaseline, preserveMockDraftBeforeDemo, redoMockWorkspace, undoMockWorkspace, useMockWorkspaceState } from './io/mockWorkspace'
+import { consumeWorkspaceHandoff, flushMockAutosave, initMockWorkspace, markMockDemoBaseline, preserveMockDraftBeforeDemo, redoMockWorkspace, undoMockWorkspace, useMockWorkspaceState } from './io/mockWorkspace'
 import { StagePlayback } from './ui/StagePlayback'
 import { DirectionPaths } from './scene/DirectionPaths'
 import { WebGLErrorBoundary } from './ui/WebGLErrorBoundary'
@@ -35,6 +35,7 @@ import { createAkaoniWashPlan } from './demo/createAkaoniWashPlan'
 import { createAkaoniLightingStudyPlan } from './demo/createAkaoniLightingStudyPlan'
 import { createVenueStudyPlan, VENUE_STUDY_LINKS } from './demo/createVenueStudyPlans'
 import { AudienceSeating } from './scene/AudienceSeating'
+import { isWorkspaceLibraryPath, isWorkspacePath, workspaceBasePath } from './io/workspacePath'
 
 const CAMERA_VIEWS: Record<string, { pos: [number, number, number]; target: [number, number, number] }> = {
   audience: { pos: [0, 2.5, 10], target: [0, 2.5, -2] },
@@ -87,8 +88,8 @@ function ResponsiveFov() {
 }
 
 const isEmbed = new URLSearchParams(location.search).has('embed')
-const isMockPreview = location.protocol === 'file:' || location.pathname === '/mock' || location.pathname.startsWith('/mock/')
-const isProjectLibraryPath = () => location.pathname === '/mock/projects' || location.pathname.startsWith('/mock/projects/')
+const isMockPreview = isWorkspacePath()
+const isProjectLibraryPath = isWorkspaceLibraryPath
 const requestedDemo = () => isMockPreview ? new URLSearchParams(location.search).get('demo') : null
 const EXPOSURE_SCALE = 0.45
 
@@ -206,7 +207,8 @@ export default function App() {
 
   // 初回: URL hashからシーン読込 / GDTF動的プロファイル登録窓口
   useEffect(() => {
-    const loadedFromHash = tryLoadFromHash()
+    const handoff = isMockPreview ? consumeWorkspaceHandoff() : 'none'
+    const loadedFromHash = handoff !== 'imported' && tryLoadFromHash()
     const demo = !loadedFromHash ? requestedDemo() : null
     const venueStudy = VENUE_STUDY_LINKS.find(item => demo === `venue-${item.kind}`)
     const wantsDemo = demo === '1' || demo === '2' || demo === 'rain-library-study' || demo === 'akaoni' || demo === 'akaoni-wash' || demo === 'akaoni-study' || !!venueStudy
@@ -219,8 +221,15 @@ export default function App() {
     else if (loadDemo && demo === 'akaoni-wash') createAkaoniWashPlan()
     else if (loadDemo && demo === 'akaoni-study') createAkaoniLightingStudyPlan()
     else if (loadDemo && venueStudy) createVenueStudyPlan(venueStudy.kind)
-    else if (isMockPreview && !isProjectLibraryPath() && !loadedFromHash) useStore.getState().ensureScenes()
-    if (isMockPreview) initMockWorkspace(!loadedFromHash && !loadDemo)
+    else if (isMockPreview && !isProjectLibraryPath() && !loadedFromHash && handoff !== 'imported') useStore.getState().ensureScenes()
+    if (isMockPreview) initMockWorkspace(!loadedFromHash && !loadDemo && handoff !== 'imported')
+    if (handoff === 'imported') {
+      flushMockAutosave()
+      const url = new URL(location.href)
+      url.searchParams.delete('copy')
+      history.replaceState(null, '', url.pathname + url.search + url.hash)
+      setWorkspaceFeedback('現在の舞台プランをコピーしました。元の画面の保存データはそのままです。')
+    } else if (handoff === 'error') setWorkspaceFeedback('現在の舞台プランをコピーできませんでした。')
     if (loadDemo) {
       markMockDemoBaseline()
       flushMockAutosave()
@@ -294,7 +303,7 @@ export default function App() {
   const navigateMock = (page: 'projects' | 'editor') => {
     if (isMockPreview) flushMockAutosave()
     if (location.protocol !== 'file:') {
-      const path = page === 'projects' ? '/mock/projects/' : '/mock/'
+      const path = page === 'projects' ? `${workspaceBasePath()}/projects/` : `${workspaceBasePath()}/`
       if (location.pathname !== path) history.pushState(null, '', path)
     }
     setMockPage(page)

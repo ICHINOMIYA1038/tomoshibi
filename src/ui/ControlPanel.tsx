@@ -6,6 +6,7 @@ import { useDraggablePanel } from './useDraggablePanel'
 import { MEASURED_FRESNEL_KEY } from '../photometric/measuredFresnel'
 import { MEASURED_CYC_KEY } from '../photometric/measuredCyc'
 import { PERFORMER_POSES } from '../performerPoses'
+import { isWorkspacePath } from '../io/workspacePath'
 
 // 演劇関係者向け TOP パネル
 // タブ: 器具 / 役者 のみ。設定は ⚙ から SettingsModal で開く
@@ -101,8 +102,7 @@ export function ControlPanel({ planOpen = false }: { planOpen?: boolean }) {
   const dragStartY = useRef<number | null>(null)
   const dragDelta = useRef(0)
   const isMobile = typeof window !== 'undefined' && window.innerWidth <= 960
-  const isMockPreview = typeof location !== 'undefined' &&
-    (location.protocol === 'file:' || location.pathname === '/mock' || location.pathname.startsWith('/mock/'))
+  const isMockPreview = isWorkspacePath()
 
   // PC のみドラッグ可能、モバイルは下からのボトムシート挙動を維持
   const { panelProps, handleProps } = useDraggablePanel('object', {

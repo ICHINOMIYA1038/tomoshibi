@@ -13,10 +13,10 @@ import { useCloudSession } from '../io/cloudSession'
 import { useDraggablePanel } from './useDraggablePanel'
 import { getActiveSavedProjectName, setActiveSavedProjectName } from '../io/mockProjectSession'
 import { flushMockAutosave, resetMockWorkspace } from '../io/mockWorkspace'
+import { isWorkspacePath } from '../io/workspacePath'
 
 const FALLBACK_MAX_SCENES = 3
-const isMockPreview = typeof location !== 'undefined' &&
-  (location.protocol === 'file:' || location.pathname === '/mock' || location.pathname.startsWith('/mock/'))
+const isMockPreview = isWorkspacePath()
 
 export function ScenePanel() {
   const isMobile = typeof window !== 'undefined' && window.innerWidth <= 960

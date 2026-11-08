@@ -6,6 +6,7 @@ import { flushMockAutosave, resetMockWorkspace } from '../io/mockWorkspace'
 import { VENUE_STUDY_LINKS } from '../demo/createVenueStudyPlans'
 import { audienceSeatPositions } from '../audienceLayout'
 import { DEFAULT_VENUE_LAYOUT, stageFootprint } from '../venueLayout'
+import { workspaceBasePath } from '../io/workspacePath'
 
 type LibraryItem = { key: string; scene: SerializedScene; draft: boolean }
 
@@ -168,7 +169,7 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
         <button className="project-library-create" onClick={create}>＋ 新しいプロジェクトを作る</button>
         <div className="project-library-list-head">会場配置のサンプル</div>
         <div className="project-library-study-list">
-          {VENUE_STUDY_LINKS.map(study => <a key={study.kind} href={`/mock/?demo=venue-${study.kind}`}>
+          {VENUE_STUDY_LINKS.map(study => <a key={study.kind} href={`${workspaceBasePath()}/?demo=venue-${study.kind}`}>
             <strong>{study.label}</strong><span>{study.detail}　↗</span>
           </a>)}
         </div>
