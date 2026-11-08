@@ -7,6 +7,9 @@ import { VENUE_STUDY_LINKS } from '../demo/createVenueStudyPlans'
 import { audienceSeatPositions } from '../audienceLayout'
 import { DEFAULT_VENUE_LAYOUT, stageFootprint } from '../venueLayout'
 import { workspaceBasePath } from '../io/workspacePath'
+import { fetchCloudScene, listCloudScenes, loginUrl, type CloudSceneMeta } from '../io/cloud'
+import { useCloudSession } from '../io/cloudSession'
+import { copyLegacyScene, importedProjectName, listLegacyLocalScenes } from '../io/legacyMigration'
 
 type LibraryItem = { key: string; scene: SerializedScene; draft: boolean }
 
@@ -102,7 +105,15 @@ function StructurePreview({ item }: { item: LibraryItem }) {
 
 export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
   const dirty = useIsDirty()
+  const { user, loading: sessionLoading } = useCloudSession()
   const [projects, setProjects] = useState(listSavedScenes)
+  const [legacyLocal, setLegacyLocal] = useState(listLegacyLocalScenes)
+  const [cloudItems, setCloudItems] = useState<CloudSceneMeta[]>([])
+  const [cloudLoading, setCloudLoading] = useState(false)
+  const [cloudError, setCloudError] = useState('')
+  const [importOpen, setImportOpen] = useState(() => location.hash === '#import')
+  const [importBusy, setImportBusy] = useState('')
+  const [importFeedback, setImportFeedback] = useState('')
   const [selectedKey, setSelectedKey] = useState<string | null>(() => dirty ? '__draft' : getActiveSavedProjectName())
   const [feedback, setFeedback] = useState('')
   const detailsRef = useRef<HTMLElement>(null)
@@ -110,6 +121,19 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
   const markSaved = useStore(s => s.markSavedSnapshot)
   const loadPreset = useStore(s => s.loadPreset)
   const savedName = getActiveSavedProjectName()
+  useEffect(() => {
+    if (!importOpen) return
+    setLegacyLocal(listLegacyLocalScenes())
+    if (!user) { setCloudItems([]); setCloudLoading(false); return }
+    let cancelled = false
+    setCloudLoading(true)
+    listCloudScenes().then(items => {
+      if (!cancelled) { setCloudItems(items); setCloudError(''); setCloudLoading(false) }
+    }).catch(() => {
+      if (!cancelled) { setCloudError('クラウドの旧プランを読み取れませんでした。'); setCloudLoading(false) }
+    })
+    return () => { cancelled = true }
+  }, [importOpen, user?.id])
   useEffect(() => {
     if (selectedKey === null && savedName) setSelectedKey(savedName)
   }, [plan.activeSceneId, savedName, selectedKey])
@@ -158,6 +182,48 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
     }
   }
 
+  const closeImport = () => {
+    if (importBusy) return
+    setImportOpen(false)
+    if (location.hash === '#import') history.replaceState(null, '', location.pathname + location.search)
+  }
+  const copyOne = async (sourceKey: string, getScene: () => Promise<SerializedScene>) => {
+    setImportBusy(sourceKey)
+    setImportFeedback('')
+    try {
+      const result = copyLegacyScene(await getScene(), sourceKey)
+      setProjects(listSavedScenes())
+      setSelectedKey(result.name)
+      setImportFeedback(result.alreadyCopied
+        ? `「${result.name}」は引き継ぎ済みです。`
+        : `「${result.name}」をコピーしました。元のプランはそのままです。`)
+    } catch (error) {
+      setImportFeedback(error instanceof Error ? error.message : 'コピーできませんでした。元のプランはそのままです。')
+    } finally { setImportBusy('') }
+  }
+  const copyAll = async () => {
+    setImportBusy('all')
+    setImportFeedback('')
+    let copied = 0
+    let skipped = 0
+    let failed = 0
+    for (const item of legacyLocal.items) {
+      try {
+        const result = copyLegacyScene(item.scene, item.key)
+        result.alreadyCopied ? skipped++ : copied++
+      } catch { failed++ }
+    }
+    for (const item of cloudError ? [] : cloudItems) {
+      try {
+        const result = copyLegacyScene(await fetchCloudScene(item.id), `cloud:${item.id}:${item.updatedAt}`)
+        result.alreadyCopied ? skipped++ : copied++
+      } catch { failed++ }
+    }
+    setProjects(listSavedScenes())
+    setImportFeedback(`${copied}件をコピーしました。${skipped ? `引き継ぎ済み${skipped}件。` : ''}${failed ? `${failed}件はコピーできませんでした。` : ''}元のプランはそのままです。`)
+    setImportBusy('')
+  }
+
   return <main className="project-library">
     <header className="project-library-header">
       <a href="/" className="project-library-brand">TOMOSHIBI<span>小屋</span></a>
@@ -167,6 +233,9 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
       <aside className="project-library-rail" aria-label="プロジェクト一覧">
         <div className="project-library-rail-head"><h1>プロジェクト</h1><p>編集する舞台を選んでください。</p></div>
         <button className="project-library-create" onClick={create}>＋ 新しいプロジェクトを作る</button>
+        <button className="project-library-import" onClick={() => { setImportOpen(true); setImportFeedback('') }}>
+          以前のプランを引き継ぐ <span>→</span>
+        </button>
         <div className="project-library-list-head">会場配置のサンプル</div>
         <div className="project-library-study-list">
           {VENUE_STUDY_LINKS.map(study => <a key={study.kind} href={`${workspaceBasePath()}/?demo=venue-${study.kind}`}>
@@ -210,5 +279,39 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
         </div>}
       </section>
     </div>
+    {importOpen && <div className="legacy-import-backdrop" onMouseDown={event => { if (event.target === event.currentTarget) closeImport() }}>
+      <section className="legacy-import-dialog" role="dialog" aria-modal="true" aria-labelledby="legacy-import-title">
+        <header><div><h2 id="legacy-import-title">以前のプランを引き継ぐ</h2>
+          <p>旧シミュレーターの保存データを新しいプロジェクトにコピーします。元のプランは残ります。</p></div>
+          <button className="legacy-import-close" onClick={closeImport} aria-label="閉じる">×</button></header>
+        <div className="legacy-import-body">
+          <section><h3>この端末に保存したプラン <small>{legacyLocal.items.length}件</small></h3>
+            {legacyLocal.error && <p className="legacy-import-error">{legacyLocal.error}</p>}
+            {legacyLocal.items.length ? <ul>{legacyLocal.items.map(item => <li key={item.key}>
+              <span><strong>{item.scene.name}</strong><small>{savedDate(item.scene.savedAt)}</small></span>
+              <button disabled={Boolean(importBusy)} onClick={() => copyOne(item.key, async () => item.scene)}>
+                {importedProjectName(item.key) ? 'コピー済み' : 'コピーする'}
+              </button>
+            </li>)}</ul> : <p className="legacy-import-empty">この端末に保存した旧プランはありません。</p>}
+          </section>
+          <section><h3>会員アカウントに保存したプラン <small>{user ? `${cloudItems.length}件` : ''}</small></h3>
+            {sessionLoading ? <p className="legacy-import-empty">ログイン状態を確認中…</p>
+              : !user ? <p className="legacy-import-empty">ログインすると、クラウドに保存した旧プランも読み込めます。<a href={loginUrl()}>ログインする →</a></p>
+                : cloudLoading ? <p className="legacy-import-empty">クラウドの旧プランを読み込み中…</p>
+                : cloudError ? <p className="legacy-import-error">{cloudError}</p>
+                  : cloudItems.length ? <ul>{cloudItems.map(item => {
+                    const key = `cloud:${item.id}:${item.updatedAt}`
+                    return <li key={item.id}><span><strong>{item.name}</strong><small>{savedDate(item.updatedAt)}</small></span>
+                      <button disabled={Boolean(importBusy)} onClick={() => copyOne(key, () => fetchCloudScene(item.id))}>
+                        {importedProjectName(key) ? 'コピー済み' : 'コピーする'}
+                      </button></li>
+                  })}</ul> : <p className="legacy-import-empty">クラウドに保存した旧プランはありません。</p>}
+          </section>
+        </div>
+        <footer><span role="status" aria-live="polite">{importFeedback}</span>
+          <button className="legacy-import-all" disabled={Boolean(importBusy) || cloudLoading || !legacyLocal.items.length && !cloudItems.length} onClick={copyAll}>
+            {importBusy === 'all' ? 'コピー中…' : 'まとめてコピー'}</button></footer>
+      </section>
+    </div>}
   </main>
 }
