@@ -612,13 +612,14 @@ body.panel-dragging .panel { transition: none; opacity: 0.92; box-shadow: 0 12px
   background: rgba(212, 175, 111, 0.08);
   border-color: rgba(212, 175, 111, 0.3);
   color: var(--kin);
+  flex-wrap: wrap;
 }
 .bulk-checkall {
   display: flex; align-items: center; gap: 6px;
   cursor: pointer;
 }
 .bulk-checkall input { cursor: pointer; }
-.bulk-actions { display: flex; gap: 4px; }
+.bulk-actions { display: flex; flex-wrap: wrap; gap: 4px; }
 .fixture-row .row-check {
   flex-shrink: 0;
   cursor: pointer;
@@ -1057,11 +1058,17 @@ body.panel-dragging .panel { transition: none; opacity: 0.92; box-shadow: 0 12px
   padding: 10px; border: 1px solid var(--panel-edge); border-top: 0;
   border-radius: 0 0 7px 7px; background: #211d20;
 }
+.fixture-add > div { grid-template-columns: minmax(0,1fr); }
+.fixture-add .row { min-width: 0; }
+.fixture-add .row label { flex-basis: 55px; }
+.fixture-add .row select { min-width: 0; }
 .panel .props-add > div button { min-width: 0; min-height: 38px; padding: 6px 3px; }
 .props-list-heading { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 0 0 7px; }
+.panel-body:not(.props-panel) > .props-list-heading { margin-top: 18px; }
 .props-list-heading h3 { margin: 0; }
 .panel .props-list-heading button { flex: none; min-height: 34px; padding: 5px 9px; font-size: 11px; }
 .props-list { max-height: none; overflow: visible; }
+.managed-list { max-height: none; overflow: visible; }
 .props-item {
   display: flex; align-items: center; gap: 9px; min-height: 58px; margin: 0 0 6px;
   padding: 4px 7px; border: 1px solid var(--panel-edge); border-radius: 7px;
@@ -1081,6 +1088,12 @@ body.panel-dragging .panel { transition: none; opacity: 0.92; box-shadow: 0 12px
 .props-item-text small { color: var(--ink-muted); font-size: 11px; }
 .props-item-action { flex: none; color: var(--kin); font-size: 11px; }
 .props-item.selected .props-item-action { color: var(--ink-primary); }
+.panel .item-status-toggle {
+  flex: none; min-width: 58px; min-height: 36px; padding: 5px 6px;
+  border: 1px solid var(--panel-edge-strong); border-radius: 5px;
+  background: rgba(255,255,255,.04); color: var(--ink-muted); font-size: 10px;
+}
+.panel .item-status-toggle.active { border-color: rgba(212,175,111,.55); background: rgba(212,175,111,.14); color: var(--kin); }
 
 /* ========================================================
    プリセットグリッド
@@ -3532,7 +3545,7 @@ body.embed .workspace-switch { display: none; }
 .unified-shell.workspace-layout:not(.outline-visible) .toolbar { left: 14px; max-width: calc(100vw - var(--inspector-width) - 28px); }
 .unified-shell.workspace-layout.plan-open .toolbar { display: flex; }
 .unified-shell.workspace-layout.playback-open .toolbar { display: none; }
-.unified-shell.workspace-layout.plan-open .object-panel { display: block; }
+.unified-shell.workspace-layout.plan-open .object-panel { display: flex; }
 .unified-shell.workspace-layout .plan-board {
   top: var(--header-height);
   left: 0;
@@ -3761,7 +3774,7 @@ body.embed .workspace-switch { display: none; }
   .unified-shell.workspace-layout .workspace-header-actions .workspace-outline-toggle { display: inline-flex; }
   .unified-shell.workspace-layout .workspace-header-actions .workspace-play-button { width: 34px; min-width: 34px; padding: 4px; font-size: 0; }
   .unified-shell.workspace-layout .workspace-header-actions .workspace-play-button::before { content: '▶'; font-size: 12px; }
-  .unified-shell.workspace-layout.plan-open .object-panel { display: block; }
+  .unified-shell.workspace-layout.plan-open .object-panel { display: flex; }
   .unified-shell.workspace-layout.plan-open .panel-fab { display: flex; }
 }
 @media (max-width: 600px) {

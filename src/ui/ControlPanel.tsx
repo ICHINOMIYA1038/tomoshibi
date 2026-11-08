@@ -242,6 +242,7 @@ function FixturesPanel({ planOpen }: { planOpen: boolean }) {
   const select = useStore(s => s.select)
   const add = useStore(s => s.addFixture)
   const bulk = useBulkSelection(fixtures.map(f => f.id))
+  const [bulkMode, setBulkMode] = useState(false)
 
   const [addKind, setAddKind] = useState<FixtureKind>('Fresnel')
   const [addPreset, setAddPreset] = useState<string>('Fresnel8')
@@ -251,76 +252,84 @@ function FixturesPanel({ planOpen }: { planOpen: boolean }) {
     if (!confirm(`${bulk.count} 件の器具を削除しますか?`)) return
     for (const id of bulk.picked) useStore.getState().removeFixture(id)
     bulk.clear()
+    setBulkMode(false)
   }
   const bulkToggle = (enabled: boolean) => {
     for (const id of bulk.picked) useStore.getState().updateFixture(id, { enabled })
+  }
+  const toggleBulkMode = () => {
+    bulk.clear()
+    setBulkMode(value => !value)
   }
 
   return (
     <div className="panel-body">
       {planOpen && <p className="fixture-scope-note">照明の変更は現在のシーンに反映されます。</p>}
-      <h3>器具を追加</h3>
-      <div className="row">
-        <label>種別</label>
-        <select value={addKind} onChange={e => {
-          const k = e.target.value as FixtureKind
-          setAddKind(k)
-          setAddPreset(FIXTURE_PRESETS_BY_KIND[k][0])
-        }}>
-          {(Object.keys(KIND_LABELS) as FixtureKind[]).map(k => (
-            <option key={k} value={k}>{KIND_LABELS[k]}</option>
-          ))}
-        </select>
-      </div>
-      <div className="row">
-        <label>モデル</label>
-        <select value={addPreset} onChange={e => setAddPreset(e.target.value)}>
-          {FIXTURE_PRESETS_BY_KIND[addKind].map(k => {
-            const p = FIXTURE_PROFILES[k]
-            return <option key={k} value={k}>{p.brand ? `${p.brand} — ${p.model || k}` : (p.model || k)}</option>
-          })}
-        </select>
-      </div>
-      <div className="row">
-        <button className="primary" onClick={() => add(addPreset)} style={{ flex: 1 }}>+ 追加</button>
-      </div>
+      <details className="props-add fixture-add">
+        <summary>＋ 照明を追加</summary>
+        <div>
+          <div className="row">
+            <label>種別</label>
+            <select value={addKind} onChange={e => {
+              const k = e.target.value as FixtureKind
+              setAddKind(k)
+              setAddPreset(FIXTURE_PRESETS_BY_KIND[k][0])
+            }}>
+              {(Object.keys(KIND_LABELS) as FixtureKind[]).map(k => (
+                <option key={k} value={k}>{KIND_LABELS[k]}</option>
+              ))}
+            </select>
+          </div>
+          <div className="row">
+            <label>モデル</label>
+            <select value={addPreset} onChange={e => setAddPreset(e.target.value)}>
+              {FIXTURE_PRESETS_BY_KIND[addKind].map(k => {
+                const p = FIXTURE_PROFILES[k]
+                return <option key={k} value={k}>{p.brand ? `${p.brand} — ${p.model || k}` : (p.model || k)}</option>
+              })}
+            </select>
+          </div>
+          <div className="row">
+            <button className="primary" onClick={() => add(addPreset)} style={{ flex: 1 }}>＋ この照明を追加</button>
+          </div>
+        </div>
+      </details>
 
-      <h3>一覧 ({fixtures.length})</h3>
-      <BulkBar count={bulk.count} allOn={bulk.allOn} onToggleAll={bulk.toggleAll} onClear={bulk.clear}>
+      <div className="props-list-heading">
+        <h3>照明（{fixtures.length}灯）</h3>
+        {fixtures.length > 0 && <button type="button" className={bulkMode ? 'active' : ''}
+          aria-pressed={bulkMode} onClick={toggleBulkMode}>{bulkMode ? '選択を終了' : 'まとめて選ぶ'}</button>}
+      </div>
+      {bulkMode && <BulkBar count={bulk.count} allOn={bulk.allOn} onToggleAll={bulk.toggleAll} onClear={bulk.clear}>
         <button className="small" onClick={() => bulkToggle(true)}>点灯</button>
         <button className="small" onClick={() => bulkToggle(false)}>消灯</button>
-        <button className="small danger" onClick={bulkDelete}>削除</button>
-      </BulkBar>
-      <div className="list">
+        <button className="small danger" onClick={bulkDelete}>選択した照明を削除</button>
+      </BulkBar>}
+      <div className="list managed-list">
         {fixtures.map(f => (
           <div
             key={f.id}
-            className={'fixture-row' + (selection.kind === 'fixture' && selection.id === f.id ? ' selected' : '') + (bulk.picked.has(f.id) ? ' picked' : '')}
-            onClick={() => select('fixture', f.id, 'position')}
+            className={'props-item' + (selection.kind === 'fixture' && selection.id === f.id ? ' selected' : '') + (bulk.picked.has(f.id) ? ' picked' : '')}
           >
-            <input
+            {bulkMode && <input
               type="checkbox"
               className="row-check"
               checked={bulk.picked.has(f.id)}
-              onClick={e => e.stopPropagation()}
               onChange={() => bulk.toggle(f.id)}
-              title="一括選択"
-            />
-            <div className="dot" style={{ background: f.enabled ? colorToHex(f.color) : '#444' }} />
-            <span className="name">{f.name}</span>
-            <span className="kind">{FIXTURE_PROFILES[f.presetKey].kind}</span>
-            <input
-              type="checkbox"
-              checked={f.enabled}
-              onClick={e => e.stopPropagation()}
-              onChange={e => useStore.getState().updateFixture(f.id, { enabled: e.target.checked })}
-              title="点灯"
-            />
-            <button
-              className="danger small"
-              onClick={(e) => { e.stopPropagation(); useStore.getState().removeFixture(f.id) }}
-              title="削除"
-            >×</button>
+              aria-label={`${f.name}をまとめて選ぶ`} />}
+            <button type="button" className="props-item-main"
+              aria-label={bulkMode ? `${f.name}をまとめて選ぶ` : `${f.name}の設定を開く`}
+              aria-pressed={bulkMode ? bulk.picked.has(f.id) : selection.kind === 'fixture' && selection.id === f.id}
+              onClick={() => bulkMode ? bulk.toggle(f.id) : select('fixture', f.id, 'position')}>
+              <span className="props-item-color" style={{ background: colorToHex(f.color) }} aria-hidden="true" />
+              <span className="props-item-text"><strong>{f.name}</strong><small>{KIND_LABELS[FIXTURE_PROFILES[f.presetKey].kind]}</small></span>
+              {!bulkMode && <span className="props-item-action" aria-hidden="true">設定 ›</span>}
+            </button>
+            {!bulkMode && <button type="button" className={'item-status-toggle' + (f.enabled ? ' active' : '')}
+              aria-pressed={f.enabled} aria-label={`${f.name}を${f.enabled ? '消灯' : '点灯'}`}
+              onClick={() => useStore.getState().updateFixture(f.id, { enabled: !f.enabled })}>
+              {f.enabled ? '点灯中' : '消灯中'}
+            </button>}
           </div>
         ))}
         {fixtures.length === 0 && <div className="empty-hint">「+ 追加」で配置してください</div>}
@@ -477,7 +486,9 @@ function FixtureEditor({ fixture }: { fixture: Fixture }) {
 
       <div className="row" style={{ marginTop: 12 }}>
         <button onClick={() => dup(fixture.id)} style={{ flex: 1 }}>複製</button>
-        <button className="danger" onClick={() => remove(fixture.id)} style={{ flex: 1 }}>削除</button>
+        <button className="danger" onClick={() => {
+          if (confirm(`「${fixture.name}」を削除しますか？`)) remove(fixture.id)
+        }} style={{ flex: 1 }}>この照明を削除</button>
       </div>
     </>
   )
@@ -566,12 +577,18 @@ function PerformersPanel() {
   const selected = performers.find(p => p.id === selection.id && selection.kind === 'performer')
   const update = (id: string, patch: Partial<Performer>) => useStore.getState().updatePerformer(id, patch)
   const bulk = useBulkSelection(performers.map(p => p.id))
+  const [bulkMode, setBulkMode] = useState(false)
 
   const bulkDelete = () => {
     if (bulk.count === 0) return
     if (!confirm(`${bulk.count} 人の役者を削除しますか?`)) return
     for (const id of bulk.picked) remove(id)
     bulk.clear()
+    setBulkMode(false)
+  }
+  const toggleBulkMode = () => {
+    bulk.clear()
+    setBulkMode(value => !value)
   }
 
   return (
@@ -581,37 +598,39 @@ function PerformersPanel() {
         <button className="primary" onClick={() => add()} style={{ flex: 1 }}>+ 追加</button>
       </div>
 
-      <h3>一覧 ({performers.length})</h3>
-      <BulkBar count={bulk.count} allOn={bulk.allOn} onToggleAll={bulk.toggleAll} onClear={bulk.clear}>
-        <button className="small danger" onClick={bulkDelete}>削除</button>
-      </BulkBar>
-      <div className="list">
+      <div className="props-list-heading">
+        <h3>役者（{performers.length}人）</h3>
+        {performers.length > 0 && <button type="button" className={bulkMode ? 'active' : ''}
+          aria-pressed={bulkMode} onClick={toggleBulkMode}>{bulkMode ? '選択を終了' : 'まとめて選ぶ'}</button>}
+      </div>
+      {bulkMode && <BulkBar count={bulk.count} allOn={bulk.allOn} onToggleAll={bulk.toggleAll} onClear={bulk.clear}>
+        <button className="small danger" onClick={bulkDelete}>選択した役者を削除</button>
+      </BulkBar>}
+      <div className="list managed-list">
         {performers.map(p => (
           <div
             key={p.id}
-            className={'fixture-row' + (selection.kind === 'performer' && selection.id === p.id ? ' selected' : '') + (bulk.picked.has(p.id) ? ' picked' : '')}
-            onClick={() => select('performer', p.id)}
+            className={'props-item' + (selection.kind === 'performer' && selection.id === p.id ? ' selected' : '') + (bulk.picked.has(p.id) ? ' picked' : '')}
           >
-            <input
+            {bulkMode && <input
               type="checkbox"
               className="row-check"
               checked={bulk.picked.has(p.id)}
-              onClick={e => e.stopPropagation()}
               onChange={() => bulk.toggle(p.id)}
-              title="一括選択"
-            />
-            <div className="dot" style={{ background: p.onStage === false ? '#555' : p.color }} />
-            <span className="name">{p.name}</span>
-            <input type="checkbox" checked={p.onStage !== false}
-              onClick={e => e.stopPropagation()}
-              onChange={e => update(p.id, { onStage: e.target.checked })}
-              title="このシーンで舞台上"
-              aria-label={`${p.name}をこのシーンで舞台上に表示`} />
-            <button
-              className="danger small"
-              onClick={(e) => { e.stopPropagation(); remove(p.id) }}
-              title="削除"
-            >×</button>
+              aria-label={`${p.name}をまとめて選ぶ`} />}
+            <button type="button" className="props-item-main"
+              aria-label={bulkMode ? `${p.name}をまとめて選ぶ` : `${p.name}の設定を開く`}
+              aria-pressed={bulkMode ? bulk.picked.has(p.id) : selection.kind === 'performer' && selection.id === p.id}
+              onClick={() => bulkMode ? bulk.toggle(p.id) : select('performer', p.id)}>
+              <span className="props-item-color" style={{ background: p.color }} aria-hidden="true" />
+              <span className="props-item-text"><strong>{p.name}</strong><small>{p.onStage === false ? 'このシーンでは舞台外' : 'このシーンで舞台上'}</small></span>
+              {!bulkMode && <span className="props-item-action" aria-hidden="true">設定 ›</span>}
+            </button>
+            {!bulkMode && <button type="button" className={'item-status-toggle' + (p.onStage !== false ? ' active' : '')}
+              aria-pressed={p.onStage !== false} aria-label={`${p.name}を${p.onStage === false ? '舞台上に出す' : '舞台外にする'}`}
+              onClick={() => update(p.id, { onStage: p.onStage === false })}>
+              {p.onStage === false ? '舞台外' : '舞台上'}
+            </button>}
           </div>
         ))}
         {performers.length === 0 && <div className="empty-hint">舞台上に役者がいません</div>}
@@ -653,7 +672,9 @@ function PerformersPanel() {
             fmt={v => `${Math.round(v * 170)}cm`} />
           <PositionTrio label="位置" value={selected.position} onChange={v => update(selected.id, { position: [v[0], Math.max(0, v[1]), v[2]] })} ranges={[[-6, 6], [0, 2], [-7, 2]]} />
           <div className="row" style={{ marginTop: 12 }}>
-            <button className="danger" onClick={() => remove(selected.id)} style={{ flex: 1 }}>削除</button>
+            <button className="danger" onClick={() => {
+              if (confirm(`「${selected.name}」を削除しますか？`)) remove(selected.id)
+            }} style={{ flex: 1 }}>この役者を削除</button>
           </div>
         </div>
       )}
