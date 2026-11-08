@@ -53,6 +53,7 @@ function signature(state: State): string {
     performers: state.performers.map(item => item.id),
     setPieces: state.setPieces.map(item => item.id),
     scenes: state.productionPlan.scenes.map(item => item.id),
+    audienceBlocks: state.productionPlan.audienceBlocks?.map(item => item.id),
     chapters: state.productionPlan.chapters?.map(item => item.id),
     activeSceneId: state.productionPlan.activeSceneId,
     selection: [state.selection.kind, state.selection.id],

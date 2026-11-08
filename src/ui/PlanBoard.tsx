@@ -1,6 +1,7 @@
 import { Fragment, useEffect, useRef, useState, type MouseEvent, type PointerEvent } from 'react'
 import { activeSceneDirections, LIMITS, PLAN_LIMITS, SCENE_TRIGGER_LABELS, sceneDisplayTitle, useStore,
   type DirectionKind, type MoveSceneResult, type SceneTriggerType, type StagePoint } from '../store'
+import { AudienceLayoutEditor } from './AudienceLayoutEditor'
 
 const MAP = { left: 100, top: 70, width: 760, height: 480, svgWidth: 960, svgHeight: 630 }
 const pathColors: Record<DirectionKind, string> = {
@@ -91,6 +92,7 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
   const updateSetPiece = useStore(s => s.updateSetPiece)
   const [showFixtures, setShowFixtures] = useState(true)
   const [showSetPieces, setShowSetPieces] = useState(true)
+  const [audienceEditorOpen, setAudienceEditorOpen] = useState(false)
   const [lastMove, setLastMove] = useState<DragStart | null>(null)
   const [feedback, setFeedback] = useState('')
   const [contextMenu, setContextMenu] = useState<{ kind: 'chapter' | 'scene' | 'empty'; id: string; x: number; y: number } | null>(null)
@@ -514,7 +516,7 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
   }
 
   return <section id="plan-board" className={'plan-board' + (contextMenu ? ' context-open' : '') +
-    (sceneEditorOpen ? ' scene-editor-open' : '')} aria-label="平面図・演出プラン">
+    (sceneEditorOpen ? ' scene-editor-open' : '') + (audienceEditorOpen ? ' audience-editor-open' : '')} aria-label="平面図・演出プラン">
     <div className="plan-board-head">
       <strong>{plan.projectTitle?.trim() || '名称未設定のプロジェクト'}</strong>
       <span>演出プラン</span>
@@ -804,6 +806,9 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
           <button type="button" onClick={() => quickAdd('performer')}>＋ 役者</button>
           <button type="button" onClick={() => quickAdd('fixture')}>＋ 照明</button>
           <button type="button" onClick={() => quickAdd('setpiece')}>＋ 箱馬</button>
+          <button type="button" className="plan-audience-button" onClick={() => setAudienceEditorOpen(true)}>
+            客席を配置{plan.audienceBlocks?.length ? `（${plan.audienceBlocks.reduce((count, block) => count + block.rows * block.seatsPerRow, 0)}席）` : ''}
+          </button>
           {lastMove && <button type="button" className="plan-map-undo" onClick={undoMove}>↶ 移動を戻す</button>}
           <small>追加後、平面図で移動できます</small>
         </div>}
@@ -1094,5 +1099,6 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
       </div>}
     </div>
     </div>
+    <AudienceLayoutEditor open={audienceEditorOpen} onClose={() => setAudienceEditorOpen(false)} />
   </section>
 }

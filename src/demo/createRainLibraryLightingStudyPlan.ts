@@ -2,6 +2,7 @@ import { useStore, type Fixture, type PlanScene } from '../store'
 import { createRainLibraryPlan } from './createRainLibraryPlan'
 import { areaWashFixture } from './areaWash'
 import { MEASURED_CYC_KEY } from '../photometric/measuredCyc'
+import { demoAudienceBlocks } from '../audienceLayout'
 
 const GROUND_NAMES = ['下手の地明かり', '上手の地明かり', '舞台奥・下手の地明かり', '舞台奥・上手の地明かり'] as const
 const GROUND_COLOR: Fixture['color'] = [1, 0.85, 0.72]
@@ -155,7 +156,7 @@ export function createRainLibraryLightingStudyPlan() {
     const scenes = state.productionPlan.scenes.map(reviseScene)
     const active = scenes.find(scene => scene.id === state.productionPlan.activeSceneId)!
     return {
-      productionPlan: { ...state.productionPlan, projectTitle: '雨を待つ図書室｜面明かり試作', scenes },
+      productionPlan: { ...state.productionPlan, projectTitle: '雨を待つ図書室｜面明かり試作', audienceBlocks: demoAudienceBlocks(), scenes },
       fixtures: active.fixtures,
     }
   })

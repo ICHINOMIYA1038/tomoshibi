@@ -33,6 +33,7 @@ import { createRainLibraryLightingStudyPlan } from './demo/createRainLibraryLigh
 import { createAkaoniPlan } from './demo/createAkaoniPlan'
 import { createAkaoniWashPlan } from './demo/createAkaoniWashPlan'
 import { createAkaoniLightingStudyPlan } from './demo/createAkaoniLightingStudyPlan'
+import { AudienceSeating } from './scene/AudienceSeating'
 
 // 舞台の寸法は scene/Stage.tsx を参照 (床 z=-8..2, サイドウォール x=±8,
 // プロセニアム袖枠 x=±6.5 / z=2.5, バトン y=7.0)。
@@ -45,6 +46,7 @@ const CAMERA_VIEWS: Record<string, { pos: [number, number, number]; target: [num
   // 壁の裏面が画面のほとんどを黒く覆って何も見えなかった。
   sidewing: { pos: [-6.8, 1.7, 1.4], target: [1.6, 1.5, -3.2] },
   free: { pos: [4, 4, 8], target: [0, 2, -2] },
+  house: { pos: [0, 24, 27], target: [0, 0.5, 2] },
 }
 
 // 基準の垂直画角。横長画面ではこの値をそのまま使う。
@@ -102,6 +104,7 @@ function ExposureSync({ exposure }: { exposure: number }) {
 
 export default function App() {
   const settings = useStore(s => s.settings)
+  const hasAudienceBlocks = useStore(s => (s.productionPlan.audienceBlocks?.length ?? 0) > 0)
   const select = useStore(s => s.select)
   const scenePath = useStore(s => {
     const plan = s.productionPlan
@@ -233,6 +236,7 @@ export default function App() {
         case '2': up({ cameraView: 'aerial' }); break
         case '3': up({ cameraView: 'sidewing' }); break
         case '4': up({ cameraView: 'free' }); break
+        case '5': if (s.productionPlan.audienceBlocks?.length) up({ cameraView: 'house' }); break
         case 'escape': if (planOpen) setPlanOpen(false); else s.select(null, null); break
         case '?': case '/': up({ showHelp: !s.settings.showHelp }); break
         case 'h': up({ showHelp: !s.settings.showHelp }); break
@@ -329,6 +333,7 @@ export default function App() {
           )}
 
           {settings.showStage && <Stage onMaterialsReady={noopMaterials} />}
+          <AudienceSeating />
           {settings.showPerformers && <PerformerMeshes onMaterialsReady={noopMaterials} />}
           {settings.showFixtureMeshes && <FixtureMeshes />}
           <SetPieces />
@@ -392,6 +397,7 @@ export default function App() {
         <ViewButton view="aerial" label="上から" hint="2" />
         <ViewButton view="sidewing" label="袖" hint="3" />
         <ViewButton view="free" label="自由" hint="4" />
+        {hasAudienceBlocks && <ViewButton view="house" label="客席全体" hint="5" />}
         <HouseLightsToggle />
         {!isMockPreview && <XRButton />}
       </div>

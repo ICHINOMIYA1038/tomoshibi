@@ -4213,7 +4213,35 @@
         "triggerType": "sound"
       }
     ],
-    "activeSceneId": "sc1794147655410-ogtxne"
+    "activeSceneId": "sc1794147655410-ogtxne",
+    "audienceBlocks": [
+      {
+        "id": "audience-demo-1",
+        "name": "下手客席",
+        "position": [
+          -3,
+          10.5
+        ],
+        "rows": 7,
+        "seatsPerRow": 6,
+        "rowSpacing": 0.9,
+        "seatSpacing": 0.62,
+        "rotationDeg": 0
+      },
+      {
+        "id": "audience-demo-2",
+        "name": "上手客席",
+        "position": [
+          3,
+          10.5
+        ],
+        "rows": 7,
+        "seatsPerRow": 6,
+        "rowSpacing": 0.9,
+        "seatSpacing": 0.62,
+        "rotationDeg": 0
+      }
+    ]
   },
   "settings": {
     "hazeDensity": 0.19,

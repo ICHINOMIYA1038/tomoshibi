@@ -68,6 +68,18 @@ export interface ProductionPlan {
   sequences?: PlanSequence[]
   scenes: PlanScene[]
   activeSceneId: string | null
+  audienceBlocks?: AudienceBlock[]
+}
+
+export interface AudienceBlock {
+  id: string
+  name: string
+  position: [number, number]
+  rows: number
+  seatsPerRow: number
+  rowSpacing: number
+  seatSpacing: number
+  rotationDeg: number
 }
 
 export interface PlanChapter { id: string; title: string }
@@ -99,7 +111,7 @@ export type SceneTriggerType = keyof typeof SCENE_TRIGGER_LABELS
 export type MoveSceneResult = 'moved' | 'unchanged' | 'invalid'
 
 export const emptyProductionPlan = (): ProductionPlan => ({
-  title: '', projectTitle: '', chapters: [], sequences: [], scenes: [], activeSceneId: null,
+  title: '', projectTitle: '', chapters: [], sequences: [], scenes: [], activeSceneId: null, audienceBlocks: [],
 })
 
 const sceneId = () => `sc${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
@@ -270,7 +282,7 @@ export interface SceneSettings {
   showStage: boolean
   showGizmos: boolean
   showPerformers: boolean
-  cameraView: 'audience' | 'aerial' | 'sidewing' | 'free'
+  cameraView: 'audience' | 'aerial' | 'sidewing' | 'free' | 'house'
   transformMode: 'translate' | 'rotate'
   uiTab: 'fixtures' | 'performers' | 'props'
   settingsOpen: boolean
@@ -314,6 +326,9 @@ interface State {
   removePerformer: (id: string) => void
   updatePerformer: (id: string, patch: Partial<Performer>) => void
   updateProductionPlan: (patch: Partial<Pick<ProductionPlan, 'title' | 'projectTitle'>>) => void
+  addAudienceBlock: () => string | null
+  updateAudienceBlock: (id: string, patch: Partial<AudienceBlock>) => void
+  removeAudienceBlock: (id: string) => void
   ensureScenes: () => void
   addScene: () => void
   addSceneAt: (chapterId: string, beforeSceneId: string | null) => string | null
@@ -561,6 +576,29 @@ export const useStore = create<State>((set, get) => ({
   updateProductionPlan: (patch) => set(s => ({
     productionPlan: { ...s.productionPlan, ...patch },
   })),
+  addAudienceBlock: () => {
+    let addedId: string | null = null
+    set(s => {
+      const blocks = s.productionPlan.audienceBlocks ?? []
+      if (blocks.length >= 8) return {}
+      const block: AudienceBlock = {
+        id: groupId('au'), name: `客席 ${blocks.length + 1}`,
+        position: [blocks.length % 2 === 0 ? -3 : 3, 10 + Math.floor(blocks.length / 2) * 3],
+        rows: 6, seatsPerRow: 7, rowSpacing: 0.9, seatSpacing: 0.62, rotationDeg: 0,
+      }
+      addedId = block.id
+      return { productionPlan: { ...s.productionPlan, audienceBlocks: [...blocks, block] } }
+    })
+    return addedId
+  },
+  updateAudienceBlock: (id, patch) => set(s => ({ productionPlan: {
+    ...s.productionPlan,
+    audienceBlocks: (s.productionPlan.audienceBlocks ?? []).map(block => block.id === id ? { ...block, ...patch } : block),
+  } })),
+  removeAudienceBlock: (id) => set(s => ({ productionPlan: {
+    ...s.productionPlan,
+    audienceBlocks: (s.productionPlan.audienceBlocks ?? []).filter(block => block.id !== id),
+  } })),
   ensureScenes: () => set(s => {
     if (s.productionPlan.scenes.length) return { productionPlan: ensurePlanHierarchy(s.productionPlan) }
     const scene = sceneSnapshot(s, isMockPath ? '' : '開始')

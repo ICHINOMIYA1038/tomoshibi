@@ -5083,7 +5083,35 @@
         "triggerType": "light"
       }
     ],
-    "activeSceneId": "sc1794147658359-o3aow3"
+    "activeSceneId": "sc1794147658359-o3aow3",
+    "audienceBlocks": [
+      {
+        "id": "audience-demo-1",
+        "name": "下手客席",
+        "position": [
+          -3,
+          10.5
+        ],
+        "rows": 7,
+        "seatsPerRow": 6,
+        "rowSpacing": 0.9,
+        "seatSpacing": 0.62,
+        "rotationDeg": 0
+      },
+      {
+        "id": "audience-demo-2",
+        "name": "上手客席",
+        "position": [
+          3,
+          10.5
+        ],
+        "rows": 7,
+        "seatsPerRow": 6,
+        "rowSpacing": 0.9,
+        "seatSpacing": 0.62,
+        "rotationDeg": 0
+      }
+    ]
   },
   "settings": {
     "hazeDensity": 0.23,

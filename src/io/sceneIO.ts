@@ -5,7 +5,7 @@
 
 import {
   useStore, syncEntityIds, emptyProductionPlan, captureActiveScene, ensurePlanHierarchy, sceneSnapshot, sceneStage, PLAN_LIMITS,
-  type Fixture, type Performer, type SceneSettings, type ProductionPlan, type SceneTriggerType, type StagePoint,
+  type Fixture, type Performer, type SceneSettings, type ProductionPlan, type AudienceBlock, type SceneTriggerType, type StagePoint,
 } from '../store'
 import type { SetPiece } from '../types'
 
@@ -93,6 +93,20 @@ function normalizeProductionPlan(raw: unknown, fixtures: Fixture[], performers: 
     : [data.workTitle, data.venueTitle].filter(value => typeof value === 'string' && value.trim()).join(' / ').slice(0, 60)
   const workTitle = typeof data.workTitle === 'string' ? data.workTitle.slice(0, 60) : ''
   const venueTitle = typeof data.venueTitle === 'string' ? data.venueTitle.slice(0, 60) : ''
+  const audienceBlocks: AudienceBlock[] = Array.isArray(data.audienceBlocks)
+    ? data.audienceBlocks.slice(0, 8).flatMap(value => {
+      if (!value || typeof value.id !== 'string' || !Array.isArray(value.position) ||
+          value.position.length !== 2 || !value.position.every(n => typeof n === 'number' && Number.isFinite(n))) return []
+      const numeric = (input: unknown, fallback: number, low: number, high: number) =>
+        typeof input === 'number' && Number.isFinite(input) ? Math.max(low, Math.min(high, input)) : fallback
+      return [{
+        id: value.id.slice(0, 80), name: typeof value.name === 'string' ? value.name.slice(0, 60) : '客席',
+        position: [numeric(value.position[0], 0, -9, 9), numeric(value.position[1], 10, 4, 22)] as [number, number],
+        rows: Math.round(numeric(value.rows, 6, 1, 10)), seatsPerRow: Math.round(numeric(value.seatsPerRow, 7, 1, 12)),
+        rowSpacing: numeric(value.rowSpacing, .9, .6, 1.4), seatSpacing: numeric(value.seatSpacing, .62, .5, 1.2),
+        rotationDeg: numeric(value.rotationDeg, 0, -45, 45),
+      }]
+    }) : []
   if (Array.isArray(data.scenes)) {
     const chapters = Array.isArray(data.chapters) ? data.chapters.slice(0, PLAN_LIMITS.chapters).filter(item =>
       item && typeof item.id === 'string' && typeof item.title === 'string').map(item =>
@@ -121,8 +135,8 @@ function normalizeProductionPlan(raw: unknown, fixtures: Fixture[], performers: 
     })
     const activeSceneId = scenes.some(scene => scene.id === data.activeSceneId)
       ? data.activeSceneId as string : scenes[scenes.length - 1]?.id ?? null
-    return scenes.length ? ensurePlanHierarchy({ title, projectTitle, workTitle, venueTitle, chapters, sequences, scenes, activeSceneId })
-      : { title, projectTitle, workTitle, venueTitle, chapters: [], sequences: [], scenes, activeSceneId }
+    return scenes.length ? ensurePlanHierarchy({ title, projectTitle, workTitle, venueTitle, chapters, sequences, scenes, activeSceneId, audienceBlocks })
+      : { title, projectTitle, workTitle, venueTitle, chapters: [], sequences: [], scenes, activeSceneId, audienceBlocks }
   }
   const scenes = [] as ProductionPlan['scenes']
   if (Array.isArray(data.beats)) {
@@ -167,7 +181,7 @@ function normalizeProductionPlan(raw: unknown, fixtures: Fixture[], performers: 
     scenes[0].note = [scenes[0].note, data.note.trim()].filter(Boolean).join('\n').slice(0, 1000)
   }
   return ensurePlanHierarchy({
-    title, projectTitle, workTitle, venueTitle,
+    title, projectTitle, workTitle, venueTitle, audienceBlocks,
     scenes,
     activeSceneId: scenes.find(scene => scene.id === `sc-${legacyActiveId}`)?.id ?? scenes[scenes.length - 1]?.id ?? null,
   })

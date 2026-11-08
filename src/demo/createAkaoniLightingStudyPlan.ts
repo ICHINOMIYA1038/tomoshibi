@@ -2,6 +2,7 @@ import { useStore, type Fixture, type PlanScene } from '../store'
 import { createAkaoniWashPlan } from './createAkaoniWashPlan'
 import { MEASURED_CYC_KEY } from '../photometric/measuredCyc'
 import { areaWashFixture } from './areaWash'
+import { demoAudienceBlocks } from '../audienceLayout'
 
 const SEA_NAMES = new Set(['海の面明かり・下手', '海の面明かり・中央', '海の面明かり・上手'])
 const FRONT_NAMES = new Set(['あの女の前明かり', '浜の人物の前明かり', '赤鬼の前明かり'])
@@ -134,6 +135,7 @@ export function createAkaoniLightingStudyPlan() {
       productionPlan: {
         ...state.productionPlan,
         projectTitle: '赤鬼｜測光配光の照明試作',
+        audienceBlocks: demoAudienceBlocks(),
         scenes,
       },
       fixtures: active.fixtures,
