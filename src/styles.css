@@ -4288,7 +4288,7 @@ body.embed .workspace-switch { display: none; }
   color: #e6f6ed;
   text-align: left;
   line-height: 1.5;
-  pointer-events: auto;
+  pointer-events: none;
 }
 .unified-shell.workspace-layout .plan-action-feedback button {
   flex: none;
@@ -4300,6 +4300,7 @@ body.embed .workspace-switch { display: none; }
   color: inherit;
   font-size: 19px;
   cursor: pointer;
+  pointer-events: auto;
 }
 @media (max-width: 960px) {
   .unified-shell.workspace-layout .workspace-project-back { min-height: 44px; min-width: 44px; }
