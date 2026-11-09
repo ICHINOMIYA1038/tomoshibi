@@ -3599,6 +3599,10 @@ body.embed .workspace-switch { display: none; }
   .unified-shell.workspace-layout .plan-map-scroll svg {
     flex: 0 1 auto; width: 100%; height: auto; max-height: 100%;
   }
+  .unified-shell.workspace-layout .plan-map-caption > span,
+  .unified-shell.workspace-layout .plan-map-layerbar > span,
+  .unified-shell.workspace-layout .plan-map-layerbar small { display: none; }
+  .unified-shell.workspace-layout .plan-map-layerbar button { flex: none; }
 }
 .unified-shell.workspace-layout .plan-map-caption { min-height: 39px; }
 .unified-shell.workspace-layout .plan-map-caption span { flex: 1; min-width: 0; line-height: 1.4; }
