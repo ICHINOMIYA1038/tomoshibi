@@ -3910,9 +3910,6 @@ body.embed .workspace-switch { display: none; }
   background: rgba(24,20,24,.94); color: var(--ink-primary);
   box-shadow: 0 8px 26px rgba(0,0,0,.35);
 }
-.unified-shell.workspace-layout .workspace-current-scene > div {
-  display: grid; gap: 2px; min-width: 0; padding: 0 4px;
-}
 .unified-shell.workspace-layout .workspace-current-scene small {
   color: var(--kin); font-size: 10px; white-space: nowrap;
 }
@@ -3925,7 +3922,13 @@ body.embed .workspace-switch { display: none; }
   border-radius: 6px; background: rgba(255,255,255,.05); color: var(--ink-primary);
   font: 18px var(--font-sans); cursor: pointer;
 }
+.unified-shell.workspace-layout .workspace-current-scene > .workspace-current-scene-picker {
+  display: grid; flex: 1 1 auto; gap: 2px; min-width: 105px; max-width: 190px;
+  width: auto; height: auto; min-height: 44px; padding: 4px 8px;
+  text-align: left; font: 12px var(--font-sans);
+}
 .unified-shell.workspace-layout .workspace-current-scene button:hover { background: rgba(212,175,111,.2); }
+.unified-shell.workspace-layout .workspace-current-scene button:focus-visible { outline: 2px solid var(--kin); outline-offset: 2px; }
 .unified-shell.workspace-layout .workspace-current-scene button:disabled { opacity: .32; cursor: default; }
 .unified-shell.workspace-layout .workspace-project-back:hover,
 .unified-shell.workspace-layout .workspace-header-actions .workspace-save-button:hover { background: rgba(212,175,111,.27); }
@@ -4088,10 +4091,10 @@ body.embed .workspace-switch { display: none; }
 }
 .unified-shell.workspace-layout .plan-scene-slot.drop-active button { opacity: 0; pointer-events: none; }
 @media (hover: none) {
-  .unified-shell.workspace-layout .plan-scene-slot { height: 20px; }
+  .unified-shell.workspace-layout .plan-scene-slot { height: 32px; }
   .unified-shell.workspace-layout .plan-scene-slot button {
-    min-width: 32px; width: 32px; min-height: 24px; padding: 0;
-    opacity: .85; font-size: 17px;
+    min-width: 44px; width: 44px; min-height: 44px; padding: 0;
+    opacity: 1; font-size: 20px;
   }
   .unified-shell.workspace-layout .plan-scene-slot button span { display: none; }
 }

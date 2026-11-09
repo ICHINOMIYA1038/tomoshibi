@@ -547,7 +547,7 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
       {!persistent && <button className="plan-board-close" onClick={onClose}>3D 舞台に戻る</button>}
     </div>
     <div className="plan-board-body">
-      <aside ref={outlineRef} className={'plan-outline' + (selectionMode ? ' selection-mode' : '')} aria-label="プロジェクトの構成">
+      <aside id="plan-outline" ref={outlineRef} className={'plan-outline' + (selectionMode ? ' selection-mode' : '')} aria-label="プロジェクトの構成">
         {persistent ? <div className="plan-outline-project plan-outline-heading">
           <div className="plan-outline-heading-row"><strong>公演の流れ</strong>
             <button type="button" className="plan-selection-toggle" aria-pressed={selectionMode}
@@ -730,6 +730,11 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
               if (menuScene.id !== scene.id) selectScene(menuScene.id)
               onOpenSceneEditor?.()
             }}>きっかけ・メモを編集</button>
+            <button role="menuitem" disabled={!menuSceneChapterId || plan.scenes.length >= PLAN_LIMITS.scenes}
+              onClick={() => {
+                setContextMenu(null)
+                if (menuSceneChapterId) createSceneAt(menuSceneChapterId, menuChapterScenes[menuSceneIndex + 1]?.id ?? null)
+              }}>この後にシーンを追加</button>
             <button role="menuitem" disabled={menuSceneIndex <= 0}
               onClick={() => { setContextMenu(null); moveByOne(menuScene.id, -1) }}>一つ上へ移動</button>
             <button role="menuitem" disabled={menuSceneIndex >= menuChapterScenes.length - 1}
@@ -752,6 +757,8 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
               if (item) startRename('chapter', item.id, item.title)
             }}>章名を変更</button>
             <button role="menuitem" onClick={() => { setContextMenu(null); createChapterAfter(contextMenu.id) }}>この後に章を追加</button>
+            <button role="menuitem" disabled={plan.scenes.length >= PLAN_LIMITS.scenes}
+              onClick={() => { setContextMenu(null); createSceneAt(contextMenu.id, null) }}>この章にシーンを追加</button>
             <button role="menuitem" disabled={(plan.chapters?.findIndex(item => item.id === contextMenu.id) ?? 0) <= 0}
               onClick={() => {
                 const index = plan.chapters?.findIndex(item => item.id === contextMenu.id) ?? -1

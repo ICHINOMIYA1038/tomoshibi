@@ -380,7 +380,12 @@ export default function App() {
           <XRGLBinder />
         </Canvas>
        </WebGLErrorBoundary>
-        {isMockPreview && !playbackOpen && <MockSceneIndicator />}
+        {isMockPreview && !playbackOpen && <MockSceneIndicator outlineVisible={outlineVisible}
+          onToggleOutline={() => {
+            setOutlineVisible(value => !value)
+            setDisplayMenuOpen(false)
+            if (window.innerWidth <= 960) useStore.getState().updateSettings({ panelOpen: false })
+          }} />}
       </div>
 
       <header className="workspace-header">
@@ -530,7 +535,7 @@ function MockHistoryButtons() {
   </div>
 }
 
-function MockSceneIndicator() {
+function MockSceneIndicator({ outlineVisible, onToggleOutline }: { outlineVisible: boolean, onToggleOutline: () => void }) {
   const plan = useStore(state => state.productionPlan)
   const selectScene = useStore(state => state.selectScene)
   const { saveStatus } = useMockWorkspaceState()
@@ -540,9 +545,11 @@ function MockSceneIndicator() {
   return <div className="workspace-current-scene" aria-label="現在のシーン">
     <button type="button" aria-label="前のシーン" disabled={index <= 0}
       onClick={() => selectScene(plan.scenes[index - 1].id)}>←</button>
-    <div aria-live="polite"><small>現在のシーン</small>
-      <strong>{sceneDisplayTitle(plan, scene.id)}</strong>
-      <span className="workspace-current-save">{saveStatus === 'saving' ? '自動保存中…' : saveStatus === 'error' ? '保存できません' : 'この端末に保存済み'}</span></div>
+    <button type="button" className="workspace-current-scene-picker" aria-expanded={outlineVisible}
+      aria-controls="plan-outline" aria-label={`${sceneDisplayTitle(plan, scene.id)}。シーン一覧を${outlineVisible ? '閉じる' : '開く'}`}
+      onClick={onToggleOutline}><small>シーン一覧 <span aria-hidden="true">▾</span></small>
+      <strong aria-live="polite">{sceneDisplayTitle(plan, scene.id)}</strong>
+      <span className="workspace-current-save">{saveStatus === 'saving' ? '自動保存中…' : saveStatus === 'error' ? '保存できません' : 'この端末に保存済み'}</span></button>
     <button type="button" aria-label="次のシーン" disabled={index >= plan.scenes.length - 1}
       onClick={() => selectScene(plan.scenes[index + 1].id)}>→</button>
   </div>
