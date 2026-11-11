@@ -102,7 +102,7 @@ function projectContentKey(scene: SerializedScene): string {
 }
 
 export function preserveMockDraftBeforeDemo(): boolean {
-  if (!hasDeviceStorage()) return true
+  if (!hasDeviceStorage() && !getActiveCloudProject()) return true
   try {
     const raw = workspaceStorage().getItem(SESSION_KEY)
     if (!raw) return true

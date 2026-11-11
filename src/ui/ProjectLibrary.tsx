@@ -243,6 +243,7 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
   }
   const create = async () => {
     if (creating) return
+    if (cloudDirty) { setCreateError('編集中のプロジェクトを保存しています。保存完了後に作成してください。'); return }
     if (user && memberProjects.length >= user.maxProjects) { setCreateError(`プロジェクトは${user.maxProjects}件まで保存できます。`); return }
     const title = createName.trim()
     if (!title) { createNameRef.current?.focus(); return }
