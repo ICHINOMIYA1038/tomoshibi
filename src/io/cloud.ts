@@ -49,6 +49,7 @@ export interface CloudUser {
   planExpiresAt: string | null
   /** 保存できるシーンの上限。バックエンドから返す。 */
   maxScenes: number
+  maxProjects: number
 }
 
 export const FREE_MAX_SCENES = 3
@@ -118,6 +119,7 @@ export async function getSessionSnapshot(): Promise<SessionSnapshot> {
         plan: (u.plan === 'pro' ? 'pro' : 'free') as CloudPlan,
         planExpiresAt: u.planExpiresAt ?? null,
         maxScenes: typeof u.maxScenes === 'number' ? u.maxScenes : FREE_MAX_SCENES,
+        maxProjects: typeof u.maxProjects === 'number' ? u.maxProjects : u.plan === 'pro' ? 10 : 2,
       },
       proAvailable,
     }
@@ -138,8 +140,9 @@ const PORTAL = 'https://id.gikyokutosyokan.com'
 const here = () => (typeof location !== 'undefined' ? location.origin + location.pathname : 'https://tomoshibi.gikyokutosyokan.com/')
 
 export function loginUrl(): string {
-  if (isNativeApp()) return `${BASE}/auth/signin?callbackUrl=${encodeURIComponent(here())}`
-  return `${PORTAL}/?return_to=${encodeURIComponent(here())}`
+  const destination = /\/(studio|mock)(\/|$)/.test(location.pathname) ? location.origin + location.pathname.replace(/\/(studio|mock)(\/.*)?$/, '/$1/projects/') : here()
+  if (isNativeApp()) return `${BASE}/auth/signin?callbackUrl=${encodeURIComponent(destination)}`
+  return `${PORTAL}/?return_to=${encodeURIComponent(destination)}`
 }
 export function logoutUrl(): string {
   if (isNativeApp()) return `${BASE}/api/tomoshibi/logout?callbackUrl=${encodeURIComponent(here())}`
@@ -187,9 +190,9 @@ export function fetchCloudProject(id: string) {
   return req<CloudProject>(`/projects/${id}`)
 }
 
-export function createCloudProject(name: string, data: SerializedScene) {
+export function createCloudProject(name: string, data: SerializedScene, importKey?: string) {
   return req<CloudProjectMeta>('/projects', {
-    method: 'POST', body: JSON.stringify({ name, data }),
+    method: 'POST', body: JSON.stringify({ name, data, importKey }),
   })
 }
 

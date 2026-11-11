@@ -4374,6 +4374,9 @@ body.embed .workspace-switch { display: none; }
 .project-library-import:hover { border-color: #c9ae79; background: #352c29; }
 .project-library-import span { color: #d4af6f; font-size: 16px; }
 .project-library-list-head { padding: 27px 9px 9px; color: #a99d92; font-size: 11px; }
+.project-library-list-head-explained { display: grid; gap: 4px; }
+.project-library-list-head-explained strong { color: #eee3d2; font-size: 12px; font-weight: 700; }
+.project-library-list-head-explained span { color: #a99d92; font-size: 10px; line-height: 1.5; }
 .project-library-list { display: grid; align-content: start; gap: 4px; }
 .project-library-list-item { display: grid; gap: 5px; width: 100%; min-height: 70px; padding: 11px 13px; border: 1px solid transparent; border-radius: 7px; background: transparent; color: #f0e8da; text-align: left; }
 .project-library-list-item:hover { background: rgba(255,255,255,.06); }
