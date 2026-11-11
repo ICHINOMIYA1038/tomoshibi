@@ -1,3 +1,4 @@
+import { WorkspaceNotice } from './WorkspaceNotice'
 import { Fragment, useEffect, useRef, useState, type MouseEvent, type PointerEvent } from 'react'
 import { activeSceneDirections, LIMITS, PLAN_LIMITS, SCENE_TRIGGER_LABELS, sceneDisplayTitle, useStore,
   type DirectionKind, type MoveSceneResult, type SceneTriggerType, type StagePoint } from '../store'
@@ -315,11 +316,11 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
       : kind === 'sequence' ? 'この章にシーケンスを追加しました。名前を入力してください。'
         : '次の章を追加しました。章名を入力してください。')
   }
-  const navigateScene = (id: string, label: string) => {
+  const navigateScene = (id: string, _label: string) => {
     setRenaming(null)
     selectScene(id)
     setLastMove(null)
-    setFeedback(`${label}を開きました`)
+    setFeedback('')
     onNavigate?.()
   }
   const startRename = (kind: 'chapter' | 'sequence' | 'scene', id: string, title: string) => {
@@ -714,10 +715,10 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
           {!persistent && <small>新しいシーンには現在の舞台の配置を引き継ぎます</small>}
         </div>
       </aside>
-      {feedback && <div className="plan-action-feedback" role="status" aria-live="polite">
-        <span aria-hidden="true">✓</span><span>{feedback}</span>
+      {feedback && <WorkspaceNotice>
+        <span>{feedback}</span>
         <button aria-label="通知を閉じる" onClick={() => setFeedback('')}>×</button>
-      </div>}
+      </WorkspaceNotice>}
       {persistent && contextMenu && <>
         <div className="plan-context-backdrop" onPointerDown={() => setContextMenu(null)} />
         <div className="plan-context-menu" role="menu" aria-label="構成の操作"

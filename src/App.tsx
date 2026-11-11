@@ -1,3 +1,4 @@
+import { WorkspaceNotice, WorkspaceNotices } from './ui/WorkspaceNotice'
 import { hasDeviceStorage } from './io/workspaceStorage'
 import { useEffect, useRef, useState } from 'react'
 import { Canvas, useThree } from '@react-three/fiber'
@@ -323,7 +324,7 @@ export default function App() {
 
   return (
     <div className={'unified-shell' + (planOpen ? ' plan-open' : '') + (settings.panelOpen ? ' panel-open' : '') + (playbackOpen ? ' playback-open' : '') + (isMockPreview ? ' workspace-layout mobile-view-' + mobileView : '') + (mapVisible ? '' : ' map-hidden') + (outlineVisible ? ' outline-visible' : '')}>
-      {isMockPreview && <CloudProjectAutosave />}
+      {isMockPreview && <><WorkspaceNotices /><CloudProjectAutosave /></>}
       <div className="canvas-wrap">
        <WebGLErrorBoundary>
         <Canvas
@@ -420,7 +421,7 @@ export default function App() {
         <button aria-pressed={mobileView === 'stage'} onClick={() => { setMobileView('stage'); setDisplayMenuOpen(false) }}>3Dで確認</button>
         <button aria-pressed={mobileView === 'plan'} onClick={() => { setMobileView('plan'); setMapVisible(true); setDisplayMenuOpen(false) }}>平面図で配置</button>
       </nav>}
-      {isMockPreview && workspaceFeedback && <div className="workspace-feedback" role="status" aria-live="polite"><span aria-hidden="true">✓</span>{workspaceFeedback}</div>}
+      {isMockPreview && workspaceFeedback && <WorkspaceNotice>{workspaceFeedback}</WorkspaceNotice>}
       {!isEmbed && <LegalFooter />}
       {!isEmbed && !isMockPreview && <AccountMenu />}
 
@@ -483,33 +484,46 @@ function CloudProjectAutosave() {
   const [attempt, setAttempt] = useState(0)
   const [error, setError] = useState('')
   const failedSnapshot = useRef('')
+  const inFlight = useRef(false)
+  const generation = useRef(0)
+  const activeId = getActiveCloudProject()?.id
+  useEffect(() => {
+    generation.current += 1
+    failedSnapshot.current = ''
+    setError('')
+  }, [activeId, user?.id])
   useEffect(() => {
     const active = getActiveCloudProject()
     if (!user || !active || !cloudDirty || saveStatus !== 'saved') return
-    const snapshot = currentWorkspaceSnapshot()
-    if (snapshot === failedSnapshot.current) return
+    if (currentWorkspaceSnapshot() === failedSnapshot.current || inFlight.current) return
+    const startedGeneration = generation.current
     const timer = window.setTimeout(async () => {
       const current = getActiveCloudProject()
-      if (!current || current.id !== active.id) return
+      if (!current || current.id !== active.id || inFlight.current) return
+      const snapshot = currentWorkspaceSnapshot()
+      inFlight.current = true
       const name = useStore.getState().productionPlan.projectTitle?.trim() || current.name
       try {
         const updated = await updateCloudProject(current.id, current.revision, name, exportScene(name))
-        if (getActiveCloudProject()?.id !== current.id) return
+        if (getActiveCloudProject()?.id !== current.id || generation.current !== startedGeneration) return
         setActiveCloudProject({ id: current.id, name: updated.name, revision: updated.revision })
         markCloudSaved(snapshot)
         setError('')
         failedSnapshot.current = ''
-        setAttempt(value => value + 1)
       } catch (cause) {
+        if (getActiveCloudProject()?.id !== current.id || generation.current !== startedGeneration) return
         failedSnapshot.current = snapshot
         setError(cause instanceof CloudError && cause.status === 409
-          ? '別の端末で更新されています。この端末の変更は残っています。ページを開き直して内容を確認してください。'
-          : 'クラウドに保存できませんでした。この端末には保存されています。')
+          ? '別のタブまたは端末で更新されたため、クラウドへの保存を停止しました。現在の編集内容はこのブラウザ／アプリに保持しています。'
+          : 'クラウドに保存できませんでした。現在の編集内容はこのブラウザ／アプリに保持しています。')
+      } finally {
+        inFlight.current = false
+        setAttempt(value => value + 1)
       }
     }, 2200)
     return () => window.clearTimeout(timer)
-  }, [user?.id, cloudDirty, saveStatus, attempt])
-  return error ? <div className="project-library-feedback" role="alert" style={{ position: 'fixed', right: 16, bottom: 16, zIndex: 1000, maxWidth: 340 }}>{error}</div> : null
+  }, [user?.id, activeId, cloudDirty, saveStatus, attempt])
+  return error ? <WorkspaceNotice kind="alert">{error}</WorkspaceNotice> : null
 }
 
 function MockProjectTitle({ title }: { title?: string }) {

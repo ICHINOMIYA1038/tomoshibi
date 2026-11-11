@@ -76,6 +76,7 @@ export function Stage({ onMaterialsReady }: { onMaterialsReady: (mats: THREE.Sha
         <mesh position={[0, 3.5, rear + 1.4]} material={cycMat} receiveShadow>
           <planeGeometry args={[Math.max(4, layout.stageWidth - 2), 6.5]} />
         </mesh>
+        {layout.showProsceniumFrame === true && <>
         <mesh position={[-layout.stageWidth / 2 + 1.5, 4, front - .5]} material={procMat}>
           <boxGeometry args={[1, 8, .4]} />
         </mesh>
@@ -85,6 +86,7 @@ export function Stage({ onMaterialsReady }: { onMaterialsReady: (mats: THREE.Sha
         <mesh position={[0, 7.5, front - .5]} material={procMat}>
           <boxGeometry args={[Math.max(4, layout.stageWidth - 2), 1, .4]} />
         </mesh>
+        </>}
       </>}
       {framed && [front - 1.5, -3 + layout.stageDepth / 6, -3 - layout.stageDepth / 6, rear + 3].map((z, i) => (
         <mesh key={`baton-${i}`} position={[0, 7.0, z]} rotation={[0, 0, Math.PI / 2]} material={batonMat}>

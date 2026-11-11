@@ -729,6 +729,8 @@ function PropsPanel() {
 
   return (
     <div className="panel-body props-panel">
+      <button type="button" className="props-floor-add" onClick={() => addPrim('platform')}>＋ 床・平台を追加</button>
+      <p className="empty-hint">追加した平台の幅・奥行・高さを調整して、床や段差を作れます。</p>
       <details className="props-add">
         <summary>＋ 舞台セットを追加</summary>
         <div>

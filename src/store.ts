@@ -76,6 +76,7 @@ export interface ProductionPlan {
 
 export type StageShape = 'proscenium' | 'round' | 'thrust' | 'custom'
 export interface VenueLayout {
+  showProsceniumFrame?: boolean
   stageShape: StageShape
   stageWidth: number
   stageDepth: number

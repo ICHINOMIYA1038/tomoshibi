@@ -4565,3 +4565,11 @@ body.embed .workspace-switch { display: none; }
 
 .project-library-storage { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px; }
 @media (max-width: 600px) { .project-library-header { height: auto; min-height: 64px; padding-block: 8px; gap: 8px; } .project-library-storage a { padding-inline: 7px; font-size: 11px; } }
+
+.workspace-notices { position: fixed; right: 16px; bottom: 16px; z-index: 1000; display: flex; flex-direction: column; gap: 8px; width: min(380px, calc(100vw - 32px)); max-height: 45vh; overflow: auto; pointer-events: none; }
+.workspace-notice { display: flex; align-items: flex-start; gap: 9px; padding: 12px 14px; border: 1px solid #527766; border-radius: 8px; background: #1c2925; color: #e6f6ed; font-size: 12px; line-height: 1.6; box-shadow: 0 4px 16px #0004; }
+.workspace-notice.alert { border-color: #b28a45; background: #32291b; color: #ffe2ac; }
+.workspace-notice button { flex-shrink: 0; min-width: 32px; min-height: 32px; margin-left: auto; pointer-events: auto; }
+.venue-frame-option { display: flex; align-items: center; gap: 10px; min-height: 44px; cursor: pointer; }
+.venue-frame-option input { width: 18px; height: 18px; }
+.props-floor-add { width: 100%; min-height: 44px; margin-bottom: 6px; }

@@ -243,7 +243,8 @@ export function AudienceLayoutEditor({ open, onClose }: { open: boolean; onClose
           <div className="audience-editor-legend"><span>■ 客席</span><span>● 客席側の照明</span><span>舞台・客席をドラッグして移動</span></div>
         </div>
         <aside className="audience-editor-inspector">
-          <h2>舞台の形</h2>
+          <h2>舞台の床・形</h2>
+          <p>床を広げるには幅・奥行を変更します。張り出しや変形した床も選べます。</p>
           <div className="venue-shape-options" role="group" aria-label="舞台の形">
             {([['proscenium', '額縁'], ['round', '円形'], ['thrust', '張り出し'], ['custom', '自由形状']] as const)
               .map(([shape, label]) => <button key={shape} type="button"
@@ -270,6 +271,12 @@ export function AudienceLayoutEditor({ open, onClose }: { open: boolean; onClose
                   onChange={event => updateVenue({ stageDepth: Number(event.target.value) })} />
                 <output>{venue.stageDepth}m</output></label>}
             </div>}
+          {venue.stageShape === 'proscenium' && <label className="venue-frame-option">
+            <input type="checkbox" checked={venue.showProsceniumFrame === true}
+              onChange={event => updateVenue({ showProsceniumFrame: event.target.checked })} />
+            赤い舞台枠を表示
+          </label>}
+          <p>床に段差を付ける場合は「セット」から「床・平台を追加」を選び、幅・奥行・高さを調整できます。</p>
           <div className="venue-stage-position">
             <strong>舞台の位置</strong>
             <p>舞台をドラッグして移動。全シーンの役者・セットと、舞台の範囲内にある照明も一緒に動きます。客席側の照明は狙いが追従します。</p>

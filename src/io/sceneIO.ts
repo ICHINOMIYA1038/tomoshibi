@@ -121,6 +121,7 @@ function normalizeProductionPlan(raw: unknown, fixtures: Fixture[], performers: 
       stageOffset: Array.isArray(venueRaw.stageOffset) && venueRaw.stageOffset.length === 2 &&
         venueRaw.stageOffset.every(value => typeof value === 'number' && Number.isFinite(value) && Math.abs(value) <= 50)
         ? [venueRaw.stageOffset[0], venueRaw.stageOffset[1]] : [0, 0],
+      showProsceniumFrame: venueRaw.showProsceniumFrame === true,
       targetCapacity: typeof venueRaw.targetCapacity === 'number' && Number.isFinite(venueRaw.targetCapacity)
         ? Math.round(Math.max(0, Math.min(6400, venueRaw.targetCapacity))) : 0,
       stageVertices: Array.isArray(venueRaw.stageVertices) && venueRaw.stageVertices.length >= 3
