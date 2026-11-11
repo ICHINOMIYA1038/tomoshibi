@@ -1,3 +1,4 @@
+import { hasDeviceStorage } from '../io/workspaceStorage'
 import { useEffect, useState } from 'react'
 import { useStore, useIsDirty } from '../store'
 import { exportScene, importScene } from '../io/sceneIO'
@@ -126,7 +127,7 @@ function LocalScenesBody({ authenticated, loading }: { authenticated: boolean; l
       setLoadedName(sceneName)
       setScenes(listSavedScenes())
       setError('')
-      setSuccess(`「${sceneName}」をこの端末に保存しました`)
+      setSuccess(`「${sceneName}」を${hasDeviceStorage() ? 'この端末に保存' : 'ブラウザに一時保存'}しました`)
       markSaved()
     } catch {
       if (isMockPreview) setActiveSavedProjectName(previousActiveName)

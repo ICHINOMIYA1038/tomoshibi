@@ -1,3 +1,4 @@
+import { workspaceStorage } from './workspaceStorage'
 import { useSyncExternalStore } from 'react'
 import { exportScene, importScene, listSavedScenes, saveSceneLS, saveSerializedSceneLS, type SerializedScene } from './sceneIO'
 import { getActiveCloudProject, getActiveSavedProjectName, setActiveCloudProject, setActiveSavedProjectName } from './mockProjectSession'
@@ -102,7 +103,7 @@ function projectContentKey(scene: SerializedScene): string {
 
 export function preserveMockDraftBeforeDemo(): boolean {
   try {
-    const raw = localStorage.getItem(SESSION_KEY)
+    const raw = workspaceStorage().getItem(SESSION_KEY)
     if (!raw) return true
     const session = JSON.parse(raw) as { scene?: SerializedScene; activeSavedName?: string | null; demoBaseline?: string | null }
     if (session.activeSavedName || !session.scene || (session.scene.version !== 1 && session.scene.version !== 2)) return true
@@ -176,7 +177,7 @@ export function initMockWorkspace(restore = true) {
   if (installed) return
   if (restore) {
     try {
-      const raw = localStorage.getItem(SESSION_KEY)
+      const raw = workspaceStorage().getItem(SESSION_KEY)
       if (raw) {
         const session = JSON.parse(raw) as { scene?: SerializedScene; activeSavedName?: string | null; activeCloudProject?: ReturnType<typeof getActiveCloudProject>; cloudDirty?: boolean; demoBaseline?: string | null }
         if (session.scene && (session.scene.version === 1 || session.scene.version === 2)) {
@@ -207,7 +208,7 @@ export function flushMockAutosave(): boolean {
     const projectTitle = useStore.getState().productionPlan.projectTitle?.trim()
     const scene = exportScene(name || projectTitle || '編集中のプロジェクト')
     if (name) saveSceneLS(name)
-    localStorage.setItem(SESSION_KEY, JSON.stringify({ version: 1, activeSavedName: name,
+    workspaceStorage().setItem(SESSION_KEY, JSON.stringify({ version: 1, activeSavedName: name,
       activeCloudProject: getActiveCloudProject(), cloudDirty, scene, demoBaseline }))
     useStore.getState().markSavedSnapshot()
     saveStatus = 'saved'

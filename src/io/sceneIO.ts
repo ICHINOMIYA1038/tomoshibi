@@ -1,3 +1,4 @@
+import { workspaceStorage } from './workspaceStorage'
 // シーン保存/読込
 // - localStorage に名前付きで複数保存
 // - JSON エクスポート/インポート
@@ -223,7 +224,7 @@ const LS_KEY = mockPath ? 'syoumei.mock.scenes' : 'syoumei.scenes'
 
 export function listSavedScenes(): SerializedScene[] {
   try {
-    const raw = localStorage.getItem(LS_KEY)
+    const raw = workspaceStorage().getItem(LS_KEY) ?? localStorage.getItem(LS_KEY)
     if (!raw) return []
     return JSON.parse(raw)
   } catch { return [] }
@@ -236,11 +237,11 @@ export function saveSerializedSceneLS(scene: SerializedScene) {
   const idx = list.findIndex(s => s.name === scene.name)
   if (idx >= 0) list[idx] = scene
   else list.push(scene)
-  localStorage.setItem(LS_KEY, JSON.stringify(list))
+  workspaceStorage().setItem(LS_KEY, JSON.stringify(list))
 }
 export function deleteSceneLS(name: string) {
   const list = listSavedScenes().filter(s => s.name !== name)
-  localStorage.setItem(LS_KEY, JSON.stringify(list))
+  workspaceStorage().setItem(LS_KEY, JSON.stringify(list))
 }
 export function loadSceneLS(name: string) {
   const list = listSavedScenes()

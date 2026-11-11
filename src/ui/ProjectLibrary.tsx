@@ -1,3 +1,4 @@
+import { hasDeviceStorage } from '../io/workspaceStorage'
 import { useEffect, useRef, useState } from 'react'
 import { useIsDirty, useStore } from '../store'
 import { deleteSceneLS, exportScene, listSavedScenes, loadSceneLS, type SerializedScene } from '../io/sceneIO'
@@ -304,7 +305,7 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
         setMemberProjects(items => items.some(item => item.id === created.id) ? items : [...items, created])
         setTransferKeys(keys => keys.filter(item => item !== key))
       }
-      setTransferMessage('選んだプロジェクトをアカウントに保存しました。端末の元データも残っています。')
+      setTransferMessage('アカウントに保存しました。ほかの端末からも開けます。')
     } catch (error) {
       setTransferMessage(error instanceof Error ? error.message : '保存できませんでした。端末の元データは残っています。')
     } finally { setTransferBusy(false) }
@@ -355,7 +356,7 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
   return <main className="project-library">
     <header className="project-library-header">
       <a href="/" className="project-library-brand">TOMOSHIBI<span>小屋</span></a>
-      <span className="project-library-storage">{user ? 'アカウントと同期中' : 'この端末だけに保存'}</span>
+      <span className="project-library-storage">{user ? 'アカウントと同期中' : (hasDeviceStorage() ? 'この端末だけに保存' : 'ブラウザで一時保存')}</span>
     </header>
     <div className="project-library-workspace">
       <aside className="project-library-rail" aria-label="プロジェクト一覧">
@@ -375,8 +376,8 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
           </div>
         </>}
         <div className="project-library-list-head project-library-list-head-explained">
-          <strong>{items.length ? `この端末だけに保存 ${items.length}件` : 'この端末だけに保存'}</strong>
-          <span>アカウントとは同期されません</span>
+          <strong>{items.length ? `${hasDeviceStorage() ? 'この端末だけに保存' : 'ブラウザで一時保存'} ${items.length}件` : (hasDeviceStorage() ? 'この端末だけに保存' : 'ブラウザで一時保存')}</strong>
+          <span>{hasDeviceStorage() ? 'アカウントとは同期されません' : '作業を残すにはアカウントへ保存してください'}</span>
         </div>
         {items.length ? <div className="project-library-list">
           {items.map(item => <button key={item.key}
@@ -398,7 +399,7 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
               <p>{selected.draft
                 ? saveStatus === 'saving' ? '変更を自動保存しています…'
                   : saveStatus === 'error' ? '自動保存できませんでした。通信状況や保存容量を確認してください。'
-                    : cloudDirty ? 'この端末に保存済み・アカウントへ同期中' : getActiveCloudProject() ? 'アカウントに自動保存されています' : 'この端末に自動保存されています'
+                    : cloudDirty ? 'この端末に保存済み・アカウントへ同期中' : getActiveCloudProject() ? 'アカウントに自動保存されています' : (hasDeviceStorage() ? 'この端末に自動保存されています' : 'ブラウザで一時保存中です。タブを閉じると失われます。')
                 : `最終保存 ${savedDate(selected.scene.savedAt)}`}</p></div>
             <button className="project-library-open" onClick={() => open(selected)}>{selected.draft ? '編集に戻る' : 'このプロジェクトを開く'}</button>
           </div>
@@ -421,8 +422,8 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
     </div>
     {transferOpen && user && <div className="project-create-backdrop">
       <section className="project-create-dialog" role="dialog" aria-modal="true" aria-labelledby="project-transfer-title">
-        <div className="project-create-head"><div><h2 id="project-transfer-title">アカウントに保存するプロジェクト</h2>
-          <p>あと{availableSlots}件保存できます。新しいプロジェクトとしてコピーします。</p></div></div>
+        <div className="project-create-head"><div><h2 id="project-transfer-title">ログイン前のプロジェクトを引き継ぐ</h2>
+          <p>{availableSlots}件まで選べます。選んだものをアカウントの新しいプロジェクトとして保存します。</p></div></div>
         <div className="project-create-template-grid">
           {projects.map(scene => <label key={scene.name} className={transferKeys.includes(scene.name) ? 'selected' : ''}>
             <input type="checkbox" checked={transferKeys.includes(scene.name)}
@@ -431,10 +432,10 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
             <span><strong>{scene.name}</strong><small>{savedDate(scene.savedAt)}</small></span>
           </label>)}
         </div>
-        <p role="status">{transferMessage || '選ばなかったプロジェクトは、この端末に残ります。'}</p>
+        <p role="status">{transferMessage || (hasDeviceStorage() ? '選ばなかったものは、アプリ内で引き続き利用できます。' : 'ブラウザの一時保存は、タブを閉じると失われます。残したいものを選んでください。')}</p>
         <div className="project-create-actions">
           <button disabled={transferBusy} onClick={closeTransfer}>閉じる</button>
-          <button disabled={transferBusy || !transferKeys.length} onClick={transferProjects}>{transferBusy ? '保存中…' : `${transferKeys.length}件を保存`}</button>
+          <button disabled={transferBusy || !transferKeys.length} onClick={transferProjects}>{transferBusy ? '保存中…' : `${transferKeys.length}件を引き継ぐ`}</button>
         </div>
       </section>
     </div>}
@@ -442,7 +443,7 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
       <form ref={createDialogRef} className="project-create-dialog" role="dialog" aria-modal="true" aria-labelledby="project-create-title"
         onSubmit={event => { event.preventDefault(); create() }}>
         <div className="project-create-head">
-          <div><h2 id="project-create-title">新しいプロジェクト</h2><p>名前と舞台のひな形を決めて始めます。</p></div>
+          <div><h2 id="project-create-title">新しいプロジェクト</h2><p>{!user && !hasDeviceStorage() ? 'ログイン前の作業は一時保存です。残す場合はログインして引き継いでください。' : '名前と舞台のひな形を決めて始めます。'}</p></div>
           <button type="button" className="project-create-close" onClick={() => setCreateOpen(false)} aria-label="閉じる">×</button>
         </div>
         <label className="project-create-name">プロジェクト名

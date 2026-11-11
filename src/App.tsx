@@ -1,3 +1,4 @@
+import { hasDeviceStorage } from './io/workspaceStorage'
 import { useEffect, useRef, useState } from 'react'
 import { Canvas, useThree } from '@react-three/fiber'
 import { OrbitControls, PerspectiveCamera } from '@react-three/drei'
@@ -518,7 +519,7 @@ function MockProjectTitle({ title }: { title?: string }) {
     <strong className="workspace-project-title" title={title?.trim() || '名称未設定のプロジェクト'}>
       {title?.trim() || '名称未設定'}</strong>
     <span className={'workspace-save-state' + (saveStatus !== 'saved' ? ' changed' : '')} role="status">
-      {saveStatus === 'saving' ? '自動保存中…' : saveStatus === 'error' ? '保存できません' : cloud ? cloudDirty ? '端末に保存済み・クラウド同期待ち' : 'クラウドに保存済み' : 'この端末に保存済み'}</span>
+      {saveStatus === 'saving' ? '自動保存中…' : saveStatus === 'error' ? '保存できません' : cloud ? cloudDirty ? '端末に保存済み・クラウド同期待ち' : 'クラウドに保存済み' : hasDeviceStorage() ? 'この端末に保存済み' : '一時保存・タブを閉じると消えます'}</span>
   </>
 }
 
@@ -554,7 +555,7 @@ function MockSceneIndicator({ outlineVisible, onToggleOutline }: { outlineVisibl
       aria-controls="plan-outline" aria-label={`${sceneDisplayTitle(plan, scene.id)}。シーン一覧を${outlineVisible ? '閉じる' : '開く'}`}
       onClick={onToggleOutline}><small>シーン一覧 <span aria-hidden="true">▾</span></small>
       <strong aria-live="polite">{sceneDisplayTitle(plan, scene.id)}</strong>
-      <span className="workspace-current-save">{saveStatus === 'saving' ? '自動保存中…' : saveStatus === 'error' ? '保存できません' : 'この端末に保存済み'}</span></button>
+      <span className="workspace-current-save">{saveStatus === 'saving' ? '自動保存中…' : saveStatus === 'error' ? '保存できません' : hasDeviceStorage() ? 'この端末に保存済み' : '一時保存・タブを閉じると消えます'}</span></button>
     <button type="button" aria-label="次のシーン" disabled={index >= plan.scenes.length - 1}
       onClick={() => selectScene(plan.scenes[index + 1].id)}>→</button>
   </div>
