@@ -216,7 +216,7 @@ export function TokushohoPage() {
 export function ProPage() {
   return (
     <Layout title="Pro プラン">
-      <p className="pro-lead">{SERVICE.name}をもっと快適に。<br />クラウドに何度でも保存できる Pro プラン。</p>
+      <p className="pro-lead">{SERVICE.name}をもっと快適に。<br />クラウドにプロジェクトを10件まで保存できる Pro プラン。</p>
 
       <div className="pro-price-card">
         <div className="pro-price-amount">¥{SERVICE.proPriceMonthly}<span>/月</span></div>
@@ -232,7 +232,7 @@ export function ProPage() {
         <tbody>
           <tr><td>シミュレーター本体の全機能</td><td>◯</td><td>◯</td></tr>
           <tr><td>基本の器具プロファイル (Fresnel / PAR / LED)</td><td>◯</td><td>◯</td></tr>
-          <tr><td>クラウドへのシーン保存</td><td>3件まで</td><td><strong>無制限</strong></td></tr>
+          <tr><td>クラウドへのプロジェクト保存</td><td>2件まで</td><td><strong>10件まで</strong></td></tr>
           <tr><td>シーンの共有URL</td><td>◯</td><td>◯ (長期保持)</td></tr>
           <tr><td>優先サポート</td><td>—</td><td>◯</td></tr>
         </tbody>
@@ -249,7 +249,7 @@ export function ProPage() {
       <h2>よくあるご質問</h2>
       <dl className="faq">
         <dt>Free プランでも使い続けられますか?</dt>
-        <dd>はい。シミュレーター本体は Free プランでもすべての機能をご利用いただけます。Pro プランは主にクラウド保存数の上限を解除するオプションです。</dd>
+        <dd>はい。シミュレーター本体は Free プランでもすべての機能をご利用いただけます。Pro プランではクラウドに保存できるプロジェクトが10件になります。</dd>
         <dt>いつでも解約できますか?</dt>
         <dd>はい。解約は本サービス内から数クリックで完了します。違約金等は一切かかりません。</dd>
         <dt>Pro プランを解約した後、保存していたシーンはどうなりますか?</dt>
@@ -417,7 +417,7 @@ function ProSuccessPage() {
       <div className="pro-price-card">
         <div className="pro-flame-large">✦</div>
         <h2 className="pro-success-h">ご登録ありがとうございます!</h2>
-        <p>Pro プランの決済が完了しました。<br />クラウド保存が<strong>無制限</strong>に開放されました。</p>
+        <p>Pro プランの決済が完了しました。<br />クラウド保存が<strong>10件まで</strong>に開放されました。</p>
         <a href="/" className="pro-subscribe-btn">シミュレーターに戻る</a>
         <div className="pro-subscribe-note">領収書は登録メールアドレスに Stripe から自動送信されます</div>
       </div>
