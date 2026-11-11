@@ -123,6 +123,7 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
   const [feedback, setFeedback] = useState('')
   const [transferOpen, setTransferOpen] = useState(false)
   const [transferKeys, setTransferKeys] = useState<string[]>([])
+  const [replaceIds, setReplaceIds] = useState<string[]>([])
   const [transferBusy, setTransferBusy] = useState(false)
   const [transferMessage, setTransferMessage] = useState('')
   const [createOpen, setCreateOpen] = useState(false)
@@ -315,17 +316,26 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
     if (transferBusy) return
     if (user) sessionStorage.setItem('tomoshibi.transfer.prompt.' + user.id, 'seen')
     setTransferOpen(false)
+    setReplaceIds([])
     const url = new URL(location.href)
     url.searchParams.delete('import')
     history.replaceState(null, '', url.pathname + url.search + url.hash)
   }
   const transferProjects = async () => {
     if (!user || transferBusy) return
+    if (replaceIds.length > transferKeys.length) { setTransferMessage('入れ替える数だけ、新しく残すプロジェクトを選んでください。'); return }
+    if (replaceIds.length && !window.confirm('選択を外したアカウントのプロジェクトを、選んだプロジェクトで置き換えます。元の内容は上書きされます。よろしいですか？')) return
     setTransferBusy(true)
     setTransferMessage('')
     try {
       const current = await listCloudProjects()
-      if (transferKeys.length > Math.max(0, user.maxProjects - current.length)) {
+      const targets = memberProjects.filter(item => replaceIds.includes(item.id))
+      if (targets.some(item => !current.some(latest => latest.id === item.id && latest.revision === item.revision))) {
+        setMemberProjects(current); setReplaceIds([])
+        setTransferMessage('別の端末で更新されています。残すプロジェクトを選び直してください。')
+        return
+      }
+      if (transferKeys.length > Math.max(0, user.maxProjects - current.length) + targets.length) {
         setMemberProjects(current)
         setTransferKeys([])
         setTransferMessage('空き枠が変わりました。保存するプロジェクトを選び直してください。')
@@ -336,8 +346,12 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
         if (!scene) continue
         const bytes = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(JSON.stringify(scene)))
         const importKey = Array.from(new Uint8Array(bytes), byte => byte.toString(16).padStart(2, '0')).join('')
-        const created = await createCloudProject(scene.name.slice(0, 60), scene, importKey)
-        setMemberProjects(items => items.some(item => item.id === created.id) ? items : [...items, created])
+        const target = targets.shift()
+        const created = target
+          ? await updateCloudProject(target.id, target.revision, scene.name.slice(0, 60), scene, true)
+          : await createCloudProject(scene.name.slice(0, 60), scene, importKey)
+        if (target) setReplaceIds(ids => ids.filter(id => id !== target.id))
+        setMemberProjects(items => items.some(item => item.id === created.id) ? items.map(item => item.id === created.id ? { ...item, ...created } : item) : [...items, created])
         setTransferKeys(keys => keys.filter(item => item !== key))
       }
       setTransferMessage('アカウントに保存しました。ほかの端末からも開けます。')
@@ -425,7 +439,7 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
           </button>)}
         </div> : <div className="project-library-list-empty">まだプロジェクトがありません。上のボタンから作成できます。</div>}
         </>}
-        {user && projects.length > 0 && <button className="project-library-import" onClick={() => { setTransferKeys([]); setTransferMessage(''); setTransferOpen(true) }}>プロジェクトをアカウントへ引き継ぐ</button>}
+        {user && projects.length > 0 && <button className="project-library-import" onClick={() => { setTransferKeys([]); setReplaceIds([]); setTransferMessage(''); setTransferOpen(true) }}>プロジェクトをアカウントへ引き継ぐ</button>}
         {feedback && <div className="project-library-feedback" role="status">{feedback}</div>}
       </aside>
       <section className="project-library-detail" ref={detailsRef} aria-label="選択したプロジェクトの内容">
@@ -459,12 +473,20 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
     </div>
     {transferOpen && user && <div className="project-create-backdrop">
       <section className="project-create-dialog" role="dialog" aria-modal="true" aria-labelledby="project-transfer-title">
-        <div className="project-create-head"><div><h2 id="project-transfer-title">ログイン前のプロジェクトを引き継ぐ</h2>
-          <p>{availableSlots}件まで選べます。選んだものをアカウントの新しいプロジェクトとして保存します。</p></div></div>
+        <div className="project-create-head"><div><h2 id="project-transfer-title">アカウントに残すプロジェクトを選ぶ</h2>
+          <p>上限{user.maxProjects}件・現在{memberProjects.length}件。保存済みの選択を外すと、新しいものと入れ替えられます。</p></div></div>
+        {user.plan !== 'pro' && <p className="project-library-feedback">有料プランなら10件まで保存できます。<a href="/pro">有料プランを見る →</a></p>}
+        <h3>アカウントに保存済み</h3>
+        <div className="project-create-template-grid">{memberProjects.map(item => <label key={item.id} className={!replaceIds.includes(item.id) ? 'selected' : ''}>
+          <input type="checkbox" checked={!replaceIds.includes(item.id)} disabled={transferBusy}
+            onChange={event => { setReplaceIds(ids => event.target.checked ? ids.filter(id => id !== item.id) : [...ids, item.id]); setTransferKeys([]) }} />
+          <span><strong>{item.name}</strong><small>{replaceIds.includes(item.id) ? '入れ替え対象（上書きされます）' : 'アカウントに残す'}</small></span>
+        </label>)}</div>
+        <h3>新しく引き継ぐもの（あと{Math.max(0, availableSlots + replaceIds.length - transferKeys.length)}件選択可）</h3>
         <div className="project-create-template-grid">
           {projects.map(scene => <label key={scene.name} className={transferKeys.includes(scene.name) ? 'selected' : ''}>
             <input type="checkbox" checked={transferKeys.includes(scene.name)}
-              disabled={transferBusy || !transferKeys.includes(scene.name) && transferKeys.length >= availableSlots}
+              disabled={transferBusy || !transferKeys.includes(scene.name) && transferKeys.length >= availableSlots + replaceIds.length}
               onChange={event => setTransferKeys(keys => event.target.checked ? [...keys, scene.name] : keys.filter(key => key !== scene.name))} />
             <span><strong>{scene.name}</strong><small>{savedDate(scene.savedAt)}</small></span>
           </label>)}
@@ -472,7 +494,7 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
         <p role="status">{transferMessage || (hasDeviceStorage() ? '選ばなかったものは、アプリ内で引き続き利用できます。' : 'ブラウザの一時保存は、タブを閉じると失われます。残したいものを選んでください。')}</p>
         <div className="project-create-actions">
           <button disabled={transferBusy} onClick={closeTransfer}>閉じる</button>
-          <button disabled={transferBusy || !transferKeys.length} onClick={transferProjects}>{transferBusy ? '保存中…' : `${transferKeys.length}件を引き継ぐ`}</button>
+          <button disabled={transferBusy || !transferKeys.length} onClick={transferProjects}>{transferBusy ? '保存中…' : replaceIds.length ? `${replaceIds.length}件を入れ替えて保存` : `${transferKeys.length}件を引き継ぐ`}</button>
         </div>
       </section>
     </div>}

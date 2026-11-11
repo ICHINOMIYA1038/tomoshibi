@@ -196,9 +196,9 @@ export function createCloudProject(name: string, data: SerializedScene, importKe
   })
 }
 
-export function updateCloudProject(id: string, revision: number, name: string, data: SerializedScene) {
+export function updateCloudProject(id: string, revision: number, name: string, data: SerializedScene, replace = false) {
   return req<CloudProjectMeta>(`/projects/${id}`, {
-    method: 'PUT', body: JSON.stringify({ name, data, revision }),
+    method: 'PUT', body: JSON.stringify({ name, data, revision, replace }),
   })
 }
 
