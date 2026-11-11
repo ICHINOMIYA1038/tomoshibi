@@ -221,3 +221,7 @@ function pick(s: SerializedScene) {
     settings: s.settings,
   }
 }
+
+export function syncBilling() {
+  return req<{ plan: 'pro'; planExpiresAt: string }>('/billing-sync', { method: 'POST', body: '{}' })
+}

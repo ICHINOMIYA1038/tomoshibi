@@ -1,13 +1,14 @@
-import { useState, type ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import {
   createProCheckout,
   createBillingPortal,
+  syncBilling,
   CloudError,
   loginUrl,
   isNativeApp,
   NATIVE_PURCHASE_URL,
 } from '../io/cloud'
-import { useCloudSession } from '../io/cloudSession'
+import { refreshSession, useCloudSession } from '../io/cloudSession'
 
 const OPERATOR = {
   name: '一ノ宮 綾平',
@@ -270,6 +271,7 @@ function ExistingWebSubscription() {
   const [needsLogin, setNeedsLogin] = useState(false)
   return <section className="pro-price-card" aria-labelledby="existing-web-contract">
     <h2 id="existing-web-contract">Webで契約済みの方</h2>
+    <BillingVerification />
     <p>契約状況の確認・解約・支払い方法の変更はこちらから行えます。</p>
     <button className="pro-subscribe-btn" disabled={busy} onClick={async () => {
       setBusy(true); setError(''); setNeedsLogin(false)
@@ -438,15 +440,42 @@ export function ContactPage() {
   )
 }
 
+function BillingVerification({ automatic = false }: { automatic?: boolean }) {
+  const [status, setStatus] = useState<'idle' | 'checking' | 'confirmed' | 'error'>('idle')
+  const [error, setError] = useState('')
+  const [needsLogin, setNeedsLogin] = useState(false)
+  async function verify() {
+    setStatus('checking'); setError(''); setNeedsLogin(false)
+    try {
+      await syncBilling()
+      await refreshSession()
+      setStatus('confirmed')
+    } catch (e) {
+      setNeedsLogin(e instanceof CloudError && e.status === 401)
+      setError(e instanceof Error ? e.message : '契約情報を確認できませんでした。')
+      setStatus('error')
+    }
+  }
+  useEffect(() => { if (automatic) void verify() }, [automatic])
+  return <div aria-live="polite">
+    {status === 'confirmed' ? <p>Pro契約の反映を確認しました。プロジェクトを10件まで保存できます。</p> : <>
+      <p>{status === 'checking' ? 'Stripeの契約情報を確認しています…' : '決済済みなのにProにならない場合は、購入済みの契約を確認してください。追加の決済は不要です。'}</p>
+      <button className="pro-subscribe-btn" disabled={status === 'checking'} onClick={() => void verify()}>
+        {status === 'checking' ? '確認中…' : status === 'error' ? 'もう一度契約を確認する' : '購入済みの契約を確認する'}
+      </button>
+    </>}
+    {error && <p role="alert">{error}</p>}
+    {needsLogin && <a href={loginUrl()}>購入時のアカウントでログインする →</a>}
+  </div>
+}
+
 function ProSuccessPage() {
   return (
-    <Layout title="Pro プランへようこそ">
+    <Layout title="Pro契約の確認">
       <div className="pro-price-card">
-        <div className="pro-flame-large">✦</div>
-        <h2 className="pro-success-h">ご登録ありがとうございます!</h2>
-        <p>Pro プランの決済が完了しました。<br />クラウド保存が<strong>10件まで</strong>に開放されました。</p>
+        <h2 className="pro-success-h">購入済みの契約を確認します</h2>
+        <BillingVerification automatic />
         <a href="/studio/projects/" className="pro-subscribe-btn">プロジェクトに戻る</a>
-        <div className="pro-subscribe-note">領収書は登録メールアドレスに Stripe から自動送信されます</div>
       </div>
     </Layout>
   )
