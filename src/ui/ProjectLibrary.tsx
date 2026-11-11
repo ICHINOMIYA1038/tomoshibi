@@ -7,7 +7,7 @@ import { flushMockAutosave, preserveMockDraftBeforeDemo, resetMockWorkspace, use
 import { createVenueTemplatePlan, VENUE_STUDY_LINKS, type VenueStudyKind } from '../demo/createVenueStudyPlans'
 import { audienceSeatPositions } from '../audienceLayout'
 import { DEFAULT_VENUE_LAYOUT, stageFootprint } from '../venueLayout'
-import { accountUrl, createCloudProject, fetchCloudProject, fetchCloudScene, listCloudProjects, listCloudScenes, loginUrl, updateCloudProject, type CloudProjectMeta, type CloudSceneMeta } from '../io/cloud'
+import { CloudError, accountUrl, createCloudProject, fetchCloudProject, fetchCloudScene, listCloudProjects, listCloudScenes, loginUrl, updateCloudProject, type CloudProjectMeta, type CloudSceneMeta } from '../io/cloud'
 import { useCloudSession } from '../io/cloudSession'
 import { appendLegacyLocalScenes, copyLegacyScene, ensureLegacyLocalProject, importedProjectName, listLegacyLocalScenes } from '../io/legacyMigration'
 import { importScene } from '../io/sceneIO'
@@ -294,7 +294,7 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
       markSaved()
       resetMockWorkspace()
       onOpenEditor()
-    } catch { setMemberError('プロジェクトを開けませんでした。もう一度お試しください。') }
+    } catch (error) { setMemberError(error instanceof CloudError ? error.status === 401 ? 'ログインの有効期限が切れました。再度ログインしてください。' : error.message : 'プロジェクトを開けませんでした。もう一度お試しください。') }
     finally { setMemberBusy(false) }
   }
   const remove = (name: string) => {
