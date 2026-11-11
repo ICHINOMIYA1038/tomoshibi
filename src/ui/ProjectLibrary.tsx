@@ -482,7 +482,8 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
             onChange={event => { setReplaceIds(ids => event.target.checked ? ids.filter(id => id !== item.id) : [...ids, item.id]); setTransferKeys([]) }} />
           <span><strong>{item.name}</strong><small>{replaceIds.includes(item.id) ? '入れ替え対象（上書きされます）' : 'アカウントに残す'}</small></span>
         </label>)}</div>
-        <h3>新しく引き継ぐもの（あと{Math.max(0, availableSlots + replaceIds.length - transferKeys.length)}件選択可）</h3>
+        <h3>{hasDeviceStorage() ? 'このアプリに保存されているプロジェクト' : 'このブラウザに保存されているプロジェクト'}</h3>
+        <p>ここからアカウントへ引き継ぐものを、あと{Math.max(0, availableSlots + replaceIds.length - transferKeys.length)}件選べます。</p>
         <div className="project-create-template-grid">
           {projects.map(scene => <label key={scene.name} className={transferKeys.includes(scene.name) ? 'selected' : ''}>
             <input type="checkbox" checked={transferKeys.includes(scene.name)}
