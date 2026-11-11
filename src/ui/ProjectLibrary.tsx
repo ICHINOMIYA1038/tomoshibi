@@ -3,10 +3,9 @@ import { useIsDirty, useStore } from '../store'
 import { deleteSceneLS, exportScene, listSavedScenes, loadSceneLS, type SerializedScene } from '../io/sceneIO'
 import { getActiveCloudProject, getActiveSavedProjectName, setActiveCloudProject, setActiveSavedProjectName } from '../io/mockProjectSession'
 import { flushMockAutosave, preserveMockDraftBeforeDemo, resetMockWorkspace, useMockWorkspaceState } from '../io/mockWorkspace'
-import { VENUE_STUDY_LINKS } from '../demo/createVenueStudyPlans'
+import { createVenueTemplatePlan, VENUE_STUDY_LINKS, type VenueStudyKind } from '../demo/createVenueStudyPlans'
 import { audienceSeatPositions } from '../audienceLayout'
 import { DEFAULT_VENUE_LAYOUT, stageFootprint } from '../venueLayout'
-import { workspaceBasePath } from '../io/workspacePath'
 import { fetchCloudProject, fetchCloudScene, listCloudProjects, listCloudScenes, loginUrl, updateCloudProject, type CloudProjectMeta, type CloudSceneMeta } from '../io/cloud'
 import { useCloudSession } from '../io/cloudSession'
 import { appendLegacyLocalScenes, copyLegacyScene, ensureLegacyLocalProject, importedProjectName, listLegacyLocalScenes } from '../io/legacyMigration'
@@ -121,6 +120,11 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
   const [importFeedback, setImportFeedback] = useState('')
   const [selectedKey, setSelectedKey] = useState<string | null>(() => dirty ? '__draft' : getActiveSavedProjectName())
   const [feedback, setFeedback] = useState('')
+  const [createOpen, setCreateOpen] = useState(false)
+  const [createName, setCreateName] = useState('')
+  const [createTemplate, setCreateTemplate] = useState<'empty' | VenueStudyKind>('empty')
+  const createNameRef = useRef<HTMLInputElement>(null)
+  const createDialogRef = useRef<HTMLFormElement>(null)
   const detailsRef = useRef<HTMLElement>(null)
   const plan = useStore(s => s.productionPlan)
   const markSaved = useStore(s => s.markSavedSnapshot)
@@ -179,6 +183,29 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
   ]
   const selected = items.find(item => item.key === selectedKey) ?? items[0]
 
+  useEffect(() => {
+    if (!createOpen) return
+    createNameRef.current?.focus()
+    const onDialogKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') { setCreateOpen(false); return }
+      if (event.key !== 'Tab') return
+      const controls = createDialogRef.current?.querySelectorAll<HTMLElement>('button, input')
+      if (!controls?.length) return
+      const first = controls[0]
+      const last = controls[controls.length - 1]
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus() }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus() }
+    }
+    window.addEventListener('keydown', onDialogKey)
+    return () => window.removeEventListener('keydown', onDialogKey)
+  }, [createOpen])
+
+  const openCreate = () => {
+    setCreateName('')
+    setCreateTemplate('empty')
+    setCreateOpen(true)
+  }
+
   const selectItem = (key: string) => {
     setSelectedKey(key)
     if (window.innerWidth <= 760) window.setTimeout(() => detailsRef.current?.scrollIntoView({
@@ -188,7 +215,7 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
   const open = (item: LibraryItem) => {
     if (item.draft) { onOpenEditor(); return }
     if (!flushMockAutosave() && !window.confirm('現在の変更を保存できませんでした。別のプロジェクトを開きますか？')) return
-    if (cloudDirty && !preserveMockDraftBeforeDemo()) { setFeedback('クラウド未保存の変更を端末に控えられませんでした。'); return }
+    if (!preserveMockDraftBeforeDemo()) { setFeedback('現在の変更を端末に控えられませんでした。'); return }
     loadSceneLS(item.scene.name)
     setActiveCloudProject(null)
     setActiveSavedProjectName(item.scene.name)
@@ -197,14 +224,21 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
     onOpenEditor()
   }
   const create = () => {
+    const title = createName.trim()
+    if (!title) { createNameRef.current?.focus(); return }
     if (!flushMockAutosave() && !window.confirm('現在の変更を保存できませんでした。新しいプロジェクトを作りますか？')) return
-    if (cloudDirty && !preserveMockDraftBeforeDemo()) { setFeedback('クラウド未保存の変更を端末に控えられませんでした。'); return }
-    loadPreset('empty')
-    useStore.getState().ensureScenes()
+    if (!preserveMockDraftBeforeDemo()) { setFeedback('現在の変更を端末に控えられませんでした。'); return }
+    if (createTemplate === 'empty') {
+      loadPreset('empty')
+      useStore.getState().ensureScenes()
+    } else createVenueTemplatePlan(createTemplate)
+    useStore.getState().updateProductionPlan({ projectTitle: title })
     setActiveSavedProjectName(null)
     setActiveCloudProject(null)
     markSaved()
     resetMockWorkspace()
+    flushMockAutosave()
+    setCreateOpen(false)
     onOpenEditor()
   }
   const openMemberProject = async (item: CloudProjectMeta) => {
@@ -285,7 +319,7 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
     <div className="project-library-workspace">
       <aside className="project-library-rail" aria-label="プロジェクト一覧">
         <div className="project-library-rail-head"><h1>プロジェクト</h1><p>編集する舞台を選んでください。</p></div>
-        <button className="project-library-create" onClick={create}>＋ 新しいプロジェクトを作る</button>
+        <button className="project-library-create" onClick={openCreate}>＋ 新しいプロジェクトを作る</button>
         {user && <>
           <div className="project-library-list-head">会員のプロジェクト</div>
           {memberBusy && <p className="project-library-list-empty">読み込み中…</p>}
@@ -297,12 +331,6 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
             </button>)}
           </div>
         </>}
-        <div className="project-library-list-head">会場配置のサンプル</div>
-        <div className="project-library-study-list">
-          {VENUE_STUDY_LINKS.map(study => <a key={study.kind} href={`${workspaceBasePath()}/?demo=venue-${study.kind}`}>
-            <strong>{study.label}</strong><span>{study.detail}　↗</span>
-          </a>)}
-        </div>
         <div className="project-library-list-head">{items.length ? `この端末のプロジェクト ${items.length}件` : 'この端末のプロジェクト'}</div>
         {items.length ? <div className="project-library-list">
           {items.map(item => <button key={item.key}
@@ -336,10 +364,41 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
           <div className="project-library-empty-stage" aria-hidden="true"><span>舞台</span><span>客席</span></div>
           <h2>新しい舞台をつくる</h2>
           <p>プロジェクトを作ると、照明・役者・舞台セットを同じ舞台で配置できます。</p>
-          <button className="project-library-open" onClick={create}>新しいプロジェクトを作る</button>
+          <button className="project-library-open" onClick={openCreate}>新しいプロジェクトを作る</button>
         </div>}
       </section>
     </div>
+    {createOpen && <div className="project-create-backdrop" onMouseDown={event => { if (event.target === event.currentTarget) setCreateOpen(false) }}>
+      <form ref={createDialogRef} className="project-create-dialog" role="dialog" aria-modal="true" aria-labelledby="project-create-title"
+        onSubmit={event => { event.preventDefault(); create() }}>
+        <div className="project-create-head">
+          <div><h2 id="project-create-title">新しいプロジェクト</h2><p>名前と舞台のひな形を決めて始めます。</p></div>
+          <button type="button" className="project-create-close" onClick={() => setCreateOpen(false)} aria-label="閉じる">×</button>
+        </div>
+        <label className="project-create-name">プロジェクト名
+          <input ref={createNameRef} value={createName} onChange={event => setCreateName(event.target.value)}
+            placeholder="例：星の夜" required maxLength={80} />
+        </label>
+        <fieldset className="project-create-templates">
+          <legend>舞台のひな形</legend>
+          <div className="project-create-template-grid">
+            <label className={createTemplate === 'empty' ? 'selected' : ''}>
+              <input type="radio" name="project-template" checked={createTemplate === 'empty'} onChange={() => setCreateTemplate('empty')} />
+              <span><strong>白紙から始める</strong><small>客席・役者・照明を自分で配置</small></span>
+            </label>
+            {VENUE_STUDY_LINKS.map(study => <label key={study.kind} className={createTemplate === study.kind ? 'selected' : ''}>
+              <input type="radio" name="project-template" checked={createTemplate === study.kind} onChange={() => setCreateTemplate(study.kind)} />
+              <span><strong>{study.label}</strong><small>{study.detail}を配置</small></span>
+            </label>)}
+          </div>
+          <p>ひな形には舞台と客席のみが入ります。役者・照明・シーンは自由に追加できます。</p>
+        </fieldset>
+        <div className="project-create-actions">
+          <button type="button" onClick={() => setCreateOpen(false)}>キャンセル</button>
+          <button type="submit">プロジェクトを作成</button>
+        </div>
+      </form>
+    </div>}
     {importOpen && <div className="legacy-import-backdrop" onMouseDown={event => { if (event.target === event.currentTarget) closeImport() }}>
       <section className="legacy-import-dialog" role="dialog" aria-modal="true" aria-labelledby="legacy-import-title">
         <header><div><h2 id="legacy-import-title">以前のプランを引き継ぐ</h2>

@@ -166,6 +166,20 @@ export const VENUE_STUDY_LINKS: Array<{ kind: VenueStudyKind; label: string; det
   { kind: 'custom', label: '自由配置', detail: '変形舞台・94席' },
 ]
 
+export function createVenueTemplatePlan(kind: VenueStudyKind) {
+  const study = studies[kind]
+  const store = useStore.getState()
+  store.loadPreset('empty')
+  store.ensureScenes()
+  store.updateVenueLayout(study.venue)
+  useStore.setState(state => ({
+    productionPlan: {
+      ...state.productionPlan,
+      audienceBlocks: study.seats.map(seat => ({ ...seat, position: [...seat.position] as AudienceBlock['position'] })),
+    },
+  }))
+}
+
 export function createVenueStudyPlan(kind: VenueStudyKind) {
   const study = studies[kind]
   const store = useStore.getState()
