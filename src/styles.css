@@ -4560,3 +4560,5 @@ body.embed .workspace-switch { display: none; }
   .unified-shell.workspace-layout.outline-visible .workspace-current-scene { display: flex; padding: 4px; border: 0; background: rgba(24,20,22,.85); }
   .unified-shell.workspace-layout.outline-visible .workspace-current-scene > button:not(.workspace-current-scene-picker) { display: none; }
 }
+
+.project-library-storage a { display: inline-flex; align-items: center; min-height: 44px; padding: 0 10px; color: #e6d5b9; text-decoration: none; border: 1px solid #615145; border-radius: 6px; }

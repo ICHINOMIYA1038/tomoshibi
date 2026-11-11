@@ -7,7 +7,7 @@ import { flushMockAutosave, preserveMockDraftBeforeDemo, resetMockWorkspace, use
 import { createVenueTemplatePlan, VENUE_STUDY_LINKS, type VenueStudyKind } from '../demo/createVenueStudyPlans'
 import { audienceSeatPositions } from '../audienceLayout'
 import { DEFAULT_VENUE_LAYOUT, stageFootprint } from '../venueLayout'
-import { createCloudProject, fetchCloudProject, fetchCloudScene, listCloudProjects, listCloudScenes, loginUrl, updateCloudProject, type CloudProjectMeta, type CloudSceneMeta } from '../io/cloud'
+import { accountUrl, createCloudProject, fetchCloudProject, fetchCloudScene, listCloudProjects, listCloudScenes, loginUrl, updateCloudProject, type CloudProjectMeta, type CloudSceneMeta } from '../io/cloud'
 import { useCloudSession } from '../io/cloudSession'
 import { appendLegacyLocalScenes, copyLegacyScene, ensureLegacyLocalProject, importedProjectName, listLegacyLocalScenes } from '../io/legacyMigration'
 import { importScene } from '../io/sceneIO'
@@ -126,6 +126,8 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
   const [transferBusy, setTransferBusy] = useState(false)
   const [transferMessage, setTransferMessage] = useState('')
   const [createOpen, setCreateOpen] = useState(false)
+  const [creating, setCreating] = useState(false)
+  const [createError, setCreateError] = useState('')
   const [createName, setCreateName] = useState('')
   const [createTemplate, setCreateTemplate] = useState<'empty' | VenueStudyKind>('empty')
   const createNameRef = useRef<HTMLInputElement>(null)
@@ -137,7 +139,7 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
   const savedName = getActiveSavedProjectName()
   useEffect(() => {
     try {
-      if (!getActiveCloudProject()) preserveMockDraftBeforeDemo()
+      if (hasDeviceStorage() && !getActiveCloudProject()) preserveMockDraftBeforeDemo()
       const migratedName = ensureLegacyLocalProject()
       setProjects(listSavedScenes())
       if (migratedName && !getActiveSavedProjectName() && !getActiveCloudProject()) setSelectedKey(migratedName)
@@ -148,6 +150,15 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
     if (sessionLoading || !user) { setMemberProjects([]); return }
     let cancelled = false
     setMemberBusy(true)
+    const localCandidates = listSavedScenes()
+    if (!hasDeviceStorage() && !getActiveCloudProject()) {
+      const current = useStore.getState().productionPlan
+      if (current.scenes.length && current.projectTitle?.trim()) {
+        const draft = exportScene(current.projectTitle.trim())
+        if (!localCandidates.some(item => item.name === draft.name)) localCandidates.push(draft)
+      }
+    }
+    setProjects(localCandidates)
     listCloudProjects().then(async items => {
       const legacy = items.find(item => item.origin === 'legacy-scenes-v1')
       const local = listLegacyLocalScenes()
@@ -161,7 +172,7 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
           }
         } catch { if (!cancelled) setMemberError('端末内の旧プランをクラウドへ追加できませんでした。元データは残っています。') }
       }
-      if (!cancelled) { setMemberProjects(items); setMemberBusy(false); if (listSavedScenes().length && (!sessionStorage.getItem('tomoshibi.transfer.prompt.' + user.id) || new URLSearchParams(location.search).get('import') === 'local')) setTransferOpen(true) }
+      if (!cancelled) { setMemberProjects(items); setMemberBusy(false); if (localCandidates.length && (!sessionStorage.getItem('tomoshibi.transfer.prompt.' + user.id) || new URLSearchParams(location.search).get('import') === 'local')) setTransferOpen(true) }
     }).catch(() => { if (!cancelled) { setMemberError('アカウントのプロジェクトを読み込めませんでした。'); setMemberBusy(false) } })
     return () => { cancelled = true }
   }, [sessionLoading, user?.id])
@@ -184,8 +195,8 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
   const hasDraft = plan.scenes.length > 0 && (dirty || cloudDirty || !savedName)
   const draftTitle = plan.projectTitle?.trim() || '名称未設定のプロジェクト'
   const items: LibraryItem[] = [
-    ...(hasDraft ? [{ key: '__draft', scene: exportScene(draftTitle), draft: true }] : []),
-    ...projects.slice().reverse().map(scene => ({ key: scene.name, scene, draft: false })),
+    ...(!user && hasDraft ? [{ key: '__draft', scene: exportScene(draftTitle), draft: true }] : []),
+    ...(hasDeviceStorage() ? projects : []).slice().reverse().map(scene => ({ key: scene.name, scene, draft: false })),
   ]
   const selected = items.find(item => item.key === selectedKey) ?? items[0]
 
@@ -207,6 +218,7 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
   }, [createOpen])
 
   const openCreate = () => {
+    setCreateError('')
     setCreateName('')
     setCreateTemplate('empty')
     setCreateOpen(true)
@@ -229,11 +241,19 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
     resetMockWorkspace()
     onOpenEditor()
   }
-  const create = () => {
+  const create = async () => {
+    if (creating) return
+    if (user && memberProjects.length >= user.maxProjects) { setCreateError(`プロジェクトは${user.maxProjects}件まで保存できます。`); return }
     const title = createName.trim()
     if (!title) { createNameRef.current?.focus(); return }
     if (!flushMockAutosave() && !window.confirm('現在の変更を保存できませんでした。新しいプロジェクトを作りますか？')) return
-    if (!preserveMockDraftBeforeDemo()) { setFeedback('現在の変更を端末に控えられませんでした。'); return }
+    if (hasDeviceStorage() && !preserveMockDraftBeforeDemo()) { setCreateError('現在の変更を保存できませんでした。'); return }
+    if (!user && !hasDeviceStorage() && hasDraft && !window.confirm('編集中のプロジェクトを新しい内容に置き換えますか？ブラウザで保持できるのは1件です。')) return
+    const previous = exportScene()
+    const previousCloud = getActiveCloudProject()
+    const previousName = getActiveSavedProjectName()
+    setCreating(true)
+    try {
     if (createTemplate === 'empty') {
       loadPreset('empty')
       useStore.getState().ensureScenes()
@@ -244,8 +264,22 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
     markSaved()
     resetMockWorkspace()
     flushMockAutosave()
+    if (user) {
+      const created = await createCloudProject(title, exportScene(title))
+      setActiveCloudProject({ id: created.id, name: created.name, revision: created.revision })
+      resetMockWorkspace()
+      flushMockAutosave()
+    }
     setCreateOpen(false)
     onOpenEditor()
+    } catch (error) {
+      importScene(previous)
+      setActiveCloudProject(previousCloud)
+      setActiveSavedProjectName(previousName)
+      resetMockWorkspace()
+      flushMockAutosave()
+      setCreateError(error instanceof Error ? error.message : '作成できませんでした。もう一度お試しください。')
+    } finally { setCreating(false) }
   }
   const openMemberProject = async (item: CloudProjectMeta) => {
     if (!flushMockAutosave()) { setMemberError('現在の変更を端末に保存できませんでした。'); return }
@@ -356,7 +390,7 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
   return <main className="project-library">
     <header className="project-library-header">
       <a href="/" className="project-library-brand">TOMOSHIBI<span>小屋</span></a>
-      <span className="project-library-storage">{user ? 'ログイン中' : (hasDeviceStorage() ? 'このアプリに保存' : 'ブラウザに一時保存')}</span>
+      <span className="project-library-storage">{user ? <a href={accountUrl()}>アカウント設定 ↗</a> : (hasDeviceStorage() ? 'このアプリに保存' : 'ブラウザに一時保存')}</span>
     </header>
     <div className="project-library-workspace">
       <aside className="project-library-rail" aria-label="プロジェクト一覧">
@@ -375,6 +409,7 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
             </button>)}
           </div>
         </>}
+        {(!user || hasDeviceStorage()) && <>
         <div className="project-library-list-head project-library-list-head-explained">
           <strong>{items.length ? `${hasDeviceStorage() ? 'このアプリに保存' : 'ブラウザに一時保存'} ${items.length}件` : (hasDeviceStorage() ? 'このアプリに保存' : 'ブラウザに一時保存')}</strong>
           <span>{hasDeviceStorage() ? 'アカウントとは同期されません' : 'タブを閉じる前に、アカウントへ保存してください'}</span>
@@ -388,6 +423,7 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
             <span>{item.draft ? '編集中の変更' : savedDate(item.scene.savedAt)}<small>{sceneCount(item)}シーン</small></span>
           </button>)}
         </div> : <div className="project-library-list-empty">まだプロジェクトがありません。上のボタンから作成できます。</div>}
+        </>}
         {user && projects.length > 0 && <button className="project-library-import" onClick={() => { setTransferKeys([]); setTransferMessage(''); setTransferOpen(true) }}>プロジェクトをアカウントへ引き継ぐ</button>}
         {feedback && <div className="project-library-feedback" role="status">{feedback}</div>}
       </aside>
@@ -464,9 +500,10 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
           </div>
           <p>ひな形には舞台と客席のみが入ります。役者・照明・シーンは自由に追加できます。</p>
         </fieldset>
+        {createError && <p role="alert">{createError}</p>}
         <div className="project-create-actions">
-          <button type="button" onClick={() => setCreateOpen(false)}>キャンセル</button>
-          <button type="submit">プロジェクトを作成</button>
+          <button type="button" disabled={creating} onClick={() => setCreateOpen(false)}>キャンセル</button>
+          <button type="submit" disabled={creating}>{creating ? '作成中…' : 'プロジェクトを作成'}</button>
         </div>
       </form>
     </div>}

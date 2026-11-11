@@ -41,7 +41,7 @@ export function ScenePanel() {
         </div>
       </div>
       <div className="panel-body scene-body">
-        <LocalScenes />
+        {(!isMockPreview || hasDeviceStorage()) && <LocalScenes />}
         {isMockPreview && <CloudProjectCreate />}
         {!isMockPreview && <CloudScenes />}
         {!isMockPreview && <SceneSharing />}

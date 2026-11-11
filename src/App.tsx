@@ -525,7 +525,7 @@ function MockProjectTitle({ title }: { title?: string }) {
 
 function MockSaveButton() {
   const { saveStatus } = useMockWorkspaceState()
-  const label = getActiveSavedProjectName() ? '別名で保存' : '名前をつけて保存'
+  const label = hasDeviceStorage() ? getActiveSavedProjectName() ? '別名で保存' : '名前をつけて保存' : 'アカウントに保存'
   return <button className={'workspace-save-button' + (saveStatus === 'error' ? ' has-changes' : '')}
     aria-label={label} onClick={() => useStore.getState().updateSettings({ scenePanelOpen: true, panelOpen: false })}>
     <span>{label}</span></button>

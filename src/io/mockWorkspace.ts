@@ -1,4 +1,4 @@
-import { workspaceStorage } from './workspaceStorage'
+import { hasDeviceStorage, workspaceStorage } from './workspaceStorage'
 import { useSyncExternalStore } from 'react'
 import { exportScene, importScene, listSavedScenes, saveSceneLS, saveSerializedSceneLS, type SerializedScene } from './sceneIO'
 import { getActiveCloudProject, getActiveSavedProjectName, setActiveCloudProject, setActiveSavedProjectName } from './mockProjectSession'
@@ -102,6 +102,7 @@ function projectContentKey(scene: SerializedScene): string {
 }
 
 export function preserveMockDraftBeforeDemo(): boolean {
+  if (!hasDeviceStorage()) return true
   try {
     const raw = workspaceStorage().getItem(SESSION_KEY)
     if (!raw) return true
