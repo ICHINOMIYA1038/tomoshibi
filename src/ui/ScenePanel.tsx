@@ -59,10 +59,10 @@ function CloudProjectCreate() {
   const [message, setMessage] = useState('')
   const active = getActiveCloudProject()
   if (loading) return null
-  if (!user) return <section className="scene-section"><header className="scene-section-h"><span>会員のプロジェクト</span></header>
-    <p className="scene-local-note">ログインすると、プロジェクトをクラウドに保存して別の端末でも開けます。</p>
+  if (!user) return <section className="scene-section"><header className="scene-section-h"><span>アカウントに保存</span></header>
+    <p className="scene-local-note">ログインすると、プロジェクトをアカウントに保存して別の端末でも開けます。</p>
     <a href={loginUrl()}>ログインする →</a></section>
-  if (active) return <section className="scene-section"><header className="scene-section-h"><span>会員のプロジェクト</span></header>
+  if (active) return <section className="scene-section"><header className="scene-section-h"><span>アカウントに保存</span></header>
     <p className="scene-local-note">「{active.name}」は編集後にクラウドへ自動保存されます。</p></section>
   const save = async () => {
     const title = name.trim() || projectTitle?.trim()
@@ -74,14 +74,14 @@ function CloudProjectCreate() {
       const created = await createCloudProject(title, exportScene(title))
       setActiveCloudProject({ id: created.id, name: created.name, revision: created.revision })
       markCloudSaved(snapshot)
-      setMessage('会員のプロジェクトに保存しました。以後の編集は自動保存されます。')
-    } catch (error) { setMessage(error instanceof CloudError ? error.message : 'クラウドに保存できませんでした。端末内のデータは残っています。') }
+      setMessage('アカウントに保存しました。以後の編集は自動保存されます。')
+    } catch (error) { setMessage(error instanceof CloudError ? error.message : 'アカウントに保存できませんでした。端末内のデータは残っています。') }
     finally { setBusy(false) }
   }
-  return <section className="scene-section"><header className="scene-section-h"><span>会員のプロジェクト</span></header>
+  return <section className="scene-section"><header className="scene-section-h"><span>アカウントに保存</span></header>
     <label className="project-save-label">プロジェクト名
       <input className="scene-name-input" value={name} maxLength={60} placeholder="例：秋公演 A劇場" onChange={event => setName(event.target.value)} /></label>
-    <div className="scene-actions"><button className="scene-cta primary" disabled={busy} onClick={save}>{busy ? '保存中…' : 'クラウドに保存'}</button></div>
+    <div className="scene-actions"><button className="scene-cta primary" disabled={busy} onClick={save}>{busy ? '保存中…' : 'アカウントに保存'}</button></div>
     {message && <p className="scene-local-note" role="status">{message}</p>}
   </section>
 }
@@ -127,7 +127,7 @@ function LocalScenesBody({ authenticated, loading }: { authenticated: boolean; l
       setLoadedName(sceneName)
       setScenes(listSavedScenes())
       setError('')
-      setSuccess(`「${sceneName}」を${hasDeviceStorage() ? 'この端末に保存' : 'ブラウザに一時保存'}しました`)
+      setSuccess(`「${sceneName}」を${hasDeviceStorage() ? 'このアプリに保存' : 'ブラウザに一時保存'}しました`)
       markSaved()
     } catch {
       if (isMockPreview) setActiveSavedProjectName(previousActiveName)
@@ -163,7 +163,7 @@ function LocalScenesBody({ authenticated, loading }: { authenticated: boolean; l
   }
   return (
     <section className="scene-section">
-      <header className="scene-section-h"><span>{isMockPreview ? (dirty ? '未保存の変更があります' : 'この端末に保存') : 'この端末に保存'}</span></header>
+      <header className="scene-section-h"><span>{isMockPreview ? (hasDeviceStorage() ? 'このアプリに保存' : 'ブラウザに一時保存') : 'この端末に保存'}</span></header>
       {isMockPreview ? <label className="project-save-label">保存する名前
         <input className="scene-name-input" value={name} maxLength={60} placeholder="例：秋公演 A劇場"
           onChange={e => { setName(e.target.value); setError(''); setSuccess('') }} />
@@ -187,8 +187,8 @@ function LocalScenesBody({ authenticated, loading }: { authenticated: boolean; l
           </li>)}
       </ul>}
       <p className="scene-local-note">{isMockPreview
-        ? '保存したプロジェクトは一覧画面から開けます。この端末のブラウザに保存されます。'
-        : 'この端末だけに保存されます。別の端末から使うにはログインしてクラウドに保存してください。'}</p>
+        ? (hasDeviceStorage() ? 'このアプリを閉じても残ります。別の端末で開くには、アカウントに保存してください。' : 'タブを閉じると失われます。作業を残すには、アカウントに保存してください。')
+        : 'この端末だけに保存されます。別の端末から使うにはログインしてアカウントに保存してください。'}</p>
     </section>
   )
 }

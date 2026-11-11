@@ -356,7 +356,7 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
   return <main className="project-library">
     <header className="project-library-header">
       <a href="/" className="project-library-brand">TOMOSHIBI<span>小屋</span></a>
-      <span className="project-library-storage">{user ? 'アカウントと同期中' : (hasDeviceStorage() ? 'この端末だけに保存' : 'ブラウザで一時保存')}</span>
+      <span className="project-library-storage">{user ? 'ログイン中' : (hasDeviceStorage() ? 'このアプリに保存' : 'ブラウザに一時保存')}</span>
     </header>
     <div className="project-library-workspace">
       <aside className="project-library-rail" aria-label="プロジェクト一覧">
@@ -376,8 +376,8 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
           </div>
         </>}
         <div className="project-library-list-head project-library-list-head-explained">
-          <strong>{items.length ? `${hasDeviceStorage() ? 'この端末だけに保存' : 'ブラウザで一時保存'} ${items.length}件` : (hasDeviceStorage() ? 'この端末だけに保存' : 'ブラウザで一時保存')}</strong>
-          <span>{hasDeviceStorage() ? 'アカウントとは同期されません' : '作業を残すにはアカウントへ保存してください'}</span>
+          <strong>{items.length ? `${hasDeviceStorage() ? 'このアプリに保存' : 'ブラウザに一時保存'} ${items.length}件` : (hasDeviceStorage() ? 'このアプリに保存' : 'ブラウザに一時保存')}</strong>
+          <span>{hasDeviceStorage() ? 'アカウントとは同期されません' : 'タブを閉じる前に、アカウントへ保存してください'}</span>
         </div>
         {items.length ? <div className="project-library-list">
           {items.map(item => <button key={item.key}
@@ -388,7 +388,7 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
             <span>{item.draft ? '編集中の変更' : savedDate(item.scene.savedAt)}<small>{sceneCount(item)}シーン</small></span>
           </button>)}
         </div> : <div className="project-library-list-empty">まだプロジェクトがありません。上のボタンから作成できます。</div>}
-        {user && projects.length > 0 && <button className="project-library-import" onClick={() => { setTransferKeys([]); setTransferMessage(''); setTransferOpen(true) }}>端末のプロジェクトをアカウントへ保存</button>}
+        {user && projects.length > 0 && <button className="project-library-import" onClick={() => { setTransferKeys([]); setTransferMessage(''); setTransferOpen(true) }}>プロジェクトをアカウントへ引き継ぐ</button>}
         {feedback && <div className="project-library-feedback" role="status">{feedback}</div>}
       </aside>
       <section className="project-library-detail" ref={detailsRef} aria-label="選択したプロジェクトの内容">
@@ -399,7 +399,7 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
               <p>{selected.draft
                 ? saveStatus === 'saving' ? '変更を自動保存しています…'
                   : saveStatus === 'error' ? '自動保存できませんでした。通信状況や保存容量を確認してください。'
-                    : cloudDirty ? 'この端末に保存済み・アカウントへ同期中' : getActiveCloudProject() ? 'アカウントに自動保存されています' : (hasDeviceStorage() ? 'この端末に自動保存されています' : 'ブラウザで一時保存中です。タブを閉じると失われます。')
+                    : cloudDirty ? 'アカウントへの保存待ち' : getActiveCloudProject() ? 'アカウントに自動保存されています' : (hasDeviceStorage() ? 'このアプリに自動保存されています' : 'ブラウザに一時保存中です。タブを閉じると失われます。')
                 : `最終保存 ${savedDate(selected.scene.savedAt)}`}</p></div>
             <button className="project-library-open" onClick={() => open(selected)}>{selected.draft ? '編集に戻る' : 'このプロジェクトを開く'}</button>
           </div>
