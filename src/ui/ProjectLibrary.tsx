@@ -1,3 +1,4 @@
+import { acknowledgeTransfers, hasUnseenTransfers, pendingTransfers, recordTransferred, transferFingerprint } from '../io/projectTransfer'
 import { hasDeviceStorage } from '../io/workspaceStorage'
 import { useEffect, useRef, useState } from 'react'
 import { useIsDirty, useStore } from '../store'
@@ -122,6 +123,7 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
   const [selectedKey, setSelectedKey] = useState<string | null>(() => dirty ? '__draft' : getActiveSavedProjectName())
   const [feedback, setFeedback] = useState('')
   const [transferOpen, setTransferOpen] = useState(false)
+  const transferFingerprints = useRef<string[]>([])
   const [transferKeys, setTransferKeys] = useState<string[]>([])
   const [replaceIds, setReplaceIds] = useState<string[]>([])
   const [transferBusy, setTransferBusy] = useState(false)
@@ -159,7 +161,6 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
         if (!localCandidates.some(item => item.name === draft.name)) localCandidates.push(draft)
       }
     }
-    setProjects(localCandidates)
     listCloudProjects().then(async items => {
       const legacy = items.find(item => item.origin === 'legacy-scenes-v1')
       const local = listLegacyLocalScenes()
@@ -173,7 +174,23 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
           }
         } catch { if (!cancelled) setMemberError('端末内の旧プランをクラウドへ追加できませんでした。元データは残っています。') }
       }
-      if (!cancelled) { setMemberProjects(items); setMemberBusy(false); if (localCandidates.length && (!sessionStorage.getItem('tomoshibi.transfer.prompt.' + user.id) || new URLSearchParams(location.search).get('import') === 'local')) setTransferOpen(true) }
+      const pending = await pendingTransfers(user.id, localCandidates, items.map(item => item.origin))
+      if (!cancelled) {
+        setMemberProjects(items)
+        setMemberBusy(false)
+        setProjects(pending.map(item => item.scene))
+        transferFingerprints.current = pending.map(item => item.fingerprint)
+        const explicit = new URLSearchParams(location.search).get('import') === 'local'
+        if (pending.length && (explicit || hasUnseenTransfers(user.id, transferFingerprints.current))) {
+          acknowledgeTransfers(user.id, transferFingerprints.current)
+          setTransferOpen(true)
+        }
+        if (explicit) {
+          const url = new URL(location.href)
+          url.searchParams.delete('import')
+          history.replaceState(null, '', url.pathname + url.search + url.hash)
+        }
+      }
     }).catch(() => { if (!cancelled) { setMemberError('アカウントのプロジェクトを読み込めませんでした。'); setMemberBusy(false) } })
     return () => { cancelled = true }
   }, [sessionLoading, user?.id])
@@ -311,10 +328,17 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
     }
   }
 
+  useEffect(() => {
+    setTransferOpen(false)
+    setTransferKeys([])
+    setReplaceIds([])
+    transferFingerprints.current = []
+  }, [user?.id])
+
   const availableSlots = Math.max(0, (user?.maxProjects ?? 2) - memberProjects.length)
   const closeTransfer = () => {
     if (transferBusy) return
-    if (user) sessionStorage.setItem('tomoshibi.transfer.prompt.' + user.id, 'seen')
+    if (user) acknowledgeTransfers(user.id, transferFingerprints.current)
     setTransferOpen(false)
     setReplaceIds([])
     const url = new URL(location.href)
@@ -344,17 +368,21 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
       for (const key of transferKeys) {
         const scene = projects.find(item => item.name === key)
         if (!scene) continue
-        const bytes = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(JSON.stringify(scene)))
-        const importKey = Array.from(new Uint8Array(bytes), byte => byte.toString(16).padStart(2, '0')).join('')
+        const importKey = await transferFingerprint(scene)
         const target = targets.shift()
         const created = target
           ? await updateCloudProject(target.id, target.revision, scene.name.slice(0, 60), scene, true)
           : await createCloudProject(scene.name.slice(0, 60), scene, importKey)
+        recordTransferred(user.id, importKey)
+        setProjects(items => items.filter(item => item.name !== key))
         if (target) setReplaceIds(ids => ids.filter(id => id !== target.id))
         setMemberProjects(items => items.some(item => item.id === created.id) ? items.map(item => item.id === created.id ? { ...item, ...created } : item) : [...items, created])
         setTransferKeys(keys => keys.filter(item => item !== key))
       }
-      setTransferMessage('アカウントに保存しました。ほかの端末からも開けます。')
+      acknowledgeTransfers(user.id, transferFingerprints.current)
+      setTransferOpen(false)
+      setReplaceIds([])
+      setFeedback('アカウントに引き継ぎました。ほかの端末からも開けます。')
     } catch (error) {
       setTransferMessage(error instanceof Error ? error.message : '保存できませんでした。端末の元データは残っています。')
     } finally { setTransferBusy(false) }
@@ -492,7 +520,7 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
             <span><strong>{scene.name}</strong><small>{savedDate(scene.savedAt)}</small></span>
           </label>)}
         </div>
-        <p role="status">{transferMessage || (hasDeviceStorage() ? '選ばなかったものは、アプリ内で引き続き利用できます。' : 'ブラウザの一時保存は、タブを閉じると失われます。残したいものを選んでください。')}</p>
+        <p role="status">{transferMessage || (hasDeviceStorage() ? '選ばなかったものは、アプリ内で引き続き利用できます。' : '引き継いだものは、ほかの端末でも開けます。ブラウザで編集中の内容は、タブを閉じる前に引き継いでください。')}</p>
         <div className="project-create-actions">
           <button disabled={transferBusy} onClick={closeTransfer}>閉じる</button>
           <button disabled={transferBusy || !transferKeys.length} onClick={transferProjects}>{transferBusy ? '保存中…' : replaceIds.length ? `${replaceIds.length}件を入れ替えて保存` : `${transferKeys.length}件を引き継ぐ`}</button>
