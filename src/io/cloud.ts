@@ -67,12 +67,29 @@ export class CloudError extends Error {
   }
 }
 
-async function req<T>(path: string, init: RequestInit = {}): Promise<T> {
+let renewingLogin: Promise<void> | null = null
+let lastLoginRenewal = 0
+async function renewLogin() {
+  if (isNativeApp()) return
+  if (renewingLogin) return renewingLogin
+  if (Date.now() - lastLoginRenewal < 15_000) return
+  lastLoginRenewal = Date.now()
+  renewingLogin = fetch(`${PORTAL}/refresh?return_to=${encodeURIComponent(location.origin + '/robots.txt')}`, {
+    credentials: 'include', mode: 'no-cors', cache: 'no-store', signal: AbortSignal.timeout(10_000),
+  }).then(() => undefined).finally(() => { renewingLogin = null })
+  return renewingLogin
+}
+
+async function req<T>(path: string, init: RequestInit = {}, retryLogin = true): Promise<T> {
   const res = await fetch(`${API}${path}`, {
     credentials: 'include',
     headers: { 'content-type': 'application/json', ...(init.headers || {}) },
     ...init,
   })
+  if (res.status === 401 && retryLogin && !isNativeApp()) {
+    await renewLogin()
+    return req<T>(path, init, false)
+  }
   if (res.status === 204) return undefined as T
   let body: unknown = null
   try { body = await res.json() } catch { /* noop */ }
@@ -85,6 +102,7 @@ async function req<T>(path: string, init: RequestInit = {}): Promise<T> {
 
 /** getSession() の結果全体。user が null でも proAvailable は取れる。 */
 export interface SessionSnapshot {
+  unavailable?: boolean
   user: CloudUser | null
   /** Stripe が本番モードで有効になっているか。false なら Pro 申込 UI を「準備中」に。 */
   proAvailable: boolean
@@ -92,7 +110,11 @@ export interface SessionSnapshot {
 
 export async function getSessionSnapshot(): Promise<SessionSnapshot> {
   try {
-    const res = await req<{ user: Partial<CloudUser> | null; proAvailable?: boolean }>('/session')
+    let res = await req<{ user: Partial<CloudUser> | null; proAvailable?: boolean; needsRefresh?: boolean }>('/session')
+    if (!res.user && res.needsRefresh && !isNativeApp()) {
+      await renewLogin()
+      res = await req<typeof res>('/session', {}, false)
+    }
     const proAvailable = res.proAvailable === true
     if (!res.user) return { user: null, proAvailable }
     const u = res.user
@@ -109,7 +131,7 @@ export async function getSessionSnapshot(): Promise<SessionSnapshot> {
       proAvailable,
     }
   } catch {
-    return { user: null, proAvailable: false }
+    return { user: null, proAvailable: false, unavailable: true }
   }
 }
 
@@ -126,7 +148,9 @@ const here = () => (typeof location !== 'undefined' ? location.origin + location
 
 export function loginUrl(): string {
   if (isNativeApp()) return `${BASE}/auth/signin?callbackUrl=${encodeURIComponent(here())}`
-  return `${PORTAL}/?return_to=${encodeURIComponent(here())}`
+  const target = new URL(here())
+  if (/^\/(studio|mock)(\/|$)/.test(target.pathname)) target.searchParams.set('import', 'local')
+  return `${PORTAL}/?return_to=${encodeURIComponent(target.href)}`
 }
 export function logoutUrl(): string {
   if (isNativeApp()) return `${BASE}/api/tomoshibi/logout?callbackUrl=${encodeURIComponent(here())}`
