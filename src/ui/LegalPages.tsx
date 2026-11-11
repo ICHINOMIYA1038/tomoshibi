@@ -215,11 +215,16 @@ export function TokushohoPage() {
 }
 
 export function ProPage() {
+  const { user } = useCloudSession()
+  const isPro = user?.plan === 'pro'
   return (
     <Layout title="Pro プラン">
-      <p className="pro-lead">{SERVICE.name}をもっと快適に。<br />クラウドにプロジェクトを10件まで保存できる Pro プラン。</p>
+      <p className="pro-lead">{isPro
+        ? 'Proプランをご利用中です。プロジェクトを10件まで保存できます。'
+        : <>{SERVICE.name}で複数の舞台を計画する方へ。<br />クラウドに10件まで保存できるProプラン。</>}</p>
 
       <div className="pro-price-card">
+        {isPro && <h2 style={{ marginTop: 0 }}>現在のプラン：Pro <span style={{ fontSize: 14 }}>契約中</span></h2>}
         <div className="pro-price-amount">¥{SERVICE.proPriceMonthly}<span>/月</span></div>
         <div className="pro-price-sub">税込・自動更新・いつでも解約可能</div>
         <ProSubscribeButton />
@@ -267,13 +272,16 @@ export function ProPage() {
 }
 
 function ExistingWebSubscription() {
+  const { user } = useCloudSession()
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const [needsLogin, setNeedsLogin] = useState(false)
-  return <section className="pro-price-card" aria-labelledby="existing-web-contract">
-    <h2 id="existing-web-contract">Webで契約済みの方</h2>
+  if (user?.plan === 'pro') return null
+  return <details style={{ borderTop: '1px solid rgba(212,175,111,0.25)', padding: '20px 0', margin: '24px 0' }}>
+    <summary style={{ cursor: 'pointer', minHeight: 44, display: 'list-item', alignContent: 'center' }}>購入済みなのにProにならない方</summary>
+    <div style={{ padding: '8px 0 16px' }}>
     <BillingVerification />
-    <p>契約状況の確認・解約・支払い方法の変更はこちらから行えます。</p>
+    <p>契約の管理・解約だけ行う場合はこちら。</p>
     <button className="pro-subscribe-btn" disabled={busy} onClick={async () => {
       setBusy(true); setError(''); setNeedsLogin(false)
       try {
@@ -290,7 +298,8 @@ function ExistingWebSubscription() {
     {error && <p role="alert">{error}</p>}
     {needsLogin && <a href={loginUrl()}>契約したアカウントでログインする →</a>}
     <p className="pro-subscribe-note">解約は移動先のStripe管理画面で行います。このボタンだけでは解約されません。</p>
-  </section>
+    </div>
+  </details>
 }
 
 function ProSubscribeButton() {
@@ -357,9 +366,9 @@ function ProSubscribeButton() {
             }
           }}
         >
-          {busy ? '準備中…' : 'Pro プラン管理・解約'}
+          {busy ? '管理画面を開いています…' : '契約の管理・解約'}
         </button>
-        <div className="pro-subscribe-note">Stripe のポータルで解約・支払い方法変更・領収書再発行ができます</div>
+        <div className="pro-subscribe-note">Stripeの管理画面で、解約・支払い方法の変更・領収書の確認ができます。</div>
         {err && <div className="pro-subscribe-error">{err}</div>}
       </>
     )
