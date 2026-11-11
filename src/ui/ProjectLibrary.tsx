@@ -1,16 +1,17 @@
-import { acknowledgeTransfers, hasUnseenTransfers, pendingTransfers, recordTransferred, transferFingerprint } from '../io/projectTransfer'
+import { captureBrowserProjects, clearBrowserProjects } from '../io/browserProjectCleanup'
+import { acknowledgeTransfers, pendingTransfers, recordTransferred, transferFingerprint } from '../io/projectTransfer'
 import { hasDeviceStorage } from '../io/workspaceStorage'
 import { useEffect, useRef, useState } from 'react'
 import { useIsDirty, useStore } from '../store'
 import { deleteSceneLS, exportScene, listSavedScenes, loadSceneLS, type SerializedScene } from '../io/sceneIO'
 import { getActiveCloudProject, getActiveSavedProjectName, setActiveCloudProject, setActiveSavedProjectName } from '../io/mockProjectSession'
-import { flushMockAutosave, preserveMockDraftBeforeDemo, resetMockWorkspace, useMockWorkspaceState } from '../io/mockWorkspace'
+import { flushMockAutosave, preserveMockDraftBeforeDemo, resetMockWorkspace, useMockWorkspaceState, waitForCloudSave } from '../io/mockWorkspace'
 import { createVenueTemplatePlan, VENUE_STUDY_LINKS, type VenueStudyKind } from '../demo/createVenueStudyPlans'
 import { audienceSeatPositions } from '../audienceLayout'
 import { DEFAULT_VENUE_LAYOUT, stageFootprint } from '../venueLayout'
 import { CloudError, accountUrl, createCloudProject, fetchCloudProject, fetchCloudScene, listCloudProjects, listCloudScenes, loginUrl, updateCloudProject, type CloudProjectMeta, type CloudSceneMeta } from '../io/cloud'
 import { useCloudSession } from '../io/cloudSession'
-import { appendLegacyLocalScenes, copyLegacyScene, ensureLegacyLocalProject, importedProjectName, listLegacyLocalScenes } from '../io/legacyMigration'
+import { copyLegacyScene, ensureLegacyLocalProject, importedProjectName, listLegacyLocalScenes } from '../io/legacyMigration'
 import { importScene } from '../io/sceneIO'
 
 type LibraryItem = { key: string; scene: SerializedScene; draft: boolean }
@@ -150,7 +151,8 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
     catch { setFeedback('以前の端末内プランをまとめられませんでした。元データは残っています。') }
   }, [])
   useEffect(() => {
-    if (sessionLoading || !user) { setMemberProjects([]); return }
+    if (sessionLoading) return
+    if (!user) { setMemberProjects([]); return }
     let cancelled = false
     setMemberBusy(true)
     const localCandidates = listSavedScenes()
@@ -162,18 +164,6 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
       }
     }
     listCloudProjects().then(async items => {
-      const legacy = items.find(item => item.origin === 'legacy-scenes-v1')
-      const local = listLegacyLocalScenes()
-      if (legacy && local.items.length) {
-        try {
-          const full = await fetchCloudProject(legacy.id)
-          const merged = appendLegacyLocalScenes(full.data, local.items)
-          if (merged) {
-            const updated = await updateCloudProject(legacy.id, full.revision, full.name, merged)
-            items = items.map(item => item.id === legacy.id ? { ...item, ...updated } : item)
-          }
-        } catch { if (!cancelled) setMemberError('端末内の旧プランをクラウドへ追加できませんでした。元データは残っています。') }
-      }
       const pending = await pendingTransfers(user.id, localCandidates, items.map(item => item.origin))
       if (!cancelled) {
         setMemberProjects(items)
@@ -181,7 +171,7 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
         setProjects(pending.map(item => item.scene))
         transferFingerprints.current = pending.map(item => item.fingerprint)
         const explicit = new URLSearchParams(location.search).get('import') === 'local'
-        if (pending.length && (explicit || hasUnseenTransfers(user.id, transferFingerprints.current))) {
+        if (pending.length && explicit && !getActiveCloudProject()) {
           acknowledgeTransfers(user.id, transferFingerprints.current)
           setTransferOpen(true)
         }
@@ -261,10 +251,16 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
   }
   const create = async () => {
     if (creating) return
-    if (cloudDirty) return
     if (user && memberProjects.length >= user.maxProjects) { setCreateError(`プロジェクトは${user.maxProjects}件まで保存できます。`); return }
     const title = createName.trim()
     if (!title) { createNameRef.current?.focus(); return }
+    if (cloudDirty) {
+      if (!window.confirm('編集中の変更がまだ保存されていません。保存が完了してから、新しいプロジェクトを作成しますか？')) return
+      setCreating(true)
+      try { await waitForCloudSave() }
+      catch (error) { setCreateError(error instanceof Error ? error.message : '保存状態を確認できませんでした。'); setCreating(false); return }
+      setCreating(false)
+    }
     if (!flushMockAutosave() && !window.confirm('現在の変更を保存できませんでした。新しいプロジェクトを作りますか？')) return
     if (hasDeviceStorage() && !preserveMockDraftBeforeDemo()) { setCreateError('現在の変更を保存できませんでした。'); return }
     if (!user && !hasDeviceStorage() && hasDraft && !window.confirm('編集中のプロジェクトを新しい内容に置き換えますか？ブラウザで保持できるのは1件です。')) return
@@ -302,7 +298,12 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
   }
   const openMemberProject = async (item: CloudProjectMeta) => {
     if (!flushMockAutosave()) { setMemberError('現在の変更を端末に保存できませんでした。'); return }
-    if (cloudDirty && !preserveMockDraftBeforeDemo()) { setMemberError('クラウド未保存の変更を端末に控えられませんでした。'); return }
+    if (cloudDirty) {
+      if (!window.confirm('編集中の変更がまだ保存されていません。保存が完了してから、選んだプロジェクトを開きますか？')) return
+      setMemberBusy(true)
+      try { await waitForCloudSave() }
+      catch (error) { setMemberError(error instanceof Error ? error.message : '保存状態を確認できませんでした。'); setMemberBusy(false); return }
+    }
     setMemberBusy(true)
     try {
       const full = await fetchCloudProject(item.id)
@@ -348,10 +349,22 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
   const transferProjects = async () => {
     if (!user || transferBusy) return
     if (replaceIds.length > transferKeys.length) { setTransferMessage('入れ替える数だけ、新しく残すプロジェクトを選んでください。'); return }
-    if (replaceIds.length && !window.confirm('選択を外したアカウントのプロジェクトを、選んだプロジェクトで置き換えます。元の内容は上書きされます。よろしいですか？')) return
+    const selected = projects.filter(scene => transferKeys.includes(scene.name))
+    if (!selected.length || selected.length !== transferKeys.length) return
+    const replacementNames = memberProjects.filter(item => replaceIds.includes(item.id)).map(item => item.name)
+    const warning = [
+      `アカウントに保存するプロジェクト（${selected.length}件）\n${selected.map(scene => `・${scene.name}`).join('\n')}`,
+      ...(replacementNames.length ? [`上書きするプロジェクト\n${replacementNames.map(name => `・${name}`).join('\n')}`] : []),
+      ...(hasDeviceStorage() ? [] : ['保存後、このブラウザのプロジェクトは、選ばなかったものも含めてすべて削除されます。']),
+      'この内容で続けますか？',
+    ].join('\n\n')
+    if (!window.confirm(warning)) return
     setTransferBusy(true)
     setTransferMessage('')
     try {
+      if (!flushMockAutosave()) throw new Error('編集中の内容を保持できませんでした。空き容量を確認してください。')
+      const browserProjects = captureBrowserProjects()
+      let savedProject: { id: string; name: string; revision: number; data: SerializedScene } | null = null
       const current = await listCloudProjects()
       const targets = memberProjects.filter(item => replaceIds.includes(item.id))
       if (targets.some(item => !current.some(latest => latest.id === item.id && latest.revision === item.revision))) {
@@ -373,11 +386,24 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
         const created = target
           ? await updateCloudProject(target.id, target.revision, scene.name.slice(0, 60), scene, true)
           : await createCloudProject(scene.name.slice(0, 60), scene, importKey)
+        savedProject ??= { id: created.id, name: created.name, revision: created.revision, data: scene }
         recordTransferred(user.id, importKey)
         setProjects(items => items.filter(item => item.name !== key))
         if (target) setReplaceIds(ids => ids.filter(id => id !== target.id))
         setMemberProjects(items => items.some(item => item.id === created.id) ? items.map(item => item.id === created.id ? { ...item, ...created } : item) : [...items, created])
         setTransferKeys(keys => keys.filter(item => item !== key))
+      }
+      if (!hasDeviceStorage()) {
+        clearBrowserProjects(browserProjects)
+        if (!getActiveCloudProject() && savedProject) {
+          importScene(savedProject.data)
+          setActiveCloudProject({ id: savedProject.id, name: savedProject.name, revision: savedProject.revision })
+          setActiveSavedProjectName(null)
+          markSaved()
+          resetMockWorkspace()
+        }
+        setProjects([])
+        setLegacyLocal(listLegacyLocalScenes())
       }
       acknowledgeTransfers(user.id, transferFingerprints.current)
       setTransferOpen(false)
@@ -520,10 +546,10 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
             <span><strong>{scene.name}</strong><small>{savedDate(scene.savedAt)}</small></span>
           </label>)}
         </div>
-        <p role="status">{transferMessage || (hasDeviceStorage() ? '選ばなかったものは、アプリ内で引き続き利用できます。' : '引き継いだものは、ほかの端末でも開けます。ブラウザで編集中の内容は、タブを閉じる前に引き継いでください。')}</p>
+        <p role="status" className={!hasDeviceStorage() && !transferMessage ? 'project-transfer-warning' : undefined}>{transferMessage || (hasDeviceStorage() ? '選ばなかったものは、アプリ内で引き続き利用できます。' : '選んだプロジェクトをアカウントに保存します。保存後、このブラウザのプロジェクトは、選ばなかったものも含めてすべて削除されます。残したいものを選んでください。')}</p>
         <div className="project-create-actions">
           <button disabled={transferBusy} onClick={closeTransfer}>閉じる</button>
-          <button disabled={transferBusy || !transferKeys.length} onClick={transferProjects}>{transferBusy ? '保存中…' : replaceIds.length ? `${replaceIds.length}件を入れ替えて保存` : `${transferKeys.length}件を引き継ぐ`}</button>
+          <button disabled={transferBusy || !transferKeys.length} onClick={transferProjects}>{transferBusy ? '保存中…' : `選んだ${transferKeys.length}件を保存して続ける`}</button>
         </div>
       </section>
     </div>}
@@ -559,7 +585,7 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
         {createError && <p role="alert">{createError}</p>}
         <div className="project-create-actions">
           <button type="button" disabled={creating} onClick={() => setCreateOpen(false)}>キャンセル</button>
-          <button type="submit" disabled={creating || cloudDirty}>{creating ? '作成中…' : 'プロジェクトを作成'}</button>
+          <button type="submit" disabled={creating}>{creating ? '保存・作成中…' : cloudDirty ? '保存して新規作成' : 'プロジェクトを作成'}</button>
         </div>
       </form>
     </div>}

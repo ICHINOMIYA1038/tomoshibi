@@ -4573,3 +4573,8 @@ body.embed .workspace-switch { display: none; }
 .venue-frame-option { display: flex; align-items: center; gap: 10px; min-height: 44px; cursor: pointer; }
 .venue-frame-option input { width: 18px; height: 18px; }
 .props-floor-add { width: 100%; min-height: 44px; margin-bottom: 6px; }
+.workspace-connection-backdrop { position: fixed; inset: 0; z-index: 2147483000; display: grid; place-items: center; padding: 20px; background: #161313dc; }
+.workspace-connection-dialog { width: min(480px, 100%); padding: 28px; border: 1px solid #8d7651; border-radius: 12px; background: #241f20; color: #eee5d7; line-height: 1.7; }
+.workspace-connection-dialog h2 { font-size: 20px; }
+.workspace-connection-dialog button, .workspace-connection-dialog a { display: inline-block; padding: 12px 20px; min-height: 44px; border-radius: 6px; background: #d0a15f; color: #211a13; }
+.project-transfer-warning { padding: 14px 16px; border: 1px solid #b28a45; border-radius: 8px; background: #32291b; color: #ffe2ac; font-weight: 600; line-height: 1.7; }

@@ -1,3 +1,4 @@
+import { OnlineWorkspace } from './ui/OnlineWorkspace'
 import { WorkspaceNotice, WorkspaceNotices } from './ui/WorkspaceNotice'
 import { hasDeviceStorage } from './io/workspaceStorage'
 import { useEffect, useRef, useState } from 'react'
@@ -16,7 +17,7 @@ import { ControlPanel } from './ui/ControlPanel'
 import { HelpOverlay } from './ui/HelpOverlay'
 import { SettingsModal } from './ui/SettingsModal'
 import { sceneDisplayTitle, useStore } from './store'
-import { useCloudSession } from './io/cloudSession'
+import { refreshSession, useCloudSession } from './io/cloudSession'
 import { loginUrl, signupUrl, logoutUrl, createBillingPortal, CloudError } from './io/cloud'
 import { ScenePanel } from './ui/ScenePanel'
 import { PlanBoard } from './ui/PlanBoard'
@@ -319,7 +320,7 @@ export default function App() {
   }
 
   return (
-    <>
+    <OnlineWorkspace enabled={isMockPreview}>
       {isMockPreview && <><WorkspaceNotices /><CloudProjectAutosave /></>}
       {isMockPreview && mockPage === 'projects'
         ? <ProjectLibrary onOpenEditor={() => navigateMock('editor')} />
@@ -474,12 +475,12 @@ export default function App() {
       {!playbackOpen && <SelectionStatusHint />}
       {!isEmbed && <KeyHint />}
     </div>}
-    </>
+    </OnlineWorkspace>
   )
 }
 
 function CloudProjectAutosave() {
-  const { user } = useCloudSession()
+  const { user, connectionError } = useCloudSession()
   const { cloudDirty, saveStatus } = useMockWorkspaceState()
   const [attempt, setAttempt] = useState(0)
   const [error, setError] = useState('')
@@ -487,6 +488,7 @@ function CloudProjectAutosave() {
   const inFlight = useRef(false)
   const generation = useRef(0)
   const activeId = getActiveCloudProject()?.id
+  useEffect(() => { if (!connectionError) failedSnapshot.current = '' }, [connectionError])
   useEffect(() => {
     generation.current += 1
     failedSnapshot.current = ''
@@ -494,12 +496,12 @@ function CloudProjectAutosave() {
   }, [activeId, user?.id])
   useEffect(() => {
     const active = getActiveCloudProject()
-    if (!user || !active || !cloudDirty || saveStatus !== 'saved') return
+    if (!user || !active || !cloudDirty || saveStatus !== 'saved' || connectionError || !navigator.onLine) return
     if (currentWorkspaceSnapshot() === failedSnapshot.current || inFlight.current) return
     const startedGeneration = generation.current
     const timer = window.setTimeout(async () => {
       const current = getActiveCloudProject()
-      if (!current || current.id !== active.id || inFlight.current) return
+      if (!current || current.id !== active.id || inFlight.current || !navigator.onLine) return
       const snapshot = currentWorkspaceSnapshot()
       inFlight.current = true
       const name = useStore.getState().productionPlan.projectTitle?.trim() || current.name
@@ -513,6 +515,7 @@ function CloudProjectAutosave() {
       } catch (cause) {
         if (getActiveCloudProject()?.id !== current.id || generation.current !== startedGeneration) return
         failedSnapshot.current = snapshot
+        if (!(cause instanceof CloudError && cause.status === 409)) void refreshSession()
         setError(cause instanceof CloudError && cause.status === 409
           ? '別のタブまたは端末で更新されたため、クラウドへの保存を停止しました。現在の編集内容はこのブラウザ／アプリに保持しています。'
           : 'クラウドに保存できませんでした。現在の編集内容はこのブラウザ／アプリに保持しています。')
@@ -522,7 +525,7 @@ function CloudProjectAutosave() {
       }
     }, 2200)
     return () => window.clearTimeout(timer)
-  }, [user?.id, activeId, cloudDirty, saveStatus, attempt])
+  }, [user?.id, activeId, cloudDirty, saveStatus, attempt, connectionError])
   return error ? <WorkspaceNotice kind="alert">{error}</WorkspaceNotice> : null
 }
 

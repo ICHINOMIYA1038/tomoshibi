@@ -102,11 +102,17 @@ function projectContentKey(scene: SerializedScene): string {
 }
 
 export function preserveMockDraftBeforeDemo(): boolean {
-  if (!hasDeviceStorage() && !getActiveCloudProject()) return true
+  if (!hasDeviceStorage() || getActiveCloudProject()) {
+    try {
+      const raw = workspaceStorage().getItem(SESSION_KEY)
+      return !raw || JSON.parse(raw).cloudDirty !== true
+    } catch { return false }
+  }
   try {
     const raw = workspaceStorage().getItem(SESSION_KEY)
     if (!raw) return true
-    const session = JSON.parse(raw) as { scene?: SerializedScene; activeSavedName?: string | null; demoBaseline?: string | null }
+    const session = JSON.parse(raw) as { scene?: SerializedScene; activeSavedName?: string | null; activeCloudProject?: unknown; cloudDirty?: boolean; demoBaseline?: string | null }
+    if (session.activeCloudProject) return session.cloudDirty !== true
     if (session.activeSavedName || !session.scene || (session.scene.version !== 1 && session.scene.version !== 2)) return true
     const scene = session.scene
     const title = scene.productionPlan?.projectTitle?.trim() || ''
@@ -263,3 +269,26 @@ function restoreHistory(index: number) {
 
 export function undoMockWorkspace() { restoreHistory(cursor - 1) }
 export function redoMockWorkspace() { restoreHistory(cursor + 1) }
+
+export function waitForCloudSave(timeoutMs = 15_000): Promise<void> {
+  if (!cloudDirty) return Promise.resolve()
+  const projectId = getActiveCloudProject()?.id
+  if (!projectId) return Promise.reject(new Error('保存先を確認できません。編集中のプロジェクトに戻ってください。'))
+  return new Promise((resolve, reject) => {
+    let timer: ReturnType<typeof setTimeout>
+    const finish = (error?: Error) => {
+      clearTimeout(timer)
+      unsubscribe()
+      if (error) reject(error)
+      else resolve()
+    }
+    const check = () => {
+      if (getActiveCloudProject()?.id !== projectId) finish(new Error('編集中のプロジェクトが変わりました。もう一度確認してください。'))
+      else if (!cloudDirty) finish()
+      else if (saveStatus === 'error') finish(new Error('保存できなかったため、切り替えませんでした。編集中の内容はそのままです。'))
+    }
+    const unsubscribe = subscribe(check)
+    timer = setTimeout(() => finish(new Error('保存が完了していないため、切り替えませんでした。編集中の内容はそのままです。')), timeoutMs)
+    check()
+  })
+}
