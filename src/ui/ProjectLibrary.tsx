@@ -160,7 +160,7 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
           }
         } catch { if (!cancelled) setMemberError('端末内の旧プランをクラウドへ追加できませんでした。元データは残っています。') }
       }
-      if (!cancelled) { setMemberProjects(items); setMemberBusy(false); if (listSavedScenes().length && !sessionStorage.getItem('tomoshibi.transfer.prompt.' + user.id)) setTransferOpen(true) }
+      if (!cancelled) { setMemberProjects(items); setMemberBusy(false); if (listSavedScenes().length && (!sessionStorage.getItem('tomoshibi.transfer.prompt.' + user.id) || new URLSearchParams(location.search).get('import') === 'local')) setTransferOpen(true) }
     }).catch(() => { if (!cancelled) { setMemberError('アカウントのプロジェクトを読み込めませんでした。'); setMemberBusy(false) } })
     return () => { cancelled = true }
   }, [sessionLoading, user?.id])
@@ -279,6 +279,9 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
     if (transferBusy) return
     if (user) sessionStorage.setItem('tomoshibi.transfer.prompt.' + user.id, 'seen')
     setTransferOpen(false)
+    const url = new URL(location.href)
+    url.searchParams.delete('import')
+    history.replaceState(null, '', url.pathname + url.search + url.hash)
   }
   const transferProjects = async () => {
     if (!user || transferBusy) return
@@ -297,7 +300,7 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
         if (!scene) continue
         const bytes = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(JSON.stringify(scene)))
         const importKey = Array.from(new Uint8Array(bytes), byte => byte.toString(16).padStart(2, '0')).join('')
-        const created = await createCloudProject(scene.name, scene, importKey)
+        const created = await createCloudProject(scene.name.slice(0, 60), scene, importKey)
         setMemberProjects(items => items.some(item => item.id === created.id) ? items : [...items, created])
         setTransferKeys(keys => keys.filter(item => item !== key))
       }

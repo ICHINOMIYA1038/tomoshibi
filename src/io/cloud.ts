@@ -140,7 +140,7 @@ const PORTAL = 'https://id.gikyokutosyokan.com'
 const here = () => (typeof location !== 'undefined' ? location.origin + location.pathname : 'https://tomoshibi.gikyokutosyokan.com/')
 
 export function loginUrl(): string {
-  const destination = /\/(studio|mock)(\/|$)/.test(location.pathname) ? location.origin + location.pathname.replace(/\/(studio|mock)(\/.*)?$/, '/$1/projects/') : here()
+  const destination = /\/(studio|mock)(\/|$)/.test(location.pathname) ? location.origin + location.pathname.replace(/\/(studio|mock)(\/.*)?$/, '/$1/projects/?import=local') : here()
   if (isNativeApp()) return `${BASE}/auth/signin?callbackUrl=${encodeURIComponent(destination)}`
   return `${PORTAL}/?return_to=${encodeURIComponent(destination)}`
 }
