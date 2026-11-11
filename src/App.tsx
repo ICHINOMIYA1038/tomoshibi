@@ -122,6 +122,7 @@ export default function App() {
   const [mockPage, setMockPage] = useState<'projects' | 'editor'>(() => isProjectLibraryPath() ? 'projects' : 'editor')
   const [planOpen, setPlanOpen] = useState(isMockPreview)
   const [mapVisible, setMapVisible] = useState(true)
+  const [mobileView, setMobileView] = useState<'stage' | 'plan'>('stage')
   const [outlineVisible, setOutlineVisible] = useState(window.innerWidth > 960)
   const [showSceneDirections, setShowSceneDirections] = useState(!isMockPreview)
   const [displayMenuOpen, setDisplayMenuOpen] = useState(false)
@@ -320,7 +321,7 @@ export default function App() {
   }
 
   return (
-    <div className={'unified-shell' + (planOpen ? ' plan-open' : '') + (settings.panelOpen ? ' panel-open' : '') + (playbackOpen ? ' playback-open' : '') + (isMockPreview ? ' workspace-layout' : '') + (mapVisible ? '' : ' map-hidden') + (outlineVisible ? ' outline-visible' : '')}>
+    <div className={'unified-shell' + (planOpen ? ' plan-open' : '') + (settings.panelOpen ? ' panel-open' : '') + (playbackOpen ? ' playback-open' : '') + (isMockPreview ? ' workspace-layout mobile-view-' + mobileView : '') + (mapVisible ? '' : ' map-hidden') + (outlineVisible ? ' outline-visible' : '')}>
       {isMockPreview && <CloudProjectAutosave />}
       <div className="canvas-wrap">
        <WebGLErrorBoundary>
@@ -414,6 +415,10 @@ export default function App() {
           {!isMockPreview && <button onClick={() => useStore.getState().updateSettings({ showHelp: true })} aria-label="ヘルプ">?</button>}
         </div>
       </header>
+      {isMockPreview && !playbackOpen && <nav className="mobile-workspace-views" aria-label="編集画面の切り替え">
+        <button aria-pressed={mobileView === 'stage'} onClick={() => { setMobileView('stage'); setDisplayMenuOpen(false) }}>3Dで確認</button>
+        <button aria-pressed={mobileView === 'plan'} onClick={() => { setMobileView('plan'); setMapVisible(true); setDisplayMenuOpen(false) }}>平面図で配置</button>
+      </nav>}
       {isMockPreview && workspaceFeedback && <div className="workspace-feedback" role="status" aria-live="polite"><span aria-hidden="true">✓</span>{workspaceFeedback}</div>}
       {!isEmbed && <LegalFooter />}
       {!isEmbed && !isMockPreview && <AccountMenu />}
@@ -456,7 +461,7 @@ export default function App() {
       {!playbackOpen && <SettingsModal />}
       {!playbackOpen && <PlanBoard open={planOpen} persistent={isMockPreview}
         onClose={() => setPlanOpen(false)} onPlay={startPlayback}
-        onCloseOutline={() => setOutlineVisible(false)} onCloseMap={() => setMapVisible(false)}
+        onCloseOutline={() => setOutlineVisible(false)} onCloseMap={() => { setMapVisible(false); setMobileView('stage') }}
         showDirections={showSceneDirections} onToggleDirections={() => setShowSceneDirections(value => !value)}
         sceneEditorOpen={sceneEditorOpen} onOpenSceneEditor={() => setSceneEditorOpen(true)}
         onCloseSceneEditor={() => setSceneEditorOpen(false)}

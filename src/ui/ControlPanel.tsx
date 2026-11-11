@@ -143,9 +143,9 @@ export function ControlPanel({ planOpen = false }: { planOpen?: boolean }) {
         className={'panel-fab' + (open ? ' open' : '')}
         onClick={() => update({ panelOpen: !open })}
         title="パネル表示/非表示"
-        aria-label="パネル開閉"
+        aria-label={open ? '編集パネルを閉じる' : '役者・照明・セットを編集'}
       >
-        <span className={'fab-icon ' + (open ? 'fab-close' : 'fab-burger')} aria-hidden="true" />
+        <span className={'fab-icon ' + (open ? 'fab-close' : 'fab-burger')} aria-hidden="true" /><span className="mobile-panel-label">{open ? '閉じる' : '追加・編集'}</span>
       </button>
       <div
         className={'panel object-panel' + (open ? ' open' : ' closed')}

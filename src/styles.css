@@ -4497,3 +4497,34 @@ body.embed .workspace-switch { display: none; }
   .legacy-import-body { padding: 15px 12px; }
   .legacy-import-dialog footer { padding: 10px 13px; }
 }
+
+.mobile-workspace-views { display: none; }
+@media (max-width: 600px) {
+  .unified-shell.workspace-layout .mobile-workspace-views { display: flex; position: absolute; z-index: 39; top: var(--header-height); left: 0; right: 0; height: 48px; padding: 3px 8px; gap: 6px; background: #211b1d; border-bottom: 1px solid #514238; }
+  .mobile-workspace-views button { flex: 1; border: 1px solid transparent; border-radius: 6px; background: transparent; color: #c8bbab; font: 600 13px var(--font-sans); touch-action: manipulation; }
+  .mobile-workspace-views button[aria-pressed="true"] { border-color: #b99b68; background: #413529; color: #fff1d7; }
+  .unified-shell.workspace-layout.mobile-view-stage .canvas-wrap { top: calc(var(--header-height) + 48px); bottom: 0; }
+  .unified-shell.workspace-layout.mobile-view-stage .plan-board-content { display: none; }
+  .unified-shell.workspace-layout.mobile-view-stage .toolbar { top: calc(var(--header-height) + 56px); }
+  .unified-shell.workspace-layout.mobile-view-plan { --map-height: calc(100dvh - var(--header-height) - 48px); }
+  .unified-shell.workspace-layout.mobile-view-plan .plan-board { top: calc(var(--header-height) + 48px); }
+  .unified-shell.workspace-layout.mobile-view-plan .toolbar { display: none; }
+  .unified-shell.workspace-layout.mobile-view-plan .canvas-wrap { visibility: hidden; pointer-events: none; }
+  .unified-shell.workspace-layout.plan-open .panel-fab { bottom: calc(16px + env(safe-area-inset-bottom)); }
+  .unified-shell.workspace-layout .plan-map-layerbar { flex-wrap: wrap; overflow: visible; }
+  .unified-shell.workspace-layout .plan-map-layerbar button { min-height: 44px; }
+  .unified-shell.workspace-layout .plan-map-caption button { min-height: 44px; }
+  .unified-shell.workspace-layout input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+  .unified-shell.workspace-layout select, .unified-shell.workspace-layout textarea { font-size: 16px; min-height: 44px; }
+  .unified-shell.workspace-layout .object-panel button { min-height: 44px; }
+  .unified-shell.workspace-layout .plan-map-selection { padding-right: 70px; }
+  .project-create-name input { font-size: 16px; }
+}
+
+.mobile-panel-label { display: none; }
+@media (max-width: 600px) {
+  .unified-shell.workspace-layout .panel-fab { width: 96px; height: 48px; border-radius: 24px; }
+  .unified-shell.workspace-layout .panel-fab .fab-icon { display: none; }
+  .unified-shell.workspace-layout .mobile-panel-label { display: inline; font: 700 13px var(--font-sans); }
+  .unified-shell.workspace-layout.mobile-view-plan .panel-fab { bottom: calc(70px + env(safe-area-inset-bottom)); }
+}
