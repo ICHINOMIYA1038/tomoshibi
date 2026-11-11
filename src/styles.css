@@ -4562,3 +4562,6 @@ body.embed .workspace-switch { display: none; }
 }
 
 .project-library-storage a { display: inline-flex; align-items: center; min-height: 44px; padding: 0 10px; color: #e6d5b9; text-decoration: none; border: 1px solid #615145; border-radius: 6px; }
+
+.project-library-storage { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px; }
+@media (max-width: 600px) { .project-library-header { height: auto; min-height: 64px; padding-block: 8px; gap: 8px; } .project-library-storage a { padding-inline: 7px; font-size: 11px; } }
