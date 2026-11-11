@@ -318,13 +318,12 @@ export default function App() {
     useStore.getState().updateSettings({ scenePanelOpen: false, settingsOpen: false, showHelp: false })
   }
 
-  if (isMockPreview && mockPage === 'projects') {
-    return <ProjectLibrary onOpenEditor={() => navigateMock('editor')} />
-  }
-
   return (
-    <div className={'unified-shell' + (planOpen ? ' plan-open' : '') + (settings.panelOpen ? ' panel-open' : '') + (playbackOpen ? ' playback-open' : '') + (isMockPreview ? ' workspace-layout mobile-view-' + mobileView : '') + (mapVisible ? '' : ' map-hidden') + (outlineVisible ? ' outline-visible' : '')}>
+    <>
       {isMockPreview && <><WorkspaceNotices /><CloudProjectAutosave /></>}
+      {isMockPreview && mockPage === 'projects'
+        ? <ProjectLibrary onOpenEditor={() => navigateMock('editor')} />
+        : <div className={'unified-shell' + (planOpen ? ' plan-open' : '') + (settings.panelOpen ? ' panel-open' : '') + (playbackOpen ? ' playback-open' : '') + (isMockPreview ? ' workspace-layout mobile-view-' + mobileView : '') + (mapVisible ? '' : ' map-hidden') + (outlineVisible ? ' outline-visible' : '')}>
       <div className="canvas-wrap">
        <WebGLErrorBoundary>
         <Canvas
@@ -474,7 +473,8 @@ export default function App() {
       {!playbackOpen && <FixtureGizmoToolbar />}
       {!playbackOpen && <SelectionStatusHint />}
       {!isEmbed && <KeyHint />}
-    </div>
+    </div>}
+    </>
   )
 }
 

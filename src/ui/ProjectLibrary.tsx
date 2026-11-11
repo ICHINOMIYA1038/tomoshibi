@@ -244,7 +244,7 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
   }
   const create = async () => {
     if (creating) return
-    if (cloudDirty) { setCreateError('編集中のプロジェクトを保存しています。保存完了後に作成してください。'); return }
+    if (cloudDirty) return
     if (user && memberProjects.length >= user.maxProjects) { setCreateError(`プロジェクトは${user.maxProjects}件まで保存できます。`); return }
     const title = createName.trim()
     if (!title) { createNameRef.current?.focus(); return }
@@ -524,10 +524,14 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
           </div>
           <p>ひな形には舞台と客席のみが入ります。役者・照明・シーンは自由に追加できます。</p>
         </fieldset>
+        {cloudDirty && <div role="status" className="project-create-save-notice">
+          <p>編集中のプロジェクトに、まだクラウドに保存されていない変更があります。保存が完了すると新規作成できます。</p>
+          <button type="button" onClick={onOpenEditor}>編集中のプロジェクトに戻る</button>
+        </div>}
         {createError && <p role="alert">{createError}</p>}
         <div className="project-create-actions">
           <button type="button" disabled={creating} onClick={() => setCreateOpen(false)}>キャンセル</button>
-          <button type="submit" disabled={creating}>{creating ? '作成中…' : 'プロジェクトを作成'}</button>
+          <button type="submit" disabled={creating || cloudDirty}>{creating ? '作成中…' : 'プロジェクトを作成'}</button>
         </div>
       </form>
     </div>}
