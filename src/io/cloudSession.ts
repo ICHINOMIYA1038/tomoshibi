@@ -24,6 +24,8 @@ export function useCloudSession(): State {
     if (!inited) {
       inited = true
       refreshSession()
+      window.addEventListener('pageshow', () => refreshSession())
+      document.addEventListener('visibilitychange', () => { if (!document.hidden) refreshSession() })
     }
   }, [])
   return snap
