@@ -224,6 +224,8 @@ export function ProPage() {
         <ProSubscribeButton />
       </div>
 
+      <ExistingWebSubscription />
+
       <h2>Free プランと Pro プランの違い</h2>
       <table className="legal-table">
         <thead>
@@ -261,6 +263,32 @@ export function ProPage() {
       <p className="legal-note"><a href="/tokushoho">特定商取引法に基づく表記</a> / <a href="/terms">利用規約</a> / <a href="/privacy">プライバシーポリシー</a></p>
     </Layout>
   )
+}
+
+function ExistingWebSubscription() {
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState('')
+  const [needsLogin, setNeedsLogin] = useState(false)
+  return <section className="pro-price-card" aria-labelledby="existing-web-contract">
+    <h2 id="existing-web-contract">Webで契約済みの方</h2>
+    <p>契約状況の確認・解約・支払い方法の変更はこちらから行えます。</p>
+    <button className="pro-subscribe-btn" disabled={busy} onClick={async () => {
+      setBusy(true); setError(''); setNeedsLogin(false)
+      try {
+        const { url } = await createBillingPortal()
+        location.href = url
+      } catch (e) {
+        setNeedsLogin(e instanceof CloudError && e.status === 401)
+        setError(e instanceof CloudError && e.status === 401
+          ? '契約したアカウントでログインしてから、もう一度お試しください。'
+          : e instanceof CloudError ? e.message : '管理画面を開けませんでした。時間をおいてお試しください。')
+        setBusy(false)
+      }
+    }}>{busy ? '管理画面を開いています…' : 'Web契約の管理・解約'}</button>
+    {error && <p role="alert">{error}</p>}
+    {needsLogin && <a href={loginUrl()}>契約したアカウントでログインする →</a>}
+    <p className="pro-subscribe-note">解約は移動先のStripe管理画面で行います。このボタンだけでは解約されません。</p>
+  </section>
 }
 
 function ProSubscribeButton() {
