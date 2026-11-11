@@ -216,7 +216,7 @@ export function TokushohoPage() {
 export function ProPage() {
   return (
     <Layout title="Pro プラン">
-      <p className="pro-lead">{SERVICE.name}で複数の舞台を計画する方へ。<br />クラウドに 500 件まで保存できる Pro プラン。</p>
+      <p className="pro-lead">{SERVICE.name}で複数の舞台を計画する方へ。<br />クラウドに 10 件まで保存できる Pro プラン。</p>
 
       <div className="pro-price-card">
         <div className="pro-price-amount">¥{SERVICE.proPriceMonthly}<span>/月</span></div>
@@ -232,7 +232,7 @@ export function ProPage() {
         <tbody>
           <tr><td>演出プランの基本機能</td><td>◯</td><td>◯</td></tr>
           <tr><td>基本の器具プロファイル (Fresnel / PAR / LED)</td><td>◯</td><td>◯</td></tr>
-          <tr><td>クラウドへのプロジェクト保存</td><td>3件まで</td><td><strong>500件まで</strong></td></tr>
+          <tr><td>クラウドへのプロジェクト保存</td><td>2件まで</td><td><strong>10件まで</strong></td></tr>
           <tr><td>優先サポート</td><td>—</td><td>◯</td></tr>
         </tbody>
       </table>
@@ -248,11 +248,11 @@ export function ProPage() {
       <h2>よくあるご質問</h2>
       <dl className="faq">
         <dt>Free プランでも使い続けられますか?</dt>
-        <dd>はい。演出プランの基本機能は Free プランでも使えます。Pro プランではクラウドに保存できるプロジェクトが 500 件になります。</dd>
+        <dd>はい。演出プランの基本機能は Free プランでも使えます。Pro プランではクラウドに保存できるプロジェクトが 10 件になります。</dd>
         <dt>いつでも解約できますか?</dt>
         <dd>はい。解約は本サービス内から数クリックで完了します。違約金等は一切かかりません。</dd>
         <dt>Pro プランを解約した後、保存していたプロジェクトはどうなりますか?</dt>
-        <dd>保存済みのプロジェクトは残り、閲覧・編集できます。Free プランの上限である 3 件を超えている場合は、新しいプロジェクトの追加はできません。</dd>
+        <dd>保存済みのプロジェクトは残り、閲覧・編集できます。Free プランの上限である 2 件を超えている場合は、新しいプロジェクトの追加はできません。</dd>
         <dt>領収書は発行されますか?</dt>
         <dd>Stripe 決済の場合、決済完了時に自動で領収書メールが送信されます。</dd>
       </dl>
@@ -416,7 +416,7 @@ function ProSuccessPage() {
       <div className="pro-price-card">
         <div className="pro-flame-large">✦</div>
         <h2 className="pro-success-h">ご登録ありがとうございます!</h2>
-        <p>Pro プランの決済が完了しました。<br />クラウド保存が<strong>無制限</strong>に開放されました。</p>
+        <p>Pro プランの決済が完了しました。<br />クラウド保存が<strong>10件まで</strong>に開放されました。</p>
         <a href="/studio/projects/" className="pro-subscribe-btn">プロジェクトに戻る</a>
         <div className="pro-subscribe-note">領収書は登録メールアドレスに Stripe から自動送信されます</div>
       </div>
