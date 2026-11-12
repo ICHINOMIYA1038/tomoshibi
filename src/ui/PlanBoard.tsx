@@ -64,7 +64,7 @@ type OutlineKind = 'scene' | 'chapter'
 type OutlineTarget = { id: string; position: 'before' | 'after' | 'chapter' | 'gap';
   chapterId?: string; beforeSceneId?: string | null }
 type OutlinePointer = { kind: OutlineKind; id: string; pointerId: number; startX: number; startY: number;
-  active: boolean; target: OutlineTarget | null }
+  active: boolean; target: OutlineTarget | null; x: number; y: number }
 
 export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigate,
   onCloseOutline, onCloseMap, showDirections = true, onToggleDirections,
@@ -146,6 +146,8 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
   const outlinePointer = useRef<OutlinePointer | null>(null)
   const suppressOutlineClick = useRef<string | null>(null)
   const outlineRef = useRef<HTMLElement>(null)
+  const outlineFrame = useRef(0)
+  useEffect(() => () => cancelAnimationFrame(outlineFrame.current), [])
   const dragStart = useRef<DragStart | null>(null)
   const svgRef = useRef<SVGSVGElement>(null)
   const chapterNameRef = useRef<HTMLInputElement>(null)
@@ -376,25 +378,29 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
     if (event.pointerType === 'touch' && !target.closest('.plan-scene-grip')) return
     event.currentTarget.setPointerCapture(event.pointerId)
     outlinePointer.current = { kind, id, pointerId: event.pointerId, startX: event.clientX,
-      startY: event.clientY, active: false, target: null }
+      startY: event.clientY, x: event.clientX, y: event.clientY, active: false, target: null }
   }
-  const updateOutlineDrag = (event: PointerEvent<HTMLElement>) => {
+  const updateOutlinePosition = (x: number, y: number) => {
     const drag = outlinePointer.current
-    if (!drag || drag.pointerId !== event.pointerId) return
-    if (!drag.active && Math.hypot(event.clientX - drag.startX, event.clientY - drag.startY) < 5) return
-    if (!drag.active) {
-      drag.active = true
-      blockOutlineClickUntil.current = Infinity
-      setMovedOutlineId(null)
-      setDraggingOutline({ kind: drag.kind, id: drag.id })
-    }
     const outline = outlineRef.current
-    if (outline) {
-      const rect = outline.getBoundingClientRect()
-      if (event.clientY < rect.top + 28) outline.scrollTop -= 12
-      else if (event.clientY > rect.bottom - 28) outline.scrollTop += 12
+    if (!drag || !outline) return
+    const bounds = outline.getBoundingClientRect()
+    let hit: HTMLElement | null = null
+    if (x >= bounds.left && x <= bounds.right && y >= bounds.top && y <= bounds.bottom) {
+      hit = document.elementFromPoint(x, y)?.closest<HTMLElement>('[data-plan-drop]') ?? null
+      if (!hit) {
+        const tree = outline.querySelector<HTMLElement>('.plan-outline-tree')
+        const rect = tree?.getBoundingClientRect()
+        if (rect && y >= rect.top && y <= rect.bottom) {
+          let distance = Infinity
+          tree!.querySelectorAll<HTMLElement>('[data-plan-drop]').forEach(node => {
+            const row = node.getBoundingClientRect()
+            const next = Math.max(row.top - y, y - row.bottom, 0)
+            if (row.height && next < distance) { distance = next; hit = node }
+          })
+        }
+      }
     }
-    const hit = document.elementFromPoint(event.clientX, event.clientY)?.closest<HTMLElement>('[data-plan-drop]')
     let target: OutlineTarget | null = null
     if (hit && outline?.contains(hit)) {
       const kind = hit.dataset.planDrop
@@ -404,7 +410,7 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
           chapterId, beforeSceneId: hit.dataset.beforeSceneId || null }
       } else if (drag.kind === 'scene' && kind === 'scene' && hit.dataset.sceneId !== drag.id) {
         const rect = hit.getBoundingClientRect()
-        target = { id: hit.dataset.sceneId!, position: event.clientY < rect.top + rect.height / 2 ? 'before' : 'after' }
+        target = { id: hit.dataset.sceneId!, position: y < rect.top + rect.height / 2 ? 'before' : 'after' }
       } else if (drag.kind === 'scene' && kind === 'chapter') {
         target = { id: hit.dataset.chapterId!, position: 'chapter' }
       } else if (drag.kind === 'chapter') {
@@ -413,16 +419,52 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
         if (chapterId && chapterId !== drag.id) {
           const header = chapterNode.querySelector<HTMLElement>('[data-plan-drop="chapter"]')
           const rect = (header ?? chapterNode).getBoundingClientRect()
-          target = { id: chapterId, position: event.clientY < rect.top + rect.height / 2 ? 'before' : 'after' }
+          target = { id: chapterId, position: y < rect.top + rect.height / 2 ? 'before' : 'after' }
         }
       }
     }
     drag.target = target
-    setDropTarget(target)
+    setDropTarget(previous => JSON.stringify(previous) === JSON.stringify(target) ? previous : target)
+  }
+  const animateOutlineScroll = (previousTime: number) => {
+    outlineFrame.current = requestAnimationFrame(now => {
+      const drag = outlinePointer.current
+      const outline = outlineRef.current
+      if (!drag?.active || !outline) return
+      const tree = outline.querySelector<HTMLElement>('.plan-outline-tree')
+      const scroller = tree && tree.scrollHeight > tree.clientHeight + 1 ? tree : outline
+      const rect = scroller.getBoundingClientRect()
+      if (drag.x >= rect.left && drag.x <= rect.right && drag.y >= rect.top && drag.y <= rect.bottom) {
+        const edge = 48
+        const speed = drag.y < rect.top + edge ? -Math.min(1, (rect.top + edge - drag.y) / edge)
+          : drag.y > rect.bottom - edge ? Math.min(1, (drag.y - rect.bottom + edge) / edge) : 0
+        const before = scroller.scrollTop
+        scroller.scrollTop += speed * Math.min(now - previousTime, 32) * .6
+        if (scroller.scrollTop !== before) updateOutlinePosition(drag.x, drag.y)
+      }
+      animateOutlineScroll(now)
+    })
+  }
+  const updateOutlineDrag = (event: PointerEvent<HTMLElement>) => {
+    const drag = outlinePointer.current
+    if (!drag || drag.pointerId !== event.pointerId) return
+    drag.x = event.clientX
+    drag.y = event.clientY
+    if (!drag.active && Math.hypot(drag.x - drag.startX, drag.y - drag.startY) < 5) return
+    if (!drag.active) {
+      drag.active = true
+      blockOutlineClickUntil.current = Infinity
+      setMovedOutlineId(null)
+      setDraggingOutline({ kind: drag.kind, id: drag.id })
+      animateOutlineScroll(performance.now())
+    }
+    updateOutlinePosition(drag.x, drag.y)
   }
   const endOutlineDrag = (event: PointerEvent<HTMLElement>) => {
     const drag = outlinePointer.current
     if (!drag || drag.pointerId !== event.pointerId) return
+    if (event.type === 'pointerup' && drag.active) updateOutlinePosition(event.clientX, event.clientY)
+    cancelAnimationFrame(outlineFrame.current)
     outlinePointer.current = null
     setDraggingOutline(null)
     setDropTarget(null)
