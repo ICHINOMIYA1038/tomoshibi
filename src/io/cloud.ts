@@ -1,3 +1,4 @@
+import { getProjectEditorIdentity } from './projectEditorIdentity'
 // クラウド連携 (gikyoku_tosyokan の /api/tomoshibi/* を叩く)
 // 認証Cookieは親ドメイン .gikyokutosyokan.com で共有される。
 // 開発時は VITE_GIKYOKU_API_BASE で gikyoku_tosyokan のローカル起動先 (例: http://localhost:3000) を指定。
@@ -218,9 +219,10 @@ export function createCloudProject(name: string, data: SerializedScene, importKe
   })
 }
 
-export function updateCloudProject(id: string, revision: number, name: string, data: SerializedScene, replace = false) {
+export function updateCloudProject(id: string, revision: number, name: string, data: SerializedScene, replace = false, editorId = getProjectEditorIdentity(id)) {
+  if (!editorId) return Promise.reject(new CloudError('この画面の編集権を確認してください', 423))
   return req<CloudProjectMeta>(`/projects/${id}`, {
-    method: 'PUT', body: JSON.stringify({ name, data, revision, replace }),
+    method: 'PUT', body: JSON.stringify({ name, data, revision, replace, editorId }),
   })
 }
 
@@ -289,4 +291,19 @@ function pick(s: SerializedScene) {
 
 export function syncBilling() {
   return req<{ plan: 'pro'; planExpiresAt: string }>('/billing-sync', { method: 'POST', body: '{}' })
+}
+
+export function requestProjectEditor(id: string, editorId: string, action: 'acquire' | 'renew' | 'takeover' | 'release') {
+  return req<{ ttlMs: number; project?: CloudProject }>(`/projects/${id}/edit`, {
+    method: 'POST', body: JSON.stringify({ editorId, action }), keepalive: action === 'release', signal: AbortSignal.timeout(10_000),
+  })
+}
+
+export async function replaceCloudProject(id: string, revision: number, name: string, data: SerializedScene) {
+  const currentEditor = getProjectEditorIdentity(id)
+  if (currentEditor) return updateCloudProject(id, revision, name, data, true, currentEditor)
+  const editorId = crypto.randomUUID()
+  await requestProjectEditor(id, editorId, 'acquire')
+  try { return await updateCloudProject(id, revision, name, data, true, editorId) }
+  finally { await requestProjectEditor(id, editorId, 'release').catch(() => undefined) }
 }

@@ -9,7 +9,7 @@ import { flushMockAutosave, preserveMockDraftBeforeDemo, resetMockWorkspace, use
 import { createVenueTemplatePlan, VENUE_STUDY_LINKS, type VenueStudyKind } from '../demo/createVenueStudyPlans'
 import { audienceSeatPositions } from '../audienceLayout'
 import { DEFAULT_VENUE_LAYOUT, stageFootprint } from '../venueLayout'
-import { CloudError, accountUrl, createCloudProject, fetchCloudProject, fetchCloudScene, listCloudProjects, listCloudScenes, loginUrl, updateCloudProject, type CloudProjectMeta, type CloudSceneMeta } from '../io/cloud'
+import { CloudError, accountUrl, createCloudProject, fetchCloudProject, fetchCloudScene, listCloudProjects, listCloudScenes, loginUrl, replaceCloudProject, type CloudProjectMeta, type CloudSceneMeta } from '../io/cloud'
 import { useCloudSession } from '../io/cloudSession'
 import { copyLegacyScene, ensureLegacyLocalProject, importedProjectName, listLegacyLocalScenes } from '../io/legacyMigration'
 import { importScene } from '../io/sceneIO'
@@ -384,7 +384,7 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
         const importKey = await transferFingerprint(scene)
         const target = targets.shift()
         const created = target
-          ? await updateCloudProject(target.id, target.revision, scene.name.slice(0, 60), scene, true)
+          ? await replaceCloudProject(target.id, target.revision, scene.name.slice(0, 60), scene)
           : await createCloudProject(scene.name.slice(0, 60), scene, importKey)
         savedProject ??= { id: created.id, name: created.name, revision: created.revision, data: scene }
         recordTransferred(user.id, importKey)

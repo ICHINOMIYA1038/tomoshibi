@@ -1,3 +1,4 @@
+import { canEditProject, loseProjectEditor, useProjectEditor, getProjectEditorEpoch } from './io/projectEditor'
 import { OnlineWorkspace } from './ui/OnlineWorkspace'
 import { WorkspaceNotice, WorkspaceNotices } from './ui/WorkspaceNotice'
 import { hasDeviceStorage } from './io/workspaceStorage'
@@ -135,6 +136,11 @@ export default function App() {
   const displayMenuPanelRef = useRef<HTMLDivElement>(null)
   const [workspaceFeedback, setWorkspaceFeedback] = useState('')
   const [playbackOpen, setPlaybackOpen] = useState(false)
+  useEffect(() => {
+    const close = () => setPlaybackOpen(false)
+    window.addEventListener('tomoshibi-end-preview', close)
+    return () => window.removeEventListener('tomoshibi-end-preview', close)
+  }, [])
   const [, setViewportWidth] = useState(window.innerWidth)
   const wasMobile = useRef(window.innerWidth <= 960)
   const maxSeatZ = Math.max(3, ...audienceBlocks.map(block =>
@@ -320,7 +326,7 @@ export default function App() {
   }
 
   return (
-    <OnlineWorkspace enabled={isMockPreview}>
+    <OnlineWorkspace enabled={isMockPreview} editorVisible={mockPage !== 'projects'} onProjects={() => navigateMock('projects')}>
       {isMockPreview && <><WorkspaceNotices /><CloudProjectAutosave /></>}
       {isMockPreview && mockPage === 'projects'
         ? <ProjectLibrary onOpenEditor={() => navigateMock('editor')} />
@@ -480,6 +486,7 @@ export default function App() {
 }
 
 function CloudProjectAutosave() {
+  const editor = useProjectEditor()
   const { user, connectionError } = useCloudSession()
   const { cloudDirty, saveStatus } = useMockWorkspaceState()
   const [attempt, setAttempt] = useState(0)
@@ -493,39 +500,39 @@ function CloudProjectAutosave() {
     generation.current += 1
     failedSnapshot.current = ''
     setError('')
-  }, [activeId, user?.id])
+  }, [activeId, user?.id, editor.epoch])
   useEffect(() => {
     const active = getActiveCloudProject()
-    if (!user || !active || !cloudDirty || saveStatus !== 'saved' || connectionError || !navigator.onLine) return
+    if (!user || !active || !cloudDirty || !canEditProject(active.id) || saveStatus !== 'saved' || connectionError || !navigator.onLine) return
     if (currentWorkspaceSnapshot() === failedSnapshot.current || inFlight.current) return
     const startedGeneration = generation.current
     const timer = window.setTimeout(async () => {
       const current = getActiveCloudProject()
-      if (!current || current.id !== active.id || inFlight.current || !navigator.onLine) return
+      if (!current || current.id !== active.id || !canEditProject(current.id) || inFlight.current || !navigator.onLine) return
+      const editorEpoch = getProjectEditorEpoch()
       const snapshot = currentWorkspaceSnapshot()
       inFlight.current = true
       const name = useStore.getState().productionPlan.projectTitle?.trim() || current.name
       try {
         const updated = await updateCloudProject(current.id, current.revision, name, exportScene(name))
-        if (getActiveCloudProject()?.id !== current.id || generation.current !== startedGeneration) return
+        if (getActiveCloudProject()?.id !== current.id || generation.current !== startedGeneration || getProjectEditorEpoch() !== editorEpoch) return
         setActiveCloudProject({ id: current.id, name: updated.name, revision: updated.revision })
         markCloudSaved(snapshot)
         setError('')
         failedSnapshot.current = ''
       } catch (cause) {
-        if (getActiveCloudProject()?.id !== current.id || generation.current !== startedGeneration) return
+        if (getActiveCloudProject()?.id !== current.id || generation.current !== startedGeneration || getProjectEditorEpoch() !== editorEpoch) return
+        if (cause instanceof CloudError && (cause.status === 423 || cause.status === 409)) { void loseProjectEditor(); return }
         failedSnapshot.current = snapshot
-        if (!(cause instanceof CloudError && cause.status === 409)) void refreshSession()
-        setError(cause instanceof CloudError && cause.status === 409
-          ? '別のタブまたは端末で更新されたため、クラウドへの保存を停止しました。現在の編集内容はこのブラウザ／アプリに保持しています。'
-          : 'クラウドに保存できませんでした。現在の編集内容はこのブラウザ／アプリに保持しています。')
+        void refreshSession()
+        setError('クラウドに保存できませんでした。現在の編集内容はこのブラウザ／アプリに保持しています。')
       } finally {
         inFlight.current = false
         setAttempt(value => value + 1)
       }
     }, 2200)
     return () => window.clearTimeout(timer)
-  }, [user?.id, activeId, cloudDirty, saveStatus, attempt, connectionError])
+  }, [user?.id, activeId, cloudDirty, saveStatus, attempt, connectionError, editor.status, editor.epoch])
   return error ? <WorkspaceNotice kind="alert">{error}</WorkspaceNotice> : null
 }
 

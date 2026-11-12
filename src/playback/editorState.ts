@@ -11,6 +11,7 @@ export function beginPlaybackPreview() {
   const original = useStore.getState()
   editorState = original
   return () => {
+    if (editorState !== original) return
     useStore.setState(state => ({
       fixtures: original.fixtures,
       performers: original.performers,
@@ -21,4 +22,10 @@ export function beginPlaybackPreview() {
     }))
     editorState = null
   }
+}
+
+export function cancelPlaybackPreview() {
+  if (!editorState) return
+  editorState = null
+  window.dispatchEvent(new Event('tomoshibi-end-preview'))
 }
