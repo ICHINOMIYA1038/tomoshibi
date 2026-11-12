@@ -132,6 +132,13 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
   const [feedback, setFeedback] = useState('')
   const [contextMenu, setContextMenu] = useState<{ kind: 'chapter' | 'scene' | 'empty'; id: string; x: number; y: number } | null>(null)
   const [draggingOutline, setDraggingOutline] = useState<{ kind: OutlineKind; id: string } | null>(null)
+  const blockOutlineClickUntil = useRef(0)
+  const [movedOutlineId, setMovedOutlineId] = useState<string | null>(null)
+  useEffect(() => {
+    if (!movedOutlineId) return
+    const timer = window.setTimeout(() => setMovedOutlineId(null), 1200)
+    return () => window.clearTimeout(timer)
+  }, [movedOutlineId])
   const [dropTarget, setDropTarget] = useState<OutlineTarget | null>(null)
   const [selectedSceneIds, setSelectedSceneIds] = useState<Set<string>>(() => new Set())
   const [selectionAnchorId, setSelectionAnchorId] = useState<string | null>(null)
@@ -344,7 +351,8 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
     setContextMenu({ kind, id, x: Math.max(8, Math.min(x, window.innerWidth - 230)),
       y: Math.max(8, Math.min(y, window.innerHeight - 350)) })
   }
-  const reportMove = (result: MoveSceneResult, kind: OutlineKind = 'scene') => {
+  const reportMove = (result: MoveSceneResult, kind: OutlineKind = 'scene', id?: string) => {
+    if (result === 'moved' && id) setMovedOutlineId(id)
     if (result === 'moved') setFeedback(kind === 'chapter' ? '章の順番を変更しました' : 'シーンの順番を変更しました')
     else if (result === 'invalid') setFeedback('移動できませんでした')
   }
@@ -354,9 +362,11 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
     return <div className={'plan-scene-slot' + (dropTarget?.position === 'gap' && dropTarget.id === id ? ' drop-active' : '')}
       data-plan-drop="gap" data-chapter-id={chapterId} data-before-scene-id={beforeSceneId ?? ''}>
       <span className="plan-scene-slot-line" aria-hidden="true" />
-      <button type="button" disabled={plan.scenes.length >= PLAN_LIMITS.scenes}
+      <button type="button" disabled={!!draggingOutline || plan.scenes.length >= PLAN_LIMITS.scenes}
         aria-label="ここにシーンを追加" title="ここにシーンを追加"
-        onClick={() => createSceneAt(chapterId, beforeSceneId)}>＋ <span>ここにシーンを追加</span></button>
+        onClick={() => {
+          if (!outlinePointer.current?.active && Date.now() >= blockOutlineClickUntil.current) createSceneAt(chapterId, beforeSceneId)
+        }}>＋ <span>ここにシーンを追加</span></button>
     </div>
   }
   const startOutlineDrag = (event: PointerEvent<HTMLElement>, kind: OutlineKind, id: string) => {
@@ -374,6 +384,8 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
     if (!drag.active && Math.hypot(event.clientX - drag.startX, event.clientY - drag.startY) < 5) return
     if (!drag.active) {
       drag.active = true
+      blockOutlineClickUntil.current = Infinity
+      setMovedOutlineId(null)
       setDraggingOutline({ kind: drag.kind, id: drag.id })
     }
     const outline = outlineRef.current
@@ -415,20 +427,21 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
     setDraggingOutline(null)
     setDropTarget(null)
     if (drag.active) {
+      blockOutlineClickUntil.current = Date.now() + 400
       const key = `${drag.kind}:${drag.id}`
       suppressOutlineClick.current = key
       window.setTimeout(() => { if (suppressOutlineClick.current === key) suppressOutlineClick.current = null }, 0)
     }
-    if (event.type === 'pointercancel' || !drag.active || !drag.target) return
+    if ((event.type === 'pointercancel' || event.type === 'lostpointercapture') || !drag.active || !drag.target) return
     const target = drag.target
     if (drag.kind === 'chapter' && (target.position === 'before' || target.position === 'after'))
-      reportMove(moveChapter(drag.id, target.id, target.position), 'chapter')
+      reportMove(moveChapter(drag.id, target.id, target.position), 'chapter', drag.id)
     else if (drag.kind === 'scene' && target.position === 'gap')
       reportMove(target.beforeSceneId ? moveScene(drag.id, target.beforeSceneId, 'before')
-        : moveSceneToChapter(drag.id, target.chapterId!))
-    else if (drag.kind === 'scene' && target.position === 'chapter') reportMove(moveSceneToChapter(drag.id, target.id))
+        : moveSceneToChapter(drag.id, target.chapterId!), 'scene', drag.id)
+    else if (drag.kind === 'scene' && target.position === 'chapter') reportMove(moveSceneToChapter(drag.id, target.id), 'scene', drag.id)
     else if (drag.kind === 'scene' && (target.position === 'before' || target.position === 'after'))
-      reportMove(moveScene(drag.id, target.id, target.position))
+      reportMove(moveScene(drag.id, target.id, target.position), 'scene', drag.id)
   }
   const toggleSceneSelection = (id: string, range: boolean) => {
     if (range && selectionAnchorId) {
@@ -548,7 +561,10 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
       {!persistent && <button className="plan-board-close" onClick={onClose}>3D 舞台に戻る</button>}
     </div>
     <div className="plan-board-body">
-      <aside id="plan-outline" ref={outlineRef} className={'plan-outline' + (selectionMode ? ' selection-mode' : '')} aria-label="プロジェクトの構成">
+      <aside id="plan-outline" ref={outlineRef} className={'plan-outline' + (selectionMode ? ' selection-mode' : '') + (draggingOutline ? ' outline-dragging' : '')}
+        onClickCapture={event => {
+          if (Date.now() < blockOutlineClickUntil.current) { event.preventDefault(); event.stopPropagation() }
+        }} aria-label="プロジェクトの構成">
         {persistent ? <div className="plan-outline-project plan-outline-heading">
           <div className="plan-outline-heading-row"><strong>公演の流れ</strong>
             <button type="button" className="plan-selection-toggle" aria-pressed={selectionMode}
@@ -581,6 +597,7 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
             const scenesInChapter = plan.scenes.filter(entry => groupIds.has(entry.sequenceId ?? ''))
             return <div className="plan-outline-chapter" key={item.id} data-plan-chapter-id={item.id}>
               {persistent ? <div className={'plan-outline-node chapter' + (chapter?.id === item.id ? ' in-path' : '') +
+                (movedOutlineId === item.id ? ' just-moved' : '') +
                 (draggingOutline?.kind === 'chapter' && draggingOutline.id === item.id ? ' dragging' : '') +
                 (dropTarget?.id === item.id ? ` drop-${dropTarget.position}` : '')}
                 data-plan-drop="chapter" data-chapter-id={item.id}
@@ -598,7 +615,7 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
                     }
                   }}
                   onPointerDown={event => startOutlineDrag(event, 'chapter', item.id)}
-                  onPointerMove={updateOutlineDrag} onPointerUp={endOutlineDrag} onPointerCancel={endOutlineDrag}>⠿</span>
+                  onPointerMove={updateOutlineDrag} onPointerUp={endOutlineDrag} onPointerCancel={endOutlineDrag} onLostPointerCapture={endOutlineDrag}>⠿</span>
                 {renaming?.kind === 'chapter' && renaming.id === item.id
                   ? <input ref={chapterNameRef} aria-label="章名" value={item.title} maxLength={60} placeholder="章名"
                     onChange={event => updateChapter(item.id, event.target.value)}
@@ -610,7 +627,7 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
                   : <><button className="plan-outline-node-main" aria-expanded={!collapsedChapters.has(item.id)}
                     onKeyDown={event => { if (event.key === 'F2') { event.preventDefault(); startRename('chapter', item.id, item.title) } }}
                     onPointerDown={event => startOutlineDrag(event, 'chapter', item.id)}
-                    onPointerMove={updateOutlineDrag} onPointerUp={endOutlineDrag} onPointerCancel={endOutlineDrag}
+                    onPointerMove={updateOutlineDrag} onPointerUp={endOutlineDrag} onPointerCancel={endOutlineDrag} onLostPointerCapture={endOutlineDrag}
                     onClick={event => {
                       if (suppressOutlineClick.current === `chapter:${item.id}`) {
                         event.preventDefault()
@@ -639,6 +656,7 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
                 <Fragment key={entry.id}><div
                   className={'plan-outline-node scene' + (entry.id === scene.id ? ' active' : '') +
                     (selectedSceneIds.has(entry.id) ? ' multi-selected' : '') +
+                    (movedOutlineId === entry.id ? ' just-moved' : '') +
                     (draggingOutline?.kind === 'scene' && draggingOutline.id === entry.id ? ' dragging' : '') +
                     (dropTarget?.id === entry.id ? ` drop-${dropTarget.position}` : '')}
                   data-plan-drop="scene" data-scene-id={entry.id}
@@ -655,7 +673,7 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
                       }
                     }}
                     onPointerDown={event => startOutlineDrag(event, 'scene', entry.id)}
-                    onPointerMove={updateOutlineDrag} onPointerUp={endOutlineDrag} onPointerCancel={endOutlineDrag}>⠿</span>
+                    onPointerMove={updateOutlineDrag} onPointerUp={endOutlineDrag} onPointerCancel={endOutlineDrag} onLostPointerCapture={endOutlineDrag}>⠿</span>
                   {renaming?.kind === 'scene' && renaming.id === entry.id
                     ? <input ref={sceneNameRef} aria-label="シーン名" value={entry.title} maxLength={60} placeholder="シーン名"
                       onChange={event => updateScene(entry.id, { title: event.target.value })}
@@ -667,7 +685,7 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
                     : <><button className="plan-outline-node-main" aria-current={entry.id === scene.id ? 'step' : undefined}
                       onKeyDown={event => { if (event.key === 'F2') { event.preventDefault(); startRename('scene', entry.id, entry.title) } }}
                       onPointerDown={event => startOutlineDrag(event, 'scene', entry.id)}
-                      onPointerMove={updateOutlineDrag} onPointerUp={endOutlineDrag} onPointerCancel={endOutlineDrag}
+                      onPointerMove={updateOutlineDrag} onPointerUp={endOutlineDrag} onPointerCancel={endOutlineDrag} onLostPointerCapture={endOutlineDrag}
                       onClick={event => handleSceneClick(event, entry.id)}>
                       <strong>{sceneDisplayTitle(plan, entry.id)}</strong>
                       {(entry.trigger ?? '').trim() && <small className="plan-scene-cue-summary"

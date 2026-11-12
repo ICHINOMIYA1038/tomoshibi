@@ -4083,7 +4083,7 @@ body.embed .workspace-switch { display: none; }
 .unified-shell.workspace-layout .plan-scene-slot button {
   position: absolute; top: 50%; left: 50%; z-index: 2;
   width: max-content; min-width: 155px; min-height: 28px; padding: 3px 10px;
-  transform: translate(-50%, -50%); opacity: 0;
+  transform: translate(-50%, -50%); opacity: 0; pointer-events: none;
   border: 1px solid rgba(212,175,111,.55); border-radius: 6px;
   background: #2b2527; color: var(--kin); font: 11px var(--font-sans);
   cursor: pointer; transition: opacity .12s ease;
@@ -4092,7 +4092,7 @@ body.embed .workspace-switch { display: none; }
 .unified-shell.workspace-layout .plan-scene-slot:focus-within,
 .unified-shell.workspace-layout .plan-scene-slot.drop-active { z-index: 4; }
 .unified-shell.workspace-layout .plan-scene-slot:hover button,
-.unified-shell.workspace-layout .plan-scene-slot:focus-within button { opacity: 1; }
+.unified-shell.workspace-layout .plan-scene-slot:focus-within button { opacity: 1; pointer-events: auto; }
 .unified-shell.workspace-layout .plan-scene-slot button:focus-visible { outline: 2px solid var(--kin); outline-offset: 2px; }
 .unified-shell.workspace-layout .plan-scene-slot button:disabled { cursor: default; opacity: .35; }
 .unified-shell.workspace-layout .plan-scene-slot.drop-active .plan-scene-slot-line {
@@ -4104,7 +4104,7 @@ body.embed .workspace-switch { display: none; }
   .unified-shell.workspace-layout .plan-scene-slot { height: 32px; }
   .unified-shell.workspace-layout .plan-scene-slot button {
     min-width: 44px; width: 44px; min-height: 44px; padding: 0;
-    opacity: 1; font-size: 20px;
+    opacity: 1; pointer-events: auto; font-size: 20px;
   }
   .unified-shell.workspace-layout .plan-scene-slot button span { display: none; }
 }
@@ -4578,3 +4578,19 @@ body.embed .workspace-switch { display: none; }
 .workspace-connection-dialog h2 { font-size: 20px; }
 .workspace-connection-dialog button, .workspace-connection-dialog a { display: inline-block; padding: 12px 20px; min-height: 44px; border-radius: 6px; background: #d0a15f; color: #211a13; }
 .project-transfer-warning { padding: 14px 16px; border: 1px solid #b28a45; border-radius: 8px; background: #32291b; color: #ffe2ac; font-weight: 600; line-height: 1.7; }
+
+.unified-shell.workspace-layout .plan-outline.outline-dragging .plan-scene-slot button {
+  opacity: 0; pointer-events: none; visibility: hidden;
+}
+.unified-shell.workspace-layout .plan-outline-node.just-moved {
+  animation: plan-outline-moved 1.2s ease-out;
+}
+@keyframes plan-outline-moved {
+  from { background-color: rgba(212,175,111,.4); outline: 2px solid var(--kin); }
+  to { outline: 2px solid transparent; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .unified-shell.workspace-layout .plan-outline-node.just-moved {
+    animation: none; outline: 2px solid var(--kin);
+  }
+}
