@@ -1,3 +1,4 @@
+import { getEditableState } from '../playback/editorState'
 import { workspaceStorage } from './workspaceStorage'
 // シーン保存/読込
 // - localStorage に名前付きで複数保存
@@ -24,7 +25,7 @@ export interface SerializedScene {
 }
 
 export function exportScene(name: string = '無題'): SerializedScene {
-  const s = useStore.getState()
+  const s = getEditableState()
   const serializablePieces = (pieces: SetPiece[]) => pieces.map(piece =>
     piece.url?.startsWith('blob:') ? { ...piece, url: undefined } : piece,
   )

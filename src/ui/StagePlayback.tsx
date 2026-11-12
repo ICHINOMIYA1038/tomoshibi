@@ -1,3 +1,4 @@
+import { beginPlaybackPreview } from '../playback/editorState'
 import { Fragment, useCallback, useEffect, useRef, useState } from 'react'
 import { captureActiveScene, sceneDisplayTitle, sceneStage, SCENE_TRIGGER_LABELS, useStore,
   type PlanScene, type ProductionPlan } from '../store'
@@ -14,7 +15,6 @@ export function StagePlayback({ onClose, simplified = false }: { onClose: () => 
   const [transitioning, setTransitioning] = useState(false)
   const [displayMode, setDisplayMode] = useState<'full' | 'compact' | 'hidden'>(simplified ? 'compact' : 'full')
   const planRef = useRef<ProductionPlan | null>(null)
-  const originalSceneId = useRef<string | null>(null)
   const indexRef = useRef(0)
   const frameRef = useRef(0)
   const movingRef = useRef(false)
@@ -72,19 +72,14 @@ export function StagePlayback({ onClose, simplified = false }: { onClose: () => 
     const first = plan.scenes[0]
     if (!first) return
     planRef.current = plan
-    originalSceneId.current = plan.activeSceneId
+    const endPreview = beginPlaybackPreview()
     setScenes(plan.scenes)
     showScene(0)
     setAuto(plan.scenes.length > 1)
     return () => {
       cancelAnimationFrame(frameRef.current)
       movingRef.current = false
-      const original = plan.scenes.find(scene => scene.id === originalSceneId.current) ?? first
-      useStore.setState({
-        productionPlan: { ...plan, activeSceneId: original.id },
-        ...sceneStage(original),
-        selection: { kind: null, id: null },
-      })
+      endPreview()
     }
   }, [showScene])
 

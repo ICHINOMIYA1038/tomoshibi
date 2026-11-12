@@ -1,3 +1,4 @@
+import { getEditableState, isPlaybackPreview } from '../playback/editorState'
 import { hasDeviceStorage, workspaceStorage } from './workspaceStorage'
 import { useSyncExternalStore } from 'react'
 import { exportScene, importScene, listSavedScenes, saveSceneLS, saveSerializedSceneLS, type SerializedScene } from './sceneIO'
@@ -157,7 +158,7 @@ function scheduleSave() {
 }
 
 function record(state: State) {
-  if (applyingHistory || !installed) return
+  if (applyingHistory || !installed || isPlaybackPreview()) return
   const next = capture(state)
   const nextSignature = signature(state)
   if (next === history[cursor]) {
@@ -199,7 +200,7 @@ export function initMockWorkspace(restore = true) {
       }
     } catch {}
   } else { setActiveSavedProjectName(null); setActiveCloudProject(null); cloudDirty = false; demoBaseline = null }
-  history = [capture(useStore.getState())]
+  history = [capture(getEditableState())]
   cursor = 0
   lastSignature = signature(useStore.getState())
   installed = true
@@ -212,7 +213,7 @@ export function flushMockAutosave(): boolean {
   if (saveTimer) { clearTimeout(saveTimer); saveTimer = null }
   try {
     const name = getActiveSavedProjectName()
-    const projectTitle = useStore.getState().productionPlan.projectTitle?.trim()
+    const projectTitle = getEditableState().productionPlan.projectTitle?.trim()
     const scene = exportScene(name || projectTitle || '編集中のプロジェクト')
     if (name) saveSceneLS(name)
     workspaceStorage().setItem(SESSION_KEY, JSON.stringify({ version: 1, activeSavedName: name,
@@ -233,7 +234,7 @@ export function resetMockWorkspace() {
   demoBaseline = null
   cloudDirty = false
   if (saveTimer) { clearTimeout(saveTimer); saveTimer = null }
-  history = [capture(useStore.getState())]
+  history = [capture(getEditableState())]
   cursor = 0
   lastSignature = signature(useStore.getState())
   lastRecordedAt = 0
@@ -242,14 +243,14 @@ export function resetMockWorkspace() {
 }
 
 export function markCloudSaved(expectedSnapshot?: string) {
-  if (!expectedSnapshot || expectedSnapshot === capture(useStore.getState())) cloudDirty = false
+  if (!expectedSnapshot || expectedSnapshot === capture(getEditableState())) cloudDirty = false
   flushMockAutosave()
 }
 
-export function currentWorkspaceSnapshot() { return capture(useStore.getState()) }
+export function currentWorkspaceSnapshot() { return capture(getEditableState()) }
 
 function restoreHistory(index: number) {
-  if (index < 0 || index >= history.length) return
+  if (isPlaybackPreview() || index < 0 || index >= history.length) return
   const snapshot = JSON.parse(history[index]) as Snapshot
   applyingHistory = true
   useStore.setState(state => ({
@@ -264,6 +265,7 @@ function restoreHistory(index: number) {
   cursor = index
   lastSignature = signature(useStore.getState())
   lastRecordedAt = 0
+  if (getActiveCloudProject()) cloudDirty = true
   scheduleSave()
 }
 
