@@ -1,6 +1,7 @@
 import { canEditProject, loseProjectEditor, useProjectEditor, getProjectEditorEpoch } from './io/projectEditor'
 import { OnlineWorkspace } from './ui/OnlineWorkspace'
 import { WorkspaceNotice, WorkspaceNotices } from './ui/WorkspaceNotice'
+import { UpdateNotice } from './ui/UpdateNotice'
 import { hasDeviceStorage } from './io/workspaceStorage'
 import { useEffect, useRef, useState } from 'react'
 import { Canvas, useThree } from '@react-three/fiber'
@@ -327,7 +328,7 @@ export default function App() {
 
   return (
     <OnlineWorkspace enabled={isMockPreview} editorVisible={mockPage !== 'projects'} onProjects={() => navigateMock('projects')}>
-      {isMockPreview && <><WorkspaceNotices /><CloudProjectAutosave /></>}
+      {isMockPreview && <><WorkspaceNotices /><UpdateNotice /><CloudProjectAutosave /></>}
       {isMockPreview && mockPage === 'projects'
         ? <ProjectLibrary onOpenEditor={() => navigateMock('editor')} />
         : <div className={'unified-shell' + (planOpen ? ' plan-open' : '') + (settings.panelOpen ? ' panel-open' : '') + (playbackOpen ? ' playback-open' : '') + (isMockPreview ? ' workspace-layout mobile-view-' + mobileView : '') + (mapVisible ? '' : ' map-hidden') + (outlineVisible ? ' outline-visible' : '')}>
