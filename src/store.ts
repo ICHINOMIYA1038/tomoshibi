@@ -146,18 +146,40 @@ export function ensurePlanHierarchy(plan: ProductionPlan): ProductionPlan {
   return { ...plan, projectTitle, chapters, sequences, scenes }
 }
 
+function withStableSceneNames(plan: ProductionPlan): ProductionPlan {
+  return {
+    ...plan,
+    // 並べ替え前の表示名を保存し、位置の変更でシーンの名前まで変わるのを防ぐ。
+    scenes: plan.scenes.map(scene => isAutomaticSceneTitle(scene.title)
+      ? { ...scene, title: sceneDisplayTitle(plan, scene.id) } : scene),
+  }
+}
+
+function isAutomaticSceneTitle(title: string): boolean {
+  const value = title.trim()
+  return !value || value === '開始' || value === '新しいシーン' || value === 'シーン' || /^新しいシーン \d+$/.test(value)
+}
+
 export function sceneDisplayTitle(plan: ProductionPlan, id: string): string {
   const scene = plan.scenes.find(item => item.id === id)
   if (!scene) return 'シーン'
-  const title = scene.title.trim()
-  if (title && title !== '開始' && title !== '新しいシーン' && title !== 'シーン' &&
-      !/^新しいシーン \d+$/.test(title)) return title
+  if (!isAutomaticSceneTitle(scene.title)) return scene.title.trim()
   const sequence = plan.sequences?.find(item => item.id === scene.sequenceId)
   const chapter = plan.chapters?.find(item => item.id === sequence?.chapterId)
   const sequenceIds = new Set(plan.sequences?.filter(item => item.chapterId === chapter?.id).map(item => item.id) ?? [])
-  const number = plan.scenes.filter(item => sequenceIds.has(item.sequenceId ?? ''))
-    .findIndex(item => item.id === id) + 1
-  return `${chapter?.title.trim() || '章'}${Math.max(1, number)}`
+  const entries = plan.scenes.filter(item => sequenceIds.has(item.sequenceId ?? ''))
+  const used = new Set(plan.scenes.filter(item => !isAutomaticSceneTitle(item.title)).map(item => item.title.trim()))
+  const prefix = chapter?.title.trim() || '章'
+  for (let index = 0; index < entries.length; index++) {
+    const entry = entries[index]
+    if (!isAutomaticSceneTitle(entry.title)) continue
+    let number = index + 1
+    while (used.has(`${prefix}${number}`)) number++
+    const title = `${prefix}${number}`
+    if (entry.id === id) return title
+    used.add(title)
+  }
+  return 'シーン'
 }
 
 function cloneFixtures(fixtures: Fixture[]): Fixture[] {
@@ -682,7 +704,7 @@ export const useStore = create<State>((set, get) => ({
     return { productionPlan: plan }
   }),
   addScene: () => set(s => {
-    const plan = ensurePlanHierarchy(captureActiveScene(s.productionPlan, s))
+    const plan = withStableSceneNames(ensurePlanHierarchy(captureActiveScene(s.productionPlan, s)))
     const index = plan.scenes.findIndex(scene => scene.id === plan.activeSceneId)
     if (index < 0 || plan.scenes.length >= PLAN_LIMITS.scenes) return {}
     const scene = { ...sceneSnapshot(s, '新しいシーン'), sequenceId: plan.scenes[index].sequenceId }
@@ -693,7 +715,7 @@ export const useStore = create<State>((set, get) => ({
   addSceneAt: (chapterId, beforeSceneId) => {
     let addedId: string | null = null
     set(s => {
-      const plan = ensurePlanHierarchy(captureActiveScene(s.productionPlan, s))
+      const plan = withStableSceneNames(ensurePlanHierarchy(captureActiveScene(s.productionPlan, s)))
       if (plan.scenes.length >= PLAN_LIMITS.scenes || !plan.chapters?.some(item => item.id === chapterId)) return {}
       const sequenceIds = new Set(plan.sequences?.filter(item => item.chapterId === chapterId).map(item => item.id) ?? [])
       const chapterScenes = plan.scenes.filter(item => sequenceIds.has(item.sequenceId ?? ''))
@@ -726,7 +748,7 @@ export const useStore = create<State>((set, get) => ({
     return addedId
   },
   addChapter: () => set(s => {
-    const plan = ensurePlanHierarchy(captureActiveScene(s.productionPlan, s))
+    const plan = withStableSceneNames(ensurePlanHierarchy(captureActiveScene(s.productionPlan, s)))
     if (plan.scenes.length >= PLAN_LIMITS.scenes || (plan.chapters?.length ?? 0) >= PLAN_LIMITS.chapters) return {}
     const active = plan.scenes.find(scene => scene.id === plan.activeSceneId)
     const activeSequence = plan.sequences?.find(sequence => sequence.id === active?.sequenceId)
@@ -751,7 +773,7 @@ export const useStore = create<State>((set, get) => ({
   addChapterAfter: (chapterId) => {
     let addedId: string | null = null
     set(s => {
-      const plan = ensurePlanHierarchy(captureActiveScene(s.productionPlan, s))
+      const plan = withStableSceneNames(ensurePlanHierarchy(captureActiveScene(s.productionPlan, s)))
       const chapterIndex = plan.chapters?.findIndex(item => item.id === chapterId) ?? -1
       if (chapterIndex < 0 || plan.scenes.length >= PLAN_LIMITS.scenes ||
         (plan.chapters?.length ?? 0) >= PLAN_LIMITS.chapters) return {}
@@ -785,7 +807,7 @@ export const useStore = create<State>((set, get) => ({
     return addedId
   },
   addSequence: () => set(s => {
-    const plan = ensurePlanHierarchy(captureActiveScene(s.productionPlan, s))
+    const plan = withStableSceneNames(ensurePlanHierarchy(captureActiveScene(s.productionPlan, s)))
     if (plan.scenes.length >= PLAN_LIMITS.scenes) return {}
     const active = plan.scenes.find(scene => scene.id === plan.activeSceneId)
     const sequenceIndex = plan.sequences?.findIndex(item => item.id === active?.sequenceId) ?? -1
@@ -812,7 +834,7 @@ export const useStore = create<State>((set, get) => ({
   } })),
   selectScene: (id) => set(s => {
     if (id === s.productionPlan.activeSceneId) return {}
-    const plan = ensurePlanHierarchy(captureActiveScene(s.productionPlan, s))
+    const plan = withStableSceneNames(ensurePlanHierarchy(captureActiveScene(s.productionPlan, s)))
     const scene = plan.scenes.find(item => item.id === id)
     if (!scene) return {}
     return {
@@ -829,7 +851,7 @@ export const useStore = create<State>((set, get) => ({
     },
   })),
   removeScene: (id) => set(s => {
-    const plan = ensurePlanHierarchy(captureActiveScene(s.productionPlan, s))
+    const plan = withStableSceneNames(ensurePlanHierarchy(captureActiveScene(s.productionPlan, s)))
     if (plan.scenes.length <= 1) return {}
     const index = plan.scenes.findIndex(scene => scene.id === id)
     if (index < 0) return {}
@@ -851,7 +873,7 @@ export const useStore = create<State>((set, get) => ({
     const selected = new Set(ids)
     let removed = 0
     set(s => {
-      const plan = ensurePlanHierarchy(captureActiveScene(s.productionPlan, s))
+      const plan = withStableSceneNames(ensurePlanHierarchy(captureActiveScene(s.productionPlan, s)))
       const scenes = plan.scenes.filter(scene => !selected.has(scene.id))
       if (scenes.length === plan.scenes.length) return {}
       removed = plan.scenes.length - scenes.length
@@ -875,7 +897,7 @@ export const useStore = create<State>((set, get) => ({
   removeChapter: (id) => {
     let removed = false
     set(s => {
-      const plan = ensurePlanHierarchy(captureActiveScene(s.productionPlan, s))
+      const plan = withStableSceneNames(ensurePlanHierarchy(captureActiveScene(s.productionPlan, s)))
       if ((plan.chapters?.length ?? 0) <= 1 || !plan.chapters?.some(chapter => chapter.id === id)) return {}
       const chapters = plan.chapters.filter(chapter => chapter.id !== id)
       const sequences = plan.sequences?.filter(sequence => sequence.chapterId !== id) ?? []
@@ -903,7 +925,7 @@ export const useStore = create<State>((set, get) => ({
   moveScene: (id, targetId, position) => {
     let result: MoveSceneResult = 'invalid'
     set(s => {
-      const plan = ensurePlanHierarchy(captureActiveScene(s.productionPlan, s))
+      const plan = withStableSceneNames(ensurePlanHierarchy(captureActiveScene(s.productionPlan, s)))
       const moving = plan.scenes.find(item => item.id === id)
       const target = plan.scenes.find(item => item.id === targetId)
       if (!moving || !target) return {}
@@ -926,7 +948,7 @@ export const useStore = create<State>((set, get) => ({
   moveSceneToChapter: (id, chapterId) => {
     let result: MoveSceneResult = 'invalid'
     set(s => {
-      const plan = ensurePlanHierarchy(captureActiveScene(s.productionPlan, s))
+      const plan = withStableSceneNames(ensurePlanHierarchy(captureActiveScene(s.productionPlan, s)))
       const moving = plan.scenes.find(item => item.id === id)
       const targetChapter = plan.chapters?.find(item => item.id === chapterId)
       if (!moving || !targetChapter) return {}
@@ -960,7 +982,7 @@ export const useStore = create<State>((set, get) => ({
   moveChapter: (id, targetId, position) => {
     let result: MoveSceneResult = 'invalid'
     set(s => {
-      const plan = ensurePlanHierarchy(captureActiveScene(s.productionPlan, s))
+      const plan = withStableSceneNames(ensurePlanHierarchy(captureActiveScene(s.productionPlan, s)))
       const moving = plan.chapters?.find(chapter => chapter.id === id)
       const target = plan.chapters?.find(chapter => chapter.id === targetId)
       if (!moving || !target) return {}
