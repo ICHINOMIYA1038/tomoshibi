@@ -2,8 +2,8 @@ import { useEffect, useMemo, useRef } from 'react'
 import * as THREE from 'three'
 import { useStore, type Performer } from '../store'
 import { createStageMaterial } from '../lighting/StageMaterial'
-import { measureIlluminance } from '../photometric/illuminance'
-import * as THREEX from 'three'
+import { measureIlluminanceAtHit } from '../photometric/illuminance'
+import { getPoseFrame, type Joint, type PoseFrame } from '../performerPoses'
 
 // 役者 (人物) メッシュ: 胴体カプセル + 頭球 + 手足
 // 選択中は浮きリングで強調
@@ -42,6 +42,7 @@ function PerformerMeshSingle({ performer, material }: { performer: Performer; ma
   const selected = selection.kind === 'performer' && selection.id === performer.id
   const isHover = hovered.kind === 'performer' && hovered.id === performer.id
   const s = performer.scale
+  const frame = getPoseFrame(performer.pose)
   const groupRef = useRef<THREE.Group>(null)
   // 全パーツに castShadow/receiveShadow を伝播
   useEffect(() => {
@@ -59,96 +60,30 @@ function PerformerMeshSingle({ performer, material }: { performer: Performer; ma
     <group
       ref={groupRef}
       position={performer.position}
+      visible={performer.onStage !== false}
       onPointerOver={(e) => { e.stopPropagation(); setHover('performer', performer.id) }}
       onPointerOut={(e) => { e.stopPropagation(); setHover(null, null) }}
       onClick={(e) => {
         e.stopPropagation()
         const st = useStore.getState()
         if (st.settings.probeMode) {
-          st.setProbeMeasurement(measureIlluminance(
-            e.point, e.face?.normal ?? new THREEX.Vector3(0, 1, 0), st.fixtures,
+          st.setProbeMeasurement(measureIlluminanceAtHit(
+            e.point, e.face?.normal, e.object, st.fixtures,
           ))
         } else {
           select('performer', performer.id)
         }
       }}
     >
-      {/* 頭 */}
-      <mesh position={[0, 1.62 * s, 0]} material={material}>
-        <sphereGeometry args={[0.11 * s, 28, 22]} />
-      </mesh>
-      {/* 首 */}
-      <mesh position={[0, 1.46 * s, 0]} material={material}>
-        <cylinderGeometry args={[0.045 * s, 0.06 * s, 0.10 * s, 16]} />
-      </mesh>
-      {/* 胴体 (上半身) - 緩やかなテーパー */}
-      <mesh position={[0, 1.20 * s, 0]} material={material}>
-        <cylinderGeometry args={[0.16 * s, 0.135 * s, 0.42 * s, 24]} />
-      </mesh>
-      {/* 腰 */}
-      <mesh position={[0, 0.92 * s, 0]} material={material}>
-        <cylinderGeometry args={[0.13 * s, 0.135 * s, 0.18 * s, 20]} />
-      </mesh>
-      {/* 肩 */}
-      <mesh position={[-0.18 * s, 1.36 * s, 0]} material={material}>
-        <sphereGeometry args={[0.07 * s, 16, 12]} />
-      </mesh>
-      <mesh position={[0.18 * s, 1.36 * s, 0]} material={material}>
-        <sphereGeometry args={[0.07 * s, 16, 12]} />
-      </mesh>
-      {/* 腕 上腕 */}
-      <mesh position={[-0.22 * s, 1.16 * s, 0]} rotation={[0, 0, 0.05]} material={material}>
-        <cylinderGeometry args={[0.045 * s, 0.05 * s, 0.34 * s, 14]} />
-      </mesh>
-      <mesh position={[0.22 * s, 1.16 * s, 0]} rotation={[0, 0, -0.05]} material={material}>
-        <cylinderGeometry args={[0.045 * s, 0.05 * s, 0.34 * s, 14]} />
-      </mesh>
-      {/* 肘 */}
-      <mesh position={[-0.225 * s, 0.99 * s, 0]} material={material}>
-        <sphereGeometry args={[0.045 * s, 14, 10]} />
-      </mesh>
-      <mesh position={[0.225 * s, 0.99 * s, 0]} material={material}>
-        <sphereGeometry args={[0.045 * s, 14, 10]} />
-      </mesh>
-      {/* 前腕 */}
-      <mesh position={[-0.23 * s, 0.81 * s, 0.01]} rotation={[0.05, 0, 0.02]} material={material}>
-        <cylinderGeometry args={[0.038 * s, 0.040 * s, 0.32 * s, 12]} />
-      </mesh>
-      <mesh position={[0.23 * s, 0.81 * s, 0.01]} rotation={[0.05, 0, -0.02]} material={material}>
-        <cylinderGeometry args={[0.038 * s, 0.040 * s, 0.32 * s, 12]} />
-      </mesh>
-      {/* 太もも */}
-      <mesh position={[-0.08 * s, 0.62 * s, 0]} material={material}>
-        <cylinderGeometry args={[0.07 * s, 0.065 * s, 0.42 * s, 16]} />
-      </mesh>
-      <mesh position={[0.08 * s, 0.62 * s, 0]} material={material}>
-        <cylinderGeometry args={[0.07 * s, 0.065 * s, 0.42 * s, 16]} />
-      </mesh>
-      {/* 膝 */}
-      <mesh position={[-0.08 * s, 0.40 * s, 0]} material={material}>
-        <sphereGeometry args={[0.06 * s, 14, 10]} />
-      </mesh>
-      <mesh position={[0.08 * s, 0.40 * s, 0]} material={material}>
-        <sphereGeometry args={[0.06 * s, 14, 10]} />
-      </mesh>
-      {/* すね */}
-      <mesh position={[-0.08 * s, 0.20 * s, 0]} material={material}>
-        <cylinderGeometry args={[0.05 * s, 0.045 * s, 0.38 * s, 14]} />
-      </mesh>
-      <mesh position={[0.08 * s, 0.20 * s, 0]} material={material}>
-        <cylinderGeometry args={[0.05 * s, 0.045 * s, 0.38 * s, 14]} />
-      </mesh>
-      {/* 足 */}
-      <mesh position={[-0.08 * s, 0.025 * s, 0.04 * s]} material={material}>
-        <boxGeometry args={[0.08 * s, 0.05 * s, 0.18 * s]} />
-      </mesh>
-      <mesh position={[0.08 * s, 0.025 * s, 0.04 * s]} material={material}>
-        <boxGeometry args={[0.08 * s, 0.05 * s, 0.18 * s]} />
-      </mesh>
+      <group scale={s}>
+        <PoseBody frame={frame} material={material} />
+      </group>
 
       {/* クリック判定拡大 (見えない円柱) */}
-      <mesh visible={false} position={[0, 0.86 * s, 0]}>
-        <cylinderGeometry args={[0.35 * s, 0.35 * s, 1.8 * s, 8]} />
+      <mesh visible={false} position={performer.pose === 'lying' ? [0, 0.2 * s, 0] : [0, (performer.pose === 'sitting' ? 0.6 : performer.pose === 'kneeling' ? 0.7 : 0.86) * s, 0]}>
+        {performer.pose === 'lying'
+          ? <boxGeometry args={[1.8 * s, 0.5 * s, 0.8 * s]} />
+          : <cylinderGeometry args={[0.35 * s, 0.35 * s, (performer.pose === 'sitting' ? 1.25 : performer.pose === 'kneeling' ? 1.5 : 1.8) * s, 8]} />}
         <meshBasicMaterial transparent opacity={0} />
       </mesh>
 
@@ -161,4 +96,44 @@ function PerformerMeshSingle({ performer, material }: { performer: Performer; ma
       )}
     </group>
   )
+}
+
+function Segment({ from, to, radius, material }: { from: Joint; to: Joint; radius: number; material: THREE.Material }) {
+  const start = new THREE.Vector3(...from)
+  const end = new THREE.Vector3(...to)
+  const direction = end.clone().sub(start)
+  const center = start.add(end).multiplyScalar(0.5)
+  const rotation = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), direction.clone().normalize())
+  return <mesh position={center} quaternion={rotation} material={material}>
+    <cylinderGeometry args={[radius, radius, direction.length(), 14]} />
+  </mesh>
+}
+
+function PoseBody({ frame, material }: { frame: PoseFrame; material: THREE.ShaderMaterial }) {
+  const joints: { point: Joint; radius: number }[] = [
+    { point: frame.head, radius: 0.11 },
+    { point: frame.leftShoulder, radius: 0.07 }, { point: frame.rightShoulder, radius: 0.07 },
+    { point: frame.leftElbow, radius: 0.045 }, { point: frame.rightElbow, radius: 0.045 },
+    { point: frame.leftKnee, radius: 0.06 }, { point: frame.rightKnee, radius: 0.06 },
+  ]
+  const segments: { from: Joint; to: Joint; radius: number }[] = [
+    { from: frame.neck, to: frame.shoulder, radius: 0.05 },
+    { from: frame.shoulder, to: frame.hip, radius: 0.14 },
+    { from: frame.leftShoulder, to: frame.leftElbow, radius: 0.05 },
+    { from: frame.rightShoulder, to: frame.rightElbow, radius: 0.05 },
+    { from: frame.leftElbow, to: frame.leftHand, radius: 0.04 },
+    { from: frame.rightElbow, to: frame.rightHand, radius: 0.04 },
+    { from: frame.leftHip, to: frame.leftKnee, radius: 0.067 },
+    { from: frame.rightHip, to: frame.rightKnee, radius: 0.067 },
+    { from: frame.leftKnee, to: frame.leftFoot, radius: 0.049 },
+    { from: frame.rightKnee, to: frame.rightFoot, radius: 0.049 },
+  ]
+  return <>
+    {segments.map((segment, index) => <Segment key={index} {...segment} material={material} />)}
+    {joints.map((joint, index) => <mesh key={index} position={joint.point} material={material}>
+      <sphereGeometry args={[joint.radius, 16, 12]} />
+    </mesh>)}
+    <mesh position={frame.leftFoot} material={material}><boxGeometry args={[0.09, 0.06, 0.19]} /></mesh>
+    <mesh position={frame.rightFoot} material={material}><boxGeometry args={[0.09, 0.06, 0.19]} /></mesh>
+  </>
 }

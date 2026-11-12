@@ -62,6 +62,7 @@ function MeasurementCard() {
   return (
     <div className="measure-card">
       <div className="big-num">{m.totalLux.toFixed(1)} <span className="unit">lux</span></div>
+      <div className="sub-num">器具の直接光の推定値。影・客電・環境光・材質の反射は含みません。</div>
       <div className="sub-num">
         {luxToFc(m.totalLux).toFixed(2)} fc / EV {luxToEV100(m.totalLux).toFixed(1)} / {m.totalCdM2Approx.toFixed(2)} cd/m² 近似
       </div>

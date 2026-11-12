@@ -104,16 +104,14 @@ export function parseIES(text: string): IESData {
   for (let h = 0; h < numHorizontalAngles; h++) horizontalAngles.push(read())
 
   // candela [v][h]
-  const candela: number[][] = []
+  const candela: number[][] = Array.from({ length: numVerticalAngles }, () => Array(numHorizontalAngles).fill(0))
   let peak = 0
-  for (let v = 0; v < numVerticalAngles; v++) {
-    const row: number[] = []
-    for (let h = 0; h < numHorizontalAngles; h++) {
+  for (let h = 0; h < numHorizontalAngles; h++) {
+    for (let v = 0; v < numVerticalAngles; v++) {
       const c = read() * candelaMultiplier * ballastFactor
-      row.push(c)
+      candela[v][h] = c
       if (c > peak) peak = c
     }
-    candela.push(row)
   }
 
   return {

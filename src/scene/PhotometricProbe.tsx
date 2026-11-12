@@ -2,7 +2,7 @@ import { useRef, useState, useMemo, useEffect } from 'react'
 import * as THREE from 'three'
 import { useFrame, useThree, type ThreeEvent } from '@react-three/fiber'
 import { useStore } from '../store'
-import { measureIlluminance, type IlluminanceMeasurement } from '../photometric/illuminance'
+import { measureIlluminance, measureIlluminanceAtHit, type IlluminanceMeasurement } from '../photometric/illuminance'
 
 // 測光プローブ
 // - probeEnabled時、シーン内クリックでその点の照度を計測
@@ -69,7 +69,7 @@ export function useProbeClickHandler() {
     if (!enabled) return false
     e.stopPropagation()
     const fixtures = useStore.getState().fixtures
-    const m = measureIlluminance(e.point, e.face?.normal ?? new THREE.Vector3(0, 1, 0), fixtures)
+    const m = measureIlluminanceAtHit(e.point, e.face?.normal, e.object, fixtures)
     setMeasurement(m)
     return true
   }

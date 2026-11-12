@@ -1,3 +1,4 @@
+import { getProjectEditorIdentity } from './projectEditorIdentity'
 // クラウド連携 (gikyoku_tosyokan の /api/tomoshibi/* を叩く)
 // 認証Cookieは親ドメイン .gikyokutosyokan.com で共有される。
 // 開発時は VITE_GIKYOKU_API_BASE で gikyoku_tosyokan のローカル起動先 (例: http://localhost:3000) を指定。
@@ -49,6 +50,7 @@ export interface CloudUser {
   planExpiresAt: string | null
   /** 保存できるシーンの上限。バックエンドから返す。 */
   maxScenes: number
+  maxProjects: number
 }
 
 export const FREE_MAX_SCENES = 3
@@ -57,6 +59,19 @@ export interface CloudSceneMeta {
   name: string
   updatedAt: string
   createdAt?: string
+}
+
+export interface CloudProjectMeta {
+  id: string
+  name: string
+  revision: number
+  origin?: string | null
+  updatedAt: string
+  createdAt?: string
+}
+
+export interface CloudProject extends CloudProjectMeta {
+  data: SerializedScene
 }
 
 export class CloudError extends Error {
@@ -127,6 +142,7 @@ export async function getSessionSnapshot(): Promise<SessionSnapshot> {
         plan: (u.plan === 'pro' ? 'pro' : 'free') as CloudPlan,
         planExpiresAt: u.planExpiresAt ?? null,
         maxScenes: typeof u.maxScenes === 'number' ? u.maxScenes : FREE_MAX_SCENES,
+        maxProjects: typeof u.maxProjects === 'number' ? u.maxProjects : u.plan === 'pro' ? 10 : 2,
       },
       proAvailable,
     }
@@ -144,13 +160,12 @@ export async function getSession(): Promise<CloudUser | null> {
 // ログイン・ログアウト・アカウントは戯曲 ID のポータル（3 サービス共通、2026-11）
 // iOS アプリの WebView はポータルをアプリ内で開かず Safari に飛ばすので、アプリの中では図書館の入口を使う（アプリ側がログイン用シートに差し替える）
 const PORTAL = 'https://id.gikyokutosyokan.com'
-const here = () => (typeof location !== 'undefined' ? location.origin + location.pathname : 'https://tomoshibi.gikyokutosyokan.com/simulator/')
+const here = () => (typeof location !== 'undefined' ? location.origin + location.pathname : 'https://tomoshibi.gikyokutosyokan.com/')
 
 export function loginUrl(): string {
-  if (isNativeApp()) return `${BASE}/auth/signin?callbackUrl=${encodeURIComponent(here())}`
-  const target = new URL(here())
-  if (/^\/(studio|mock)(\/|$)/.test(target.pathname)) target.searchParams.set('import', 'local')
-  return `${PORTAL}/?return_to=${encodeURIComponent(target.href)}`
+  const destination = /\/(studio|mock)(\/|$)/.test(location.pathname) ? location.origin + location.pathname.replace(/\/(studio|mock)(\/.*)?$/, '/$1/projects/?import=local') : here()
+  if (isNativeApp()) return `${BASE}/auth/signin?callbackUrl=${encodeURIComponent(destination)}`
+  return `${PORTAL}/?return_to=${encodeURIComponent(destination)}`
 }
 export function logoutUrl(): string {
   if (isNativeApp()) return `${BASE}/api/tomoshibi/logout?callbackUrl=${encodeURIComponent(here())}`
@@ -190,6 +205,27 @@ export function listCloudScenes() {
   return req<{ items: CloudSceneMeta[] }>('/scenes').then(r => r.items)
 }
 
+export function listCloudProjects() {
+  return req<{ items: CloudProjectMeta[] }>('/projects').then(result => result.items)
+}
+
+export function fetchCloudProject(id: string) {
+  return req<CloudProject>(`/projects/${id}`)
+}
+
+export function createCloudProject(name: string, data: SerializedScene, importKey?: string) {
+  return req<CloudProjectMeta>('/projects', {
+    method: 'POST', body: JSON.stringify({ name, data, importKey }),
+  })
+}
+
+export function updateCloudProject(id: string, revision: number, name: string, data: SerializedScene, replace = false, editorId = getProjectEditorIdentity(id)) {
+  if (!editorId) return Promise.reject(new CloudError('この画面の編集権を確認してください', 423))
+  return req<CloudProjectMeta>(`/projects/${id}`, {
+    method: 'PUT', body: JSON.stringify({ name, data, revision, replace, editorId }),
+  })
+}
+
 export function saveCloudSceneNew(name: string) {
   const scene = exportScene(name)
   return req<CloudSceneMeta>('/scenes', {
@@ -206,18 +242,24 @@ export function updateCloudScene(id: string, name?: string) {
   })
 }
 
-export async function loadCloudScene(id: string) {
+export async function fetchCloudScene(id: string): Promise<SerializedScene> {
   const s = await req<{ id: string; name: string; data: Partial<SerializedScene>; updatedAt: string }>(`/scenes/${id}`)
-  importScene({
+  return {
     version: 1,
     name: s.name,
     savedAt: s.updatedAt,
     fixtures: s.data.fixtures ?? [],
     performers: s.data.performers ?? [],
     setPieces: s.data.setPieces,
+    productionPlan: s.data.productionPlan,
     settings: s.data.settings ?? {},
-  })
-  return s
+  }
+}
+
+export async function loadCloudScene(id: string) {
+  const scene = await fetchCloudScene(id)
+  importScene(scene)
+  return scene
 }
 
 export function deleteCloudScene(id: string) {
@@ -242,10 +284,26 @@ function pick(s: SerializedScene) {
     // 装置はサーバ側 (validateSceneData) も受け付けているのに送っていなかった。
     // クラウド保存→読込で装置が消える原因。
     setPieces: s.setPieces ?? [],
+    productionPlan: s.productionPlan,
     settings: s.settings,
   }
 }
 
 export function syncBilling() {
   return req<{ plan: 'pro'; planExpiresAt: string }>('/billing-sync', { method: 'POST', body: '{}' })
+}
+
+export function requestProjectEditor(id: string, editorId: string, action: 'acquire' | 'renew' | 'takeover' | 'release') {
+  return req<{ ttlMs: number; project?: CloudProject }>(`/projects/${id}/edit`, {
+    method: 'POST', body: JSON.stringify({ editorId, action }), keepalive: action === 'release', signal: AbortSignal.timeout(10_000),
+  })
+}
+
+export async function replaceCloudProject(id: string, revision: number, name: string, data: SerializedScene) {
+  const currentEditor = getProjectEditorIdentity(id)
+  if (currentEditor) return updateCloudProject(id, revision, name, data, true, currentEditor)
+  const editorId = crypto.randomUUID()
+  await requestProjectEditor(id, editorId, 'acquire')
+  try { return await updateCloudProject(id, revision, name, data, true, editorId) }
+  finally { await requestProjectEditor(id, editorId, 'release').catch(() => undefined) }
 }

@@ -1,0 +1,63 @@
+import { readFile, writeFile, readdir, mkdir } from 'node:fs/promises'
+import { join } from 'node:path'
+import { createHash } from 'node:crypto'
+import { build, transform } from 'esbuild'
+
+const root = new URL('../', import.meta.url)
+const dist = new URL('../dist/', import.meta.url)
+const files = await readdir(new URL('./assets/', dist))
+const jsFile = files.find(file => /^main-.*\.js$/.test(file))
+const cssFile = files.find(file => /^main-.*\.css$/.test(file))
+if (!jsFile || !cssFile) throw new Error('Build assets are missing')
+const bundled = await build({
+  entryPoints: [join(dist.pathname, 'assets', jsFile)],
+  bundle: true,
+  write: false,
+  format: 'iife',
+  platform: 'browser',
+  target: 'es2020',
+  minify: true,
+})
+const script = bundled.outputFiles[0].text
+  .replace(/<\/script/gi, '<\\/script')
+  .replace(/\bemail:"([^"]+)@([^"]+)"/g, (_match, local, domain) => `email:"${local}\\u0040${domain}"`)
+const css = (await readFile(join(dist.pathname, 'assets', cssFile), 'utf8')).replace(/<\/style/gi, '<\\/style')
+let html = await readFile(join(dist.pathname, 'index.html'), 'utf8')
+html = html.replace(/<script type="module" crossorigin src="\/assets\/[^"]+"><\/script>/, '')
+html = html.replace(/<link rel="modulepreload"[^>]+>\s*/g, '')
+html = html.replace(/<link rel="stylesheet" crossorigin href="\/assets\/[^"]+">/, '')
+html = html.replace(/<link rel="manifest"[^>]+>/, '')
+html = html.replace(/<title>[^<]+<\/title>/, '<title>演出プラン試作 | TOMOSHIBI小屋</title>')
+html = html.replace(/<link rel="canonical" href="[^"]+" \/>/, '<link rel="canonical" href="https://tomoshibi.gikyokutosyokan.com/mock/" />')
+html = html.replace('</head>', '    <meta name="robots" content="noindex, nofollow" />\n  </head>')
+// 開いている画面が古い版かを確かめるためのビルド ID（src/ui/UpdateNotice.tsx が version.json と比べる）
+const buildId = createHash('sha256').update(script).update(css).digest('hex').slice(0, 12)
+const versionJson = JSON.stringify({ build: buildId }) + '\n'
+html = html.replace('</head>', `    <meta name="tomoshibi-build" content="${buildId}" />\n  </head>`)
+html = html.replace('</body>', () => '    <style>' + css + '</style>\n    <script>' + script + '</script>\n  </body>')
+const inlineScript = html.match(/<script>([\s\S]*?)<\/script>/)?.[1]
+if (!inlineScript || html.split('</body>').length !== 2) throw new Error('Mock HTML is malformed')
+await transform(inlineScript, { loader: 'js' })
+await mkdir(new URL('./mock/', dist), { recursive: true })
+await writeFile(new URL('./mock/index.html', dist), html)
+await writeFile(new URL('./mock/version.json', dist), versionJson)
+const projectsHtml = html
+  .replace('<title>演出プラン試作 | TOMOSHIBI小屋</title>', '<title>プロジェクト | TOMOSHIBI小屋</title>')
+  .replace('href="https://tomoshibi.gikyokutosyokan.com/mock/"', 'href="https://tomoshibi.gikyokutosyokan.com/mock/projects/"')
+await mkdir(new URL('./mock/projects/', dist), { recursive: true })
+await writeFile(new URL('./mock/projects/index.html', dist), projectsHtml)
+
+const studioHtml = html
+  .replace('<title>演出プラン試作 | TOMOSHIBI小屋</title>', '<title>演出プラン | TOMOSHIBI小屋</title>')
+  .replace('ブラウザで使える舞台照明シミュレーター', '照明と演出を組み立てる舞台プラン')
+  .replace('舞台照明のプランを 3D で組み立てて、見え方を確かめられます。', '照明・役者・舞台セットを配置し、章とシーンの流れを確かめられます。')
+  .replace('href="https://tomoshibi.gikyokutosyokan.com/mock/"', 'href="https://tomoshibi.gikyokutosyokan.com/studio/"')
+  .replace('    <meta name="robots" content="noindex, nofollow" />\n', '')
+await mkdir(new URL('./studio/', dist), { recursive: true })
+await writeFile(new URL('./studio/index.html', dist), studioHtml)
+await writeFile(new URL('./studio/version.json', dist), versionJson)
+const studioProjectsHtml = studioHtml
+  .replace('<title>演出プラン | TOMOSHIBI小屋</title>', '<title>プロジェクト | TOMOSHIBI小屋</title>')
+  .replace('href="https://tomoshibi.gikyokutosyokan.com/studio/"', 'href="https://tomoshibi.gikyokutosyokan.com/studio/projects/"')
+await mkdir(new URL('./studio/projects/', dist), { recursive: true })
+await writeFile(new URL('./studio/projects/index.html', dist), studioProjectsHtml)

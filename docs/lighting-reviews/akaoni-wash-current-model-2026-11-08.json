@@ -1,0 +1,2034 @@
+{
+  "reportVersion": 1,
+  "project": "赤鬼｜浜辺の演出案・改訂",
+  "source": "public/mock/demos/akaoni-wash.json",
+  "sourceSha256": "6e83dce956c10e97664dee9e8a5ac8e16cf4f8f3c98198ab6ce69da47ac094e0",
+  "modelSha256": "88fdf979dcc87babd9d9780a5a4a2641b09b8934f68ecb16a7d5863f0b3a6463",
+  "reviewerSha256": "8792bda7985af464b77add65763966193222071408819b5a6706bd35cc910d03",
+  "displaySettings": {
+    "exposure": 1.3,
+    "showHouseLights": false,
+    "quality": "medium",
+    "cameraView": "audience"
+  },
+  "method": "Current TOMOSHIBI direct-light model; fixed 1 m floor grid, front-facing actor samples, set-piece surface points, and a virtual back-wall reference. No shadows, ambient light, material reflection, exposure, or rendered appearance.",
+  "scenes": [
+    {
+      "sceneId": "sc1794111765915-03amrl",
+      "scene": "波のあと",
+      "intent": "野田秀樹『赤鬼』を題材にした非公式の配置案。とんびは下手、あの女は中央、ミズカネは上手。海の境界だけ青く残す。",
+      "fixtureCount": 9,
+      "performers": [
+        {
+          "name": "あの女",
+          "position": [
+            -2.1,
+            0,
+            -2.2
+          ],
+          "frontFaceLux": 27.3
+        },
+        {
+          "name": "とんび",
+          "position": [
+            -4.2,
+            0,
+            -2.8
+          ],
+          "frontFaceLux": 30.2
+        },
+        {
+          "name": "ミズカネ",
+          "position": [
+            3.9,
+            0,
+            -2.6
+          ],
+          "frontFaceLux": 28.7
+        }
+      ],
+      "setPieces": [
+        {
+          "name": "浜の地面",
+          "topLux": 38.8,
+          "frontLux": 3.9
+        },
+        {
+          "name": "海との境界",
+          "topLux": 35.5,
+          "frontLux": 22.2
+        },
+        {
+          "name": "洞窟・左の岩",
+          "topLux": 21.4,
+          "frontLux": 8.8
+        },
+        {
+          "name": "洞窟・右の岩",
+          "topLux": 32.6,
+          "frontLux": 22.9
+        }
+      ],
+      "backgroundReference": [
+        {
+          "x": -5,
+          "lux": 2.9
+        },
+        {
+          "x": -2.5,
+          "lux": 5.6
+        },
+        {
+          "x": 0,
+          "lux": 8.9
+        },
+        {
+          "x": 2.5,
+          "lux": 9.2
+        },
+        {
+          "x": 5,
+          "lux": 5.1
+        }
+      ],
+      "floor": {
+        "sampleXs": [
+          -5,
+          -4,
+          -3,
+          -2,
+          -1,
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "sampleZs": [
+          -5.5,
+          -4.5,
+          -3.5,
+          -2.5,
+          -1.5,
+          -0.5
+        ],
+        "gridLux": [
+          [
+            17.7,
+            29.5,
+            32.7,
+            34.5,
+            36.7,
+            38.5,
+            39.4,
+            37.8,
+            35,
+            33.1,
+            25.3
+          ],
+          [
+            19.9,
+            31.2,
+            33.4,
+            32.2,
+            33.9,
+            37.5,
+            37.7,
+            36,
+            34.9,
+            33.2,
+            27.6
+          ],
+          [
+            22.6,
+            35.7,
+            37,
+            36,
+            35.8,
+            38.4,
+            40.7,
+            39.9,
+            37.6,
+            35.8,
+            31
+          ],
+          [
+            22.1,
+            39.5,
+            41.9,
+            39.9,
+            38.1,
+            38.4,
+            41.4,
+            42.4,
+            40.4,
+            38.3,
+            33.4
+          ],
+          [
+            15.8,
+            38.7,
+            45.1,
+            42.3,
+            39.1,
+            35.1,
+            34.1,
+            37.3,
+            39.8,
+            39.7,
+            33.3
+          ],
+          [
+            7.6,
+            24.5,
+            39.2,
+            38.9,
+            32.7,
+            25.1,
+            18.4,
+            19.2,
+            27,
+            29.1,
+            18.6
+          ]
+        ],
+        "p10Lux": 19.9,
+        "medianLux": 35.7,
+        "p90Lux": 39.9,
+        "maxAdjacentDeltaLuxPerMeter": 22.9,
+        "hottest": {
+          "x": -3,
+          "z": -1.5,
+          "lux": 45.1,
+          "topFixtures": [
+            {
+              "name": "あの女の前明かり",
+              "lux": 27.3
+            },
+            {
+              "name": "地明かり・手前下手",
+              "lux": 13.3
+            },
+            {
+              "name": "地明かり・奥下手",
+              "lux": 4.1
+            }
+          ]
+        }
+      }
+    },
+    {
+      "sceneId": "sc1794111765916-ulho42",
+      "scene": "浜に現れた影",
+      "intent": "赤鬼が海側から現れ、ミズカネは上手へ退く。輪郭の赤は赤鬼だけに使い、地明かりの色は変えない。",
+      "fixtureCount": 11,
+      "performers": [
+        {
+          "name": "あの女",
+          "position": [
+            -2.1,
+            0,
+            -2.2
+          ],
+          "frontFaceLux": 27.3
+        },
+        {
+          "name": "とんび",
+          "position": [
+            -4.2,
+            0,
+            -2.8
+          ],
+          "frontFaceLux": 30.2
+        },
+        {
+          "name": "ミズカネ",
+          "position": [
+            4.6,
+            0,
+            -1.8
+          ],
+          "frontFaceLux": 30.1
+        },
+        {
+          "name": "赤鬼",
+          "position": [
+            3,
+            0,
+            -4.2
+          ],
+          "frontFaceLux": 34.4
+        }
+      ],
+      "setPieces": [
+        {
+          "name": "浜の地面",
+          "topLux": 38.4,
+          "frontLux": 3.8
+        },
+        {
+          "name": "海との境界",
+          "topLux": 40.8,
+          "frontLux": 24.9
+        },
+        {
+          "name": "洞窟・左の岩",
+          "topLux": 21.6,
+          "frontLux": 8.8
+        },
+        {
+          "name": "洞窟・右の岩",
+          "topLux": 34.7,
+          "frontLux": 22.8
+        }
+      ],
+      "backgroundReference": [
+        {
+          "x": -5,
+          "lux": 4
+        },
+        {
+          "x": -2.5,
+          "lux": 7.5
+        },
+        {
+          "x": 0,
+          "lux": 11.8
+        },
+        {
+          "x": 2.5,
+          "lux": 15.7
+        },
+        {
+          "x": 5,
+          "lux": 10.2
+        }
+      ],
+      "floor": {
+        "sampleXs": [
+          -5,
+          -4,
+          -3,
+          -2,
+          -1,
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "sampleZs": [
+          -5.5,
+          -4.5,
+          -3.5,
+          -2.5,
+          -1.5,
+          -0.5
+        ],
+        "gridLux": [
+          [
+            18.8,
+            31.2,
+            34.5,
+            36.7,
+            39.1,
+            43.1,
+            45.9,
+            46.7,
+            48.6,
+            43.6,
+            29.4
+          ],
+          [
+            19.9,
+            31.5,
+            33.6,
+            31.8,
+            33.5,
+            40,
+            42.8,
+            52,
+            51.8,
+            48.2,
+            36.1
+          ],
+          [
+            22.6,
+            35.6,
+            36.8,
+            35.5,
+            34.8,
+            39.3,
+            46.6,
+            56.8,
+            54,
+            50.3,
+            40.9
+          ],
+          [
+            22.1,
+            39.5,
+            41.7,
+            39.4,
+            37.1,
+            37.2,
+            44.9,
+            55,
+            55.8,
+            50.9,
+            39.3
+          ],
+          [
+            15.8,
+            38.7,
+            45.1,
+            42,
+            38.3,
+            33.7,
+            32.6,
+            39.2,
+            44.7,
+            42.5,
+            32.1
+          ],
+          [
+            7.6,
+            24.5,
+            39.2,
+            38.8,
+            32.3,
+            24.1,
+            16.8,
+            17.1,
+            24.5,
+            26.8,
+            17.2
+          ]
+        ],
+        "p10Lux": 19.9,
+        "medianLux": 38.3,
+        "p90Lux": 50.3,
+        "maxAdjacentDeltaLuxPerMeter": 22.9,
+        "hottest": {
+          "x": 2,
+          "z": -3.5,
+          "lux": 56.8,
+          "topFixtures": [
+            {
+              "name": "浜の人物の前明かり",
+              "lux": 12.8
+            },
+            {
+              "name": "赤鬼の輪郭",
+              "lux": 10.5
+            },
+            {
+              "name": "赤鬼の前明かり",
+              "lux": 8
+            }
+          ]
+        }
+      }
+    },
+    {
+      "sceneId": "sc1794111765917-pgef3t",
+      "scene": "境目で足を止める",
+      "intent": "赤鬼は海との境目に止まり、あの女だけ一歩近づく。二人の間の余白を残し、赤い輪郭は弱める。",
+      "fixtureCount": 12,
+      "performers": [
+        {
+          "name": "あの女",
+          "position": [
+            0.6,
+            0,
+            -3
+          ],
+          "frontFaceLux": 37.6
+        },
+        {
+          "name": "とんび",
+          "position": [
+            -4.2,
+            0,
+            -2.8
+          ],
+          "frontFaceLux": 19.4
+        },
+        {
+          "name": "ミズカネ",
+          "position": [
+            4.6,
+            0,
+            -1.8
+          ],
+          "frontFaceLux": 30.3
+        },
+        {
+          "name": "赤鬼",
+          "position": [
+            2.2,
+            0,
+            -4.1
+          ],
+          "frontFaceLux": 43
+        }
+      ],
+      "setPieces": [
+        {
+          "name": "浜の地面",
+          "topLux": 45,
+          "frontLux": 4.5
+        },
+        {
+          "name": "海との境界",
+          "topLux": 44.6,
+          "frontLux": 30.5
+        },
+        {
+          "name": "洞窟・左の岩",
+          "topLux": 23.7,
+          "frontLux": 13.2
+        },
+        {
+          "name": "洞窟・右の岩",
+          "topLux": 31.8,
+          "frontLux": 19.8
+        }
+      ],
+      "backgroundReference": [
+        {
+          "x": -5,
+          "lux": 4
+        },
+        {
+          "x": -2.5,
+          "lux": 7
+        },
+        {
+          "x": 0,
+          "lux": 16.5
+        },
+        {
+          "x": 2.5,
+          "lux": 22.7
+        },
+        {
+          "x": 5,
+          "lux": 14.9
+        }
+      ],
+      "floor": {
+        "sampleXs": [
+          -5,
+          -4,
+          -3,
+          -2,
+          -1,
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "sampleZs": [
+          -5.5,
+          -4.5,
+          -3.5,
+          -2.5,
+          -1.5,
+          -0.5
+        ],
+        "gridLux": [
+          [
+            21.2,
+            28.3,
+            29.5,
+            36.5,
+            44.5,
+            47.8,
+            48.6,
+            49.9,
+            45.3,
+            41,
+            32.7
+          ],
+          [
+            21.8,
+            25.8,
+            27.6,
+            32.7,
+            39.7,
+            45.5,
+            51.4,
+            50.9,
+            49.9,
+            43.9,
+            34.9
+          ],
+          [
+            24.4,
+            27,
+            29.8,
+            37.2,
+            39,
+            46.1,
+            56.5,
+            56.5,
+            54.3,
+            49.4,
+            38.3
+          ],
+          [
+            24.7,
+            28.6,
+            31.6,
+            38.8,
+            37.3,
+            42.3,
+            55.6,
+            60.9,
+            58.5,
+            50.2,
+            38.4
+          ],
+          [
+            17.2,
+            24.2,
+            23.3,
+            32.1,
+            36.4,
+            34,
+            39.6,
+            49.5,
+            50.6,
+            44.3,
+            35.4
+          ],
+          [
+            7.6,
+            13.3,
+            14.8,
+            20.3,
+            26.7,
+            26.1,
+            23,
+            24.7,
+            30.9,
+            31.1,
+            19.9
+          ]
+        ],
+        "p10Lux": 21.2,
+        "medianLux": 36.4,
+        "p90Lux": 50.9,
+        "maxAdjacentDeltaLuxPerMeter": 24.8,
+        "hottest": {
+          "x": 2,
+          "z": -2.5,
+          "lux": 60.9,
+          "topFixtures": [
+            {
+              "name": "浜の人物の前明かり",
+              "lux": 15.6
+            },
+            {
+              "name": "赤鬼の前明かり",
+              "lux": 13.2
+            },
+            {
+              "name": "あの女の前明かり",
+              "lux": 9.3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "sceneId": "sc1794111765916-cfseqv",
+      "scene": "花のしるし",
+      "intent": "あの女と赤鬼が中央へ近づく。赤い布は二人の前明かりで見せ、床の円形の光だまりを抑える。",
+      "fixtureCount": 12,
+      "performers": [
+        {
+          "name": "あの女",
+          "position": [
+            0,
+            0,
+            -2.2
+          ],
+          "frontFaceLux": 36.3
+        },
+        {
+          "name": "とんび",
+          "position": [
+            -4.2,
+            0,
+            -2.8
+          ],
+          "frontFaceLux": 19.4
+        },
+        {
+          "name": "ミズカネ",
+          "position": [
+            4.6,
+            0,
+            -1.8
+          ],
+          "frontFaceLux": 30.7
+        },
+        {
+          "name": "赤鬼",
+          "position": [
+            1.8,
+            0,
+            -3.2
+          ],
+          "frontFaceLux": 49.7
+        }
+      ],
+      "setPieces": [
+        {
+          "name": "浜の地面",
+          "topLux": 57.5,
+          "frontLux": 6.4
+        },
+        {
+          "name": "海との境界",
+          "topLux": 40.8,
+          "frontLux": 34
+        },
+        {
+          "name": "洞窟・左の岩",
+          "topLux": 23.4,
+          "frontLux": 13.2
+        },
+        {
+          "name": "洞窟・右の岩",
+          "topLux": 26.9,
+          "frontLux": 19
+        },
+        {
+          "name": "赤い布（花のしるし）",
+          "topLux": 65.3,
+          "frontLux": 31.2
+        }
+      ],
+      "backgroundReference": [
+        {
+          "x": -5,
+          "lux": 2.2
+        },
+        {
+          "x": -2.5,
+          "lux": 3.8
+        },
+        {
+          "x": 0,
+          "lux": 8.5
+        },
+        {
+          "x": 2.5,
+          "lux": 16.3
+        },
+        {
+          "x": 5,
+          "lux": 9.3
+        }
+      ],
+      "floor": {
+        "sampleXs": [
+          -5,
+          -4,
+          -3,
+          -2,
+          -1,
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "sampleZs": [
+          -5.5,
+          -4.5,
+          -3.5,
+          -2.5,
+          -1.5,
+          -0.5
+        ],
+        "gridLux": [
+          [
+            19.3,
+            25.2,
+            26.1,
+            33.7,
+            42.7,
+            46.4,
+            46.2,
+            44.4,
+            41.9,
+            40.1,
+            32.1
+          ],
+          [
+            21.7,
+            25.2,
+            27.6,
+            35,
+            44.1,
+            48.9,
+            51.2,
+            50.5,
+            46.1,
+            43.4,
+            36.3
+          ],
+          [
+            24.4,
+            27,
+            32.2,
+            40.2,
+            46.1,
+            54.9,
+            61.3,
+            60.7,
+            57.1,
+            49.1,
+            39.9
+          ],
+          [
+            24.7,
+            28.6,
+            36.6,
+            43.6,
+            43.4,
+            56.8,
+            65.6,
+            67.4,
+            64.5,
+            53.7,
+            40.1
+          ],
+          [
+            17.2,
+            24.2,
+            30.4,
+            40.4,
+            40.5,
+            46.1,
+            57.6,
+            64.3,
+            62.1,
+            49.4,
+            36.2
+          ],
+          [
+            7.6,
+            13.3,
+            17.1,
+            32.4,
+            35.7,
+            32.4,
+            30.6,
+            33.4,
+            35.3,
+            32.7,
+            21
+          ]
+        ],
+        "p10Lux": 21.7,
+        "medianLux": 40.1,
+        "p90Lux": 57.6,
+        "maxAdjacentDeltaLuxPerMeter": 30.9,
+        "hottest": {
+          "x": 2,
+          "z": -2.5,
+          "lux": 67.4,
+          "topFixtures": [
+            {
+              "name": "赤鬼の前明かり",
+              "lux": 18.5
+            },
+            {
+              "name": "浜の人物の前明かり",
+              "lux": 15.6
+            },
+            {
+              "name": "あの女の前明かり",
+              "lux": 10.4
+            }
+          ]
+        }
+      }
+    },
+    {
+      "sceneId": "sc1794111765917-cybsop",
+      "scene": "洞窟で向き合う",
+      "intent": "洞窟の口を二つの岩で示す。あの女と赤鬼を内側に、ミズカネととんびを外側に置く。地明かりは4灯とも同じ色で絞る。",
+      "fixtureCount": 11,
+      "performers": [
+        {
+          "name": "あの女",
+          "position": [
+            -2.8,
+            0,
+            -4.6
+          ],
+          "frontFaceLux": 32.4
+        },
+        {
+          "name": "とんび",
+          "position": [
+            -5.2,
+            0,
+            -3.8
+          ],
+          "frontFaceLux": 26.2
+        },
+        {
+          "name": "ミズカネ",
+          "position": [
+            -0.5,
+            0,
+            -3.8
+          ],
+          "frontFaceLux": 32.6
+        },
+        {
+          "name": "赤鬼",
+          "position": [
+            -3.8,
+            0,
+            -5.1
+          ],
+          "frontFaceLux": 29
+        }
+      ],
+      "setPieces": [
+        {
+          "name": "浜の地面",
+          "topLux": 28.7,
+          "frontLux": 1.7
+        },
+        {
+          "name": "海との境界",
+          "topLux": 24.2,
+          "frontLux": 19.3
+        },
+        {
+          "name": "洞窟・左の岩",
+          "topLux": 89.7,
+          "frontLux": 24.9
+        },
+        {
+          "name": "洞窟・右の岩",
+          "topLux": 47.2,
+          "frontLux": 29.1
+        },
+        {
+          "name": "赤い布（花のしるし）",
+          "topLux": 57.9,
+          "frontLux": 23.9
+        }
+      ],
+      "backgroundReference": [
+        {
+          "x": -5,
+          "lux": 15.5
+        },
+        {
+          "x": -2.5,
+          "lux": 20.5
+        },
+        {
+          "x": 0,
+          "lux": 13
+        },
+        {
+          "x": 2.5,
+          "lux": 3.6
+        },
+        {
+          "x": 5,
+          "lux": 0.7
+        }
+      ],
+      "floor": {
+        "sampleXs": [
+          -5,
+          -4,
+          -3,
+          -2,
+          -1,
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "sampleZs": [
+          -5.5,
+          -4.5,
+          -3.5,
+          -2.5,
+          -1.5,
+          -0.5
+        ],
+        "gridLux": [
+          [
+            33.8,
+            57.2,
+            54.8,
+            50.9,
+            35.9,
+            28,
+            24.9,
+            21.8,
+            17,
+            13.8,
+            9.7
+          ],
+          [
+            36.6,
+            58.8,
+            56.8,
+            53.6,
+            40.3,
+            30,
+            25.8,
+            22.1,
+            17.1,
+            13.6,
+            11
+          ],
+          [
+            29.4,
+            49.9,
+            55.4,
+            50,
+            38.3,
+            30.1,
+            26.3,
+            22.9,
+            17.6,
+            13.5,
+            11.1
+          ],
+          [
+            24.5,
+            36,
+            40.3,
+            39.5,
+            33.9,
+            27,
+            25,
+            23,
+            16.7,
+            12.7,
+            9.8
+          ],
+          [
+            11.6,
+            22.2,
+            27.4,
+            26,
+            21.7,
+            22,
+            22.4,
+            19.3,
+            12.3,
+            10.9,
+            7.7
+          ],
+          [
+            4.9,
+            8.9,
+            10.9,
+            11.9,
+            12.9,
+            13.7,
+            13.2,
+            10,
+            9.1,
+            8,
+            4.5
+          ]
+        ],
+        "p10Lux": 9.7,
+        "medianLux": 22.2,
+        "p90Lux": 50,
+        "maxAdjacentDeltaLuxPerMeter": 23.4,
+        "hottest": {
+          "x": -4,
+          "z": -4.5,
+          "lux": 58.8,
+          "topFixtures": [
+            {
+              "name": "洞窟の内側",
+              "lux": 26.4
+            },
+            {
+              "name": "あの女の前明かり",
+              "lux": 9.9
+            },
+            {
+              "name": "地明かり・奥下手",
+              "lux": 7.8
+            }
+          ]
+        }
+      }
+    },
+    {
+      "sceneId": "sc1794111765917-znqpbh",
+      "scene": "海の向こうへ",
+      "intent": "四人が舟に乗る。浜の地明かりを弱め、海の青と舟の輪郭を残す。",
+      "fixtureCount": 11,
+      "performers": [
+        {
+          "name": "あの女",
+          "position": [
+            -1.5,
+            0.36,
+            -5.7
+          ],
+          "frontFaceLux": 30.5
+        },
+        {
+          "name": "とんび",
+          "position": [
+            -0.5,
+            0.36,
+            -5.7
+          ],
+          "frontFaceLux": 35.2
+        },
+        {
+          "name": "ミズカネ",
+          "position": [
+            0.5,
+            0.36,
+            -5.7
+          ],
+          "frontFaceLux": 35.9
+        },
+        {
+          "name": "赤鬼",
+          "position": [
+            1.5,
+            0.36,
+            -5.7
+          ],
+          "frontFaceLux": 35.6
+        }
+      ],
+      "setPieces": [
+        {
+          "name": "浜の地面",
+          "topLux": 35.1,
+          "frontLux": 0.3
+        },
+        {
+          "name": "海との境界",
+          "topLux": 52.5,
+          "frontLux": 27.5
+        },
+        {
+          "name": "洞窟・左の岩",
+          "topLux": 22.6,
+          "frontLux": 12.9
+        },
+        {
+          "name": "洞窟・右の岩",
+          "topLux": 39.5,
+          "frontLux": 22.4
+        },
+        {
+          "name": "赤い布（花のしるし）",
+          "topLux": 31.4,
+          "frontLux": 15.8
+        },
+        {
+          "name": "舟",
+          "topLux": 54.9,
+          "frontLux": 29.1
+        }
+      ],
+      "backgroundReference": [
+        {
+          "x": -5,
+          "lux": 13.6
+        },
+        {
+          "x": -2.5,
+          "lux": 27.8
+        },
+        {
+          "x": 0,
+          "lux": 38.6
+        },
+        {
+          "x": 2.5,
+          "lux": 34.3
+        },
+        {
+          "x": 5,
+          "lux": 14.3
+        }
+      ],
+      "floor": {
+        "sampleXs": [
+          -5,
+          -4,
+          -3,
+          -2,
+          -1,
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "sampleZs": [
+          -5.5,
+          -4.5,
+          -3.5,
+          -2.5,
+          -1.5,
+          -0.5
+        ],
+        "gridLux": [
+          [
+            21.1,
+            32.3,
+            36,
+            43.2,
+            49.9,
+            53.3,
+            56,
+            53.5,
+            39.5,
+            30.6,
+            16.9
+          ],
+          [
+            15.5,
+            25.8,
+            30.4,
+            32.6,
+            40.6,
+            47.7,
+            48.4,
+            43.4,
+            32.2,
+            22.2,
+            10
+          ],
+          [
+            11.6,
+            21.3,
+            27.6,
+            31.1,
+            35.8,
+            42.6,
+            43.8,
+            36.9,
+            25.4,
+            14.4,
+            7.8
+          ],
+          [
+            8.9,
+            13.6,
+            20.5,
+            24.5,
+            26,
+            26.7,
+            26.6,
+            21.2,
+            14.1,
+            8.8,
+            6.6
+          ],
+          [
+            6.4,
+            9.1,
+            10.1,
+            11.2,
+            11.4,
+            11,
+            10,
+            8.8,
+            7.8,
+            7.2,
+            4.8
+          ],
+          [
+            3.5,
+            5.8,
+            6.7,
+            6.4,
+            5.7,
+            5.4,
+            5.5,
+            5.7,
+            5.8,
+            5,
+            2.8
+          ]
+        ],
+        "p10Lux": 5.7,
+        "medianLux": 16.9,
+        "p90Lux": 43.4,
+        "maxAdjacentDeltaLuxPerMeter": 17.2,
+        "hottest": {
+          "x": 1,
+          "z": -5.5,
+          "lux": 56,
+          "topFixtures": [
+            {
+              "name": "舟の逆光",
+              "lux": 12.2
+            },
+            {
+              "name": "海の面明かり・中央",
+              "lux": 10.6
+            },
+            {
+              "name": "赤鬼の前明かり",
+              "lux": 8.9
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "transitions": [
+    {
+      "from": "波のあと",
+      "to": "浜に現れた影",
+      "samples": [
+        {
+          "fraction": 0.25,
+          "floor": {
+            "p10Lux": 19.9,
+            "medianLux": 36.9,
+            "p90Lux": 41.8,
+            "maxAdjacentDeltaLuxPerMeter": 22.9,
+            "hottest": {
+              "x": 2,
+              "z": -2.5,
+              "lux": 45.5,
+              "topFixtures": [
+                {
+                  "name": "浜の人物の前明かり",
+                  "lux": 15.6
+                },
+                {
+                  "name": "地明かり・手前上手",
+                  "lux": 9.1
+                },
+                {
+                  "name": "あの女の前明かり",
+                  "lux": 7.4
+                }
+              ]
+            }
+          },
+          "performers": [
+            {
+              "name": "あの女",
+              "frontFaceLux": 27.3
+            },
+            {
+              "name": "とんび",
+              "frontFaceLux": 30.2
+            },
+            {
+              "name": "ミズカネ",
+              "frontFaceLux": 30.5
+            },
+            {
+              "name": "赤鬼",
+              "frontFaceLux": 2.8
+            }
+          ]
+        },
+        {
+          "fraction": 0.5,
+          "floor": {
+            "p10Lux": 19.9,
+            "medianLux": 37.6,
+            "p90Lux": 43.6,
+            "maxAdjacentDeltaLuxPerMeter": 22.9,
+            "hottest": {
+              "x": 2,
+              "z": -2.5,
+              "lux": 48.7,
+              "topFixtures": [
+                {
+                  "name": "浜の人物の前明かり",
+                  "lux": 15.6
+                },
+                {
+                  "name": "地明かり・手前上手",
+                  "lux": 8.6
+                },
+                {
+                  "name": "あの女の前明かり",
+                  "lux": 7.4
+                }
+              ]
+            }
+          },
+          "performers": [
+            {
+              "name": "あの女",
+              "frontFaceLux": 27.3
+            },
+            {
+              "name": "とんび",
+              "frontFaceLux": 30.2
+            },
+            {
+              "name": "ミズカネ",
+              "frontFaceLux": 31.4
+            },
+            {
+              "name": "赤鬼",
+              "frontFaceLux": 19.3
+            }
+          ]
+        },
+        {
+          "fraction": 0.75,
+          "floor": {
+            "p10Lux": 19.9,
+            "medianLux": 37.9,
+            "p90Lux": 46.7,
+            "maxAdjacentDeltaLuxPerMeter": 22.9,
+            "hottest": {
+              "x": 2,
+              "z": -3.5,
+              "lux": 52.5,
+              "topFixtures": [
+                {
+                  "name": "浜の人物の前明かり",
+                  "lux": 12.8
+                },
+                {
+                  "name": "赤鬼の輪郭",
+                  "lux": 7.9
+                },
+                {
+                  "name": "あの女の前明かり",
+                  "lux": 7.5
+                }
+              ]
+            }
+          },
+          "performers": [
+            {
+              "name": "あの女",
+              "frontFaceLux": 27.3
+            },
+            {
+              "name": "とんび",
+              "frontFaceLux": 30.2
+            },
+            {
+              "name": "ミズカネ",
+              "frontFaceLux": 31.3
+            },
+            {
+              "name": "赤鬼",
+              "frontFaceLux": 30
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "from": "浜に現れた影",
+      "to": "境目で足を止める",
+      "samples": [
+        {
+          "fraction": 0.25,
+          "floor": {
+            "p10Lux": 17.6,
+            "medianLux": 37.2,
+            "p90Lux": 51.9,
+            "maxAdjacentDeltaLuxPerMeter": 23.5,
+            "hottest": {
+              "x": 2,
+              "z": -2.5,
+              "lux": 58.6,
+              "topFixtures": [
+                {
+                  "name": "浜の人物の前明かり",
+                  "lux": 15.6
+                },
+                {
+                  "name": "赤鬼の前明かり",
+                  "lux": 9.7
+                },
+                {
+                  "name": "あの女の前明かり",
+                  "lux": 9
+                }
+              ]
+            }
+          },
+          "performers": [
+            {
+              "name": "あの女",
+              "frontFaceLux": 24.6
+            },
+            {
+              "name": "とんび",
+              "frontFaceLux": 24.1
+            },
+            {
+              "name": "ミズカネ",
+              "frontFaceLux": 29.6
+            },
+            {
+              "name": "赤鬼",
+              "frontFaceLux": 38.4
+            }
+          ]
+        },
+        {
+          "fraction": 0.5,
+          "floor": {
+            "p10Lux": 20,
+            "medianLux": 36.5,
+            "p90Lux": 52.1,
+            "maxAdjacentDeltaLuxPerMeter": 24.1,
+            "hottest": {
+              "x": 2,
+              "z": -2.5,
+              "lux": 60.1,
+              "topFixtures": [
+                {
+                  "name": "浜の人物の前明かり",
+                  "lux": 15.6
+                },
+                {
+                  "name": "赤鬼の前明かり",
+                  "lux": 10.9
+                },
+                {
+                  "name": "あの女の前明かり",
+                  "lux": 9.3
+                }
+              ]
+            }
+          },
+          "performers": [
+            {
+              "name": "あの女",
+              "frontFaceLux": 22.4
+            },
+            {
+              "name": "とんび",
+              "frontFaceLux": 17.7
+            },
+            {
+              "name": "ミズカネ",
+              "frontFaceLux": 29.9
+            },
+            {
+              "name": "赤鬼",
+              "frontFaceLux": 40.7
+            }
+          ]
+        },
+        {
+          "fraction": 0.75,
+          "floor": {
+            "p10Lux": 20.2,
+            "medianLux": 37.3,
+            "p90Lux": 51.6,
+            "maxAdjacentDeltaLuxPerMeter": 24.5,
+            "hottest": {
+              "x": 2,
+              "z": -2.5,
+              "lux": 60.7,
+              "topFixtures": [
+                {
+                  "name": "浜の人物の前明かり",
+                  "lux": 15.6
+                },
+                {
+                  "name": "赤鬼の前明かり",
+                  "lux": 12.1
+                },
+                {
+                  "name": "あの女の前明かり",
+                  "lux": 9.3
+                }
+              ]
+            }
+          },
+          "performers": [
+            {
+              "name": "あの女",
+              "frontFaceLux": 27.6
+            },
+            {
+              "name": "とんび",
+              "frontFaceLux": 16.8
+            },
+            {
+              "name": "ミズカネ",
+              "frontFaceLux": 30.2
+            },
+            {
+              "name": "赤鬼",
+              "frontFaceLux": 41.9
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "from": "境目で足を止める",
+      "to": "花のしるし",
+      "samples": [
+        {
+          "fraction": 0.25,
+          "floor": {
+            "p10Lux": 21.8,
+            "medianLux": 35.8,
+            "p90Lux": 53.7,
+            "maxAdjacentDeltaLuxPerMeter": 28.1,
+            "hottest": {
+              "x": 2,
+              "z": -2.5,
+              "lux": 62.8,
+              "topFixtures": [
+                {
+                  "name": "浜の人物の前明かり",
+                  "lux": 15.6
+                },
+                {
+                  "name": "赤鬼の前明かり",
+                  "lux": 14.7
+                },
+                {
+                  "name": "あの女の前明かり",
+                  "lux": 9.6
+                }
+              ]
+            }
+          },
+          "performers": [
+            {
+              "name": "あの女",
+              "frontFaceLux": 37.3
+            },
+            {
+              "name": "とんび",
+              "frontFaceLux": 19.4
+            },
+            {
+              "name": "ミズカネ",
+              "frontFaceLux": 30.5
+            },
+            {
+              "name": "赤鬼",
+              "frontFaceLux": 44.9
+            }
+          ]
+        },
+        {
+          "fraction": 0.5,
+          "floor": {
+            "p10Lux": 21.7,
+            "medianLux": 37.5,
+            "p90Lux": 56.2,
+            "maxAdjacentDeltaLuxPerMeter": 30.3,
+            "hottest": {
+              "x": 2,
+              "z": -2.5,
+              "lux": 64.5,
+              "topFixtures": [
+                {
+                  "name": "赤鬼の前明かり",
+                  "lux": 16.2
+                },
+                {
+                  "name": "浜の人物の前明かり",
+                  "lux": 15.6
+                },
+                {
+                  "name": "あの女の前明かり",
+                  "lux": 9.9
+                }
+              ]
+            }
+          },
+          "performers": [
+            {
+              "name": "あの女",
+              "frontFaceLux": 36.9
+            },
+            {
+              "name": "とんび",
+              "frontFaceLux": 19.4
+            },
+            {
+              "name": "ミズカネ",
+              "frontFaceLux": 30.6
+            },
+            {
+              "name": "赤鬼",
+              "frontFaceLux": 46.7
+            }
+          ]
+        },
+        {
+          "fraction": 0.75,
+          "floor": {
+            "p10Lux": 21.7,
+            "medianLux": 39.3,
+            "p90Lux": 56.8,
+            "maxAdjacentDeltaLuxPerMeter": 31.3,
+            "hottest": {
+              "x": 2,
+              "z": -2.5,
+              "lux": 66,
+              "topFixtures": [
+                {
+                  "name": "赤鬼の前明かり",
+                  "lux": 17.4
+                },
+                {
+                  "name": "浜の人物の前明かり",
+                  "lux": 15.6
+                },
+                {
+                  "name": "あの女の前明かり",
+                  "lux": 10.1
+                }
+              ]
+            }
+          },
+          "performers": [
+            {
+              "name": "あの女",
+              "frontFaceLux": 36.5
+            },
+            {
+              "name": "とんび",
+              "frontFaceLux": 19.4
+            },
+            {
+              "name": "ミズカネ",
+              "frontFaceLux": 30.7
+            },
+            {
+              "name": "赤鬼",
+              "frontFaceLux": 48.3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "from": "花のしるし",
+      "to": "洞窟で向き合う",
+      "samples": [
+        {
+          "fraction": 0.25,
+          "floor": {
+            "p10Lux": 19.4,
+            "medianLux": 38.5,
+            "p90Lux": 54.6,
+            "maxAdjacentDeltaLuxPerMeter": 29.6,
+            "hottest": {
+              "x": 1,
+              "z": -2.5,
+              "lux": 63.9,
+              "topFixtures": [
+                {
+                  "name": "赤鬼の前明かり",
+                  "lux": 17.5
+                },
+                {
+                  "name": "浜の人物の前明かり",
+                  "lux": 12.8
+                },
+                {
+                  "name": "あの女の前明かり",
+                  "lux": 11.6
+                }
+              ]
+            }
+          },
+          "performers": [
+            {
+              "name": "あの女",
+              "frontFaceLux": 43.6
+            },
+            {
+              "name": "とんび",
+              "frontFaceLux": 16.8
+            },
+            {
+              "name": "ミズカネ",
+              "frontFaceLux": 28.7
+            },
+            {
+              "name": "赤鬼",
+              "frontFaceLux": 47.5
+            }
+          ]
+        },
+        {
+          "fraction": 0.5,
+          "floor": {
+            "p10Lux": 12.7,
+            "medianLux": 35.1,
+            "p90Lux": 51.8,
+            "maxAdjacentDeltaLuxPerMeter": 25.9,
+            "hottest": {
+              "x": 0,
+              "z": -2.5,
+              "lux": 56.5,
+              "topFixtures": [
+                {
+                  "name": "赤鬼の前明かり",
+                  "lux": 14.2
+                },
+                {
+                  "name": "あの女の前明かり",
+                  "lux": 12.8
+                },
+                {
+                  "name": "浜の人物の前明かり",
+                  "lux": 10
+                }
+              ]
+            }
+          },
+          "performers": [
+            {
+              "name": "あの女",
+              "frontFaceLux": 44.1
+            },
+            {
+              "name": "とんび",
+              "frontFaceLux": 20.5
+            },
+            {
+              "name": "ミズカネ",
+              "frontFaceLux": 27.2
+            },
+            {
+              "name": "赤鬼",
+              "frontFaceLux": 43.3
+            }
+          ]
+        },
+        {
+          "fraction": 0.75,
+          "floor": {
+            "p10Lux": 10.4,
+            "medianLux": 28.7,
+            "p90Lux": 51,
+            "maxAdjacentDeltaLuxPerMeter": 23.9,
+            "hottest": {
+              "x": -3,
+              "z": -3.5,
+              "lux": 56.8,
+              "topFixtures": [
+                {
+                  "name": "あの女の前明かり",
+                  "lux": 14
+                },
+                {
+                  "name": "洞窟の内側",
+                  "lux": 12.8
+                },
+                {
+                  "name": "赤鬼の前明かり",
+                  "lux": 9
+                }
+              ]
+            }
+          },
+          "performers": [
+            {
+              "name": "あの女",
+              "frontFaceLux": 39.9
+            },
+            {
+              "name": "とんび",
+              "frontFaceLux": 27.5
+            },
+            {
+              "name": "ミズカネ",
+              "frontFaceLux": 30.4
+            },
+            {
+              "name": "赤鬼",
+              "frontFaceLux": 38
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "from": "洞窟で向き合う",
+      "to": "海の向こうへ",
+      "samples": [
+        {
+          "fraction": 0.25,
+          "floor": {
+            "p10Lux": 8.1,
+            "medianLux": 20.5,
+            "p90Lux": 49.3,
+            "maxAdjacentDeltaLuxPerMeter": 20.3,
+            "hottest": {
+              "x": -4,
+              "z": -4.5,
+              "lux": 53.4,
+              "topFixtures": [
+                {
+                  "name": "洞窟の内側",
+                  "lux": 19.8
+                },
+                {
+                  "name": "あの女の前明かり",
+                  "lux": 10.2
+                },
+                {
+                  "name": "地明かり・奥下手",
+                  "lux": 7.5
+                }
+              ]
+            }
+          },
+          "performers": [
+            {
+              "name": "あの女",
+              "frontFaceLux": 33.2
+            },
+            {
+              "name": "とんび",
+              "frontFaceLux": 32.6
+            },
+            {
+              "name": "ミズカネ",
+              "frontFaceLux": 37
+            },
+            {
+              "name": "赤鬼",
+              "frontFaceLux": 31.8
+            }
+          ]
+        },
+        {
+          "fraction": 0.5,
+          "floor": {
+            "p10Lux": 7.1,
+            "medianLux": 18.4,
+            "p90Lux": 45.5,
+            "maxAdjacentDeltaLuxPerMeter": 20.2,
+            "hottest": {
+              "x": -2,
+              "z": -5.5,
+              "lux": 49.3,
+              "topFixtures": [
+                {
+                  "name": "洞窟の内側",
+                  "lux": 9.9
+                },
+                {
+                  "name": "あの女の前明かり",
+                  "lux": 7.4
+                },
+                {
+                  "name": "赤鬼の前明かり",
+                  "lux": 6.9
+                }
+              ]
+            }
+          },
+          "performers": [
+            {
+              "name": "あの女",
+              "frontFaceLux": 33.8
+            },
+            {
+              "name": "とんび",
+              "frontFaceLux": 34.4
+            },
+            {
+              "name": "ミズカネ",
+              "frontFaceLux": 37.4
+            },
+            {
+              "name": "赤鬼",
+              "frontFaceLux": 33.8
+            }
+          ]
+        },
+        {
+          "fraction": 0.75,
+          "floor": {
+            "p10Lux": 6.4,
+            "medianLux": 17.2,
+            "p90Lux": 45.3,
+            "maxAdjacentDeltaLuxPerMeter": 19.1,
+            "hottest": {
+              "x": 1,
+              "z": -5.5,
+              "lux": 50.2,
+              "topFixtures": [
+                {
+                  "name": "舟の逆光",
+                  "lux": 9.1
+                },
+                {
+                  "name": "赤鬼の前明かり",
+                  "lux": 8.5
+                },
+                {
+                  "name": "海の面明かり・中央",
+                  "lux": 8.3
+                }
+              ]
+            }
+          },
+          "performers": [
+            {
+              "name": "あの女",
+              "frontFaceLux": 34.1
+            },
+            {
+              "name": "とんび",
+              "frontFaceLux": 35.2
+            },
+            {
+              "name": "ミズカネ",
+              "frontFaceLux": 36.9
+            },
+            {
+              "name": "赤鬼",
+              "frontFaceLux": 35.2
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

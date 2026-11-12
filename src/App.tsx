@@ -1,3 +1,8 @@
+import { canEditProject, loseProjectEditor, useProjectEditor, getProjectEditorEpoch } from './io/projectEditor'
+import { OnlineWorkspace } from './ui/OnlineWorkspace'
+import { WorkspaceNotice, WorkspaceNotices } from './ui/WorkspaceNotice'
+import { UpdateNotice } from './ui/UpdateNotice'
+import { hasDeviceStorage } from './io/workspaceStorage'
 import { useEffect, useRef, useState } from 'react'
 import { Canvas, useThree } from '@react-three/fiber'
 import { OrbitControls, PerspectiveCamera } from '@react-three/drei'
@@ -13,18 +18,32 @@ import { XRButton, XRGLBinder } from './scene/XRSupport'
 import { ControlPanel } from './ui/ControlPanel'
 import { HelpOverlay } from './ui/HelpOverlay'
 import { SettingsModal } from './ui/SettingsModal'
-import { useIsDirty, useStore } from './store'
-import { useCloudSession } from './io/cloudSession'
+import { sceneDisplayTitle, useStore } from './store'
+import { refreshSession, useCloudSession } from './io/cloudSession'
 import { loginUrl, signupUrl, logoutUrl, createBillingPortal, CloudError } from './io/cloud'
 import { ScenePanel } from './ui/ScenePanel'
+import { PlanBoard } from './ui/PlanBoard'
+import { ProjectLibrary } from './ui/ProjectLibrary'
+import { getActiveCloudProject, getActiveSavedProjectName, setActiveCloudProject } from './io/mockProjectSession'
+import { consumeWorkspaceHandoff, currentWorkspaceSnapshot, flushMockAutosave, initMockWorkspace, markCloudSaved, markMockDemoBaseline, preserveMockDraftBeforeDemo, redoMockWorkspace, undoMockWorkspace, useMockWorkspaceState } from './io/mockWorkspace'
+import { exportScene } from './io/sceneIO'
+import { updateCloudProject } from './io/cloud'
+import { StagePlayback } from './ui/StagePlayback'
+import { DirectionPaths } from './scene/DirectionPaths'
 import { WebGLErrorBoundary } from './ui/WebGLErrorBoundary'
 
-const isMobile = typeof window !== 'undefined' && window.matchMedia('(max-width: 768px)').matches
 import { FIXTURE_PROFILES, type FixtureProfile } from './lighting/fixtureTypes'
 import { tryLoadFromHash } from './io/sceneIO'
+import { createShowcasePlan } from './demo/createShowcasePlan'
+import { createRainLibraryPlan } from './demo/createRainLibraryPlan'
+import { createRainLibraryLightingStudyPlan } from './demo/createRainLibraryLightingStudyPlan'
+import { createAkaoniPlan } from './demo/createAkaoniPlan'
+import { createAkaoniWashPlan } from './demo/createAkaoniWashPlan'
+import { createAkaoniLightingStudyPlan } from './demo/createAkaoniLightingStudyPlan'
+import { createVenueStudyPlan, VENUE_STUDY_LINKS } from './demo/createVenueStudyPlans'
+import { AudienceSeating } from './scene/AudienceSeating'
+import { isWorkspaceLibraryPath, isWorkspacePath, workspaceBasePath } from './io/workspacePath'
 
-// 舞台の寸法は scene/Stage.tsx を参照 (床 z=-8..2, サイドウォール x=±8,
-// プロセニアム袖枠 x=±6.5 / z=2.5, バトン y=7.0)。
 const CAMERA_VIEWS: Record<string, { pos: [number, number, number]; target: [number, number, number] }> = {
   audience: { pos: [0, 2.5, 10], target: [0, 2.5, -2] },
   // 吊り位置と当たりの範囲を仕込み図のように見るための俯瞰。
@@ -34,6 +53,7 @@ const CAMERA_VIEWS: Record<string, { pos: [number, number, number]; target: [num
   // 壁の裏面が画面のほとんどを黒く覆って何も見えなかった。
   sidewing: { pos: [-6.8, 1.7, 1.4], target: [1.6, 1.5, -3.2] },
   free: { pos: [4, 4, 8], target: [0, 2, -2] },
+  house: { pos: [0, 24, 27], target: [0, 0.5, 2] },
 }
 
 // 基準の垂直画角。横長画面ではこの値をそのまま使う。
@@ -75,23 +95,122 @@ function ResponsiveFov() {
 }
 
 const isEmbed = new URLSearchParams(location.search).has('embed')
+const isMockPreview = isWorkspacePath()
+const isProjectLibraryPath = isWorkspaceLibraryPath
+const requestedDemo = () => isMockPreview ? new URLSearchParams(location.search).get('demo') : null
+const EXPOSURE_SCALE = 0.45
+
+function ExposureSync({ exposure }: { exposure: number }) {
+  const { gl, invalidate } = useThree()
+  useEffect(() => {
+    gl.toneMappingExposure = EXPOSURE_SCALE * exposure
+    invalidate()
+  }, [gl, exposure, invalidate])
+  return null
+}
 
 export default function App() {
   const settings = useStore(s => s.settings)
-  const dirty = useIsDirty()
+  const hasAudienceBlocks = useStore(s => (s.productionPlan.audienceBlocks?.length ?? 0) > 0)
+  const audienceBlocks = useStore(s => s.productionPlan.audienceBlocks ?? [])
+  const venueLayout = useStore(s => s.productionPlan.venueLayout)
   const select = useStore(s => s.select)
-  const view = CAMERA_VIEWS[settings.cameraView] ?? CAMERA_VIEWS.audience
+  const scenePath = useStore(s => {
+    const plan = s.productionPlan
+    const scene = plan.scenes.find(item => item.id === plan.activeSceneId)
+    if (!scene) return '舞台プラン'
+    const sequence = plan.sequences?.find(item => item.id === scene.sequenceId)
+    const chapter = plan.chapters?.find(item => item.id === sequence?.chapterId)
+    return [chapter?.title, sequence?.title, scene.title].filter(Boolean).join(' › ')
+  })
+  const projectTitle = useStore(s => s.productionPlan.projectTitle)
+  const [mockPage, setMockPage] = useState<'projects' | 'editor'>(() => isProjectLibraryPath() ? 'projects' : 'editor')
+  const [planOpen, setPlanOpen] = useState(isMockPreview)
+  const [mapVisible, setMapVisible] = useState(true)
+  const [mobileView, setMobileView] = useState<'stage' | 'plan'>('stage')
+  const [outlineVisible, setOutlineVisible] = useState(window.innerWidth > 960)
+  const [showSceneDirections, setShowSceneDirections] = useState(!isMockPreview)
+  const [displayMenuOpen, setDisplayMenuOpen] = useState(false)
+  const [displayMenuPosition, setDisplayMenuPosition] = useState({ left: 14, top: 104 })
+  const [sceneEditorOpen, setSceneEditorOpen] = useState(false)
+  const displayMenuRef = useRef<HTMLDivElement>(null)
+  const displayMenuPanelRef = useRef<HTMLDivElement>(null)
+  const [workspaceFeedback, setWorkspaceFeedback] = useState('')
+  const [playbackOpen, setPlaybackOpen] = useState(false)
+  useEffect(() => {
+    const close = () => setPlaybackOpen(false)
+    window.addEventListener('tomoshibi-end-preview', close)
+    return () => window.removeEventListener('tomoshibi-end-preview', close)
+  }, [])
+  const [, setViewportWidth] = useState(window.innerWidth)
+  const wasMobile = useRef(window.innerWidth <= 960)
+  const maxSeatZ = Math.max(3, ...audienceBlocks.map(block =>
+    block.position[1] + block.rows * block.rowSpacing / 2))
+  const minSeatZ = Math.min(-9, ...audienceBlocks.map(block =>
+    block.position[1] - block.rows * block.rowSpacing / 2))
+  const maxSeatX = Math.max(8, ...audienceBlocks.map(block => {
+    const angle = block.rotationDeg * Math.PI / 180
+    const halfWidth = (block.seatsPerRow * block.seatSpacing) / 2
+    const halfDepth = (block.rows * block.rowSpacing) / 2
+    return Math.abs(block.position[0]) + Math.abs(Math.cos(angle)) * halfWidth + Math.abs(Math.sin(angle)) * halfDepth
+  }))
+  const houseSpan = maxSeatZ - minSeatZ
+  const [stageDx, stageDz] = venueLayout?.stageOffset ?? [0, 0]
+  const baseView = CAMERA_VIEWS[settings.cameraView] ?? CAMERA_VIEWS.audience
+  const view = settings.cameraView === 'house' && (maxSeatZ > 15 || minSeatZ < -10 || maxSeatX > 10)
+    ? { pos: [0, Math.max(24, houseSpan * .85, maxSeatX * 1.5),
+        Math.max(27, maxSeatZ + 14, maxSeatX * 1.5)] as [number, number, number],
+      target: [stageDx / 2, .5, (maxSeatZ + minSeatZ + stageDz) / 2] as [number, number, number] }
+    : { pos: [baseView.pos[0] + stageDx, baseView.pos[1], baseView.pos[2] + stageDz] as [number, number, number],
+      target: [baseView.target[0] + stageDx, baseView.target[1], baseView.target[2] + stageDz] as [number, number, number] }
   const noopMaterials = () => {}
 
   useEffect(() => {
-    if (!dirty) return
-    const handler = (event: BeforeUnloadEvent) => {
-      event.preventDefault()
-      event.returnValue = ''
+    if (!workspaceFeedback) return
+    const timer = window.setTimeout(() => setWorkspaceFeedback(''), 6000)
+    return () => window.clearTimeout(timer)
+  }, [workspaceFeedback])
+
+  useEffect(() => {
+    if (!displayMenuOpen) return
+    const closeOutside = (event: PointerEvent) => {
+      const target = event.target as Node
+      if (!displayMenuRef.current?.contains(target) && !displayMenuPanelRef.current?.contains(target))
+        setDisplayMenuOpen(false)
     }
-    window.addEventListener('beforeunload', handler)
-    return () => window.removeEventListener('beforeunload', handler)
-  }, [dirty])
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return
+      event.preventDefault()
+      event.stopPropagation()
+      setDisplayMenuOpen(false)
+    }
+    document.addEventListener('pointerdown', closeOutside)
+    window.addEventListener('keydown', closeOnEscape, true)
+    return () => {
+      document.removeEventListener('pointerdown', closeOutside)
+      window.removeEventListener('keydown', closeOnEscape, true)
+    }
+  }, [displayMenuOpen])
+
+  useEffect(() => {
+    if (!isMockPreview) return
+    const onPopState = () => setMockPage(isProjectLibraryPath() ? 'projects' : 'editor')
+    window.addEventListener('popstate', onPopState)
+    return () => window.removeEventListener('popstate', onPopState)
+  }, [])
+
+  useEffect(() => {
+    const onResize = () => {
+      const mobile = window.innerWidth <= 960
+      setViewportWidth(window.innerWidth)
+      if (mobile !== wasMobile.current) setOutlineVisible(!mobile)
+      if (isMockPreview && mobile && !wasMobile.current) useStore.getState().updateSettings({ panelOpen: false })
+      wasMobile.current = mobile
+    }
+    window.addEventListener('resize', onResize)
+    if (isMockPreview && window.innerWidth <= 960) useStore.getState().updateSettings({ panelOpen: false })
+    return () => window.removeEventListener('resize', onResize)
+  }, [])
 
   // embed クラス付与
   useEffect(() => {
@@ -101,7 +220,39 @@ export default function App() {
 
   // 初回: URL hashからシーン読込 / GDTF動的プロファイル登録窓口
   useEffect(() => {
-    tryLoadFromHash()
+    const handoff = isMockPreview ? consumeWorkspaceHandoff() : 'none'
+    const loadedFromHash = handoff !== 'imported' && tryLoadFromHash()
+    const demo = !loadedFromHash ? requestedDemo() : null
+    const venueStudy = VENUE_STUDY_LINKS.find(item => demo === `venue-${item.kind}`)
+    const wantsDemo = demo === '1' || demo === '2' || demo === 'rain-library-study' || demo === 'akaoni' || demo === 'akaoni-wash' || demo === 'akaoni-study' || !!venueStudy
+    const loadDemo = wantsDemo && preserveMockDraftBeforeDemo()
+    if (wantsDemo && !loadDemo) setWorkspaceFeedback('前のプランを保存できなかったため、デモを開きませんでした。')
+    if (loadDemo && demo === '1') createShowcasePlan()
+    else if (loadDemo && demo === '2') createRainLibraryPlan()
+    else if (loadDemo && demo === 'rain-library-study') createRainLibraryLightingStudyPlan()
+    else if (loadDemo && demo === 'akaoni') createAkaoniPlan()
+    else if (loadDemo && demo === 'akaoni-wash') createAkaoniWashPlan()
+    else if (loadDemo && demo === 'akaoni-study') createAkaoniLightingStudyPlan()
+    else if (loadDemo && venueStudy) createVenueStudyPlan(venueStudy.kind)
+    else if (isMockPreview && !isProjectLibraryPath() && !loadedFromHash && handoff !== 'imported') useStore.getState().ensureScenes()
+    if (isMockPreview) initMockWorkspace(!loadedFromHash && !loadDemo && handoff !== 'imported')
+    if (handoff === 'imported') {
+      flushMockAutosave()
+      const url = new URL(location.href)
+      url.searchParams.delete('copy')
+      history.replaceState(null, '', url.pathname + url.search + url.hash)
+      setWorkspaceFeedback('現在の舞台プランをコピーしました。元の画面の保存データはそのままです。')
+    } else if (handoff === 'error') setWorkspaceFeedback('現在の舞台プランをコピーできませんでした。')
+    if (loadDemo) {
+      markMockDemoBaseline()
+      flushMockAutosave()
+      const url = new URL(location.href)
+      url.searchParams.delete('demo')
+      history.replaceState(null, '', url.pathname + url.search + url.hash)
+    }
+    if (isMockPreview && useStore.getState().savedSnapshot === null) {
+      useStore.getState().markSavedSnapshot()
+    }
     ;(window as any).__addGDTFProfile = (key: string, profile: FixtureProfile) => {
       ;(FIXTURE_PROFILES as any)[key] = profile
     }
@@ -111,8 +262,17 @@ export default function App() {
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       const t = e.target as HTMLElement
-      if (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT') return
       const k = e.key.toLowerCase()
+      if (isMockPreview && (e.metaKey || e.ctrlKey) && !e.altKey &&
+          t.tagName !== 'INPUT' && t.tagName !== 'TEXTAREA' && t.tagName !== 'SELECT') {
+        if (k === 'z') { e.preventDefault(); if (e.shiftKey) redoMockWorkspace(); else undoMockWorkspace(); return }
+        if (k === 'y') { e.preventDefault(); redoMockWorkspace(); return }
+      }
+      if ((t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT') && k !== 'escape') return
+      if (playbackOpen) {
+        if (k === 'escape') setPlaybackOpen(false)
+        return
+      }
       const s = useStore.getState()
       const up = s.updateSettings
       switch (k) {
@@ -120,7 +280,8 @@ export default function App() {
         case '2': up({ cameraView: 'aerial' }); break
         case '3': up({ cameraView: 'sidewing' }); break
         case '4': up({ cameraView: 'free' }); break
-        case 'escape': s.select(null, null); break
+        case '5': if (s.productionPlan.audienceBlocks?.length) up({ cameraView: 'house' }); break
+        case 'escape': if (planOpen) setPlanOpen(false); else s.select(null, null); break
         case '?': case '/': up({ showHelp: !s.settings.showHelp }); break
         case 'h': up({ showHelp: !s.settings.showHelp }); break
         case 'p': up({ probeMode: !s.settings.probeMode }); break
@@ -143,10 +304,34 @@ export default function App() {
     }
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
-  }, [])
+  }, [planOpen, playbackOpen])
+
+  const startPlayback = () => {
+    if (!isMockPreview) setPlanOpen(false)
+    if (window.innerWidth <= 960) setOutlineVisible(false)
+    useStore.getState().updateSettings({ scenePanelOpen: false, settingsOpen: false, showHelp: false })
+    setPlaybackOpen(true)
+  }
+
+  const navigateMock = (page: 'projects' | 'editor') => {
+    if (isMockPreview) flushMockAutosave()
+    if (location.protocol !== 'file:') {
+      const path = page === 'projects' ? `${workspaceBasePath()}/projects/` : `${workspaceBasePath()}/`
+      if (location.pathname !== path) history.pushState(null, '', path)
+    }
+    setMockPage(page)
+    setPlaybackOpen(false)
+    setSceneEditorOpen(false)
+    setDisplayMenuOpen(false)
+    useStore.getState().updateSettings({ scenePanelOpen: false, settingsOpen: false, showHelp: false })
+  }
 
   return (
-    <>
+    <OnlineWorkspace enabled={isMockPreview} editorVisible={mockPage !== 'projects'} onProjects={() => navigateMock('projects')}>
+      {isMockPreview && <><WorkspaceNotices /><UpdateNotice /><CloudProjectAutosave /></>}
+      {isMockPreview && mockPage === 'projects'
+        ? <ProjectLibrary onOpenEditor={() => navigateMock('editor')} />
+        : <div className={'unified-shell' + (planOpen ? ' plan-open' : '') + (settings.panelOpen ? ' panel-open' : '') + (playbackOpen ? ' playback-open' : '') + (isMockPreview ? ' workspace-layout mobile-view-' + mobileView : '') + (mapVisible ? '' : ' map-hidden') + (outlineVisible ? ' outline-visible' : '')}>
       <div className="canvas-wrap">
        <WebGLErrorBoundary>
         <Canvas
@@ -159,10 +344,11 @@ export default function App() {
           shadows="soft"
           onCreated={({ gl }) => {
             gl.toneMapping = THREE.ACESFilmicToneMapping
-            gl.toneMappingExposure = 0.45 * (settings.exposure ?? 1.0)
+            gl.toneMappingExposure = EXPOSURE_SCALE * (settings.exposure ?? 1.0)
           }}
           onPointerMissed={() => select(null, null)}
         >
+          <ExposureSync exposure={settings.exposure ?? 1.0} />
           <PerspectiveCamera key={`cam-${settings.cameraView}`} makeDefault position={view.pos} fov={BASE_FOV} near={0.1} far={100} />
           <ResponsiveFov />
           <OrbitControls
@@ -175,11 +361,11 @@ export default function App() {
             zoomSpeed={0.9}
             panSpeed={0.8}
             minDistance={1.5}
-            maxDistance={40}
+            maxDistance={100}
             maxPolarAngle={Math.PI * 0.49}
             enablePan
           />
-          <CameraKeyboardPan />
+          {!playbackOpen && <CameraKeyboardPan />}
 
           <ambientLight intensity={settings.ambient ?? 0.05} color={'#3a2a20'} />
           <hemisphereLight args={['#3a2a20', '#1a1208', 0.2]} />
@@ -191,42 +377,213 @@ export default function App() {
           )}
 
           {settings.showStage && <Stage onMaterialsReady={noopMaterials} />}
+          <AudienceSeating />
           {settings.showPerformers && <PerformerMeshes onMaterialsReady={noopMaterials} />}
           {settings.showFixtureMeshes && <FixtureMeshes />}
           <SetPieces />
           <Beams />
-          <SelectionGizmo />
+          {!playbackOpen && <SelectionGizmo />}
+          <DirectionPaths visible={planOpen && !playbackOpen && showSceneDirections} />
           <PhotometricProbe />
           <ProbeClickCatcher />
 
           <XRGLBinder />
         </Canvas>
        </WebGLErrorBoundary>
+        {isMockPreview && !playbackOpen && <MockSceneIndicator outlineVisible={outlineVisible}
+          onToggleOutline={() => {
+            setOutlineVisible(value => !value)
+            setDisplayMenuOpen(false)
+            if (window.innerWidth <= 960) useStore.getState().updateSettings({ panelOpen: false })
+          }} />}
       </div>
 
-      {!isEmbed && <BrandStrip />}
+      <header className="workspace-header">
+        {!isEmbed && <BrandStrip />}
+        {isMockPreview ? <>
+          <button className="workspace-project-back" onClick={() => navigateMock('projects')}
+            aria-label="プロジェクト一覧へ戻る">← <span>一覧</span></button>
+          <MockProjectTitle title={projectTitle} />
+        </> : <button className="workspace-project-button" title="プロジェクトを保存・切り替える"
+          aria-label={`${projectTitle?.trim() || '新規プロジェクト'}。保存・切り替えを開く`}
+          onClick={() => useStore.getState().updateSettings({ scenePanelOpen: true, panelOpen: false })}>
+          {projectTitle?.trim() || '新規プロジェクト'} ▾
+        </button>}
+        {!isMockPreview && <span className="workspace-scene-name" title={[projectTitle, scenePath].filter(Boolean).join(' › ')}>{scenePath}</span>}
+        <div className="workspace-header-actions">
+          {isMockPreview && <MockHistoryButtons />}
+          {isMockPreview && <MockSaveButton />}
+          {!isMockPreview && <button className={'plan-board-toggle' + (planOpen ? ' active' : '')}
+            aria-expanded={planOpen} aria-controls="plan-board"
+            onClick={() => {
+              setPlanOpen(open => !open)
+              if (window.innerWidth <= 960) useStore.getState().updateSettings({ panelOpen: false })
+            }}>{planOpen ? '演出プランを閉じる' : '平面図・演出プラン'}</button>}
+          {isMockPreview && <button className="workspace-play-button" onClick={startPlayback}>▶ 通しで見る</button>}
+          <button onClick={() => useStore.getState().updateSettings({ settingsOpen: true })} aria-label="設定">⚙</button>
+          {!isMockPreview && <button onClick={() => useStore.getState().updateSettings({ showHelp: true })} aria-label="ヘルプ">?</button>}
+        </div>
+      </header>
+      {isMockPreview && !playbackOpen && <nav className="mobile-workspace-views" aria-label="編集画面の切り替え">
+        <button aria-pressed={mobileView === 'stage'} onClick={() => { setMobileView('stage'); setDisplayMenuOpen(false) }}>3Dで確認</button>
+        <button aria-pressed={mobileView === 'plan'} onClick={() => { setMobileView('plan'); setMapVisible(true); setDisplayMenuOpen(false) }}>平面図で配置</button>
+      </nav>}
+      {isMockPreview && workspaceFeedback && <WorkspaceNotice>{workspaceFeedback}</WorkspaceNotice>}
       {!isEmbed && <LegalFooter />}
-      {!isEmbed && <AccountMenu />}
+      {!isEmbed && !isMockPreview && <AccountMenu />}
 
       <div className="toolbar">
+        {isMockPreview && <>
+          <div className="workspace-display-menu-wrap" ref={displayMenuRef}>
+            <button className={'workspace-display-trigger' + (displayMenuOpen ? ' active' : '')}
+              aria-expanded={displayMenuOpen} aria-haspopup="true"
+              onClick={event => {
+                const rect = event.currentTarget.getBoundingClientRect()
+                setDisplayMenuPosition({ left: Math.max(8, Math.min(rect.left, window.innerWidth - 230)), top: rect.bottom + 8 })
+                setDisplayMenuOpen(value => !value)
+              }}>表示 <span aria-hidden="true">⌄</span></button>
+          </div>
+          <span className="toolbar-divider" aria-hidden="true" />
+        </>}
+        <span className="toolbar-label">視点</span>
         <ViewButton view="audience" label="客席" hint="1" />
-        <ViewButton view="aerial" label="俯瞰" hint="2" />
+        <ViewButton view="aerial" label="上から" hint="2" />
         <ViewButton view="sidewing" label="袖" hint="3" />
         <ViewButton view="free" label="自由" hint="4" />
+        {hasAudienceBlocks && <ViewButton view="house" label="客席全体" hint="5" />}
         <HouseLightsToggle />
-        <XRButton />
+        {!isMockPreview && <XRButton />}
       </div>
+      {isMockPreview && displayMenuOpen && <div className="workspace-display-menu" ref={displayMenuPanelRef}
+        aria-label="表示するもの" style={displayMenuPosition}>
+        <strong>表示するもの</strong>
+        <button type="button" aria-pressed={outlineVisible} onClick={() => { setOutlineVisible(value => !value); setDisplayMenuOpen(false) }}>
+          <span aria-hidden="true">{outlineVisible ? '✓' : ''}</span>シーン一覧</button>
+        <button type="button" aria-pressed={mapVisible} onClick={() => { setMapVisible(value => !value); setDisplayMenuOpen(false) }}>
+          <span aria-hidden="true">{mapVisible ? '✓' : ''}</span>平面図</button>
+        <button type="button" aria-pressed={showSceneDirections} onClick={() => { setShowSceneDirections(value => !value); setDisplayMenuOpen(false) }}>
+          <span aria-hidden="true">{showSceneDirections ? '✓' : ''}</span>役者の動きの矢印</button>
+      </div>}
 
-      <ControlPanel />
-      {!isMobile && <ScenePanel />}
-      <SettingsModal />
-      <HelpOverlay />
+      {!playbackOpen && <ControlPanel planOpen={planOpen} />}
+      {!playbackOpen && <ScenePanel />}
+      {!playbackOpen && <SettingsModal />}
+      {!playbackOpen && <PlanBoard open={planOpen} persistent={isMockPreview}
+        onClose={() => setPlanOpen(false)} onPlay={startPlayback}
+        onCloseOutline={() => setOutlineVisible(false)} onCloseMap={() => { setMapVisible(false); setMobileView('stage') }}
+        showDirections={showSceneDirections} onToggleDirections={() => setShowSceneDirections(value => !value)}
+        sceneEditorOpen={sceneEditorOpen} onOpenSceneEditor={() => setSceneEditorOpen(true)}
+        onCloseSceneEditor={() => setSceneEditorOpen(false)}
+      />}
+      {playbackOpen && <StagePlayback onClose={() => setPlaybackOpen(false)} simplified={isMockPreview} />}
+      {!playbackOpen && <HelpOverlay />}
 
-      <FixtureGizmoToolbar />
-      <SelectionStatusHint />
+      {!playbackOpen && <FixtureGizmoToolbar />}
+      {!playbackOpen && <SelectionStatusHint />}
       {!isEmbed && <KeyHint />}
-    </>
+    </div>}
+    </OnlineWorkspace>
   )
+}
+
+function CloudProjectAutosave() {
+  const editor = useProjectEditor()
+  const { user, connectionError } = useCloudSession()
+  const { cloudDirty, saveStatus } = useMockWorkspaceState()
+  const [attempt, setAttempt] = useState(0)
+  const [error, setError] = useState('')
+  const failedSnapshot = useRef('')
+  const inFlight = useRef(false)
+  const generation = useRef(0)
+  const activeId = getActiveCloudProject()?.id
+  useEffect(() => { if (!connectionError) failedSnapshot.current = '' }, [connectionError])
+  useEffect(() => {
+    generation.current += 1
+    failedSnapshot.current = ''
+    setError('')
+  }, [activeId, user?.id, editor.epoch])
+  useEffect(() => {
+    const active = getActiveCloudProject()
+    if (!user || !active || !cloudDirty || !canEditProject(active.id) || saveStatus !== 'saved' || connectionError || !navigator.onLine) return
+    if (currentWorkspaceSnapshot() === failedSnapshot.current || inFlight.current) return
+    const startedGeneration = generation.current
+    const timer = window.setTimeout(async () => {
+      const current = getActiveCloudProject()
+      if (!current || current.id !== active.id || !canEditProject(current.id) || inFlight.current || !navigator.onLine) return
+      const editorEpoch = getProjectEditorEpoch()
+      const snapshot = currentWorkspaceSnapshot()
+      inFlight.current = true
+      const name = useStore.getState().productionPlan.projectTitle?.trim() || current.name
+      try {
+        const updated = await updateCloudProject(current.id, current.revision, name, exportScene(name))
+        if (getActiveCloudProject()?.id !== current.id || generation.current !== startedGeneration || getProjectEditorEpoch() !== editorEpoch) return
+        setActiveCloudProject({ id: current.id, name: updated.name, revision: updated.revision })
+        markCloudSaved(snapshot)
+        setError('')
+        failedSnapshot.current = ''
+      } catch (cause) {
+        if (getActiveCloudProject()?.id !== current.id || generation.current !== startedGeneration || getProjectEditorEpoch() !== editorEpoch) return
+        if (cause instanceof CloudError && (cause.status === 423 || cause.status === 409)) { void loseProjectEditor(); return }
+        failedSnapshot.current = snapshot
+        void refreshSession()
+        setError('クラウドに保存できませんでした。現在の編集内容はこのブラウザ／アプリに保持しています。')
+      } finally {
+        inFlight.current = false
+        setAttempt(value => value + 1)
+      }
+    }, 2200)
+    return () => window.clearTimeout(timer)
+  }, [user?.id, activeId, cloudDirty, saveStatus, attempt, connectionError, editor.status, editor.epoch])
+  return error ? <WorkspaceNotice kind="alert">{error}</WorkspaceNotice> : null
+}
+
+function MockProjectTitle({ title }: { title?: string }) {
+  const { saveStatus, cloudDirty } = useMockWorkspaceState()
+  const cloud = getActiveCloudProject()
+  return <>
+    <strong className="workspace-project-title" title={title?.trim() || '名称未設定のプロジェクト'}>
+      {title?.trim() || '名称未設定'}</strong>
+    <span className={'workspace-save-state' + (saveStatus !== 'saved' ? ' changed' : '')} role="status">
+      {saveStatus === 'saving' ? '自動保存中…' : saveStatus === 'error' ? '保存できません' : cloud ? cloudDirty ? 'アカウントへの保存待ち' : 'アカウントに保存済み' : hasDeviceStorage() ? 'このアプリに保存済み' : 'ブラウザに一時保存'}</span>
+  </>
+}
+
+function MockSaveButton() {
+  const { saveStatus } = useMockWorkspaceState()
+  const label = hasDeviceStorage() ? getActiveSavedProjectName() ? '別名で保存' : '名前をつけて保存' : 'アカウントに保存'
+  return <button className={'workspace-save-button' + (saveStatus === 'error' ? ' has-changes' : '')}
+    aria-label={label} onClick={() => useStore.getState().updateSettings({ scenePanelOpen: true, panelOpen: false })}>
+    <span>{label}</span></button>
+}
+
+function MockHistoryButtons() {
+  const { canUndo, canRedo } = useMockWorkspaceState()
+  return <div className="workspace-history" role="group" aria-label="編集履歴">
+    <button type="button" disabled={!canUndo} title="元に戻す（⌘/Ctrl+Z）"
+      aria-label="元に戻す" onClick={undoMockWorkspace}>↶</button>
+    <button type="button" disabled={!canRedo} title="やり直す（⌘/Ctrl+Shift+Z）"
+      aria-label="やり直す" onClick={redoMockWorkspace}>↷</button>
+  </div>
+}
+
+function MockSceneIndicator({ outlineVisible, onToggleOutline }: { outlineVisible: boolean, onToggleOutline: () => void }) {
+  const plan = useStore(state => state.productionPlan)
+  const selectScene = useStore(state => state.selectScene)
+  const { saveStatus, cloudDirty } = useMockWorkspaceState()
+  const index = plan.scenes.findIndex(item => item.id === plan.activeSceneId)
+  const scene = plan.scenes[index]
+  if (!scene) return null
+  return <div className="workspace-current-scene" aria-label="現在のシーン">
+    <button type="button" aria-label="前のシーン" disabled={index <= 0}
+      onClick={() => selectScene(plan.scenes[index - 1].id)}>←</button>
+    <button type="button" className="workspace-current-scene-picker" aria-expanded={outlineVisible}
+      aria-controls="plan-outline" aria-label={`${sceneDisplayTitle(plan, scene.id)}。シーン一覧を${outlineVisible ? '閉じる' : '開く'}`}
+      onClick={onToggleOutline}><small>シーン一覧 <span aria-hidden="true">▾</span></small>
+      <strong aria-live="polite">{sceneDisplayTitle(plan, scene.id)}</strong>
+      <span className="workspace-current-save">{saveStatus === 'saving' ? '自動保存中…' : saveStatus === 'error' ? '保存できません' : getActiveCloudProject() ? cloudDirty ? 'アカウントへの保存待ち' : 'アカウントに保存済み' : hasDeviceStorage() ? 'このアプリに保存済み' : 'ブラウザに一時保存'}</span></button>
+    <button type="button" aria-label="次のシーン" disabled={index >= plan.scenes.length - 1}
+      onClick={() => selectScene(plan.scenes[index + 1].id)}>→</button>
+  </div>
 }
 
 function LegalFooter() {

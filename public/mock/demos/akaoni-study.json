@@ -1,0 +1,4255 @@
+{
+  "version": 2,
+  "name": "赤鬼｜測光配光の照明試作",
+  "savedAt": "2026-11-08T14:20:55.412Z",
+  "fixtures": [
+    {
+      "id": "f1",
+      "name": "地明かり・手前下手",
+      "presetKey": "Fresnel10",
+      "position": [
+        -4.8,
+        6.8,
+        0.2
+      ],
+      "target": [
+        -2.5,
+        1,
+        -2
+      ],
+      "beamAngleDeg": 44,
+      "intensity": 0.11,
+      "color": [
+        1,
+        0.7200782887719634,
+        0.4828211569520737
+      ],
+      "gelEnabled": false,
+      "whiteMix": 0,
+      "colorTempK": 3200,
+      "rotationZDeg": 0,
+      "enabled": true,
+      "photometricProfile": "etc-fos4-fresnel10-mid"
+    },
+    {
+      "id": "f2",
+      "name": "地明かり・手前上手",
+      "presetKey": "Fresnel10",
+      "position": [
+        4.8,
+        6.8,
+        0.2
+      ],
+      "target": [
+        2.5,
+        1,
+        -2
+      ],
+      "beamAngleDeg": 44,
+      "intensity": 0.26,
+      "color": [
+        1,
+        0.7200782887719634,
+        0.4828211569520737
+      ],
+      "gelEnabled": false,
+      "whiteMix": 0,
+      "colorTempK": 3200,
+      "rotationZDeg": 0,
+      "enabled": true,
+      "photometricProfile": "etc-fos4-fresnel10-mid"
+    },
+    {
+      "id": "f3",
+      "name": "地明かり・奥下手",
+      "presetKey": "Fresnel10",
+      "position": [
+        -4.8,
+        6.8,
+        -3.8
+      ],
+      "target": [
+        -4.5,
+        1,
+        -5
+      ],
+      "beamAngleDeg": 44,
+      "intensity": 0.06,
+      "color": [
+        1,
+        0.7200782887719634,
+        0.4828211569520737
+      ],
+      "gelEnabled": false,
+      "whiteMix": 0,
+      "colorTempK": 3200,
+      "rotationZDeg": 0,
+      "enabled": true,
+      "barnDoorAngles": {
+        "top": 5
+      },
+      "photometricProfile": "etc-fos4-fresnel10-mid"
+    },
+    {
+      "id": "f4",
+      "name": "地明かり・奥上手",
+      "presetKey": "Fresnel10",
+      "position": [
+        4.8,
+        6.8,
+        -3.8
+      ],
+      "target": [
+        4.5,
+        1,
+        -5
+      ],
+      "beamAngleDeg": 44,
+      "intensity": 0.21,
+      "color": [
+        1,
+        0.7200782887719634,
+        0.4828211569520737
+      ],
+      "gelEnabled": false,
+      "whiteMix": 0,
+      "colorTempK": 3200,
+      "rotationZDeg": 0,
+      "enabled": true,
+      "barnDoorAngles": {
+        "top": 5
+      },
+      "photometricProfile": "etc-fos4-fresnel10-mid"
+    },
+    {
+      "id": "f5",
+      "name": "前明かり・下手の面",
+      "presetKey": "Fresnel10",
+      "position": [
+        -5.5,
+        14.5,
+        18
+      ],
+      "target": [
+        -3,
+        1.5,
+        -3
+      ],
+      "beamAngleDeg": 16,
+      "intensity": 0.162,
+      "color": [
+        1,
+        0.7200782887719634,
+        0.4828211569520737
+      ],
+      "gelEnabled": false,
+      "whiteMix": 0,
+      "colorTempK": 3200,
+      "rotationZDeg": 0,
+      "enabled": true,
+      "barnDoorAngles": {
+        "top": 2.5
+      },
+      "photometricProfile": "etc-fos4-fresnel10-mid"
+    },
+    {
+      "id": "f6",
+      "name": "前明かり・上手の面",
+      "presetKey": "Fresnel10",
+      "position": [
+        5.5,
+        14.5,
+        18
+      ],
+      "target": [
+        3,
+        1.5,
+        -3
+      ],
+      "beamAngleDeg": 16,
+      "intensity": 0.27,
+      "color": [
+        1,
+        0.7200782887719634,
+        0.4828211569520737
+      ],
+      "gelEnabled": false,
+      "whiteMix": 0,
+      "colorTempK": 3200,
+      "rotationZDeg": 0,
+      "enabled": true,
+      "barnDoorAngles": {
+        "top": 2.5
+      },
+      "photometricProfile": "etc-fos4-fresnel10-mid"
+    },
+    {
+      "id": "f7",
+      "name": "前明かり・中央の面",
+      "presetKey": "Fresnel10",
+      "position": [
+        0,
+        14.5,
+        18
+      ],
+      "target": [
+        1.2,
+        1.6,
+        -3.6
+      ],
+      "beamAngleDeg": 14,
+      "intensity": 0,
+      "color": [
+        1,
+        0.7200782887719634,
+        0.4828211569520737
+      ],
+      "gelEnabled": false,
+      "whiteMix": 0,
+      "colorTempK": 3200,
+      "rotationZDeg": 0,
+      "enabled": false,
+      "barnDoorAngles": {
+        "top": 2.5
+      },
+      "photometricProfile": "etc-fos4-fresnel10-mid"
+    },
+    {
+      "id": "f8",
+      "name": "海の面明かり・下手",
+      "presetKey": "CycWashStudy",
+      "position": [
+        -3.3,
+        6.6,
+        -2.5
+      ],
+      "target": [
+        -3.3,
+        3.45,
+        -7.6
+      ],
+      "beamAngleDeg": 40,
+      "intensity": 0.09504,
+      "color": [
+        0.28,
+        0.43,
+        0.55
+      ],
+      "gelEnabled": false,
+      "whiteMix": 0,
+      "colorTempK": 6500,
+      "rotationZDeg": 0,
+      "enabled": true,
+      "photometricProfile": "etc-s4-led-cyc-daylight-hd"
+    },
+    {
+      "id": "f9",
+      "name": "赤鬼の輪郭",
+      "presetKey": "Stairville_LEDPar64_RGBW",
+      "position": [
+        2,
+        6.6,
+        -5.8
+      ],
+      "target": [
+        3,
+        1.3,
+        -4.2
+      ],
+      "beamAngleDeg": 25,
+      "intensity": 0.28,
+      "color": [
+        0.86,
+        0.22,
+        0.16
+      ],
+      "gelEnabled": false,
+      "whiteMix": 0,
+      "colorTempK": 6500,
+      "rotationZDeg": 0,
+      "enabled": false
+    },
+    {
+      "id": "f10",
+      "name": "洞窟の内側",
+      "presetKey": "Stairville_LEDPar64_RGBW",
+      "position": [
+        -5.3,
+        6.2,
+        -6
+      ],
+      "target": [
+        -3.6,
+        1.2,
+        -5.2
+      ],
+      "beamAngleDeg": 25,
+      "intensity": 0.28,
+      "color": [
+        0.95,
+        0.68,
+        0.38
+      ],
+      "gelEnabled": false,
+      "whiteMix": 0,
+      "colorTempK": 6500,
+      "rotationZDeg": 0,
+      "enabled": false
+    },
+    {
+      "id": "f11",
+      "name": "海の面明かり・上手",
+      "presetKey": "CycWashStudy",
+      "position": [
+        3.3,
+        6.6,
+        -2.5
+      ],
+      "target": [
+        3.3,
+        3.45,
+        -7.6
+      ],
+      "beamAngleDeg": 40,
+      "intensity": 0.09504,
+      "color": [
+        0.28,
+        0.43,
+        0.55
+      ],
+      "gelEnabled": false,
+      "whiteMix": 0,
+      "colorTempK": 6500,
+      "rotationZDeg": 0,
+      "enabled": true,
+      "photometricProfile": "etc-s4-led-cyc-daylight-hd"
+    },
+    {
+      "id": "f12",
+      "name": "舟の逆光",
+      "presetKey": "Chauvet_COLORado2Solo",
+      "position": [
+        4.8,
+        6.7,
+        -6.7
+      ],
+      "target": [
+        0,
+        1.2,
+        -5.7
+      ],
+      "beamAngleDeg": 28,
+      "intensity": 0.2,
+      "color": [
+        0.42,
+        0.58,
+        0.75
+      ],
+      "gelEnabled": false,
+      "whiteMix": 0,
+      "colorTempK": 6500,
+      "rotationZDeg": 0,
+      "enabled": false
+    },
+    {
+      "id": "f13",
+      "name": "海の面明かり・中央",
+      "presetKey": "CycWashStudy",
+      "position": [
+        0,
+        6.6,
+        -2.5
+      ],
+      "target": [
+        0,
+        3.45,
+        -7.6
+      ],
+      "beamAngleDeg": 40,
+      "intensity": 0.12672,
+      "color": [
+        0.28,
+        0.43,
+        0.55
+      ],
+      "gelEnabled": false,
+      "whiteMix": 0,
+      "colorTempK": 6500,
+      "rotationZDeg": 0,
+      "enabled": true,
+      "photometricProfile": "etc-s4-led-cyc-daylight-hd"
+    },
+    {
+      "id": "f14",
+      "name": "とんびの補助明かり",
+      "presetKey": "Fresnel8",
+      "position": [
+        -5.8,
+        5.8,
+        1.4
+      ],
+      "target": [
+        -4.2,
+        1.5,
+        -2.8
+      ],
+      "beamAngleDeg": 20,
+      "intensity": 0.12,
+      "color": [
+        1,
+        0.7200782887719634,
+        0.4828211569520737
+      ],
+      "gelEnabled": false,
+      "whiteMix": 0,
+      "colorTempK": 3200,
+      "rotationZDeg": 0,
+      "enabled": false
+    },
+    {
+      "id": "f-ground-center-study",
+      "name": "地明かり・中央",
+      "presetKey": "Fresnel10",
+      "position": [
+        0,
+        6.8,
+        0.2
+      ],
+      "target": [
+        0,
+        1,
+        -3.5
+      ],
+      "beamAngleDeg": 44,
+      "intensity": 0.03,
+      "color": [
+        1,
+        0.7200782887719634,
+        0.4828211569520737
+      ],
+      "gelEnabled": false,
+      "whiteMix": 0,
+      "colorTempK": 3200,
+      "rotationZDeg": 0,
+      "enabled": true,
+      "photometricProfile": "etc-fos4-fresnel10-mid"
+    }
+  ],
+  "performers": [
+    {
+      "id": "p1",
+      "name": "あの女",
+      "position": [
+        -2.1,
+        0,
+        -2.2
+      ],
+      "scale": 1,
+      "color": "#9f756d",
+      "pose": "standing",
+      "onStage": true
+    },
+    {
+      "id": "p2",
+      "name": "とんび",
+      "position": [
+        -4.2,
+        0,
+        -2.8
+      ],
+      "scale": 1,
+      "color": "#777e79",
+      "pose": "standing",
+      "onStage": true
+    },
+    {
+      "id": "p3",
+      "name": "ミズカネ",
+      "position": [
+        4.6,
+        0,
+        -1.8
+      ],
+      "scale": 1,
+      "color": "#7a7182",
+      "pose": "standing",
+      "onStage": true
+    },
+    {
+      "id": "p4",
+      "name": "赤鬼",
+      "position": [
+        3,
+        0,
+        -4.2
+      ],
+      "scale": 1,
+      "color": "#b75d4b",
+      "pose": "standing",
+      "onStage": true
+    }
+  ],
+  "setPieces": [
+    {
+      "id": "sp1794147655409-0",
+      "name": "浜の地面",
+      "kind": "platform",
+      "size": [
+        16,
+        0.02,
+        12
+      ],
+      "color": "#625e57",
+      "position": [
+        0,
+        0.01,
+        -2
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": 1
+    },
+    {
+      "id": "sp1794147655409-1",
+      "name": "海との境界",
+      "kind": "platform",
+      "size": [
+        10.6,
+        0.04,
+        1.4
+      ],
+      "color": "#304752",
+      "position": [
+        0,
+        0.02,
+        -6.3
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": 1
+    },
+    {
+      "id": "sp1794147655409-2",
+      "name": "洞窟・左の岩",
+      "kind": "box",
+      "size": [
+        1,
+        2.2,
+        0.6
+      ],
+      "color": "#383b3b",
+      "position": [
+        -4.8,
+        1.1,
+        -5.25
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": 1
+    },
+    {
+      "id": "sp1794147655409-3",
+      "name": "洞窟・右の岩",
+      "kind": "box",
+      "size": [
+        0.8,
+        2,
+        0.6
+      ],
+      "color": "#343737",
+      "position": [
+        -2.4,
+        1,
+        -5.4
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": 1
+    }
+  ],
+  "productionPlan": {
+    "title": "",
+    "projectTitle": "赤鬼｜測光配光の照明試作",
+    "chapters": [
+      {
+        "id": "ch1794147655408-04qcrd",
+        "title": "第一章・浜辺"
+      },
+      {
+        "id": "ch1794147655410-1x6d7y",
+        "title": "第二章・洞窟"
+      },
+      {
+        "id": "ch1794147655411-ya7ms3",
+        "title": "第三章・海の向こう"
+      }
+    ],
+    "sequences": [
+      {
+        "id": "sq1794147655408-lxpklo",
+        "chapterId": "ch1794147655408-04qcrd",
+        "title": "シーケンス 1"
+      },
+      {
+        "id": "sq1794147655410-7nirki",
+        "chapterId": "ch1794147655410-1x6d7y",
+        "title": "シーケンス 1"
+      },
+      {
+        "id": "sq1794147655411-ae3f5p",
+        "chapterId": "ch1794147655411-ya7ms3",
+        "title": "シーケンス 1"
+      }
+    ],
+    "scenes": [
+      {
+        "id": "sc1794147655408-v6cww2",
+        "title": "波のあと",
+        "trigger": "波音が静まる",
+        "note": "野田秀樹『赤鬼』を題材にした非公式の配置案。とんびは下手、あの女は中央、ミズカネは上手。海の境界だけ青く残す。",
+        "fixtures": [
+          {
+            "id": "f1",
+            "name": "地明かり・手前下手",
+            "presetKey": "Fresnel10",
+            "position": [
+              -4.8,
+              6.8,
+              0.2
+            ],
+            "target": [
+              -2.5,
+              1,
+              -2
+            ],
+            "beamAngleDeg": 44,
+            "intensity": 0.25,
+            "color": [
+              1,
+              0.7200782887719634,
+              0.4828211569520737
+            ],
+            "gelEnabled": false,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          },
+          {
+            "id": "f2",
+            "name": "地明かり・手前上手",
+            "presetKey": "Fresnel10",
+            "position": [
+              4.8,
+              6.8,
+              0.2
+            ],
+            "target": [
+              2.5,
+              1,
+              -2
+            ],
+            "beamAngleDeg": 44,
+            "intensity": 0.24,
+            "color": [
+              1,
+              0.7200782887719634,
+              0.4828211569520737
+            ],
+            "gelEnabled": false,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          },
+          {
+            "id": "f3",
+            "name": "地明かり・奥下手",
+            "presetKey": "Fresnel10",
+            "position": [
+              -4.8,
+              6.8,
+              -3.8
+            ],
+            "target": [
+              -4.5,
+              1,
+              -5
+            ],
+            "beamAngleDeg": 44,
+            "intensity": 0.16,
+            "color": [
+              1,
+              0.7200782887719634,
+              0.4828211569520737
+            ],
+            "gelEnabled": false,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "barnDoorAngles": {
+              "top": 5
+            },
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          },
+          {
+            "id": "f4",
+            "name": "地明かり・奥上手",
+            "presetKey": "Fresnel10",
+            "position": [
+              4.8,
+              6.8,
+              -3.8
+            ],
+            "target": [
+              4.5,
+              1,
+              -5
+            ],
+            "beamAngleDeg": 44,
+            "intensity": 0.16,
+            "color": [
+              1,
+              0.7200782887719634,
+              0.4828211569520737
+            ],
+            "gelEnabled": false,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "barnDoorAngles": {
+              "top": 5
+            },
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          },
+          {
+            "id": "f5",
+            "name": "前明かり・下手の面",
+            "presetKey": "Fresnel10",
+            "position": [
+              -5.5,
+              14.5,
+              18
+            ],
+            "target": [
+              -3,
+              1.5,
+              -3
+            ],
+            "beamAngleDeg": 16,
+            "intensity": 0.27,
+            "color": [
+              1,
+              0.7200782887719634,
+              0.4828211569520737
+            ],
+            "gelEnabled": false,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "barnDoorAngles": {
+              "top": 2.5
+            },
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          },
+          {
+            "id": "f6",
+            "name": "前明かり・上手の面",
+            "presetKey": "Fresnel10",
+            "position": [
+              5.5,
+              14.5,
+              18
+            ],
+            "target": [
+              3,
+              1.5,
+              -3
+            ],
+            "beamAngleDeg": 16,
+            "intensity": 0.27,
+            "color": [
+              1,
+              0.7200782887719634,
+              0.4828211569520737
+            ],
+            "gelEnabled": false,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "barnDoorAngles": {
+              "top": 2.5
+            },
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          },
+          {
+            "id": "f7",
+            "name": "前明かり・中央の面",
+            "presetKey": "Fresnel10",
+            "position": [
+              0,
+              14.5,
+              18
+            ],
+            "target": [
+              1.2,
+              1.6,
+              -3.6
+            ],
+            "beamAngleDeg": 14,
+            "intensity": 0,
+            "color": [
+              1,
+              0.7200782887719634,
+              0.4828211569520737
+            ],
+            "gelEnabled": false,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": false,
+            "barnDoorAngles": {
+              "top": 2.5
+            },
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          },
+          {
+            "id": "f8",
+            "name": "海の面明かり・下手",
+            "presetKey": "CycWashStudy",
+            "position": [
+              -3.3,
+              6.6,
+              -2.5
+            ],
+            "target": [
+              -3.3,
+              3.45,
+              -7.6
+            ],
+            "beamAngleDeg": 40,
+            "intensity": 0.06912,
+            "color": [
+              0.28,
+              0.43,
+              0.55
+            ],
+            "gelEnabled": false,
+            "whiteMix": 0,
+            "colorTempK": 6500,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "photometricProfile": "etc-s4-led-cyc-daylight-hd"
+          },
+          {
+            "id": "f9",
+            "name": "赤鬼の輪郭",
+            "presetKey": "Stairville_LEDPar64_RGBW",
+            "position": [
+              2,
+              6.6,
+              -5.8
+            ],
+            "target": [
+              3,
+              1.3,
+              -4.2
+            ],
+            "beamAngleDeg": 25,
+            "intensity": 0.28,
+            "color": [
+              0.86,
+              0.22,
+              0.16
+            ],
+            "gelEnabled": false,
+            "whiteMix": 0,
+            "colorTempK": 6500,
+            "rotationZDeg": 0,
+            "enabled": false
+          },
+          {
+            "id": "f10",
+            "name": "洞窟の内側",
+            "presetKey": "Stairville_LEDPar64_RGBW",
+            "position": [
+              -5.3,
+              6.2,
+              -6
+            ],
+            "target": [
+              -3.6,
+              1.2,
+              -5.2
+            ],
+            "beamAngleDeg": 25,
+            "intensity": 0.28,
+            "color": [
+              0.95,
+              0.68,
+              0.38
+            ],
+            "gelEnabled": false,
+            "whiteMix": 0,
+            "colorTempK": 6500,
+            "rotationZDeg": 0,
+            "enabled": false
+          },
+          {
+            "id": "f11",
+            "name": "海の面明かり・上手",
+            "presetKey": "CycWashStudy",
+            "position": [
+              3.3,
+              6.6,
+              -2.5
+            ],
+            "target": [
+              3.3,
+              3.45,
+              -7.6
+            ],
+            "beamAngleDeg": 40,
+            "intensity": 0.06912,
+            "color": [
+              0.28,
+              0.43,
+              0.55
+            ],
+            "gelEnabled": false,
+            "whiteMix": 0,
+            "colorTempK": 6500,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "photometricProfile": "etc-s4-led-cyc-daylight-hd"
+          },
+          {
+            "id": "f12",
+            "name": "舟の逆光",
+            "presetKey": "Chauvet_COLORado2Solo",
+            "position": [
+              4.8,
+              6.7,
+              -6.7
+            ],
+            "target": [
+              0,
+              1.2,
+              -5.7
+            ],
+            "beamAngleDeg": 28,
+            "intensity": 0.2,
+            "color": [
+              0.42,
+              0.58,
+              0.75
+            ],
+            "gelEnabled": false,
+            "whiteMix": 0,
+            "colorTempK": 6500,
+            "rotationZDeg": 0,
+            "enabled": false
+          },
+          {
+            "id": "f13",
+            "name": "海の面明かり・中央",
+            "presetKey": "CycWashStudy",
+            "position": [
+              0,
+              6.6,
+              -2.5
+            ],
+            "target": [
+              0,
+              3.45,
+              -7.6
+            ],
+            "beamAngleDeg": 40,
+            "intensity": 0.09215999999999999,
+            "color": [
+              0.28,
+              0.43,
+              0.55
+            ],
+            "gelEnabled": false,
+            "whiteMix": 0,
+            "colorTempK": 6500,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "photometricProfile": "etc-s4-led-cyc-daylight-hd"
+          },
+          {
+            "id": "f14",
+            "name": "とんびの補助明かり",
+            "presetKey": "Fresnel8",
+            "position": [
+              -5.8,
+              5.8,
+              1.4
+            ],
+            "target": [
+              -4.2,
+              1.5,
+              -2.8
+            ],
+            "beamAngleDeg": 20,
+            "intensity": 0.12,
+            "color": [
+              1,
+              0.7200782887719634,
+              0.4828211569520737
+            ],
+            "gelEnabled": false,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": false
+          },
+          {
+            "id": "f-ground-center-study",
+            "name": "地明かり・中央",
+            "presetKey": "Fresnel10",
+            "position": [
+              0,
+              6.8,
+              0.2
+            ],
+            "target": [
+              0,
+              1,
+              -3.5
+            ],
+            "beamAngleDeg": 44,
+            "intensity": 0.05,
+            "color": [
+              1,
+              0.7200782887719634,
+              0.4828211569520737
+            ],
+            "gelEnabled": false,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          }
+        ],
+        "performers": [
+          {
+            "id": "p1",
+            "name": "あの女",
+            "position": [
+              -2.1,
+              0,
+              -2.2
+            ],
+            "scale": 1,
+            "color": "#9f756d",
+            "pose": "standing",
+            "onStage": true
+          },
+          {
+            "id": "p2",
+            "name": "とんび",
+            "position": [
+              -4.2,
+              0,
+              -2.8
+            ],
+            "scale": 1,
+            "color": "#777e79",
+            "pose": "standing",
+            "onStage": true
+          },
+          {
+            "id": "p3",
+            "name": "ミズカネ",
+            "position": [
+              3.9,
+              0,
+              -2.6
+            ],
+            "scale": 1,
+            "color": "#7a7182",
+            "pose": "standing",
+            "onStage": true
+          },
+          {
+            "id": "p4",
+            "name": "赤鬼",
+            "position": [
+              8.7,
+              0,
+              -4.2
+            ],
+            "scale": 1,
+            "color": "#b75d4b",
+            "pose": "standing",
+            "onStage": false
+          }
+        ],
+        "setPieces": [
+          {
+            "id": "sp1794147655409-0",
+            "name": "浜の地面",
+            "kind": "platform",
+            "size": [
+              16,
+              0.02,
+              12
+            ],
+            "color": "#625e57",
+            "position": [
+              0,
+              0.01,
+              -2
+            ],
+            "rotation": [
+              0,
+              0,
+              0
+            ],
+            "scale": 1
+          },
+          {
+            "id": "sp1794147655409-1",
+            "name": "海との境界",
+            "kind": "platform",
+            "size": [
+              10.6,
+              0.04,
+              1.4
+            ],
+            "color": "#304752",
+            "position": [
+              0,
+              0.02,
+              -6.3
+            ],
+            "rotation": [
+              0,
+              0,
+              0
+            ],
+            "scale": 1
+          },
+          {
+            "id": "sp1794147655409-2",
+            "name": "洞窟・左の岩",
+            "kind": "box",
+            "size": [
+              1,
+              2.2,
+              0.6
+            ],
+            "color": "#383b3b",
+            "position": [
+              -4.8,
+              1.1,
+              -5.25
+            ],
+            "rotation": [
+              0,
+              0,
+              0
+            ],
+            "scale": 1
+          },
+          {
+            "id": "sp1794147655409-3",
+            "name": "洞窟・右の岩",
+            "kind": "box",
+            "size": [
+              0.8,
+              2,
+              0.6
+            ],
+            "color": "#343737",
+            "position": [
+              -2.4,
+              1,
+              -5.4
+            ],
+            "rotation": [
+              0,
+              0,
+              0
+            ],
+            "scale": 1
+          }
+        ],
+        "sequenceId": "sq1794147655408-lxpklo",
+        "triggerType": "sound"
+      },
+      {
+        "id": "sc1794147655410-ogtxne",
+        "title": "浜に現れた影",
+        "trigger": "海の奥に輪郭が現れる",
+        "note": "赤鬼が海側から現れ、ミズカネは上手へ退く。上手の地明かりを増やし、赤鬼だけを狙う灯りは使わない。",
+        "fixtures": [
+          {
+            "id": "f1",
+            "name": "地明かり・手前下手",
+            "presetKey": "Fresnel10",
+            "position": [
+              -4.8,
+              6.8,
+              0.2
+            ],
+            "target": [
+              -2.5,
+              1,
+              -2
+            ],
+            "beamAngleDeg": 44,
+            "intensity": 0.11,
+            "color": [
+              1,
+              0.7200782887719634,
+              0.4828211569520737
+            ],
+            "gelEnabled": false,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          },
+          {
+            "id": "f2",
+            "name": "地明かり・手前上手",
+            "presetKey": "Fresnel10",
+            "position": [
+              4.8,
+              6.8,
+              0.2
+            ],
+            "target": [
+              2.5,
+              1,
+              -2
+            ],
+            "beamAngleDeg": 44,
+            "intensity": 0.26,
+            "color": [
+              1,
+              0.7200782887719634,
+              0.4828211569520737
+            ],
+            "gelEnabled": false,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          },
+          {
+            "id": "f3",
+            "name": "地明かり・奥下手",
+            "presetKey": "Fresnel10",
+            "position": [
+              -4.8,
+              6.8,
+              -3.8
+            ],
+            "target": [
+              -4.5,
+              1,
+              -5
+            ],
+            "beamAngleDeg": 44,
+            "intensity": 0.06,
+            "color": [
+              1,
+              0.7200782887719634,
+              0.4828211569520737
+            ],
+            "gelEnabled": false,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "barnDoorAngles": {
+              "top": 5
+            },
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          },
+          {
+            "id": "f4",
+            "name": "地明かり・奥上手",
+            "presetKey": "Fresnel10",
+            "position": [
+              4.8,
+              6.8,
+              -3.8
+            ],
+            "target": [
+              4.5,
+              1,
+              -5
+            ],
+            "beamAngleDeg": 44,
+            "intensity": 0.21,
+            "color": [
+              1,
+              0.7200782887719634,
+              0.4828211569520737
+            ],
+            "gelEnabled": false,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "barnDoorAngles": {
+              "top": 5
+            },
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          },
+          {
+            "id": "f5",
+            "name": "前明かり・下手の面",
+            "presetKey": "Fresnel10",
+            "position": [
+              -5.5,
+              14.5,
+              18
+            ],
+            "target": [
+              -3,
+              1.5,
+              -3
+            ],
+            "beamAngleDeg": 16,
+            "intensity": 0.162,
+            "color": [
+              1,
+              0.7200782887719634,
+              0.4828211569520737
+            ],
+            "gelEnabled": false,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "barnDoorAngles": {
+              "top": 2.5
+            },
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          },
+          {
+            "id": "f6",
+            "name": "前明かり・上手の面",
+            "presetKey": "Fresnel10",
+            "position": [
+              5.5,
+              14.5,
+              18
+            ],
+            "target": [
+              3,
+              1.5,
+              -3
+            ],
+            "beamAngleDeg": 16,
+            "intensity": 0.27,
+            "color": [
+              1,
+              0.7200782887719634,
+              0.4828211569520737
+            ],
+            "gelEnabled": false,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "barnDoorAngles": {
+              "top": 2.5
+            },
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          },
+          {
+            "id": "f7",
+            "name": "前明かり・中央の面",
+            "presetKey": "Fresnel10",
+            "position": [
+              0,
+              14.5,
+              18
+            ],
+            "target": [
+              1.2,
+              1.6,
+              -3.6
+            ],
+            "beamAngleDeg": 14,
+            "intensity": 0,
+            "color": [
+              1,
+              0.7200782887719634,
+              0.4828211569520737
+            ],
+            "gelEnabled": false,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": false,
+            "barnDoorAngles": {
+              "top": 2.5
+            },
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          },
+          {
+            "id": "f8",
+            "name": "海の面明かり・下手",
+            "presetKey": "CycWashStudy",
+            "position": [
+              -3.3,
+              6.6,
+              -2.5
+            ],
+            "target": [
+              -3.3,
+              3.45,
+              -7.6
+            ],
+            "beamAngleDeg": 40,
+            "intensity": 0.09504,
+            "color": [
+              0.28,
+              0.43,
+              0.55
+            ],
+            "gelEnabled": false,
+            "whiteMix": 0,
+            "colorTempK": 6500,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "photometricProfile": "etc-s4-led-cyc-daylight-hd"
+          },
+          {
+            "id": "f9",
+            "name": "赤鬼の輪郭",
+            "presetKey": "Stairville_LEDPar64_RGBW",
+            "position": [
+              2,
+              6.6,
+              -5.8
+            ],
+            "target": [
+              3,
+              1.3,
+              -4.2
+            ],
+            "beamAngleDeg": 25,
+            "intensity": 0.28,
+            "color": [
+              0.86,
+              0.22,
+              0.16
+            ],
+            "gelEnabled": false,
+            "whiteMix": 0,
+            "colorTempK": 6500,
+            "rotationZDeg": 0,
+            "enabled": false
+          },
+          {
+            "id": "f10",
+            "name": "洞窟の内側",
+            "presetKey": "Stairville_LEDPar64_RGBW",
+            "position": [
+              -5.3,
+              6.2,
+              -6
+            ],
+            "target": [
+              -3.6,
+              1.2,
+              -5.2
+            ],
+            "beamAngleDeg": 25,
+            "intensity": 0.28,
+            "color": [
+              0.95,
+              0.68,
+              0.38
+            ],
+            "gelEnabled": false,
+            "whiteMix": 0,
+            "colorTempK": 6500,
+            "rotationZDeg": 0,
+            "enabled": false
+          },
+          {
+            "id": "f11",
+            "name": "海の面明かり・上手",
+            "presetKey": "CycWashStudy",
+            "position": [
+              3.3,
+              6.6,
+              -2.5
+            ],
+            "target": [
+              3.3,
+              3.45,
+              -7.6
+            ],
+            "beamAngleDeg": 40,
+            "intensity": 0.09504,
+            "color": [
+              0.28,
+              0.43,
+              0.55
+            ],
+            "gelEnabled": false,
+            "whiteMix": 0,
+            "colorTempK": 6500,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "photometricProfile": "etc-s4-led-cyc-daylight-hd"
+          },
+          {
+            "id": "f12",
+            "name": "舟の逆光",
+            "presetKey": "Chauvet_COLORado2Solo",
+            "position": [
+              4.8,
+              6.7,
+              -6.7
+            ],
+            "target": [
+              0,
+              1.2,
+              -5.7
+            ],
+            "beamAngleDeg": 28,
+            "intensity": 0.2,
+            "color": [
+              0.42,
+              0.58,
+              0.75
+            ],
+            "gelEnabled": false,
+            "whiteMix": 0,
+            "colorTempK": 6500,
+            "rotationZDeg": 0,
+            "enabled": false
+          },
+          {
+            "id": "f13",
+            "name": "海の面明かり・中央",
+            "presetKey": "CycWashStudy",
+            "position": [
+              0,
+              6.6,
+              -2.5
+            ],
+            "target": [
+              0,
+              3.45,
+              -7.6
+            ],
+            "beamAngleDeg": 40,
+            "intensity": 0.12672,
+            "color": [
+              0.28,
+              0.43,
+              0.55
+            ],
+            "gelEnabled": false,
+            "whiteMix": 0,
+            "colorTempK": 6500,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "photometricProfile": "etc-s4-led-cyc-daylight-hd"
+          },
+          {
+            "id": "f14",
+            "name": "とんびの補助明かり",
+            "presetKey": "Fresnel8",
+            "position": [
+              -5.8,
+              5.8,
+              1.4
+            ],
+            "target": [
+              -4.2,
+              1.5,
+              -2.8
+            ],
+            "beamAngleDeg": 20,
+            "intensity": 0.12,
+            "color": [
+              1,
+              0.7200782887719634,
+              0.4828211569520737
+            ],
+            "gelEnabled": false,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": false
+          },
+          {
+            "id": "f-ground-center-study",
+            "name": "地明かり・中央",
+            "presetKey": "Fresnel10",
+            "position": [
+              0,
+              6.8,
+              0.2
+            ],
+            "target": [
+              0,
+              1,
+              -3.5
+            ],
+            "beamAngleDeg": 44,
+            "intensity": 0.03,
+            "color": [
+              1,
+              0.7200782887719634,
+              0.4828211569520737
+            ],
+            "gelEnabled": false,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          }
+        ],
+        "performers": [
+          {
+            "id": "p1",
+            "name": "あの女",
+            "position": [
+              -2.1,
+              0,
+              -2.2
+            ],
+            "scale": 1,
+            "color": "#9f756d",
+            "pose": "standing",
+            "onStage": true
+          },
+          {
+            "id": "p2",
+            "name": "とんび",
+            "position": [
+              -4.2,
+              0,
+              -2.8
+            ],
+            "scale": 1,
+            "color": "#777e79",
+            "pose": "standing",
+            "onStage": true
+          },
+          {
+            "id": "p3",
+            "name": "ミズカネ",
+            "position": [
+              4.6,
+              0,
+              -1.8
+            ],
+            "scale": 1,
+            "color": "#7a7182",
+            "pose": "standing",
+            "onStage": true
+          },
+          {
+            "id": "p4",
+            "name": "赤鬼",
+            "position": [
+              3,
+              0,
+              -4.2
+            ],
+            "scale": 1,
+            "color": "#b75d4b",
+            "pose": "standing",
+            "onStage": true
+          }
+        ],
+        "setPieces": [
+          {
+            "id": "sp1794147655409-0",
+            "name": "浜の地面",
+            "kind": "platform",
+            "size": [
+              16,
+              0.02,
+              12
+            ],
+            "color": "#625e57",
+            "position": [
+              0,
+              0.01,
+              -2
+            ],
+            "rotation": [
+              0,
+              0,
+              0
+            ],
+            "scale": 1
+          },
+          {
+            "id": "sp1794147655409-1",
+            "name": "海との境界",
+            "kind": "platform",
+            "size": [
+              10.6,
+              0.04,
+              1.4
+            ],
+            "color": "#304752",
+            "position": [
+              0,
+              0.02,
+              -6.3
+            ],
+            "rotation": [
+              0,
+              0,
+              0
+            ],
+            "scale": 1
+          },
+          {
+            "id": "sp1794147655409-2",
+            "name": "洞窟・左の岩",
+            "kind": "box",
+            "size": [
+              1,
+              2.2,
+              0.6
+            ],
+            "color": "#383b3b",
+            "position": [
+              -4.8,
+              1.1,
+              -5.25
+            ],
+            "rotation": [
+              0,
+              0,
+              0
+            ],
+            "scale": 1
+          },
+          {
+            "id": "sp1794147655409-3",
+            "name": "洞窟・右の岩",
+            "kind": "box",
+            "size": [
+              0.8,
+              2,
+              0.6
+            ],
+            "color": "#343737",
+            "position": [
+              -2.4,
+              1,
+              -5.4
+            ],
+            "rotation": [
+              0,
+              0,
+              0
+            ],
+            "scale": 1
+          }
+        ],
+        "sequenceId": "sq1794147655408-lxpklo",
+        "triggerType": "light"
+      },
+      {
+        "id": "sc1794147655411-92yotv",
+        "title": "境目で足を止める",
+        "trigger": "足音が止まる",
+        "note": "赤鬼は海との境目に止まり、あの女だけ一歩近づく。二人のいる中央の面を広く照らし、周囲は落とす。",
+        "fixtures": [
+          {
+            "id": "f1",
+            "name": "地明かり・手前下手",
+            "presetKey": "Fresnel10",
+            "position": [
+              -4.8,
+              6.8,
+              0.2
+            ],
+            "target": [
+              -2.5,
+              1,
+              -2
+            ],
+            "beamAngleDeg": 44,
+            "intensity": 0.05,
+            "color": [
+              1,
+              0.7200782887719634,
+              0.4828211569520737
+            ],
+            "gelEnabled": false,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          },
+          {
+            "id": "f2",
+            "name": "地明かり・手前上手",
+            "presetKey": "Fresnel10",
+            "position": [
+              4.8,
+              6.8,
+              0.2
+            ],
+            "target": [
+              2.5,
+              1,
+              -2
+            ],
+            "beamAngleDeg": 44,
+            "intensity": 0.1,
+            "color": [
+              1,
+              0.7200782887719634,
+              0.4828211569520737
+            ],
+            "gelEnabled": false,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          },
+          {
+            "id": "f3",
+            "name": "地明かり・奥下手",
+            "presetKey": "Fresnel10",
+            "position": [
+              -4.8,
+              6.8,
+              -3.8
+            ],
+            "target": [
+              -4.5,
+              1,
+              -5
+            ],
+            "beamAngleDeg": 44,
+            "intensity": 0.06,
+            "color": [
+              1,
+              0.7200782887719634,
+              0.4828211569520737
+            ],
+            "gelEnabled": false,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "barnDoorAngles": {
+              "top": 5
+            },
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          },
+          {
+            "id": "f4",
+            "name": "地明かり・奥上手",
+            "presetKey": "Fresnel10",
+            "position": [
+              4.8,
+              6.8,
+              -3.8
+            ],
+            "target": [
+              4.5,
+              1,
+              -5
+            ],
+            "beamAngleDeg": 44,
+            "intensity": 0.14,
+            "color": [
+              1,
+              0.7200782887719634,
+              0.4828211569520737
+            ],
+            "gelEnabled": false,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "barnDoorAngles": {
+              "top": 5
+            },
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          },
+          {
+            "id": "f5",
+            "name": "前明かり・下手の面",
+            "presetKey": "Fresnel10",
+            "position": [
+              -5.5,
+              14.5,
+              18
+            ],
+            "target": [
+              -3,
+              1.5,
+              -3
+            ],
+            "beamAngleDeg": 16,
+            "intensity": 0.0675,
+            "color": [
+              1,
+              0.7200782887719634,
+              0.4828211569520737
+            ],
+            "gelEnabled": false,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "barnDoorAngles": {
+              "top": 2.5
+            },
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          },
+          {
+            "id": "f6",
+            "name": "前明かり・上手の面",
+            "presetKey": "Fresnel10",
+            "position": [
+              5.5,
+              14.5,
+              18
+            ],
+            "target": [
+              3,
+              1.5,
+              -3
+            ],
+            "beamAngleDeg": 16,
+            "intensity": 0.081,
+            "color": [
+              1,
+              0.7200782887719634,
+              0.4828211569520737
+            ],
+            "gelEnabled": false,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "barnDoorAngles": {
+              "top": 2.5
+            },
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          },
+          {
+            "id": "f7",
+            "name": "前明かり・中央の面",
+            "presetKey": "Fresnel10",
+            "position": [
+              0,
+              14.5,
+              18
+            ],
+            "target": [
+              1.2,
+              1.6,
+              -3.6
+            ],
+            "beamAngleDeg": 14,
+            "intensity": 0.21600000000000003,
+            "color": [
+              1,
+              0.7200782887719634,
+              0.4828211569520737
+            ],
+            "gelEnabled": false,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "barnDoorAngles": {
+              "top": 2.5
+            },
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          },
+          {
+            "id": "f8",
+            "name": "海の面明かり・下手",
+            "presetKey": "CycWashStudy",
+            "position": [
+              -3.3,
+              6.6,
+              -2.5
+            ],
+            "target": [
+              -3.3,
+              3.45,
+              -7.6
+            ],
+            "beamAngleDeg": 40,
+            "intensity": 0.09504,
+            "color": [
+              0.28,
+              0.43,
+              0.55
+            ],
+            "gelEnabled": false,
+            "whiteMix": 0,
+            "colorTempK": 6500,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "photometricProfile": "etc-s4-led-cyc-daylight-hd"
+          },
+          {
+            "id": "f9",
+            "name": "赤鬼の輪郭",
+            "presetKey": "Stairville_LEDPar64_RGBW",
+            "position": [
+              2,
+              6.6,
+              -5.8
+            ],
+            "target": [
+              2.2,
+              1.3,
+              -4.1
+            ],
+            "beamAngleDeg": 25,
+            "intensity": 0.16,
+            "color": [
+              0.86,
+              0.22,
+              0.16
+            ],
+            "gelEnabled": false,
+            "whiteMix": 0,
+            "colorTempK": 6500,
+            "rotationZDeg": 0,
+            "enabled": false
+          },
+          {
+            "id": "f10",
+            "name": "洞窟の内側",
+            "presetKey": "Stairville_LEDPar64_RGBW",
+            "position": [
+              -5.3,
+              6.2,
+              -6
+            ],
+            "target": [
+              -3.6,
+              1.2,
+              -5.2
+            ],
+            "beamAngleDeg": 25,
+            "intensity": 0.28,
+            "color": [
+              0.95,
+              0.68,
+              0.38
+            ],
+            "gelEnabled": false,
+            "whiteMix": 0,
+            "colorTempK": 6500,
+            "rotationZDeg": 0,
+            "enabled": false
+          },
+          {
+            "id": "f11",
+            "name": "海の面明かり・上手",
+            "presetKey": "CycWashStudy",
+            "position": [
+              3.3,
+              6.6,
+              -2.5
+            ],
+            "target": [
+              3.3,
+              3.45,
+              -7.6
+            ],
+            "beamAngleDeg": 40,
+            "intensity": 0.09504,
+            "color": [
+              0.28,
+              0.43,
+              0.55
+            ],
+            "gelEnabled": false,
+            "whiteMix": 0,
+            "colorTempK": 6500,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "photometricProfile": "etc-s4-led-cyc-daylight-hd"
+          },
+          {
+            "id": "f12",
+            "name": "舟の逆光",
+            "presetKey": "Chauvet_COLORado2Solo",
+            "position": [
+              4.8,
+              6.7,
+              -6.7
+            ],
+            "target": [
+              0,
+              1.2,
+              -5.7
+            ],
+            "beamAngleDeg": 28,
+            "intensity": 0.2,
+            "color": [
+              0.42,
+              0.58,
+              0.75
+            ],
+            "gelEnabled": false,
+            "whiteMix": 0,
+            "colorTempK": 6500,
+            "rotationZDeg": 0,
+            "enabled": false
+          },
+          {
+            "id": "f13",
+            "name": "海の面明かり・中央",
+            "presetKey": "CycWashStudy",
+            "position": [
+              0,
+              6.6,
+              -2.5
+            ],
+            "target": [
+              0,
+              3.45,
+              -7.6
+            ],
+            "beamAngleDeg": 40,
+            "intensity": 0.12672,
+            "color": [
+              0.28,
+              0.43,
+              0.55
+            ],
+            "gelEnabled": false,
+            "whiteMix": 0,
+            "colorTempK": 6500,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "photometricProfile": "etc-s4-led-cyc-daylight-hd"
+          },
+          {
+            "id": "f14",
+            "name": "とんびの補助明かり",
+            "presetKey": "Fresnel8",
+            "position": [
+              -5.8,
+              5.8,
+              1.4
+            ],
+            "target": [
+              -4.2,
+              1.5,
+              -2.8
+            ],
+            "beamAngleDeg": 20,
+            "intensity": 0.12,
+            "color": [
+              1,
+              0.7200782887719634,
+              0.4828211569520737
+            ],
+            "gelEnabled": false,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": false
+          },
+          {
+            "id": "f-ground-center-study",
+            "name": "地明かり・中央",
+            "presetKey": "Fresnel10",
+            "position": [
+              0,
+              6.8,
+              0.2
+            ],
+            "target": [
+              0,
+              1,
+              -3.5
+            ],
+            "beamAngleDeg": 44,
+            "intensity": 0.075,
+            "color": [
+              1,
+              0.7200782887719634,
+              0.4828211569520737
+            ],
+            "gelEnabled": false,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          }
+        ],
+        "performers": [
+          {
+            "id": "p1",
+            "name": "あの女",
+            "position": [
+              0.6,
+              0,
+              -3
+            ],
+            "scale": 1,
+            "color": "#9f756d",
+            "pose": "standing",
+            "onStage": true
+          },
+          {
+            "id": "p2",
+            "name": "とんび",
+            "position": [
+              -4.2,
+              0,
+              -2.8
+            ],
+            "scale": 1,
+            "color": "#777e79",
+            "pose": "standing",
+            "onStage": true
+          },
+          {
+            "id": "p3",
+            "name": "ミズカネ",
+            "position": [
+              4.6,
+              0,
+              -1.8
+            ],
+            "scale": 1,
+            "color": "#7a7182",
+            "pose": "standing",
+            "onStage": true
+          },
+          {
+            "id": "p4",
+            "name": "赤鬼",
+            "position": [
+              2.2,
+              0,
+              -4.1
+            ],
+            "scale": 1,
+            "color": "#b75d4b",
+            "pose": "standing",
+            "onStage": true
+          }
+        ],
+        "setPieces": [
+          {
+            "id": "sp1794147655409-0",
+            "name": "浜の地面",
+            "kind": "platform",
+            "size": [
+              16,
+              0.02,
+              12
+            ],
+            "color": "#625e57",
+            "position": [
+              0,
+              0.01,
+              -2
+            ],
+            "rotation": [
+              0,
+              0,
+              0
+            ],
+            "scale": 1
+          },
+          {
+            "id": "sp1794147655409-1",
+            "name": "海との境界",
+            "kind": "platform",
+            "size": [
+              10.6,
+              0.04,
+              1.4
+            ],
+            "color": "#304752",
+            "position": [
+              0,
+              0.02,
+              -6.3
+            ],
+            "rotation": [
+              0,
+              0,
+              0
+            ],
+            "scale": 1
+          },
+          {
+            "id": "sp1794147655409-2",
+            "name": "洞窟・左の岩",
+            "kind": "box",
+            "size": [
+              1,
+              2.2,
+              0.6
+            ],
+            "color": "#383b3b",
+            "position": [
+              -4.8,
+              1.1,
+              -5.25
+            ],
+            "rotation": [
+              0,
+              0,
+              0
+            ],
+            "scale": 1
+          },
+          {
+            "id": "sp1794147655409-3",
+            "name": "洞窟・右の岩",
+            "kind": "box",
+            "size": [
+              0.8,
+              2,
+              0.6
+            ],
+            "color": "#343737",
+            "position": [
+              -2.4,
+              1,
+              -5.4
+            ],
+            "rotation": [
+              0,
+              0,
+              0
+            ],
+            "scale": 1
+          }
+        ],
+        "sequenceId": "sq1794147655408-lxpklo",
+        "triggerType": "sound"
+      },
+      {
+        "id": "sc1794147655410-fa5fvr",
+        "title": "花のしるし",
+        "trigger": "赤い布を置く",
+        "note": "あの女と赤鬼が中央へ近づく。中央の地明かりと前明かりを重ね、赤い布と二人を同じ面の中で見せる。",
+        "fixtures": [
+          {
+            "id": "f1",
+            "name": "地明かり・手前下手",
+            "presetKey": "Fresnel10",
+            "position": [
+              -4.8,
+              6.8,
+              0.2
+            ],
+            "target": [
+              -2.5,
+              1,
+              -2
+            ],
+            "beamAngleDeg": 44,
+            "intensity": 0.07,
+            "color": [
+              1,
+              0.7200782887719634,
+              0.4828211569520737
+            ],
+            "gelEnabled": false,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          },
+          {
+            "id": "f2",
+            "name": "地明かり・手前上手",
+            "presetKey": "Fresnel10",
+            "position": [
+              4.8,
+              6.8,
+              0.2
+            ],
+            "target": [
+              2.5,
+              1,
+              -2
+            ],
+            "beamAngleDeg": 44,
+            "intensity": 0.08,
+            "color": [
+              1,
+              0.7200782887719634,
+              0.4828211569520737
+            ],
+            "gelEnabled": false,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          },
+          {
+            "id": "f3",
+            "name": "地明かり・奥下手",
+            "presetKey": "Fresnel10",
+            "position": [
+              -4.8,
+              6.8,
+              -3.8
+            ],
+            "target": [
+              -4.5,
+              1,
+              -5
+            ],
+            "beamAngleDeg": 44,
+            "intensity": 0.01,
+            "color": [
+              1,
+              0.7200782887719634,
+              0.4828211569520737
+            ],
+            "gelEnabled": false,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "barnDoorAngles": {
+              "top": 5
+            },
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          },
+          {
+            "id": "f4",
+            "name": "地明かり・奥上手",
+            "presetKey": "Fresnel10",
+            "position": [
+              4.8,
+              6.8,
+              -3.8
+            ],
+            "target": [
+              4.5,
+              1,
+              -5
+            ],
+            "beamAngleDeg": 44,
+            "intensity": 0.02,
+            "color": [
+              1,
+              0.7200782887719634,
+              0.4828211569520737
+            ],
+            "gelEnabled": false,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "barnDoorAngles": {
+              "top": 5
+            },
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          },
+          {
+            "id": "f5",
+            "name": "前明かり・下手の面",
+            "presetKey": "Fresnel10",
+            "position": [
+              -5.5,
+              14.5,
+              18
+            ],
+            "target": [
+              -3,
+              1.5,
+              -3
+            ],
+            "beamAngleDeg": 16,
+            "intensity": 0.054000000000000006,
+            "color": [
+              1,
+              0.7200782887719634,
+              0.4828211569520737
+            ],
+            "gelEnabled": false,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "barnDoorAngles": {
+              "top": 2.5
+            },
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          },
+          {
+            "id": "f6",
+            "name": "前明かり・上手の面",
+            "presetKey": "Fresnel10",
+            "position": [
+              5.5,
+              14.5,
+              18
+            ],
+            "target": [
+              3,
+              1.5,
+              -3
+            ],
+            "beamAngleDeg": 16,
+            "intensity": 0.054000000000000006,
+            "color": [
+              1,
+              0.7200782887719634,
+              0.4828211569520737
+            ],
+            "gelEnabled": false,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "barnDoorAngles": {
+              "top": 2.5
+            },
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          },
+          {
+            "id": "f7",
+            "name": "前明かり・中央の面",
+            "presetKey": "Fresnel10",
+            "position": [
+              0,
+              14.5,
+              18
+            ],
+            "target": [
+              0.9,
+              1.6,
+              -2.7
+            ],
+            "beamAngleDeg": 14,
+            "intensity": 0.27,
+            "color": [
+              1,
+              0.7200782887719634,
+              0.4828211569520737
+            ],
+            "gelEnabled": false,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "barnDoorAngles": {
+              "top": 2.5
+            },
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          },
+          {
+            "id": "f8",
+            "name": "海の面明かり・下手",
+            "presetKey": "CycWashStudy",
+            "position": [
+              -3.3,
+              6.6,
+              -2.5
+            ],
+            "target": [
+              -3.3,
+              3.45,
+              -7.6
+            ],
+            "beamAngleDeg": 40,
+            "intensity": 0.05184,
+            "color": [
+              0.28,
+              0.43,
+              0.55
+            ],
+            "gelEnabled": false,
+            "whiteMix": 0,
+            "colorTempK": 6500,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "photometricProfile": "etc-s4-led-cyc-daylight-hd"
+          },
+          {
+            "id": "f9",
+            "name": "赤鬼の輪郭",
+            "presetKey": "Stairville_LEDPar64_RGBW",
+            "position": [
+              2,
+              6.6,
+              -5.8
+            ],
+            "target": [
+              1.8,
+              1.3,
+              -3.2
+            ],
+            "beamAngleDeg": 25,
+            "intensity": 0.16,
+            "color": [
+              0.86,
+              0.22,
+              0.16
+            ],
+            "gelEnabled": false,
+            "whiteMix": 0,
+            "colorTempK": 6500,
+            "rotationZDeg": 0,
+            "enabled": false
+          },
+          {
+            "id": "f10",
+            "name": "洞窟の内側",
+            "presetKey": "Stairville_LEDPar64_RGBW",
+            "position": [
+              -5.3,
+              6.2,
+              -6
+            ],
+            "target": [
+              -3.6,
+              1.2,
+              -5.2
+            ],
+            "beamAngleDeg": 25,
+            "intensity": 0.28,
+            "color": [
+              0.95,
+              0.68,
+              0.38
+            ],
+            "gelEnabled": false,
+            "whiteMix": 0,
+            "colorTempK": 6500,
+            "rotationZDeg": 0,
+            "enabled": false
+          },
+          {
+            "id": "f11",
+            "name": "海の面明かり・上手",
+            "presetKey": "CycWashStudy",
+            "position": [
+              3.3,
+              6.6,
+              -2.5
+            ],
+            "target": [
+              3.3,
+              3.45,
+              -7.6
+            ],
+            "beamAngleDeg": 40,
+            "intensity": 0.05184,
+            "color": [
+              0.28,
+              0.43,
+              0.55
+            ],
+            "gelEnabled": false,
+            "whiteMix": 0,
+            "colorTempK": 6500,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "photometricProfile": "etc-s4-led-cyc-daylight-hd"
+          },
+          {
+            "id": "f12",
+            "name": "舟の逆光",
+            "presetKey": "Chauvet_COLORado2Solo",
+            "position": [
+              4.8,
+              6.7,
+              -6.7
+            ],
+            "target": [
+              0,
+              1.2,
+              -5.7
+            ],
+            "beamAngleDeg": 28,
+            "intensity": 0.2,
+            "color": [
+              0.42,
+              0.58,
+              0.75
+            ],
+            "gelEnabled": false,
+            "whiteMix": 0,
+            "colorTempK": 6500,
+            "rotationZDeg": 0,
+            "enabled": false
+          },
+          {
+            "id": "f13",
+            "name": "海の面明かり・中央",
+            "presetKey": "CycWashStudy",
+            "position": [
+              0,
+              6.6,
+              -2.5
+            ],
+            "target": [
+              0,
+              3.45,
+              -7.6
+            ],
+            "beamAngleDeg": 40,
+            "intensity": 0.06912,
+            "color": [
+              0.28,
+              0.43,
+              0.55
+            ],
+            "gelEnabled": false,
+            "whiteMix": 0,
+            "colorTempK": 6500,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "photometricProfile": "etc-s4-led-cyc-daylight-hd"
+          },
+          {
+            "id": "f14",
+            "name": "とんびの補助明かり",
+            "presetKey": "Fresnel8",
+            "position": [
+              -5.8,
+              5.8,
+              1.4
+            ],
+            "target": [
+              -4.2,
+              1.5,
+              -2.8
+            ],
+            "beamAngleDeg": 20,
+            "intensity": 0.12,
+            "color": [
+              1,
+              0.7200782887719634,
+              0.4828211569520737
+            ],
+            "gelEnabled": false,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": false
+          },
+          {
+            "id": "f-ground-center-study",
+            "name": "地明かり・中央",
+            "presetKey": "Fresnel10",
+            "position": [
+              0,
+              6.8,
+              0.2
+            ],
+            "target": [
+              0,
+              1,
+              -2
+            ],
+            "beamAngleDeg": 44,
+            "intensity": 0.115,
+            "color": [
+              1,
+              0.7200782887719634,
+              0.4828211569520737
+            ],
+            "gelEnabled": false,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          }
+        ],
+        "performers": [
+          {
+            "id": "p1",
+            "name": "あの女",
+            "position": [
+              0,
+              0,
+              -2.2
+            ],
+            "scale": 1,
+            "color": "#9f756d",
+            "pose": "standing",
+            "onStage": true
+          },
+          {
+            "id": "p2",
+            "name": "とんび",
+            "position": [
+              -4.2,
+              0,
+              -2.8
+            ],
+            "scale": 1,
+            "color": "#777e79",
+            "pose": "standing",
+            "onStage": true
+          },
+          {
+            "id": "p3",
+            "name": "ミズカネ",
+            "position": [
+              4.6,
+              0,
+              -1.8
+            ],
+            "scale": 1,
+            "color": "#7a7182",
+            "pose": "standing",
+            "onStage": true
+          },
+          {
+            "id": "p4",
+            "name": "赤鬼",
+            "position": [
+              1.8,
+              0,
+              -3.2
+            ],
+            "scale": 1,
+            "color": "#b75d4b",
+            "pose": "standing",
+            "onStage": true
+          }
+        ],
+        "setPieces": [
+          {
+            "id": "sp1794147655409-0",
+            "name": "浜の地面",
+            "kind": "platform",
+            "size": [
+              16,
+              0.02,
+              12
+            ],
+            "color": "#625e57",
+            "position": [
+              0,
+              0.01,
+              -2
+            ],
+            "rotation": [
+              0,
+              0,
+              0
+            ],
+            "scale": 1
+          },
+          {
+            "id": "sp1794147655409-1",
+            "name": "海との境界",
+            "kind": "platform",
+            "size": [
+              10.6,
+              0.04,
+              1.4
+            ],
+            "color": "#304752",
+            "position": [
+              0,
+              0.02,
+              -6.3
+            ],
+            "rotation": [
+              0,
+              0,
+              0
+            ],
+            "scale": 1
+          },
+          {
+            "id": "sp1794147655409-2",
+            "name": "洞窟・左の岩",
+            "kind": "box",
+            "size": [
+              1,
+              2.2,
+              0.6
+            ],
+            "color": "#383b3b",
+            "position": [
+              -4.8,
+              1.1,
+              -5.25
+            ],
+            "rotation": [
+              0,
+              0,
+              0
+            ],
+            "scale": 1
+          },
+          {
+            "id": "sp1794147655409-3",
+            "name": "洞窟・右の岩",
+            "kind": "box",
+            "size": [
+              0.8,
+              2,
+              0.6
+            ],
+            "color": "#343737",
+            "position": [
+              -2.4,
+              1,
+              -5.4
+            ],
+            "rotation": [
+              0,
+              0,
+              0
+            ],
+            "scale": 1
+          },
+          {
+            "id": "sp1794147655410-4",
+            "name": "赤い布（花のしるし）",
+            "kind": "box",
+            "size": [
+              0.8,
+              0.08,
+              0.5
+            ],
+            "color": "#a24a3a",
+            "position": [
+              0.9,
+              0.04,
+              -2.6
+            ],
+            "rotation": [
+              0,
+              0,
+              0
+            ],
+            "scale": 1
+          }
+        ],
+        "sequenceId": "sq1794147655408-lxpklo",
+        "triggerType": "other"
+      },
+      {
+        "id": "sc1794147655410-gh6gwx",
+        "title": "洞窟で向き合う",
+        "trigger": "外の波音が遠のく",
+        "note": "洞窟の口を二つの岩で示す。あの女と赤鬼を内側に、ミズカネととんびを外側に置く。下手の地明かりと前明かりで内側を広く見せる。",
+        "fixtures": [
+          {
+            "id": "f1",
+            "name": "地明かり・手前下手",
+            "presetKey": "Fresnel10",
+            "position": [
+              -4.8,
+              6.8,
+              0.2
+            ],
+            "target": [
+              -2.5,
+              1,
+              -2
+            ],
+            "beamAngleDeg": 44,
+            "intensity": 0.1,
+            "color": [
+              1,
+              0.7200782887719634,
+              0.4828211569520737
+            ],
+            "gelEnabled": false,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          },
+          {
+            "id": "f2",
+            "name": "地明かり・手前上手",
+            "presetKey": "Fresnel10",
+            "position": [
+              4.8,
+              6.8,
+              0.2
+            ],
+            "target": [
+              2.5,
+              1,
+              -2
+            ],
+            "beamAngleDeg": 44,
+            "intensity": 0.005,
+            "color": [
+              1,
+              0.7200782887719634,
+              0.4828211569520737
+            ],
+            "gelEnabled": false,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          },
+          {
+            "id": "f3",
+            "name": "地明かり・奥下手",
+            "presetKey": "Fresnel10",
+            "position": [
+              -4.8,
+              6.8,
+              -3.8
+            ],
+            "target": [
+              -4.5,
+              1,
+              -5
+            ],
+            "beamAngleDeg": 44,
+            "intensity": 0.16,
+            "color": [
+              1,
+              0.7200782887719634,
+              0.4828211569520737
+            ],
+            "gelEnabled": false,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "barnDoorAngles": {
+              "top": 5
+            },
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          },
+          {
+            "id": "f4",
+            "name": "地明かり・奥上手",
+            "presetKey": "Fresnel10",
+            "position": [
+              4.8,
+              6.8,
+              -3.8
+            ],
+            "target": [
+              4.5,
+              1,
+              -5
+            ],
+            "beamAngleDeg": 44,
+            "intensity": 0.005,
+            "color": [
+              1,
+              0.7200782887719634,
+              0.4828211569520737
+            ],
+            "gelEnabled": false,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "barnDoorAngles": {
+              "top": 5
+            },
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          },
+          {
+            "id": "f5",
+            "name": "前明かり・下手の面",
+            "presetKey": "Fresnel10",
+            "position": [
+              -5.5,
+              14.5,
+              18
+            ],
+            "target": [
+              -3.4,
+              1.5,
+              -4.2
+            ],
+            "beamAngleDeg": 16,
+            "intensity": 0.21600000000000003,
+            "color": [
+              1,
+              0.7200782887719634,
+              0.4828211569520737
+            ],
+            "gelEnabled": false,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "barnDoorAngles": {
+              "top": 2.5
+            },
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          },
+          {
+            "id": "f6",
+            "name": "前明かり・上手の面",
+            "presetKey": "Fresnel10",
+            "position": [
+              5.5,
+              14.5,
+              18
+            ],
+            "target": [
+              -0.2,
+              1.5,
+              -4.2
+            ],
+            "beamAngleDeg": 16,
+            "intensity": 0.0405,
+            "color": [
+              1,
+              0.7200782887719634,
+              0.4828211569520737
+            ],
+            "gelEnabled": false,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "barnDoorAngles": {
+              "top": 2.5
+            },
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          },
+          {
+            "id": "f7",
+            "name": "前明かり・中央の面",
+            "presetKey": "Fresnel10",
+            "position": [
+              0,
+              14.5,
+              18
+            ],
+            "target": [
+              1.2,
+              1.6,
+              -3.6
+            ],
+            "beamAngleDeg": 14,
+            "intensity": 0,
+            "color": [
+              1,
+              0.7200782887719634,
+              0.4828211569520737
+            ],
+            "gelEnabled": false,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": false,
+            "barnDoorAngles": {
+              "top": 2.5
+            },
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          },
+          {
+            "id": "f8",
+            "name": "海の面明かり・下手",
+            "presetKey": "CycWashStudy",
+            "position": [
+              -3.3,
+              6.6,
+              -2.5
+            ],
+            "target": [
+              -3.3,
+              3.45,
+              -7.6
+            ],
+            "beamAngleDeg": 40,
+            "intensity": 0.01728,
+            "color": [
+              0.28,
+              0.43,
+              0.55
+            ],
+            "gelEnabled": false,
+            "whiteMix": 0,
+            "colorTempK": 6500,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "photometricProfile": "etc-s4-led-cyc-daylight-hd"
+          },
+          {
+            "id": "f9",
+            "name": "赤鬼の輪郭",
+            "presetKey": "Stairville_LEDPar64_RGBW",
+            "position": [
+              2,
+              6.6,
+              -5.8
+            ],
+            "target": [
+              1.8,
+              1.3,
+              -3.2
+            ],
+            "beamAngleDeg": 25,
+            "intensity": 0.16,
+            "color": [
+              0.86,
+              0.22,
+              0.16
+            ],
+            "gelEnabled": false,
+            "whiteMix": 0,
+            "colorTempK": 6500,
+            "rotationZDeg": 0,
+            "enabled": false
+          },
+          {
+            "id": "f10",
+            "name": "洞窟の内側",
+            "presetKey": "Stairville_LEDPar64_RGBW",
+            "position": [
+              -5.3,
+              6.2,
+              -6
+            ],
+            "target": [
+              -3.6,
+              1.2,
+              -5.2
+            ],
+            "beamAngleDeg": 25,
+            "intensity": 0.28,
+            "color": [
+              0.95,
+              0.68,
+              0.38
+            ],
+            "gelEnabled": false,
+            "whiteMix": 0,
+            "colorTempK": 6500,
+            "rotationZDeg": 0,
+            "enabled": false
+          },
+          {
+            "id": "f11",
+            "name": "海の面明かり・上手",
+            "presetKey": "CycWashStudy",
+            "position": [
+              3.3,
+              6.6,
+              -2.5
+            ],
+            "target": [
+              3.3,
+              3.45,
+              -7.6
+            ],
+            "beamAngleDeg": 40,
+            "intensity": 0.01728,
+            "color": [
+              0.28,
+              0.43,
+              0.55
+            ],
+            "gelEnabled": false,
+            "whiteMix": 0,
+            "colorTempK": 6500,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "photometricProfile": "etc-s4-led-cyc-daylight-hd"
+          },
+          {
+            "id": "f12",
+            "name": "舟の逆光",
+            "presetKey": "Chauvet_COLORado2Solo",
+            "position": [
+              4.8,
+              6.7,
+              -6.7
+            ],
+            "target": [
+              0,
+              1.2,
+              -5.7
+            ],
+            "beamAngleDeg": 28,
+            "intensity": 0.2,
+            "color": [
+              0.42,
+              0.58,
+              0.75
+            ],
+            "gelEnabled": false,
+            "whiteMix": 0,
+            "colorTempK": 6500,
+            "rotationZDeg": 0,
+            "enabled": false
+          },
+          {
+            "id": "f13",
+            "name": "海の面明かり・中央",
+            "presetKey": "CycWashStudy",
+            "position": [
+              0,
+              6.6,
+              -2.5
+            ],
+            "target": [
+              0,
+              3.45,
+              -7.6
+            ],
+            "beamAngleDeg": 40,
+            "intensity": 0.023039999999999998,
+            "color": [
+              0.28,
+              0.43,
+              0.55
+            ],
+            "gelEnabled": false,
+            "whiteMix": 0,
+            "colorTempK": 6500,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "photometricProfile": "etc-s4-led-cyc-daylight-hd"
+          },
+          {
+            "id": "f14",
+            "name": "とんびの補助明かり",
+            "presetKey": "Fresnel8",
+            "position": [
+              -5.8,
+              5.8,
+              1.4
+            ],
+            "target": [
+              -4.2,
+              1.5,
+              -2.8
+            ],
+            "beamAngleDeg": 20,
+            "intensity": 0.12,
+            "color": [
+              1,
+              0.7200782887719634,
+              0.4828211569520737
+            ],
+            "gelEnabled": false,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": false
+          },
+          {
+            "id": "f-ground-center-study",
+            "name": "地明かり・中央",
+            "presetKey": "Fresnel10",
+            "position": [
+              0,
+              6.8,
+              0.2
+            ],
+            "target": [
+              0,
+              1,
+              -3.5
+            ],
+            "beamAngleDeg": 44,
+            "intensity": 0.0125,
+            "color": [
+              1,
+              0.7200782887719634,
+              0.4828211569520737
+            ],
+            "gelEnabled": false,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          }
+        ],
+        "performers": [
+          {
+            "id": "p1",
+            "name": "あの女",
+            "position": [
+              -2.8,
+              0,
+              -4.6
+            ],
+            "scale": 1,
+            "color": "#9f756d",
+            "pose": "standing",
+            "onStage": true
+          },
+          {
+            "id": "p2",
+            "name": "とんび",
+            "position": [
+              -5.2,
+              0,
+              -3.8
+            ],
+            "scale": 1,
+            "color": "#777e79",
+            "pose": "standing",
+            "onStage": true
+          },
+          {
+            "id": "p3",
+            "name": "ミズカネ",
+            "position": [
+              -0.5,
+              0,
+              -3.8
+            ],
+            "scale": 1,
+            "color": "#7a7182",
+            "pose": "standing",
+            "onStage": true
+          },
+          {
+            "id": "p4",
+            "name": "赤鬼",
+            "position": [
+              -3.8,
+              0,
+              -5.1
+            ],
+            "scale": 1,
+            "color": "#b75d4b",
+            "pose": "standing",
+            "onStage": true
+          }
+        ],
+        "setPieces": [
+          {
+            "id": "sp1794147655409-0",
+            "name": "浜の地面",
+            "kind": "platform",
+            "size": [
+              16,
+              0.02,
+              12
+            ],
+            "color": "#625e57",
+            "position": [
+              0,
+              0.01,
+              -2
+            ],
+            "rotation": [
+              0,
+              0,
+              0
+            ],
+            "scale": 1
+          },
+          {
+            "id": "sp1794147655409-1",
+            "name": "海との境界",
+            "kind": "platform",
+            "size": [
+              10.6,
+              0.04,
+              1.4
+            ],
+            "color": "#304752",
+            "position": [
+              0,
+              0.02,
+              -6.3
+            ],
+            "rotation": [
+              0,
+              0,
+              0
+            ],
+            "scale": 1
+          },
+          {
+            "id": "sp1794147655409-2",
+            "name": "洞窟・左の岩",
+            "kind": "box",
+            "size": [
+              1,
+              2.2,
+              0.6
+            ],
+            "color": "#383b3b",
+            "position": [
+              -4.8,
+              1.1,
+              -5.25
+            ],
+            "rotation": [
+              0,
+              0,
+              0
+            ],
+            "scale": 1
+          },
+          {
+            "id": "sp1794147655409-3",
+            "name": "洞窟・右の岩",
+            "kind": "box",
+            "size": [
+              0.8,
+              2,
+              0.6
+            ],
+            "color": "#343737",
+            "position": [
+              -2.4,
+              1,
+              -5.4
+            ],
+            "rotation": [
+              0,
+              0,
+              0
+            ],
+            "scale": 1
+          },
+          {
+            "id": "sp1794147655410-4",
+            "name": "赤い布（花のしるし）",
+            "kind": "box",
+            "size": [
+              0.8,
+              0.08,
+              0.5
+            ],
+            "color": "#a24a3a",
+            "position": [
+              -3.4,
+              0.04,
+              -4.8
+            ],
+            "rotation": [
+              0,
+              0,
+              0
+            ],
+            "scale": 1
+          }
+        ],
+        "sequenceId": "sq1794147655410-7nirki",
+        "triggerType": "sound"
+      },
+      {
+        "id": "sc1794147655411-tyroam",
+        "title": "海の向こうへ",
+        "trigger": "舟のきしむ音",
+        "note": "四人が舟に乗る。浜の地明かりを弱め、海の青と舟の輪郭を残す。人物の面を弱い前明かりで支える。",
+        "fixtures": [
+          {
+            "id": "f1",
+            "name": "地明かり・手前下手",
+            "presetKey": "Fresnel10",
+            "position": [
+              -4.8,
+              6.8,
+              0.2
+            ],
+            "target": [
+              -2.5,
+              1,
+              -2
+            ],
+            "beamAngleDeg": 44,
+            "intensity": 0.01,
+            "color": [
+              1,
+              0.7200782887719634,
+              0.4828211569520737
+            ],
+            "gelEnabled": false,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          },
+          {
+            "id": "f2",
+            "name": "地明かり・手前上手",
+            "presetKey": "Fresnel10",
+            "position": [
+              4.8,
+              6.8,
+              0.2
+            ],
+            "target": [
+              2.5,
+              1,
+              -2
+            ],
+            "beamAngleDeg": 44,
+            "intensity": 0.01,
+            "color": [
+              1,
+              0.7200782887719634,
+              0.4828211569520737
+            ],
+            "gelEnabled": false,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          },
+          {
+            "id": "f3",
+            "name": "地明かり・奥下手",
+            "presetKey": "Fresnel10",
+            "position": [
+              -4.8,
+              6.8,
+              -3.8
+            ],
+            "target": [
+              -4.5,
+              1,
+              -5
+            ],
+            "beamAngleDeg": 44,
+            "intensity": 0.03,
+            "color": [
+              1,
+              0.7200782887719634,
+              0.4828211569520737
+            ],
+            "gelEnabled": false,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "barnDoorAngles": {
+              "top": 5
+            },
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          },
+          {
+            "id": "f4",
+            "name": "地明かり・奥上手",
+            "presetKey": "Fresnel10",
+            "position": [
+              4.8,
+              6.8,
+              -3.8
+            ],
+            "target": [
+              4.5,
+              1,
+              -5
+            ],
+            "beamAngleDeg": 44,
+            "intensity": 0.03,
+            "color": [
+              1,
+              0.7200782887719634,
+              0.4828211569520737
+            ],
+            "gelEnabled": false,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "barnDoorAngles": {
+              "top": 5
+            },
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          },
+          {
+            "id": "f5",
+            "name": "前明かり・下手の面",
+            "presetKey": "Fresnel10",
+            "position": [
+              -5.5,
+              14.5,
+              18
+            ],
+            "target": [
+              -1,
+              1.5,
+              -3.8
+            ],
+            "beamAngleDeg": 16,
+            "intensity": 0.135,
+            "color": [
+              1,
+              0.7200782887719634,
+              0.4828211569520737
+            ],
+            "gelEnabled": false,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "barnDoorAngles": {
+              "top": 2.5
+            },
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          },
+          {
+            "id": "f6",
+            "name": "前明かり・上手の面",
+            "presetKey": "Fresnel10",
+            "position": [
+              5.5,
+              14.5,
+              18
+            ],
+            "target": [
+              1,
+              1.5,
+              -3.8
+            ],
+            "beamAngleDeg": 16,
+            "intensity": 0.135,
+            "color": [
+              1,
+              0.7200782887719634,
+              0.4828211569520737
+            ],
+            "gelEnabled": false,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "barnDoorAngles": {
+              "top": 2.5
+            },
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          },
+          {
+            "id": "f7",
+            "name": "前明かり・中央の面",
+            "presetKey": "Fresnel10",
+            "position": [
+              0,
+              14.5,
+              18
+            ],
+            "target": [
+              0,
+              1.5,
+              -3.8
+            ],
+            "beamAngleDeg": 14,
+            "intensity": 0.09450000000000001,
+            "color": [
+              1,
+              0.7200782887719634,
+              0.4828211569520737
+            ],
+            "gelEnabled": false,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "barnDoorAngles": {
+              "top": 2.5
+            },
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          },
+          {
+            "id": "f8",
+            "name": "海の面明かり・下手",
+            "presetKey": "CycWashStudy",
+            "position": [
+              -3.3,
+              6.6,
+              -2.5
+            ],
+            "target": [
+              -3.3,
+              3.45,
+              -7.6
+            ],
+            "beamAngleDeg": 40,
+            "intensity": 0.12096,
+            "color": [
+              0.28,
+              0.43,
+              0.55
+            ],
+            "gelEnabled": false,
+            "whiteMix": 0,
+            "colorTempK": 6500,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "photometricProfile": "etc-s4-led-cyc-daylight-hd"
+          },
+          {
+            "id": "f9",
+            "name": "赤鬼の輪郭",
+            "presetKey": "Stairville_LEDPar64_RGBW",
+            "position": [
+              2,
+              6.6,
+              -5.8
+            ],
+            "target": [
+              1.8,
+              1.3,
+              -3.2
+            ],
+            "beamAngleDeg": 25,
+            "intensity": 0.16,
+            "color": [
+              0.86,
+              0.22,
+              0.16
+            ],
+            "gelEnabled": false,
+            "whiteMix": 0,
+            "colorTempK": 6500,
+            "rotationZDeg": 0,
+            "enabled": false
+          },
+          {
+            "id": "f10",
+            "name": "洞窟の内側",
+            "presetKey": "Stairville_LEDPar64_RGBW",
+            "position": [
+              -5.3,
+              6.2,
+              -6
+            ],
+            "target": [
+              -3.6,
+              1.2,
+              -5.2
+            ],
+            "beamAngleDeg": 25,
+            "intensity": 0.28,
+            "color": [
+              0.95,
+              0.68,
+              0.38
+            ],
+            "gelEnabled": false,
+            "whiteMix": 0,
+            "colorTempK": 6500,
+            "rotationZDeg": 0,
+            "enabled": false
+          },
+          {
+            "id": "f11",
+            "name": "海の面明かり・上手",
+            "presetKey": "CycWashStudy",
+            "position": [
+              3.3,
+              6.6,
+              -2.5
+            ],
+            "target": [
+              3.3,
+              3.45,
+              -7.6
+            ],
+            "beamAngleDeg": 40,
+            "intensity": 0.12096,
+            "color": [
+              0.28,
+              0.43,
+              0.55
+            ],
+            "gelEnabled": false,
+            "whiteMix": 0,
+            "colorTempK": 6500,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "photometricProfile": "etc-s4-led-cyc-daylight-hd"
+          },
+          {
+            "id": "f12",
+            "name": "舟の逆光",
+            "presetKey": "Chauvet_COLORado2Solo",
+            "position": [
+              4.8,
+              6.7,
+              -6.7
+            ],
+            "target": [
+              0,
+              1.2,
+              -5.7
+            ],
+            "beamAngleDeg": 28,
+            "intensity": 0.18,
+            "color": [
+              0.42,
+              0.58,
+              0.75
+            ],
+            "gelEnabled": false,
+            "whiteMix": 0,
+            "colorTempK": 6500,
+            "rotationZDeg": 0,
+            "enabled": false
+          },
+          {
+            "id": "f13",
+            "name": "海の面明かり・中央",
+            "presetKey": "CycWashStudy",
+            "position": [
+              0,
+              6.6,
+              -2.5
+            ],
+            "target": [
+              0,
+              3.45,
+              -7.6
+            ],
+            "beamAngleDeg": 40,
+            "intensity": 0.16128,
+            "color": [
+              0.28,
+              0.43,
+              0.55
+            ],
+            "gelEnabled": false,
+            "whiteMix": 0,
+            "colorTempK": 6500,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "photometricProfile": "etc-s4-led-cyc-daylight-hd"
+          },
+          {
+            "id": "f14",
+            "name": "とんびの補助明かり",
+            "presetKey": "Fresnel8",
+            "position": [
+              -5.8,
+              5.8,
+              1.4
+            ],
+            "target": [
+              -4.2,
+              1.5,
+              -2.8
+            ],
+            "beamAngleDeg": 20,
+            "intensity": 0.12,
+            "color": [
+              1,
+              0.7200782887719634,
+              0.4828211569520737
+            ],
+            "gelEnabled": false,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": false
+          },
+          {
+            "id": "f-ground-center-study",
+            "name": "地明かり・中央",
+            "presetKey": "Fresnel10",
+            "position": [
+              0,
+              6.8,
+              0.2
+            ],
+            "target": [
+              0,
+              1,
+              -3.5
+            ],
+            "beamAngleDeg": 44,
+            "intensity": 0.0225,
+            "color": [
+              1,
+              0.7200782887719634,
+              0.4828211569520737
+            ],
+            "gelEnabled": false,
+            "whiteMix": 0,
+            "colorTempK": 3200,
+            "rotationZDeg": 0,
+            "enabled": true,
+            "photometricProfile": "etc-fos4-fresnel10-mid"
+          }
+        ],
+        "performers": [
+          {
+            "id": "p1",
+            "name": "あの女",
+            "position": [
+              -1.5,
+              0.36,
+              -3.8
+            ],
+            "scale": 1,
+            "color": "#9f756d",
+            "pose": "standing",
+            "onStage": true
+          },
+          {
+            "id": "p2",
+            "name": "とんび",
+            "position": [
+              -0.5,
+              0.36,
+              -3.8
+            ],
+            "scale": 1,
+            "color": "#777e79",
+            "pose": "standing",
+            "onStage": true
+          },
+          {
+            "id": "p3",
+            "name": "ミズカネ",
+            "position": [
+              0.5,
+              0.36,
+              -3.8
+            ],
+            "scale": 1,
+            "color": "#7a7182",
+            "pose": "standing",
+            "onStage": true
+          },
+          {
+            "id": "p4",
+            "name": "赤鬼",
+            "position": [
+              1.5,
+              0.36,
+              -3.8
+            ],
+            "scale": 1,
+            "color": "#b75d4b",
+            "pose": "standing",
+            "onStage": true
+          }
+        ],
+        "setPieces": [
+          {
+            "id": "sp1794147655409-0",
+            "name": "浜の地面",
+            "kind": "platform",
+            "size": [
+              16,
+              0.02,
+              12
+            ],
+            "color": "#625e57",
+            "position": [
+              0,
+              0.01,
+              -2
+            ],
+            "rotation": [
+              0,
+              0,
+              0
+            ],
+            "scale": 1
+          },
+          {
+            "id": "sp1794147655409-1",
+            "name": "海との境界",
+            "kind": "platform",
+            "size": [
+              10.6,
+              0.04,
+              1.4
+            ],
+            "color": "#304752",
+            "position": [
+              0,
+              0.02,
+              -6.3
+            ],
+            "rotation": [
+              0,
+              0,
+              0
+            ],
+            "scale": 1
+          },
+          {
+            "id": "sp1794147655409-2",
+            "name": "洞窟・左の岩",
+            "kind": "box",
+            "size": [
+              1,
+              2.2,
+              0.6
+            ],
+            "color": "#383b3b",
+            "position": [
+              -4.8,
+              1.1,
+              -5.25
+            ],
+            "rotation": [
+              0,
+              0,
+              0
+            ],
+            "scale": 1
+          },
+          {
+            "id": "sp1794147655409-3",
+            "name": "洞窟・右の岩",
+            "kind": "box",
+            "size": [
+              0.8,
+              2,
+              0.6
+            ],
+            "color": "#343737",
+            "position": [
+              -2.4,
+              1,
+              -5.4
+            ],
+            "rotation": [
+              0,
+              0,
+              0
+            ],
+            "scale": 1
+          },
+          {
+            "id": "sp1794147655410-4",
+            "name": "赤い布（花のしるし）",
+            "kind": "box",
+            "size": [
+              0.8,
+              0.08,
+              0.5
+            ],
+            "color": "#a24a3a",
+            "position": [
+              -3.4,
+              0.04,
+              -4.8
+            ],
+            "rotation": [
+              0,
+              0,
+              0
+            ],
+            "scale": 1
+          },
+          {
+            "id": "sp1794147655411-5",
+            "name": "舟",
+            "kind": "platform",
+            "size": [
+              4.4,
+              0.36,
+              1.2
+            ],
+            "color": "#59493c",
+            "position": [
+              0,
+              0.18,
+              -3.9
+            ],
+            "rotation": [
+              0,
+              0,
+              0
+            ],
+            "scale": 1
+          }
+        ],
+        "sequenceId": "sq1794147655411-ae3f5p",
+        "triggerType": "sound"
+      }
+    ],
+    "activeSceneId": "sc1794147655410-ogtxne",
+    "audienceBlocks": [
+      {
+        "id": "audience-demo-1",
+        "name": "下手客席",
+        "position": [
+          -3,
+          10.5
+        ],
+        "rows": 7,
+        "seatsPerRow": 6,
+        "rowSpacing": 0.9,
+        "seatSpacing": 0.62,
+        "rotationDeg": 0
+      },
+      {
+        "id": "audience-demo-2",
+        "name": "上手客席",
+        "position": [
+          3,
+          10.5
+        ],
+        "rows": 7,
+        "seatsPerRow": 6,
+        "rowSpacing": 0.9,
+        "seatSpacing": 0.62,
+        "rotationDeg": 0
+      }
+    ]
+  },
+  "settings": {
+    "hazeDensity": 0.19,
+    "ambient": 0.06,
+    "exposure": 1.3,
+    "bloom": 0.25,
+    "showHouseLights": false,
+    "quality": "high",
+    "cameraView": "audience"
+  }
+}

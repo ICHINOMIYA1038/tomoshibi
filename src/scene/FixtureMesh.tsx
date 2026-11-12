@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import * as THREE from 'three'
 import { useStore } from '../store'
 import { FIXTURE_PROFILES, type FixtureKind } from '../lighting/fixtureTypes'
+import { measureIlluminanceAtHit } from '../photometric/illuminance'
 
 // フィクスチャ本体の3Dモデル
 // 種別ごとに見た目を変える + 見えない大きなクリック判定球
@@ -171,11 +172,9 @@ function FixtureMeshSingle({ id }: { id: string }) {
         e.stopPropagation()
         const s = useStore.getState()
         if (s.settings.probeMode) {
-          import('../photometric/illuminance').then(({ measureIlluminance }) => {
-            s.setProbeMeasurement(measureIlluminance(
-              e.point, e.face?.normal ?? new THREE.Vector3(0, 1, 0), s.fixtures,
-            ))
-          })
+          s.setProbeMeasurement(measureIlluminanceAtHit(
+            e.point, e.face?.normal, e.object, s.fixtures,
+          ))
         } else {
           select('fixture', f.id, 'position')
         }

@@ -188,7 +188,7 @@ export function SelectionGizmo() {
   }
 
   // ---- 役者選択 ----
-  if (selection.kind === 'performer' && performer) {
+  if (selection.kind === 'performer' && performer && performer.onStage !== false) {
     return (
       <group>
         <primitive object={dragRef.current} />

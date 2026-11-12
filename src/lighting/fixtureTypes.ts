@@ -26,6 +26,7 @@ export interface FixtureProfile {
   flatness: number
   peak: number
   ellipticity: number
+  beamShape?: 'cyc'
   // 物理特性
   fluxLumens: number
   beamAdjustable: boolean
@@ -41,6 +42,16 @@ export interface FixtureProfile {
 // 在来器具 (白熱) + サウンドハウス取扱の LED 機材
 // LED の値は各メーカ公称スペックを参照
 export const FIXTURE_PROFILES: Record<string, FixtureProfile> = {
+  CycWashStudy: {
+    kind: 'LED_Wash', source: 'led-rgbw',
+    model: 'ホリゾント面明かり（試作配光）',
+    beamAngleDeg: 40, fieldAngleDeg: 90,
+    flatness: 1, peak: 0, ellipticity: 1,
+    beamShape: 'cyc',
+    fluxLumens: 5000, beamAdjustable: false,
+    colorTemperatureK: 6500,
+    bodyLengthM: 0.35, bodyDiameterM: 0.26,
+  },
   // ============ 在来 PAR (白熱) ============
   PAR64_VNSP: {
     kind: 'PAR', source: 'tungsten',
@@ -271,7 +282,7 @@ export const FIXTURE_PRESETS_BY_KIND: Record<FixtureKind, string[]> = {
   PC: ['PC6', 'PC8'],
   Profile: ['Source4_19', 'Source4_26', 'Source4_36', 'Source4_50'],
   LED_PAR: ['Stairville_LEDPar64_RGBW', 'Chauvet_SlimPAR_ProQ', 'ADJ_MegaHexPar'],
-  LED_Wash: ['Chauvet_COLORado2Solo', 'Stairville_BMV415'],
+  LED_Wash: ['Chauvet_COLORado2Solo', 'Stairville_BMV415', 'CycWashStudy'],
   LED_Profile: ['ETC_S4LED_Lustr_26', 'ETC_S4LED_Lustr_36'],
   LED_Bar: ['Stairville_ShowBar_TriLED'],
   MovingHead: ['Robe_LEDBeam150'],
