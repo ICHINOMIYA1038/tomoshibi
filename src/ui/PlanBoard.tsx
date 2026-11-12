@@ -385,40 +385,38 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
     const outline = outlineRef.current
     if (!drag || !outline) return
     const bounds = outline.getBoundingClientRect()
-    let hit: HTMLElement | null = null
-    if (x >= bounds.left && x <= bounds.right && y >= bounds.top && y <= bounds.bottom) {
-      hit = document.elementFromPoint(x, y)?.closest<HTMLElement>('[data-plan-drop]') ?? null
-      if (!hit) {
-        const tree = outline.querySelector<HTMLElement>('.plan-outline-tree')
-        const rect = tree?.getBoundingClientRect()
-        if (rect && y >= rect.top && y <= rect.bottom) {
-          let distance = Infinity
-          tree!.querySelectorAll<HTMLElement>('[data-plan-drop]').forEach(node => {
-            const row = node.getBoundingClientRect()
-            const next = Math.max(row.top - y, y - row.bottom, 0)
-            if (row.height && next < distance) { distance = next; hit = node }
-          })
-        }
-      }
-    }
     let target: OutlineTarget | null = null
-    if (hit && outline?.contains(hit)) {
-      const kind = hit.dataset.planDrop
-      if (drag.kind === 'scene' && kind === 'gap') {
-        const chapterId = hit.dataset.chapterId
-        if (chapterId) target = { id: gapId(chapterId, hit.dataset.beforeSceneId || null), position: 'gap',
-          chapterId, beforeSceneId: hit.dataset.beforeSceneId || null }
-      } else if (drag.kind === 'scene' && kind === 'scene' && hit.dataset.sceneId !== drag.id) {
-        const rect = hit.getBoundingClientRect()
-        target = { id: hit.dataset.sceneId!, position: y < rect.top + rect.height / 2 ? 'before' : 'after' }
-      } else if (drag.kind === 'scene' && kind === 'chapter') {
-        target = { id: hit.dataset.chapterId!, position: 'chapter' }
-      } else if (drag.kind === 'chapter') {
-        const chapterNode = hit.closest<HTMLElement>('[data-plan-chapter-id]')
-        const chapterId = chapterNode?.dataset.planChapterId
-        if (chapterId && chapterId !== drag.id) {
-          const header = chapterNode.querySelector<HTMLElement>('[data-plan-drop="chapter"]')
-          const rect = (header ?? chapterNode).getBoundingClientRect()
+    const tree = outline.querySelector<HTMLElement>('.plan-outline-tree')
+    const treeBounds = tree?.getBoundingClientRect()
+    if (tree && treeBounds && x >= bounds.left && x <= bounds.right &&
+        y >= Math.max(bounds.top, treeBounds.top) && y <= Math.min(bounds.bottom, treeBounds.bottom)) {
+      const chapters = Array.from(tree.querySelectorAll<HTMLElement>('[data-plan-chapter-id]'))
+      const chapterNode = chapters.reduce<HTMLElement | null>((nearest, node) => {
+        const distance = (item: HTMLElement) => {
+          const rect = item.getBoundingClientRect()
+          return Math.max(rect.top - y, y - rect.bottom, 0)
+        }
+        return !nearest || distance(node) < distance(nearest) ? node : nearest
+      }, null)
+      if (chapterNode) {
+        const chapterId = chapterNode.dataset.planChapterId!
+        if (drag.kind === 'scene') {
+          const slots = Array.from(chapterNode.querySelectorAll<HTMLElement>('[data-plan-drop="gap"]'))
+          const slot = slots.reduce<HTMLElement | null>((nearest, node) => {
+            const distance = (item: HTMLElement) => {
+              const rect = item.getBoundingClientRect()
+              return Math.abs(y - (rect.top + rect.height / 2))
+            }
+            return !nearest || distance(node) < distance(nearest) ? node : nearest
+          }, null)
+          if (slot) {
+            const beforeSceneId = slot.dataset.beforeSceneId || null
+            target = { id: gapId(chapterId, beforeSceneId), position: 'gap', chapterId, beforeSceneId }
+          } else {
+            target = { id: chapterId, position: 'chapter' }
+          }
+        } else if (chapterId !== drag.id) {
+          const rect = chapterNode.getBoundingClientRect()
           target = { id: chapterId, position: y < rect.top + rect.height / 2 ? 'before' : 'after' }
         }
       }
