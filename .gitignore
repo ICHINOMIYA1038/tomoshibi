@@ -20,3 +20,9 @@ src/**/*.js.map
 
 # Cloudflare Workers（wrangler）
 .wrangler/
+
+# scripts/build-mock.mjs が dist に書き出すビルド済みの画面（ソースは src/）
+public/studio/
+public/mock/index.html
+public/mock/projects/
+public/mock/version.json

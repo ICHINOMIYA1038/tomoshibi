@@ -1,4 +1,4 @@
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 
 const dist = join(import.meta.dirname, '..', 'dist')
@@ -10,3 +10,6 @@ if (!home.includes('href="/studio/projects/"') || home.includes('href="/simulato
   throw new Error('TOP の主導線を確認できません')
 }
 writeFileSync(join(dist, 'index.html'), home)
+
+// public/lighting-lab はビルドで dist に複製されるので、本番向けのビルドでは消す（vite.config.ts の lightingLab と同じ条件）
+if (!process.env.TOMOSHIBI_LIGHTING_LAB) rmSync(join(dist, 'lighting-lab'), { recursive: true, force: true })

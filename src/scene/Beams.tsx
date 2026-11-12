@@ -1,32 +1,23 @@
 import { useMemo, useRef, useEffect } from 'react'
 import * as THREE from 'three'
+import { useThree } from '@react-three/fiber'
 import { useStore, type Fixture } from '../store'
-import { FIXTURE_PROFILES, kelvinToRGB } from '../lighting/fixtureTypes'
+import { cycBeamAttenuation, fixtureSpotlightModel } from '../lighting/spotlightModel'
+import { FIXTURE_PROFILES } from '../lighting/fixtureTypes'
+import { hasMeasuredFresnel } from '../photometric/measuredFresnel'
+import { hasMeasuredCyc } from '../photometric/measuredCyc'
+
+const cycMap = new THREE.DataTexture(new Uint8Array(Array.from({ length: 64 * 64 }, (_, index) => {
+  const x = ((index % 64) + 0.5) / 32 - 1
+  const y = (Math.floor(index / 64) + 0.5) / 32 - 1
+  return Math.round(255 * cycBeamAttenuation(x, y))
+}).flatMap(value => [value, value, value, 255])), 64, 64)
+cycMap.needsUpdate = true
 
 // シンプル舞台照明:
 // - 各フィクスチャに three.js SpotLight (床/役者の照射)
 // - 半透明コーン (additive) でヘイズ中のビーム可視化
 // 物理ベースの厳密さよりも「滑らかで読みやすい」を優先。
-
-function fixtureColor(f: Fixture): THREE.Color {
-  const p = FIXTURE_PROFILES[f.presetKey]
-  if (!p) return new THREE.Color(f.color[0], f.color[1], f.color[2])
-  if (p.source === 'tungsten') {
-    // 在来: 色温度から基本色、ゲルで乗算
-    const [r, g, b] = kelvinToRGB(p.colorTemperatureK)
-    const base = new THREE.Color(r, g, b)
-    if (f.gelEnabled) base.multiply(new THREE.Color(f.color[0], f.color[1], f.color[2]))
-    return base
-  }
-  if (p.source === 'led-tunable') {
-    const [r, g, b] = kelvinToRGB(f.colorTempK)
-    return new THREE.Color(r, g, b)
-  }
-  // led-rgbw: 直接 + 白ミックス
-  const c = new THREE.Color(f.color[0], f.color[1], f.color[2])
-  if (f.whiteMix > 0) c.lerp(new THREE.Color(1, 1, 1), f.whiteMix * 0.5)
-  return c
-}
 
 // ビームコーン用シェーダー: 根元で濃く、先端と外周で透明に
 const coneVertex = /* glsl */ `
@@ -68,35 +59,40 @@ void main() {
 export function Beams() {
   const fixtures = useStore(s => s.fixtures)
   const hazeDensity = useStore(s => s.settings.hazeDensity)
+  const maxTextures = useThree(s => s.gl.capabilities.maxTextures)
+  const active = fixtures.filter(f => f.enabled)
+  // 投影画像と影は同じフラグメントシェーダーのテクスチャ枠を使うため、端末の上限に収める。
+  const textureBudget = Math.max(0, maxTextures - 4)
+  const mapped = new Set(active
+    .filter(f => hasMeasuredFresnel(f) || hasMeasuredCyc(f) || FIXTURE_PROFILES[f.presetKey]?.beamShape === 'cyc')
+    .slice(0, textureBudget)
+    .map(f => f.id))
+  const shadowLimit = Math.max(0, textureBudget - mapped.size)
+  const shadowed = new Set(active
+    .filter(f => FIXTURE_PROFILES[f.presetKey]?.beamShape !== 'cyc')
+    .sort((a, b) => Number(hasMeasuredFresnel(b)) - Number(hasMeasuredFresnel(a)))
+    .slice(0, shadowLimit)
+    .map(f => f.id))
   return (
     <group>
-      {fixtures.filter(f => f.enabled).map(f => (
-        <Beam key={f.id} fixture={f} hazeDensity={hazeDensity} />
+      {active.map(f => (
+        <Beam key={f.id} fixture={f} hazeDensity={hazeDensity} allowMap={mapped.has(f.id)} castShadow={shadowed.has(f.id)} />
       ))}
     </group>
   )
 }
 
-function Beam({ fixture, hazeDensity }: { fixture: Fixture; hazeDensity: number }) {
-  const profile = FIXTURE_PROFILES[fixture.presetKey]
+function Beam({ fixture, hazeDensity, allowMap, castShadow }: { fixture: Fixture; hazeDensity: number; allowMap: boolean; castShadow: boolean }) {
   const targetRef = useRef<THREE.Object3D>(new THREE.Object3D())
   const lightRef = useRef<THREE.SpotLight>(null)
   const coneRef = useRef<THREE.Mesh>(null)
   const matRef = useRef<THREE.ShaderMaterial>(null)
 
-  const color = useMemo(() => fixtureColor(fixture), [fixture])
-  const fieldAngleRad = THREE.MathUtils.degToRad(
-    profile ? Math.max(fixture.beamAngleDeg, profile.fieldAngleDeg * (fixture.beamAngleDeg / profile.beamAngleDeg))
-            : fixture.beamAngleDeg,
-  )
-  // SpotLight angle は半角
-  const halfAngle = THREE.MathUtils.degToRad(fixture.beamAngleDeg) * 0.5
-  const flux = profile?.fluxLumens ?? 1000
-  // 物理: candela = lumens / (2π(1-cos(field/2)))
-  const lightIntensity = (flux / (2 * Math.PI * (1 - Math.cos(fieldAngleRad / 2)))) * fixture.intensity
+  const spotlight = useMemo(() => fixtureSpotlightModel(fixture), [fixture])
+  const { color, fieldAngleRad, halfAngle } = spotlight
 
-  // コーン: 光源→ターゲット方向、長さは固定 (シーン外まで届かせる)
-  const beamLength = 14
+  // 客席側からの長い照射でも、可視化する光束を狙いの先まで届かせる。
+  const beamLength = Math.max(14, new THREE.Vector3(...fixture.position).distanceTo(new THREE.Vector3(...fixture.target)) + 4)
   const baseRadius = beamLength * Math.tan(fieldAngleRad * 0.5)
 
   // ターゲット位置を target prop に追従させる
@@ -128,12 +124,13 @@ function Beam({ fixture, hazeDensity }: { fixture: Fixture; hazeDensity: number 
         ref={lightRef}
         position={fixture.position}
         color={color}
-        intensity={lightIntensity}
+        intensity={spotlight.intensityCandela}
         angle={halfAngle}
-        penumbra={0.6}
+        penumbra={spotlight.penumbra}
+        map={allowMap ? spotlight.map ?? (spotlight.beamShape === 'cyc' ? cycMap : null) : null}
         distance={0}
-        decay={1.7}
-        castShadow
+        decay={spotlight.decay}
+        castShadow={castShadow}
         shadow-mapSize-width={1024}
         shadow-mapSize-height={1024}
         shadow-bias={-0.0005}

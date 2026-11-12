@@ -311,6 +311,7 @@ function AdvancedSection() {
       {measurement && (
         <div className="measure-card">
           <div className="big-num">{measurement.totalLux.toFixed(0)} <span className="unit">lux</span></div>
+          <div className="sub-num">器具の直接光の推定値。影・客電・環境光・材質の反射は含みません。</div>
           <div className="sub-num">
             {luxToFc(measurement.totalLux).toFixed(2)} fc / 寄与 {measurement.contributions.length} 灯
           </div>

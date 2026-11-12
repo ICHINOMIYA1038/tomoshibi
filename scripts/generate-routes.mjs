@@ -18,7 +18,9 @@ const ROUTES = [
 
 const dist = join(import.meta.dirname, '..', 'dist')
 const base = readFileSync(join(dist, 'index.html'), 'utf8')
-for (const path of ['studio/index.html', 'studio/projects/index.html']) {
+const required = ['studio/index.html', 'studio/projects/index.html']
+if (process.env.TOMOSHIBI_LIGHTING_LAB) required.push('lighting-lab/index.html')
+for (const path of required) {
   if (!existsSync(join(dist, path))) throw new Error(`見つからない: ${path}`)
 }
 

@@ -206,8 +206,18 @@ interface Fixture {
 ```bash
 npm run dev          # localhost:5173
 npm run build        # dist/ を生成
+npm run build:lighting-lab  # 照明の比較ページ /lighting-lab/ も含めて生成（確認用の Worker 向け）
 npx tsc --noEmit     # 型チェック
 ```
+
+### ビルドと公開の流れ
+- `npm run build` が本番に出すものをすべて作る
+  - `vite build`：法務ページ（/pro・/privacy など）用の SPA
+  - `scripts/build-mock.mjs`：スタジオ（/studio/・/studio/projects/）と /mock/ を、1 つの HTML にまとめて `dist/` に書き出す。版の ID を `version.json` と HTML の `<meta name="tomoshibi-build">` に入れ、古い画面に再読み込みを促す（`src/ui/UpdateNotice.tsx`）
+  - `scripts/generate-routes.mjs`：法務ページの URL ごとの HTML
+  - `scripts/build-home.mjs`：トップ（`templates/home.html`）と、/simulator/ からスタジオへの転送
+- ビルドした HTML（`public/studio/` など）はリポジトリに入れない
+- main へのマージで GitHub Actions（`.github/workflows/deploy.yml`）が本番の Cloudflare Workers にデプロイする。変更は PR で main に入れる
 
 ### 動作確認の注意
 - **タブが非アクティブだと requestAnimationFrame が止まる** — Chrome 等でタブが背景の時、3D 描画は停止する (HMR スクリーンショット時は注意)
