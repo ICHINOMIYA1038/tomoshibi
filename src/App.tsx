@@ -494,6 +494,7 @@ function CloudProjectAutosave() {
   const [error, setError] = useState('')
   const failedSnapshot = useRef('')
   const inFlight = useRef(false)
+  const serverRetries = useRef(0)
   const generation = useRef(0)
   const activeId = getActiveCloudProject()?.id
   useEffect(() => { if (!connectionError) failedSnapshot.current = '' }, [connectionError])
@@ -521,9 +522,13 @@ function CloudProjectAutosave() {
         markCloudSaved(snapshot)
         setError('')
         failedSnapshot.current = ''
+        serverRetries.current = 0
       } catch (cause) {
         if (getActiveCloudProject()?.id !== current.id || generation.current !== startedGeneration || getProjectEditorEpoch() !== editorEpoch) return
         if (cause instanceof CloudError && (cause.status === 423 || cause.status === 409)) { void loseProjectEditor(); return }
+        // サーバーの一時的な失敗（500 など）は、知らせずに 2 回までやり直す（finally で attempt が進み、2.2 秒後にもう一度保存する）
+        if (cause instanceof CloudError && cause.status >= 500 && serverRetries.current < 2) { serverRetries.current += 1; return }
+        serverRetries.current = 0
         failedSnapshot.current = snapshot
         void refreshSession()
         setError('クラウドに保存できませんでした。現在の編集内容はこのブラウザ／アプリに保持しています。')
