@@ -63,6 +63,8 @@ export async function startProjectEditor(projectId: string, userId: string, dirt
   timer = setInterval(() => {
     if (state.status === 'owned' && Date.now() >= state.deadline) publish({ status: 'error', error: '編集権を確認できません。接続を確認して再開してください。' })
     if (state.status === 'owned') void renewProjectEditor()
+    // 更新の失敗で止まったあとも、接続が戻れば自動で取り直す（取られていれば 423 で lost になる）
+    else if (state.status === 'error' && !needsSnapshot) void renewProjectEditor()
   }, 15_000)
   await acquire(false, dirty, stamp)
 }
@@ -119,6 +121,8 @@ export async function renewProjectEditor() {
   } catch (error) {
     if (stamp === generation) {
       if (error instanceof CloudError && error.status === 423) await loseProjectEditor()
+      // 一時的な失敗（サーバーの 500 など）では止めない。期限まではそのまま編集でき、15 秒後の更新でやり直す
+      else if (Date.now() < state.deadline) publish({ status: 'owned' })
       else publish({ status: 'error', error: '編集権を確認できません。接続を確認して再開してください。' })
     }
   } finally { if (stamp === generation) pendingRenew = false }
