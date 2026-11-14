@@ -48,6 +48,18 @@
     .site-nav .nav-login { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 10px 16px; border: 1px solid #85705a; border-radius: 6px; font-weight: 700; }
     .site-nav .nav-start { padding: 11px 18px; border: 1px solid #d4af6f; border-radius: 6px; color: #f3d7ac; font-weight: 700; }
     .site-nav .nav-start:hover { background: #352c27; }
+    /* ログイン中のアカウントのボタン（アイコンか名前の頭文字）とメニュー。演出プランの画面と同じ見せ方にする */
+    .nav-account { position: relative; }
+    .nav-account[hidden], .site-nav .nav-login[hidden] { display: none; }
+    .nav-account summary { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border: 1px solid #85705a; border-radius: 50%; list-style: none; cursor: pointer; }
+    .nav-account summary::-webkit-details-marker { display: none; }
+    .nav-account-avatar { display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 50%; object-fit: cover; background: linear-gradient(135deg, #8a6a3e, #5a4128); color: #fff3df; font-size: 15px; font-weight: 700; }
+    .nav-account-menu { position: absolute; top: 52px; right: 0; z-index: 10; width: 260px; padding: 6px; border: 1px solid rgba(255,217,163,.25); border-radius: 10px; background: #1a1208; box-shadow: 0 12px 40px rgba(0,0,0,.65); }
+    .nav-account-head { padding: 10px 10px 12px; border-bottom: 1px solid rgba(212,175,111,.15); margin-bottom: 4px; }
+    .nav-account-name { color: #ffd9a3; font-size: 13px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .nav-account-plan { margin-top: 3px; color: #b9ab98; font-size: 11px; }
+    .site-nav .nav-account-menu a { display: block; padding: 12px 10px; border-radius: 6px; color: #f2e6cf; font-size: 13px; }
+    .site-nav .nav-account-menu a:hover { background: rgba(212,175,111,.12); }
     .hero { position: relative; overflow: hidden; padding: clamp(70px, 9vw, 130px) 0 90px; background: radial-gradient(ellipse at 77% 30%, #493127 0, #2a2020 32%, #171316 70%); }
     .hero::before { position: absolute; inset: 0; content: ''; background: linear-gradient(125deg, transparent 49%, rgba(244,194,116,.07) 50%, transparent 65%); pointer-events: none; }
     .hero-grid { position: relative; display: grid; grid-template-columns: minmax(0, .92fr) minmax(0, 1.08fr); align-items: center; gap: 54px; }
@@ -99,7 +111,7 @@
     .site-footer nav { display: flex; flex-wrap: wrap; gap: 19px; }
     .site-footer a { text-underline-offset: 3px; }
     @media (max-width: 960px) { .hero-grid { grid-template-columns: 1fr; gap: 55px; } .preview { width: min(700px, 100%); transform: none; } }
-    @media (max-width: 640px) { .wrap { width: min(100% - 32px, 1190px); } .site-header .wrap { min-height: 64px; } .brand { font-size: 19px; } .brand span { font-size: 12px; } .site-nav { gap: 12px; } .site-nav a:not(.nav-login) { display: none; } .site-nav .nav-start { padding: 9px 11px; font-size: 11px; } .hero { padding: 55px 0 65px; } h1 { font-size: clamp(36px, 11vw, 52px); } .hero-copy { font-size: 13px; } .hero-actions { display: grid; } .button { width: 100%; } .preview-content { min-height: 300px; } .preview-scenes { padding: 12px 6px; } .preview-scene { padding: 8px 6px; font-size: 9px; } .preview-chapter { font-size: 9px; } .preview-stage { padding: 10px; } .preview-stage-head { font-size: 9px; } .features { padding: 55px 0; } .feature-grid { grid-template-columns: 1fr; } .feature { min-height: auto; } .migration { padding: 55px 0; } .migration-grid { grid-template-columns: 1fr; gap: 21px; } .site-footer .wrap { display: block; } .site-footer nav { margin-top: 14px; } }
+    @media (max-width: 640px) { .wrap { width: min(100% - 32px, 1190px); } .site-header .wrap { min-height: 64px; } .brand { font-size: 19px; } .brand span { font-size: 12px; } .site-nav { gap: 12px; } .site-nav > a:not(.nav-login) { display: none; } .site-nav .nav-start { padding: 9px 11px; font-size: 11px; } .hero { padding: 55px 0 65px; } h1 { font-size: clamp(36px, 11vw, 52px); } .hero-copy { font-size: 13px; } .hero-actions { display: grid; } .button { width: 100%; } .preview-content { min-height: 300px; } .preview-scenes { padding: 12px 6px; } .preview-scene { padding: 8px 6px; font-size: 9px; } .preview-chapter { font-size: 9px; } .preview-stage { padding: 10px; } .preview-stage-head { font-size: 9px; } .features { padding: 55px 0; } .feature-grid { grid-template-columns: 1fr; } .feature { min-height: auto; } .migration { padding: 55px 0; } .migration-grid { grid-template-columns: 1fr; gap: 21px; } .site-footer .wrap { display: block; } .site-footer nav { margin-top: 14px; } }
     @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } .button { transition: none; } }
   </style>
 </head>
@@ -110,6 +122,15 @@
       <a href="#できること">できること</a>
       <a class="nav-login" href="https://id.gikyokutosyokan.com/?return_to=https%3A%2F%2Ftomoshibi.gikyokutosyokan.com%2Fstudio%2Fprojects%2F%3Fimport%3Dlocal">ログイン</a>
       <a class="nav-start" href="/studio/projects/">演出プランを開く ↗</a>
+      <details class="nav-account" hidden>
+        <summary aria-label="アカウント"><span class="nav-account-avatar"></span></summary>
+        <div class="nav-account-menu">
+          <div class="nav-account-head"><div class="nav-account-name"></div><div class="nav-account-plan"></div></div>
+          <a class="nav-account-manage" href="https://id.gikyokutosyokan.com/account">アカウント管理</a>
+          <a class="nav-account-billing" href="/pro">契約の管理</a>
+          <a class="nav-account-logout" href="https://id.gikyokutosyokan.com/logout">ログアウト</a>
+        </div>
+      </details>
     </nav>
   </div></header>
   <main>
@@ -171,6 +192,21 @@
   (() => {
     let busy = false;
     const initialLinks = [...document.querySelectorAll('.nav-login, .hero-login, .hero-actions .primary')].map(element => ({ element, text: element.textContent, href: element.href }));
+    const here = encodeURIComponent(location.href);
+    function showAccount(account, user) {
+      // アイコン画像があれば画像、無ければ名前の頭文字を丸の中に出す
+      const avatar = document.createElement(user.image ? 'img' : 'span');
+      avatar.className = 'nav-account-avatar';
+      if (user.image) { avatar.src = user.image; avatar.alt = ''; avatar.referrerPolicy = 'no-referrer'; }
+      else avatar.textContent = (Array.from((user.name || '').trim())[0] || '?').toUpperCase();
+      account.querySelector('.nav-account-avatar').replaceWith(avatar);
+      account.querySelector('.nav-account-name').textContent = user.name || 'ログイン中';
+      account.querySelector('.nav-account-plan').textContent = user.plan === 'pro' ? 'Pro プラン' : 'Free プラン';
+      account.querySelector('.nav-account-manage').href = 'https://id.gikyokutosyokan.com/account?return_to=' + here;
+      account.querySelector('.nav-account-logout').href = 'https://id.gikyokutosyokan.com/logout?return_to=' + here;
+      // App Store で買った契約は Stripe のポータルでは扱えない。それ以外は料金ページから管理・解約する
+      account.querySelector('.nav-account-billing').href = user.plan === 'pro' && user.billing === 'app_store' ? 'https://apps.apple.com/account/subscriptions' : '/pro';
+    }
     async function refreshAccount() {
       if (busy) return;
       busy = true;
@@ -178,16 +214,26 @@
         const response = await fetch('https://gikyokutosyokan.com/api/tomoshibi/session', { credentials: 'include', cache: 'no-store' });
         if (!response.ok) return;
         const { user } = await response.json();
-        if (!user) { initialLinks.forEach(({ element, text, href }) => { element.textContent = text; element.href = href; }); return; }
         const nav = document.querySelector('.nav-login');
-        nav.textContent = 'アカウント設定';
-        nav.href = 'https://id.gikyokutosyokan.com/account';
+        const account = document.querySelector('.nav-account');
+        if (!user) {
+          initialLinks.forEach(({ element, text, href }) => { element.textContent = text; element.href = href; });
+          nav.hidden = false; account.hidden = true; account.open = false;
+          return;
+        }
+        showAccount(account, user);
+        nav.hidden = true; account.hidden = false;
         const hero = document.querySelector('.hero-login');
         hero.textContent = user.plan === 'pro' ? 'Proプラン管理・解約' : '料金プランを見る';
         hero.href = '/pro';
         document.querySelector('.hero-actions .primary').textContent = 'プロジェクトを開く　→';
       } catch {} finally { busy = false; }
     }
+    // メニューの外を押したら閉じる
+    document.addEventListener('click', event => {
+      const account = document.querySelector('.nav-account');
+      if (account.open && !account.contains(event.target)) account.open = false;
+    });
     refreshAccount();
     window.addEventListener('pageshow', refreshAccount);
     document.addEventListener('visibilitychange', () => { if (!document.hidden) refreshAccount(); });

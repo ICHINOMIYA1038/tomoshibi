@@ -20,10 +20,11 @@ import { HelpOverlay } from './ui/HelpOverlay'
 import { SettingsModal } from './ui/SettingsModal'
 import { sceneDisplayTitle, useStore } from './store'
 import { refreshSession, useCloudSession } from './io/cloudSession'
-import { loginUrl, signupUrl, logoutUrl, createBillingPortal, CloudError, APP_STORE_SUBSCRIPTIONS_URL } from './io/cloud'
+import { CloudError } from './io/cloud'
 import { ScenePanel } from './ui/ScenePanel'
 import { PlanBoard } from './ui/PlanBoard'
 import { ProjectLibrary } from './ui/ProjectLibrary'
+import { AccountMenu } from './ui/AccountMenu'
 import { getActiveCloudProject, getActiveSavedProjectName, setActiveCloudProject } from './io/mockProjectSession'
 import { consumeWorkspaceHandoff, currentWorkspaceSnapshot, flushMockAutosave, initMockWorkspace, markCloudSaved, markMockDemoBaseline, preserveMockDraftBeforeDemo, redoMockWorkspace, undoMockWorkspace, useMockWorkspaceState } from './io/mockWorkspace'
 import { exportScene } from './io/sceneIO'
@@ -423,6 +424,7 @@ export default function App() {
           <button onClick={() => useStore.getState().updateSettings({ settingsOpen: true })} aria-label="設定">⚙</button>
           {!isMockPreview && <button onClick={() => useStore.getState().updateSettings({ showHelp: true })} aria-label="ヘルプ">?</button>}
         </div>
+        {isMockPreview && !isEmbed && <AccountMenu />}
       </header>
       {isMockPreview && !playbackOpen && <nav className="mobile-workspace-views" aria-label="編集画面の切り替え">
         <button aria-pressed={mobileView === 'stage'} onClick={() => { setMobileView('stage'); setDisplayMenuOpen(false) }}>3Dで確認</button>
@@ -430,7 +432,7 @@ export default function App() {
       </nav>}
       {isMockPreview && workspaceFeedback && <WorkspaceNotice>{workspaceFeedback}</WorkspaceNotice>}
       {!isEmbed && <LegalFooter />}
-      {!isEmbed && !isMockPreview && <AccountMenu />}
+      {!isEmbed && !isMockPreview && <AccountMenu floating />}
 
       <div className="toolbar">
         {isMockPreview && <>
@@ -624,141 +626,6 @@ function BrandStrip() {
       >
         by 戯曲図書館 <span className="brand-arrow">↗</span>
       </a>
-    </div>
-  )
-}
-
-function AccountMenu() {
-  const { user, proAvailable, loading } = useCloudSession()
-  const [open, setOpen] = useState(false)
-  const [portalBusy, setPortalBusy] = useState(false)
-  const [portalErr, setPortalErr] = useState('')
-
-  useEffect(() => {
-    if (!open) return
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpen(false) }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [open])
-
-  const openPortal = async () => {
-    setPortalBusy(true); setPortalErr('')
-    try {
-      const { url } = await createBillingPortal()
-      window.location.href = url
-    } catch (e) {
-      setPortalErr(e instanceof CloudError ? e.message : String(e))
-      setPortalBusy(false)
-    }
-  }
-
-  if (loading) return <div className="account-menu-trigger loading" aria-hidden>…</div>
-
-  if (!user) {
-    return (
-      <div className="account-menu-root">
-        <a className="account-menu-trigger login" href={loginUrl()} title="ログイン">
-          <span className="account-menu-avatar-fallback">👤</span>
-          <span className="account-menu-trigger-label">ログイン</span>
-        </a>
-      </div>
-    )
-  }
-
-  const isPro = user.plan === 'pro'
-  const renewLabel = user.planExpiresAt
-    ? new Date(user.planExpiresAt).toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric' })
-    : null
-
-  return (
-    <div className="account-menu-root">
-      <button
-        className={`account-menu-trigger${open ? ' open' : ''}${isPro ? ' pro' : ''}`}
-        onClick={() => setOpen(v => !v)}
-        aria-expanded={open}
-        aria-haspopup="menu"
-        title={user.name ?? 'アカウント'}
-      >
-        {user.image
-          ? <img src={user.image} alt="" className="account-menu-avatar" />
-          : <span className="account-menu-avatar-fallback">👤</span>}
-        {isPro && <span className="account-menu-pro-dot" aria-label="Pro プラン" />}
-      </button>
-
-      {open && (
-        <>
-          <div className="account-menu-backdrop" onClick={() => setOpen(false)} />
-          <div className="account-menu-panel" role="menu">
-            <header className="account-menu-header">
-              {user.image && <img src={user.image} alt="" />}
-              <div className="account-menu-header-body">
-                <div className="account-menu-name">{user.name ?? 'ログイン中'}</div>
-                <div className="account-menu-plan">
-                  {isPro
-                    ? <><span className="pro-badge">Pro</span>{renewLabel && <span className="account-menu-renew">〜 {renewLabel}</span>}</>
-                    : <span className="account-menu-free">Free プラン</span>}
-                </div>
-              </div>
-            </header>
-
-            <div className="account-menu-section">
-              {isPro && user.billing === 'app_store' ? (
-                <>
-                  {/* App Store で買った契約は Stripe のポータルでは扱えない。iOS の設定で管理する */}
-                  <a className="account-menu-item" href={APP_STORE_SUBSCRIPTIONS_URL}>
-                    <span className="account-menu-icon" aria-hidden>⚙</span>
-                    App Store で契約を管理・解約
-                  </a>
-                  <div className="account-menu-note">iPhone の「設定」→ 自分の名前 →「サブスクリプション」からも管理できます</div>
-                </>
-              ) : isPro ? (
-                <>
-                  <button className="account-menu-item" onClick={openPortal} disabled={portalBusy}>
-                    <span className="account-menu-icon" aria-hidden>📄</span>
-                    領収書・請求履歴
-                  </button>
-                  <button className="account-menu-item" onClick={openPortal} disabled={portalBusy}>
-                    <span className="account-menu-icon" aria-hidden>💳</span>
-                    支払い方法を変更
-                  </button>
-                  <button className="account-menu-item danger" onClick={openPortal} disabled={portalBusy}>
-                    <span className="account-menu-icon" aria-hidden>✕</span>
-                    Pro プランを解約
-                  </button>
-                  {portalBusy && <div className="account-menu-note">Stripe ポータルへ移動中…</div>}
-                  {portalErr && <div className="account-menu-err">{portalErr}</div>}
-                </>
-              ) : proAvailable ? (
-                <a className="account-menu-item upsell" href="/pro">
-                  <span className="account-menu-icon" aria-hidden>✦</span>
-                  Pro プランにアップグレード
-                  <span className="account-menu-tail">¥300/月</span>
-                </a>
-              ) : (
-                <a className="account-menu-item" href="/pro" style={{ opacity: 0.7 }}>
-                  <span className="account-menu-icon" aria-hidden>✦</span>
-                  Pro プラン(準備中)
-                </a>
-              )}
-            </div>
-
-            <div className="account-menu-section">
-              <a className="account-menu-item" href="/pro" onClick={() => setOpen(false)}>
-                <span className="account-menu-icon" aria-hidden>⚙</span>
-                プラン詳細
-              </a>
-              <a className="account-menu-item" href="/contact" onClick={() => setOpen(false)}>
-                <span className="account-menu-icon" aria-hidden>✉</span>
-                お問い合わせ
-              </a>
-              <a className="account-menu-item" href={logoutUrl()}>
-                <span className="account-menu-icon" aria-hidden>↩</span>
-                ログアウト
-              </a>
-            </div>
-          </div>
-        </>
-      )}
     </div>
   )
 }
