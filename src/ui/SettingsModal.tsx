@@ -1,3 +1,4 @@
+import { askConfirm } from './askConfirm'
 import { useEffect, useState } from 'react'
 import { useStore, type QualityPreset, QUALITY_PRESETS, LIMITS } from '../store'
 import {
@@ -107,7 +108,7 @@ function CloudSection_DEPRECATED() {
     finally { setLoading(false) }
   }
   const doUpdate = async (s: CloudSceneMeta) => {
-    if (!confirm(`「${s.name}」を現在の状態で上書きしますか？`)) return
+    if (!await askConfirm(`「${s.name}」を現在の状態で上書きしますか？`)) return
     setLoading(true); setErr('')
     try { await updateCloudScene(s.id, s.name); await refreshScenes() }
     catch (e) { if (e instanceof CloudError) setErr(e.message) }
@@ -120,7 +121,7 @@ function CloudSection_DEPRECATED() {
     finally { setLoading(false) }
   }
   const doDelete = async (s: CloudSceneMeta) => {
-    if (!confirm(`「${s.name}」をクラウドから削除しますか？`)) return
+    if (!await askConfirm(`「${s.name}」をクラウドから削除しますか？`)) return
     setLoading(true); setErr('')
     try { await deleteCloudScene(s.id); await refreshScenes() }
     catch (e) { if (e instanceof CloudError) setErr(e.message) }

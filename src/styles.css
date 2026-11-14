@@ -4621,3 +4621,11 @@ body.embed .workspace-switch { display: none; }
   .unified-shell .workspace-header > .account-menu-root { margin-left: 0; }
   .unified-shell .workspace-header > .account-menu-root .account-menu-trigger.login { padding: 0 6px; font-size: 10.5px; }
 }
+
+/* アプリの中で出す確認（askConfirm）。iOS アプリの WebView はブラウザの確認を出さないため */
+.ask-confirm-backdrop { position: fixed; inset: 0; z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 24px 16px calc(24px + env(safe-area-inset-bottom, 0px)); background: rgba(0, 0, 0, 0.55); }
+.ask-confirm { width: min(100%, 360px); padding: 20px 18px 16px; border: 1px solid rgba(255, 217, 163, 0.3); border-radius: 12px; background: #1d1714; box-shadow: 0 16px 48px rgba(0, 0, 0, 0.6); color: #f2e6cf; font-family: var(--font-sans, sans-serif); }
+.ask-confirm-message { margin: 0 0 18px; font-size: 15px; line-height: 1.6; white-space: pre-wrap; overflow-wrap: anywhere; }
+.ask-confirm-actions { display: flex; gap: 10px; }
+.ask-confirm-actions button { flex: 1; min-height: 44px; border: 1px solid #6a5848; border-radius: 8px; background: transparent; color: #f2e6cf; font: 700 14px var(--font-sans, sans-serif); cursor: pointer; }
+.ask-confirm-actions .ask-confirm-ok { border-color: #c4553d; background: #b84a35; color: #fff; }

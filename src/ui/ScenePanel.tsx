@@ -1,3 +1,4 @@
+import { askConfirm } from './askConfirm'
 import { hasDeviceStorage } from '../io/workspaceStorage'
 import { useEffect, useState } from 'react'
 import { useStore, useIsDirty } from '../store'
@@ -110,12 +111,12 @@ function LocalScenesBody({ authenticated, loading }: { authenticated: boolean; l
   const [success, setSuccess] = useState('')
   if (loading || authenticated) return null
 
-  const save = () => {
+  const save = async () => {
     const sceneName = name.trim()
     const previousActiveName = isMockPreview ? getActiveSavedProjectName() : null
     if (!sceneName) { setError(isMockPreview ? 'プロジェクト名を入力してください。' : '保存名を入力してください。'); return }
     if (scenes.some(scene => scene.name === sceneName) && loadedName !== sceneName &&
-        !confirm(`「${sceneName}」に上書き保存しますか？`)) return
+        !await askConfirm(`「${sceneName}」に上書き保存しますか？`)) return
     try {
       if (isMockPreview) {
         useStore.getState().updateProductionPlan({ projectTitle: sceneName })
@@ -134,9 +135,9 @@ function LocalScenesBody({ authenticated, loading }: { authenticated: boolean; l
       setError('この端末に保存できませんでした。JSON 書き出しを利用してください。')
     }
   }
-  const load = (sceneName: string) => {
-    if (isMockPreview ? !flushMockAutosave() && !confirm('現在の変更を保存できませんでした。読み込みますか？')
-      : dirty && !confirm('未保存の変更があります。読み込むと失われます。続けますか？')) return
+  const load = async (sceneName: string) => {
+    if (isMockPreview ? !flushMockAutosave() && !await askConfirm('現在の変更を保存できませんでした。読み込みますか？')
+      : dirty && !await askConfirm('未保存の変更があります。読み込むと失われます。続けますか？')) return
     loadSceneLS(sceneName)
     if (isMockPreview) { setActiveSavedProjectName(sceneName); resetMockWorkspace() }
     setName(sceneName)
@@ -144,9 +145,9 @@ function LocalScenesBody({ authenticated, loading }: { authenticated: boolean; l
     markSaved()
     if (isMockPreview) updateSettings({ scenePanelOpen: false })
   }
-  const create = () => {
-    if (isMockPreview ? !flushMockAutosave() && !confirm('現在の変更を保存できませんでした。新しいプロジェクトを作りますか？')
-      : dirty && !confirm('未保存の変更があります。新規プロジェクトを作ると失われます。続けますか？')) return
+  const create = async () => {
+    if (isMockPreview ? !flushMockAutosave() && !await askConfirm('現在の変更を保存できませんでした。新しいプロジェクトを作りますか？')
+      : dirty && !await askConfirm('未保存の変更があります。新規プロジェクトを作ると失われます。続けますか？')) return
     useStore.getState().loadPreset('empty')
     if (isMockPreview) { useStore.getState().ensureScenes(); setActiveSavedProjectName(null); resetMockWorkspace() }
     setName('')
@@ -156,8 +157,8 @@ function LocalScenesBody({ authenticated, loading }: { authenticated: boolean; l
     markSaved()
     updateSettings({ scenePanelOpen: false })
   }
-  const remove = (sceneName: string) => {
-    if (!confirm(`「${sceneName}」を削除しますか？`)) return
+  const remove = async (sceneName: string) => {
+    if (!await askConfirm(`「${sceneName}」を削除しますか？`)) return
     deleteSceneLS(sceneName)
     setScenes(listSavedScenes())
   }
@@ -237,8 +238,8 @@ function CloudScenes() {
     return () => window.removeEventListener('beforeunload', handler)
   }, [dirty])
 
-  const confirmDiscard = (action: string) =>
-    !dirty || confirm(`未保存の変更があります。${action}しますか?\n変更内容は失われます。`)
+  const confirmDiscard = async (action: string) =>
+    !dirty || await askConfirm(`未保存の変更があります。${action}しますか?\n変更内容は失われます。`)
 
   const refresh = async () => {
     try { setScenes(await listCloudScenes()); setErr('') }
@@ -278,8 +279,8 @@ function CloudScenes() {
   const atLimit = isNewScene && scenes.length >= maxScenes
   const showToast = (msg: string) => { setToast(msg); window.setTimeout(() => setToast(''), 1800) }
 
-  const doNew = () => {
-    if (!confirmDiscard('破棄して新しい舞台プランを開始')) return
+  const doNew = async () => {
+    if (!await confirmDiscard('破棄して新しい舞台プランを開始')) return
     importScene({
       version: 1, name: '無題', savedAt: new Date().toISOString(),
       fixtures: [], performers: [], settings: {},
@@ -316,7 +317,7 @@ function CloudScenes() {
     } finally { setLoading(false) }
   }
   const doLoad = async (s: CloudSceneMeta) => {
-    if (!confirmDiscard(`「${s.name}」を読み込み`)) return
+    if (!await confirmDiscard(`「${s.name}」を読み込み`)) return
     setLoading(true); setErr('')
     try {
       await loadCloudScene(s.id); setActiveId(s.id); setActiveName(s.name)
@@ -327,7 +328,7 @@ function CloudScenes() {
     } finally { setLoading(false) }
   }
   const doDelete = async (s: CloudSceneMeta) => {
-    if (!confirm(`「${s.name}」を削除しますか?\nこの操作は取り消せません。`)) return
+    if (!await askConfirm(`「${s.name}」を削除しますか?\nこの操作は取り消せません。`)) return
     setLoading(true); setErr('')
     try {
       await deleteCloudScene(s.id)

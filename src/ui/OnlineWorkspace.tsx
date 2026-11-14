@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { loginUrl } from '../io/cloud'
 import { refreshSession, useCloudSession } from '../io/cloudSession'
 import { getActiveCloudProject } from '../io/mockProjectSession'
+import { askConfirm } from './askConfirm'
 
 export function OnlineWorkspace({ children, enabled, editorVisible, onProjects }: { children: ReactNode; enabled: boolean; editorVisible: boolean; onProjects: () => void }) {
   const { user, loading, connectionError } = useCloudSession()
@@ -22,13 +23,13 @@ export function OnlineWorkspace({ children, enabled, editorVisible, onProjects }
   const pendingChanges = projectId ? cloudDirty : saveStatus !== 'saved'
   const editorBlocked = !!(enabled && user && projectId && editorVisible &&
     (editor.projectId !== projectId || editor.status !== 'owned'))
-  const takeOver = () => {
-    if (!window.confirm('この画面で編集を引き継ぎますか？\n別の画面では編集できなくなります。保存されていない変更を破棄し、アカウントに保存された最新の内容から再開します。')) return
+  const takeOver = async () => {
+    if (!await askConfirm('この画面で編集を引き継ぎますか？\n別の画面では編集できなくなります。保存されていない変更を破棄し、アカウントに保存された最新の内容から再開します。')) return
     setViewOnly(false)
     void takeoverProjectEditor()
   }
   const viewLatest = async () => {
-    if (cloudDirty && !window.confirm('この画面の未保存の変更を破棄し、保存済みの内容を表示しますか？')) return
+    if (cloudDirty && !await askConfirm('この画面の未保存の変更を破棄し、保存済みの内容を表示しますか？')) return
     try { await viewLatestProject(); setViewOnly(true); setViewError('') }
     catch { setViewError('保存済みの内容を読み込めませんでした。接続を確認してください。') }
   }
