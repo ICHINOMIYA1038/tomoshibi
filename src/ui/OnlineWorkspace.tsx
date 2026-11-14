@@ -69,10 +69,12 @@ export function OnlineWorkspace({ children, enabled, editorVisible, onProjects }
         </aside>
       : <div className="workspace-connection-backdrop"><section className="workspace-connection-dialog" role="alertdialog" aria-modal="true" aria-labelledby="editor-lock-title">
           <h2 id="editor-lock-title">{editor.status === 'checking' || editor.projectId !== projectId ? '編集権を確認しています…'
-            : editor.status === 'lost' ? 'この画面の編集を停止しました'
+            : editor.status === 'lost' ? '別の画面で編集が始まりました'
             : editor.status === 'error' ? '編集権を確認できません'
             : editor.status === 'stale' ? '保存済みの内容が更新されています' : '別の画面で編集中です'}</h2>
           {editor.status === 'checking' || editor.projectId !== projectId ? <p>確認が終わるまでお待ちください。</p> : <>
+            {editor.status === 'lost' && <p>{editor.lostBy === 'tab' ? 'このブラウザの別のタブ' : '別のタブか別の端末'}でこのプロジェクトの編集が始まったため、この画面の編集を止めました。同じプロジェクトを編集できるのは、1 つの画面だけです。</p>}
+            {editor.status === 'blocked' && <p>このプロジェクトは、別のタブか別の端末で編集中です。同じプロジェクトを編集できるのは、1 つの画面だけです。</p>}
             <p>{editor.status === 'error' ? editor.error : 'この画面で編集を引き継ぐと、別の画面では編集できなくなります。保存されていない変更を破棄し、アカウントに保存された最新の内容から再開します。'}</p>
             {viewError && <p role="alert">{viewError}</p>}
             <div className="workspace-editor-actions"><button onClick={() => void viewLatest()}>閲覧のみ</button>
