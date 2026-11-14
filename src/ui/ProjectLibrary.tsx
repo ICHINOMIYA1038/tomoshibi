@@ -386,13 +386,20 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
     const selected = projects.filter(scene => transferKeys.includes(scene.name))
     if (!selected.length || selected.length !== transferKeys.length) return
     const replacementNames = memberProjects.filter(item => replaceIds.includes(item.id)).map(item => item.name)
+    const place = hasDeviceStorage() ? 'このアプリ' : 'このブラウザ'
+    // アプリでは、引き継ぎ済みで一覧から隠れているものも端末に残っているので、それも数に入れる
+    const removeCount = hasDeviceStorage() ? Math.max(projects.length, listSavedScenes().length) : projects.length
+    const left = projects.filter(scene => !transferKeys.includes(scene.name))
+    const overLimit = projects.length > availableSlots + replaceIds.length
     const warning = [
       `アカウントに保存するプロジェクト（${selected.length}件）\n${selected.map(scene => `・${scene.name}`).join('\n')}`,
       ...(replacementNames.length ? [`上書きするプロジェクト\n${replacementNames.map(name => `・${name}`).join('\n')}`] : []),
-      ...(hasDeviceStorage() ? [] : ['保存後、このブラウザのプロジェクトは、選ばなかったものも含めてすべて削除されます。']),
-      'この内容で続けますか？',
+      `保存したあと、${place}のプロジェクト${removeCount}件をすべて削除します。`,
+      ...(left.length ? [`アカウントに引き継がなかった${left.length}件は、元に戻せません。\n${left.map(scene => `・${scene.name}`).join('\n')}`] : []),
+      ...(overLimit ? [`${user.plan === 'pro' ? '今のプラン' : 'Free プラン'}では、アカウントに保存できるのは${user.maxProjects}件までのため、すべては引き継げません。${user.plan === 'pro' ? '' : '残したい場合は、キャンセルして有料プランにするか、アカウントのプロジェクトと入れ替えてください。'}`] : []),
+      `キャンセルすると、何も保存・削除しません。${place}のプロジェクトはそのまま残ります。`,
     ].join('\n\n')
-    if (!await askConfirm(warning)) return
+    if (!await askConfirm(warning, '保存して削除する')) return
     setTransferBusy(true)
     setTransferMessage('')
     try {
@@ -427,18 +434,17 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
         setMemberProjects(items => items.some(item => item.id === created.id) ? items.map(item => item.id === created.id ? { ...item, ...created } : item) : [...items, created])
         setTransferKeys(keys => keys.filter(item => item !== key))
       }
-      if (!hasDeviceStorage()) {
-        clearBrowserProjects(browserProjects)
-        if (!getActiveCloudProject() && savedProject) {
-          importScene(savedProject.data)
-          setActiveCloudProject({ id: savedProject.id, name: savedProject.name, revision: savedProject.revision })
-          setActiveSavedProjectName(null)
-          markSaved()
-          resetMockWorkspace()
-        }
-        setProjects([])
-        setLegacyLocal(listLegacyLocalScenes())
+      // オーナー決定（2026-11-14）: アプリでも Web と同じく、引き継がなかったものも含めて端末のプロジェクトを消す
+      clearBrowserProjects(browserProjects)
+      if (!getActiveCloudProject() && savedProject) {
+        importScene(savedProject.data)
+        setActiveCloudProject({ id: savedProject.id, name: savedProject.name, revision: savedProject.revision })
+        setActiveSavedProjectName(null)
+        markSaved()
+        resetMockWorkspace()
       }
+      setProjects([])
+      setLegacyLocal(listLegacyLocalScenes())
       acknowledgeTransfers(user.id, transferFingerprints.current)
       setTransferOpen(false)
       setReplaceIds([])
@@ -587,7 +593,8 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
             <span><strong>{scene.name}</strong><small>{savedDate(scene.savedAt)}</small></span>
           </label>)}
         </div>
-        <p role="status" className={!hasDeviceStorage() && !transferMessage ? 'project-transfer-warning' : undefined}>{transferMessage || (hasDeviceStorage() ? '選ばなかったものは、アプリ内で引き続き利用できます。' : '選んだプロジェクトをアカウントに保存します。保存後、このブラウザのプロジェクトは、選ばなかったものも含めてすべて削除されます。残したいものを選んでください。')}</p>
+        {projects.length > availableSlots + replaceIds.length && <p className="project-transfer-warning">{user.plan === 'pro' ? '今のプラン' : 'Free プラン'}では、{hasDeviceStorage() ? 'このアプリ' : 'このブラウザ'}の{projects.length}件のうち{Math.min(projects.length, availableSlots + replaceIds.length)}件までしか引き継げません。入りきらないものは削除されます。</p>}
+        <p role="status" className={!transferMessage ? 'project-transfer-warning' : undefined}>{transferMessage || `選んだプロジェクトをアカウントに保存します。保存後、${hasDeviceStorage() ? 'このアプリ' : 'このブラウザ'}のプロジェクトは、選ばなかったものも含めてすべて削除され、元に戻せません。「閉じる」を押すと、何も削除しません。`}</p>
         <div className="project-create-actions">
           <button disabled={transferBusy} onClick={closeTransfer}>閉じる</button>
           <button disabled={transferBusy || !transferKeys.length} onClick={transferProjects}>{transferBusy ? '保存中…' : `選んだ${transferKeys.length}件を保存して続ける`}</button>

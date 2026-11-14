@@ -1,9 +1,6 @@
-import { hasDeviceStorage } from './workspaceStorage'
-
 type Entry = { area: 'local' | 'session'; key: string; value: string | null }
 const projectKeys = ['syoumei.mock.scenes', 'syoumei.scenes', 'tomoshibi.workspace.handoff.v1', 'tomoshibi.mock.workspace.v1']
 export function captureBrowserProjects(): Entry[] {
-  if (hasDeviceStorage()) return []
   return (['local', 'session'] as const).flatMap(area => {
     const storage = area === 'local' ? localStorage : sessionStorage
     return projectKeys.flatMap(key => {
@@ -15,7 +12,6 @@ export function captureBrowserProjects(): Entry[] {
   })
 }
 export function clearBrowserProjects(snapshot: Entry[]) {
-  if (hasDeviceStorage()) return
   for (const entry of snapshot) {
     const storage = entry.area === 'local' ? localStorage : sessionStorage
     if (storage.getItem(entry.key) !== entry.value) throw new Error('ブラウザ内のプロジェクトが更新されています。保存したプロジェクトはアカウントにあります。残す内容をもう一度確認してください。')

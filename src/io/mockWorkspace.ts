@@ -32,6 +32,8 @@ let saveTimer: ReturnType<typeof setTimeout> | null = null
 let saveStatus: SaveStatus = 'saved'
 let cloudDirty = false
 let demoBaseline: string | null = null
+// 何も触っていない最初の画面の内容。これと同じなら、一覧を開いたときにプロジェクトとして控えない
+let pristine: string | null = null
 let viewState: ViewState = { canUndo: false, canRedo: false, saveStatus, cloudDirty }
 const listeners = new Set<() => void>()
 
@@ -83,6 +85,11 @@ export function markMockDemoBaseline() {
   demoBaseline = projectContentKey(exportScene())
 }
 
+function pristineKey(scene: SerializedScene): string {
+  const { quality: _quality, cameraView: _cameraView, ...settings } = scene.settings ?? {}
+  return JSON.stringify({ fixtures: scene.fixtures, performers: scene.performers, setPieces: scene.setPieces, productionPlan: scene.productionPlan, settings })
+}
+
 function projectContentKey(scene: SerializedScene): string {
   const plan = scene.productionPlan
   return JSON.stringify({
@@ -112,13 +119,14 @@ export function preserveMockDraftBeforeDemo(): boolean {
   try {
     const raw = workspaceStorage().getItem(SESSION_KEY)
     if (!raw) return true
-    const session = JSON.parse(raw) as { scene?: SerializedScene; activeSavedName?: string | null; activeCloudProject?: unknown; cloudDirty?: boolean; demoBaseline?: string | null }
+    const session = JSON.parse(raw) as { scene?: SerializedScene; activeSavedName?: string | null; activeCloudProject?: unknown; cloudDirty?: boolean; demoBaseline?: string | null; pristine?: string | null }
     if (session.activeCloudProject) return session.cloudDirty !== true
     if (session.activeSavedName || !session.scene || (session.scene.version !== 1 && session.scene.version !== 2)) return true
     const scene = session.scene
     const title = scene.productionPlan?.projectTitle?.trim() || ''
     if (!title && !scene.fixtures.length && !scene.performers.length && !scene.setPieces?.length) return true
     if (session.demoBaseline && projectContentKey(scene) === session.demoBaseline) return true
+    if (session.pristine && pristineKey(scene) === session.pristine) return true
     const names = new Set(listSavedScenes().map(item => item.name))
     let name = title || scene.name?.trim() || '保存前のプラン'
     if (names.has(name)) {
@@ -188,10 +196,11 @@ function record(state: State) {
 export function initMockWorkspace(restore = true) {
   if (installed) return
   if (restore) {
+    let restored = false
     try {
       const raw = workspaceStorage().getItem(SESSION_KEY)
       if (raw) {
-        const session = JSON.parse(raw) as { scene?: SerializedScene; activeSavedName?: string | null; activeCloudProject?: ReturnType<typeof getActiveCloudProject>; cloudDirty?: boolean; demoBaseline?: string | null }
+        const session = JSON.parse(raw) as { scene?: SerializedScene; activeSavedName?: string | null; activeCloudProject?: ReturnType<typeof getActiveCloudProject>; cloudDirty?: boolean; demoBaseline?: string | null; pristine?: string | null }
         if (session.scene && (session.scene.version === 1 || session.scene.version === 2)) {
           importScene(session.scene)
           setActiveSavedProjectName(typeof session.activeSavedName === 'string' ? session.activeSavedName : null)
@@ -199,11 +208,15 @@ export function initMockWorkspace(restore = true) {
             ? session.activeCloudProject : null)
           cloudDirty = session.cloudDirty === true
           demoBaseline = session.demoBaseline ?? null
+          pristine = session.pristine ?? null
+          restored = true
           useStore.getState().markSavedSnapshot()
         }
       }
     } catch {}
-  } else { setActiveSavedProjectName(null); setActiveCloudProject(null); cloudDirty = false; demoBaseline = null }
+    // 保存済みの作業を戻さなかったときは、いま見えている内容が「何も触っていない最初の画面」になる
+    if (!restored) pristine = pristineKey(exportScene())
+  } else { setActiveSavedProjectName(null); setActiveCloudProject(null); cloudDirty = false; demoBaseline = null; pristine = null }
   history = [capture(getEditableState())]
   cursor = 0
   lastSignature = signature(useStore.getState())
@@ -221,7 +234,7 @@ export function flushMockAutosave(): boolean {
     const scene = exportScene(name || projectTitle || '編集中のプロジェクト')
     if (name) saveSceneLS(name)
     workspaceStorage().setItem(SESSION_KEY, JSON.stringify({ version: 1, activeSavedName: name,
-      activeCloudProject: getActiveCloudProject(), cloudDirty, scene, demoBaseline }))
+      activeCloudProject: getActiveCloudProject(), cloudDirty, scene, demoBaseline, pristine }))
     useStore.getState().markSavedSnapshot()
     saveStatus = 'saved'
     publish()
