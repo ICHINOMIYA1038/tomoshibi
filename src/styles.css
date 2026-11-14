@@ -2363,10 +2363,14 @@ body.embed .panel-body h2 { font-size: 13px; }
 
 /* ============ Account Menu (top-right, drops down / mobile drawer) ============ */
 .account-menu-root {
+  position: relative;
+  flex: none;
+  z-index: 30;
+}
+.account-menu-root.floating {
   position: fixed;
   top: 12px;
   right: 12px;
-  z-index: 30;
 }
 .account-menu-trigger {
   display: inline-flex;
@@ -2398,29 +2402,39 @@ body.embed .panel-body h2 { font-size: 13px; }
   color: rgba(242, 230, 207, 0.5);
   cursor: default;
 }
+/* ログアウト中の「ログイン」。指で押しやすいよう高さ 44px を確保する */
 .account-menu-trigger.login {
-  padding: 6px 12px 6px 8px;
+  min-height: 44px;
+  padding: 0 16px;
+  border-radius: 6px;
+  border-color: #b8925f;
+  background: rgba(212, 175, 111, 0.14);
+  color: #ffe2b8;
+  font-size: 13px;
+  font-weight: 700;
 }
-.account-menu-trigger-label {
-  font-size: 12px;
-  padding-right: 4px;
+.account-menu-trigger.avatar {
+  min-width: 44px;
+  min-height: 44px;
+  justify-content: center;
+  padding: 3px;
+  border-radius: 50%;
 }
 .account-menu-avatar {
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  object-fit: cover;
-  display: block;
-}
-.account-menu-avatar-fallback {
-  width: 26px;
-  height: 26px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: rgba(212, 175, 111, 0.15);
   border-radius: 50%;
-  font-size: 14px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+.account-menu-avatar.small { width: 34px; height: 34px; font-size: 15px; }
+.account-menu-avatar.large { width: 40px; height: 40px; font-size: 17px; }
+.account-menu-avatar.initial {
+  background: linear-gradient(135deg, #8a6a3e, #5a4128);
+  color: #fff3df;
+  font-weight: 700;
+  line-height: 1;
 }
 .account-menu-pro-dot {
   position: absolute;
@@ -2466,13 +2480,6 @@ body.embed .panel-body h2 { font-size: 13px; }
   align-items: center;
   padding: 14px 16px;
   border-bottom: 1px solid rgba(212, 175, 111, 0.15);
-}
-.account-menu-header img {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  object-fit: cover;
-  flex-shrink: 0;
 }
 .account-menu-header-body {
   flex: 1;
@@ -2565,7 +2572,7 @@ body.embed .panel-body h2 { font-size: 13px; }
 
 /* Mobile: convert dropdown to bottom sheet */
 @media (max-width: 640px) {
-  .account-menu-root { top: 8px; right: 8px; }
+  .account-menu-root.floating { top: 8px; right: 8px; }
   .account-menu-backdrop {
     background: rgba(0, 0, 0, 0.5);
     backdrop-filter: blur(2px);
@@ -4359,6 +4366,7 @@ body.embed .workspace-switch { display: none; }
 .project-library-brand { color: #f0e8da; font-family: 'Shippori Mincho', serif; font-size: 17px; font-weight: 700; text-decoration: none; }
 .project-library-brand span { margin-left: 3px; font-size: 12px; }
 .project-library-storage { color: #aa9f93; font-size: 11px; }
+.project-library-header-actions { display: flex; align-items: center; gap: 12px; }
 .project-library-workspace { display: grid; grid-template-columns: minmax(300px, 340px) minmax(0, 1fr); flex: 1; min-height: 0; }
 .project-library-rail { display: flex; flex-direction: column; min-width: 0; min-height: 0; padding: 26px 16px 18px; overflow-y: auto; border-right: 1px solid rgba(212,175,111,.2); background: #1d191d; }
 .project-library-rail-head { padding: 0 9px 20px; }
@@ -4598,3 +4606,18 @@ body.embed .workspace-switch { display: none; }
 .workspace-editor-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 20px; }
 .workspace-editor-banner { position: fixed; z-index: 10000; inset: 58px 12px auto; padding: 12px 16px; background: #302820; color: #ffe2ac; border: 1px solid #b28a45; display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
 .workspace-editor-banner button { min-height: 44px; padding: 8px 14px; border: 1px solid #b28a45; border-radius: 6px; color: #ffe2ac; background: #211a13; }
+
+/* 編集画面のヘッダーに置くアカウントのボタン。スマホではボタンの列が横にスクロールするので、その外の右端に置いて常に見えるようにする */
+.unified-shell .workspace-header > .account-menu-root { display: flex; align-items: center; margin-left: -6px; }
+.unified-shell .workspace-header > .account-menu-root .account-menu-trigger.avatar { min-width: 40px; min-height: 40px; padding: 2px; border-color: rgba(212, 175, 111, 0.35); }
+.unified-shell .workspace-header > .account-menu-root .account-menu-avatar.small { width: 34px; height: 34px; font-size: 14px; }
+.unified-shell .workspace-header > .account-menu-root .account-menu-trigger.login { min-height: 44px; padding: 0 10px; font-size: 12px; }
+@media (max-width: 600px) {
+  /* ボタンの列を幅の上限で切らず、作品名の方を縮めて（…で省略して）ボタンを全部見せる */
+  .unified-shell.workspace-layout .workspace-header { gap: 4px; }
+  .unified-shell.workspace-layout .workspace-header-actions { flex: 0 1 auto; min-width: 0; max-width: none; }
+  .unified-shell.workspace-layout .workspace-project-title { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .unified-shell.workspace-layout .workspace-history button { min-width: 32px; }
+  .unified-shell .workspace-header > .account-menu-root { margin-left: 0; }
+  .unified-shell .workspace-header > .account-menu-root .account-menu-trigger.login { padding: 0 6px; font-size: 10.5px; }
+}

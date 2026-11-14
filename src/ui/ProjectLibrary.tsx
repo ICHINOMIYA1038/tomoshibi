@@ -9,7 +9,8 @@ import { flushMockAutosave, preserveMockDraftBeforeDemo, resetMockWorkspace, use
 import { createVenueTemplatePlan, VENUE_STUDY_LINKS, type VenueStudyKind } from '../demo/createVenueStudyPlans'
 import { audienceSeatPositions } from '../audienceLayout'
 import { DEFAULT_VENUE_LAYOUT, stageFootprint } from '../venueLayout'
-import { CloudError, accountUrl, createCloudProject, fetchCloudProject, fetchCloudScene, listCloudProjects, listCloudScenes, loginUrl, replaceCloudProject, type CloudProjectMeta, type CloudSceneMeta } from '../io/cloud'
+import { AccountMenu } from './AccountMenu'
+import { CloudError, createCloudProject, fetchCloudProject, fetchCloudScene, listCloudProjects, listCloudScenes, loginUrl, replaceCloudProject, type CloudProjectMeta, type CloudSceneMeta } from '../io/cloud'
 import { useCloudSession } from '../io/cloudSession'
 import { copyLegacyScene, ensureLegacyLocalProject, importedProjectName, listLegacyLocalScenes } from '../io/legacyMigration'
 import { importScene } from '../io/sceneIO'
@@ -459,7 +460,10 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
   return <main className="project-library">
     <header className="project-library-header">
       <a href="/" className="project-library-brand">TOMOSHIBI<span>小屋</span></a>
-      <span className="project-library-storage">{user ? <><a href="/pro">{user.plan === 'pro' ? 'プラン管理・解約' : '料金プラン'}</a><a href={accountUrl()}>アカウント設定 ↗</a></> : (hasDeviceStorage() ? 'このアプリに保存' : 'ブラウザに一時保存')}</span>
+      <div className="project-library-header-actions">
+        {!user && <span className="project-library-storage">{hasDeviceStorage() ? 'このアプリに保存' : 'ブラウザに一時保存'}</span>}
+        <AccountMenu />
+      </div>
     </header>
     <div className="project-library-workspace">
       <aside className="project-library-rail" aria-label="プロジェクト一覧">
