@@ -51,6 +51,19 @@ function mapPoint(event: PointerEvent<SVGSVGElement>, bounds: MapBounds, include
       bounds.rear + .2, includeHouse ? 35 : bounds.front - .2) * 10) / 10,
   ]
 }
+/** 押している点の舞台上の座標（丸めない）。ドラッグの移動量を出すのに使う */
+function rawMapPoint(event: PointerEvent<SVGSVGElement | SVGElement>, svg: SVGSVGElement, includeHouse: boolean, bounds: MapBounds): StagePoint {
+  const rect = svg.getBoundingClientRect()
+  const px = (event.clientX - rect.left) * MAP.svgWidth / rect.width
+  const py = (event.clientY - rect.top) * MAP.svgHeight / rect.height
+  return [
+    (px - MAP.left) * (bounds.right - bounds.left) / MAP.width + bounds.left,
+    includeHouse && py > 550 ? bounds.front + (py - 550) / 2.5 : (py - MAP.top) * (bounds.front - bounds.rear) / MAP.height + bounds.rear,
+  ]
+}
+const round1 = (value: number) => Math.round(value * 10) / 10
+/** 指で押さえやすい大きさ（画面上の半径 px）。平面図は縮んで表示されるので図の単位に直して使う */
+const TOUCH_RADIUS_PX = 22
 function placeName(point: StagePoint) {
   if (point[0] < -8) return '下手袖'
   if (point[0] > 8) return '上手袖'
@@ -59,7 +72,10 @@ function placeName(point: StagePoint) {
   return side + depth
 }
 
-type DragStart = { kind: 'performer' | 'fixture' | 'target' | 'setpiece'; id: string; sceneId: string; from: StagePoint }
+// fromTarget: 器具の本体を動かすとき、狙いも同じだけ平行に動かす（向きを保つ）ための開始時の狙い
+// grab: 押した点の舞台上の座標。器具と狙いは押した点からのずれだけ動かす（押しただけで中心に飛ばない）
+type DragStart = { kind: 'performer' | 'fixture' | 'target' | 'setpiece'; id: string; sceneId: string; from: StagePoint
+  fromTarget?: StagePoint; grab?: StagePoint; client?: [number, number]; moved?: boolean }
 type OutlineKind = 'scene' | 'chapter'
 type OutlineTarget = { id: string; position: 'before' | 'after' | 'chapter' | 'gap';
   chapterId?: string; beforeSceneId?: string | null }
@@ -129,6 +145,10 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
   const [showSetPieces, setShowSetPieces] = useState(true)
   const [audienceEditorOpen, setAudienceEditorOpen] = useState(false)
   const [lastMove, setLastMove] = useState<DragStart | null>(null)
+  // いま動かしているもの（照明の「位置」か「向き」か）を図の上に出すため
+  const [activeDrag, setActiveDrag] = useState<{ kind: 'fixture' | 'target'; id: string } | null>(null)
+  // 図の 1px が viewBox の何単位か。つまみを画面上で一定の大きさにする
+  const [unitsPerPx, setUnitsPerPx] = useState(1)
   const [feedback, setFeedback] = useState('')
   const [contextMenu, setContextMenu] = useState<{ kind: 'chapter' | 'scene' | 'empty'; id: string; x: number; y: number } | null>(null)
   const [draggingOutline, setDraggingOutline] = useState<{ kind: OutlineKind; id: string } | null>(null)
@@ -150,6 +170,15 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
   useEffect(() => () => cancelAnimationFrame(outlineFrame.current), [])
   const dragStart = useRef<DragStart | null>(null)
   const svgRef = useRef<SVGSVGElement>(null)
+  useEffect(() => {
+    const svg = svgRef.current
+    if (!svg || typeof ResizeObserver === 'undefined') return
+    const update = () => { const width = svg.getBoundingClientRect().width; if (width > 0) setUnitsPerPx(MAP.svgWidth / width) }
+    update()
+    const observer = new ResizeObserver(update)
+    observer.observe(svg)
+    return () => observer.disconnect()
+  })
   const chapterNameRef = useRef<HTMLInputElement>(null)
   const sequenceNameRef = useRef<HTMLInputElement>(null)
   const sceneNameRef = useRef<HTMLInputElement>(null)
@@ -225,8 +254,14 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
   const beginDrag = (event: PointerEvent<SVGElement>, kind: DragStart['kind'], id: string, from: StagePoint) => {
     event.preventDefault()
     event.stopPropagation()
-    dragStart.current = { kind, id, sceneId: scene.id, from }
-    svgRef.current?.setPointerCapture(event.pointerId)
+    const fixture = kind === 'fixture' ? useStore.getState().fixtures.find(item => item.id === id) : undefined
+    const svg = svgRef.current
+    dragStart.current = { kind, id, sceneId: scene.id, from,
+      fromTarget: fixture ? [fixture.target[0], fixture.target[2]] : undefined,
+      grab: svg && (kind === 'fixture' || kind === 'target') ? rawMapPoint(event, svg, kind === 'fixture', mapBounds) : undefined,
+      client: [event.clientX, event.clientY] }
+    svg?.setPointerCapture(event.pointerId)
+    if (kind === 'fixture' || kind === 'target') setActiveDrag({ kind, id })
     if (kind === 'performer') selectActor(id)
     else if (kind === 'target' || kind === 'fixture') selectFixture(id, kind === 'target' ? 'target' : 'position')
     else selectSetPiece(id)
@@ -234,6 +269,33 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
   const moveDrag = (event: PointerEvent<SVGSVGElement>) => {
     const start = dragStart.current
     if (!start || start.sceneId !== scene.id) return
+    // 押しただけ（指が数 px ぶれただけ）では動かさない。選ぶつもりで触れた照明が動いてしまうのを防ぐ
+    if (!start.moved && start.client && Math.hypot(event.clientX - start.client[0], event.clientY - start.client[1]) < 6) return
+    start.moved = true
+    if ((start.kind === 'fixture' || start.kind === 'target') && start.grab) {
+      const fixture = useStore.getState().fixtures.find(item => item.id === start.id)
+      if (!fixture) return
+      const now = rawMapPoint(event, event.currentTarget, start.kind === 'fixture', mapBounds)
+      const dx = now[0] - start.grab[0]
+      const dz = now[1] - start.grab[1]
+      const clampTarget = (x: number, z: number): [number, number, number] => [
+        round1(clamp(x, mapBounds.left + .2, mapBounds.right - .2)), fixture.target[1],
+        round1(clamp(z, mapBounds.rear + .2, mapBounds.front - .2))]
+      if (start.kind === 'target') {
+        // 向きだけ変える: 器具の位置はそのまま、狙いだけ動かす
+        updateFixture(fixture.id, { target: clampTarget(start.from[0] + dx, start.from[1] + dz) })
+      } else {
+        // 位置だけ変える: 器具を動かした分だけ狙いも平行に動かし、向きを保つ
+        const x = round1(clamp(start.from[0] + dx, mapBounds.left + .5, mapBounds.right - .5))
+        const z = round1(clamp(start.from[1] + dz, mapBounds.rear + .5, 35))
+        const fromTarget = start.fromTarget ?? [fixture.target[0], fixture.target[2]]
+        updateFixture(fixture.id, {
+          position: [x, fixture.position[1], z],
+          target: clampTarget(fromTarget[0] + (x - start.from[0]), fromTarget[1] + (z - start.from[1])),
+        })
+      }
+      return
+    }
     const [x, z] = mapPoint(event, mapBounds, start.kind === 'fixture')
     if (start.kind === 'performer') {
       const actor = useStore.getState().performers.find(item => item.id === start.id)
@@ -259,6 +321,7 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
   const endDrag = (event: PointerEvent<SVGSVGElement>) => {
     const start = dragStart.current
     dragStart.current = null
+    setActiveDrag(null)
     if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId)
     if (!start) return
     const point = start.kind === 'target'
@@ -270,8 +333,8 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
           : useStore.getState().setPieces.find(piece => piece.id === start.id)?.position
     if (point && Math.hypot(point[0] - start.from[0], point[2] - start.from[1]) > 0.01) {
       setLastMove(start)
-      setFeedback(start.kind === 'target' ? '光の狙いを変更しました' : start.kind === 'fixture'
-        ? '器具の位置を変更しました' : start.kind === 'performer'
+      setFeedback(start.kind === 'target' ? '照明の向きを変えました（位置はそのまま）' : start.kind === 'fixture'
+        ? '照明の位置を動かしました（向きはそのまま）' : start.kind === 'performer'
           ? '役者の立ち位置を変更しました' : '舞台セットの位置を変更しました')
     }
   }
@@ -287,7 +350,8 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
       const fixture = useStore.getState().fixtures.find(item => item.id === lastMove.id)
       if (fixture) updateFixture(fixture.id, lastMove.kind === 'target'
         ? { target: [lastMove.from[0], fixture.target[1], lastMove.from[1]] }
-        : { position: [lastMove.from[0], fixture.position[1], lastMove.from[1]] })
+        : { position: [lastMove.from[0], fixture.position[1], lastMove.from[1]],
+          ...(lastMove.fromTarget ? { target: [lastMove.fromTarget[0], fixture.target[1], lastMove.fromTarget[1]] as [number, number, number] } : {}) })
     } else if (lastMove.kind === 'setpiece') {
       const piece = useStore.getState().setPieces.find(item => item.id === lastMove.id)
       if (piece) updateSetPiece(piece.id, {
@@ -1013,34 +1077,25 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
             </g>)}
             {showFixtures && fixtures.map((fixture, index) => {
               const active = selectedFixture?.id === fixture.id
+              const px = mapX(fixture.position[0]), py = mapY(fixture.position[2])
+              const tx = mapX(fixture.target[0]), ty = mapY(fixture.target[2])
+              const touchRadius = TOUCH_RADIUS_PX * unitsPerPx
+              const dragging = activeDrag?.id === fixture.id ? activeDrag.kind : null
+              const arrowDelta = (key: string): [number, number] | null => key === 'ArrowLeft' ? [-.5, 0] : key === 'ArrowRight' ? [.5, 0]
+                : key === 'ArrowUp' ? [0, -.5] : key === 'ArrowDown' ? [0, .5] : null
               return <g key={fixture.id} opacity={fixture.enabled ? 1 : .45}>
-                <line x1={mapX(fixture.position[0])} y1={mapY(fixture.position[2])}
-                  x2={mapX(fixture.target[0])} y2={mapY(fixture.target[2])}
+                <line x1={px} y1={py} x2={tx} y2={ty}
                   stroke={active ? '#c8482d' : '#a29179'} strokeWidth={active ? 4 : 2}
                   strokeDasharray={active ? undefined : '7 5'} pointerEvents="none" />
-                <circle cx={mapX(fixture.target[0])} cy={mapY(fixture.target[2])} r={active ? 19 : 15}
+                {/* 狙いの点。選んでいない照明では目印だけで、触っても動かない（誤操作を防ぐ） */}
+                <circle cx={tx} cy={ty} r={active ? 19 : 13}
                   fill={colorToHex(fixture.color)} fillOpacity=".3" stroke={active ? '#c8482d' : '#7b6b5a'}
-                  strokeWidth={active ? 5 : 3} style={{ cursor: 'grab', touchAction: 'none' }}
-                  role="button" tabIndex={0} aria-label={fixture.name + 'の狙う位置を移動'}
-                  onPointerDown={event => beginDrag(event, 'target', fixture.id, [fixture.target[0], fixture.target[2]])}
-                  onKeyDown={event => {
-                    const delta = event.key === 'ArrowLeft' ? [-.5, 0] : event.key === 'ArrowRight' ? [.5, 0]
-                      : event.key === 'ArrowUp' ? [0, -.5] : event.key === 'ArrowDown' ? [0, .5] : null
-                    if (!delta) return
-                    event.preventDefault()
-                    selectFixture(fixture.id, 'target')
-                    setLastMove({ kind: 'target', id: fixture.id, sceneId: scene.id, from: [fixture.target[0], fixture.target[2]] })
-                    updateFixture(fixture.id, { target: [
-                      clamp(fixture.target[0] + delta[0], mapBounds.left + .2, mapBounds.right - .2), fixture.target[1],
-                      clamp(fixture.target[2] + delta[1], mapBounds.rear + .2, mapBounds.front - .2),
-                    ] })
-                  }} />
-                <g role="button" tabIndex={0} aria-label={fixture.name + 'の設置位置を移動'}
+                  strokeWidth={active ? 5 : 2} pointerEvents="none" />
+                <g role="button" tabIndex={0} aria-label={fixture.name + 'の位置を動かす（向きはそのまま）'}
                   style={{ cursor: 'grab', touchAction: 'none' }}
                   onPointerDown={event => beginDrag(event, 'fixture', fixture.id, [fixture.position[0], fixture.position[2]])}
                   onKeyDown={event => {
-                    const delta = event.key === 'ArrowLeft' ? [-.5, 0] : event.key === 'ArrowRight' ? [.5, 0]
-                      : event.key === 'ArrowUp' ? [0, -.5] : event.key === 'ArrowDown' ? [0, .5] : null
+                    const delta = arrowDelta(event.key)
                     if (event.key === 'Enter' || event.key === ' ') {
                       event.preventDefault()
                       selectFixture(fixture.id)
@@ -1049,18 +1104,32 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
                     if (!delta) return
                     event.preventDefault()
                     selectFixture(fixture.id)
-                    setLastMove({ kind: 'fixture', id: fixture.id, sceneId: scene.id, from: [fixture.position[0], fixture.position[2]] })
-                    updateFixture(fixture.id, { position: [
-                      clamp(fixture.position[0] + delta[0], mapBounds.left + .5, mapBounds.right - .5), fixture.position[1],
-                      clamp(fixture.position[2] + delta[1], mapBounds.rear + .5, 35),
-                    ] })
+                    setLastMove({ kind: 'fixture', id: fixture.id, sceneId: scene.id,
+                      from: [fixture.position[0], fixture.position[2]], fromTarget: [fixture.target[0], fixture.target[2]] })
+                    // 位置だけ動かす。狙いも同じだけ動かして向きを保つ
+                    updateFixture(fixture.id, {
+                      position: [
+                        clamp(fixture.position[0] + delta[0], mapBounds.left + .5, mapBounds.right - .5), fixture.position[1],
+                        clamp(fixture.position[2] + delta[1], mapBounds.rear + .5, 35),
+                      ],
+                      target: [
+                        clamp(fixture.target[0] + delta[0], mapBounds.left + .2, mapBounds.right - .2), fixture.target[1],
+                        clamp(fixture.target[2] + delta[1], mapBounds.rear + .2, mapBounds.front - .2),
+                      ],
+                    })
                   }}>
                   <title>{fixture.name}{fixture.position[2] > 2 ? `・舞台前から ${(fixture.position[2] - 2).toFixed(1)}m` : ''}</title>
-                  <circle cx={mapX(fixture.position[0])} cy={mapY(fixture.position[2])} r="21"
-                    fill={active ? '#c8482d' : '#322c29'} stroke="#fffdf8" strokeWidth="3" />
-                  <text x={mapX(fixture.position[0])} y={mapY(fixture.position[2]) + 6}
+                  <circle cx={px} cy={py} r={Math.max(21, touchRadius)} fill="transparent" />
+                  <circle cx={px} cy={py} r="21"
+                    fill={active ? '#c8482d' : '#322c29'} stroke={dragging === 'fixture' ? '#2f6f8f' : '#fffdf8'}
+                    strokeWidth={dragging === 'fixture' ? Math.max(6, 3 * unitsPerPx) : 3} />
+                  <text x={px} y={py + 6}
                     textAnchor="middle" fill="#fffdf8" fontSize="17" fontWeight="700"
                     pointerEvents="none">{index + 1}</text>
+                  {dragging === 'fixture' && <text x={clamp(px, 130 * unitsPerPx, MAP.svgWidth - 130 * unitsPerPx)}
+                    y={py - Math.max(21, touchRadius) - 6 * unitsPerPx} textAnchor="middle" fill="#2f6f8f"
+                    fontSize={Math.max(15, 13 * unitsPerPx)} fontWeight="700" paintOrder="stroke" stroke="#fffdf8"
+                    strokeWidth={Math.max(4, 4 * unitsPerPx)} pointerEvents="none">位置を移動中（向きはそのまま）</text>}
                 </g>
               </g>
             })}
@@ -1097,6 +1166,44 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
                   stroke="#fffdf8" strokeWidth="4" pointerEvents="none">{actorLabel}</text>
               </g>
             })}
+            {/* 選んだ照明の「向き」のつまみ。役者やほかの器具の下に隠れないよう最後に描く */}
+            {showFixtures && selectedFixture && (() => {
+              const fixture = selectedFixture
+              const tx = mapX(fixture.target[0]), ty = mapY(fixture.target[2])
+              const touchRadius = TOUCH_RADIUS_PX * unitsPerPx
+              const dragging = activeDrag?.id === fixture.id ? activeDrag.kind : null
+              const arrowDelta = (key: string): [number, number] | null => key === 'ArrowLeft' ? [-.5, 0] : key === 'ArrowRight' ? [.5, 0]
+                : key === 'ArrowUp' ? [0, -.5] : key === 'ArrowDown' ? [0, .5] : null
+              const moveTarget = (delta: [number, number]) => {
+                setLastMove({ kind: 'target', id: fixture.id, sceneId: scene.id, from: [fixture.target[0], fixture.target[2]] })
+                updateFixture(fixture.id, { target: [
+                  clamp(fixture.target[0] + delta[0], mapBounds.left + .2, mapBounds.right - .2), fixture.target[1],
+                  clamp(fixture.target[2] + delta[1], mapBounds.rear + .2, mapBounds.front - .2),
+                ] })
+              }
+              return <g opacity={fixture.enabled ? 1 : .6}>
+                <g className="plan-aim-handle" role="button" tabIndex={0}
+                  aria-label={fixture.name + 'の向きを変える（位置はそのまま）'}
+                  style={{ cursor: 'grab', touchAction: 'none' }}
+                  onPointerDown={event => beginDrag(event, 'target', fixture.id, [fixture.target[0], fixture.target[2]])}
+                  onKeyDown={event => {
+                    const delta = arrowDelta(event.key)
+                    if (!delta) return
+                    event.preventDefault()
+                    moveTarget(delta)
+                  }}>
+                  {/* 指で押さえやすい大きさの、見えない当たり判定 */}
+                  <circle cx={tx} cy={ty} r={Math.max(30, touchRadius)} fill="transparent" />
+                  <circle cx={tx} cy={ty} r={Math.max(23, (dragging === 'target' ? 17 : 14) * unitsPerPx)} fill="#fffdf8" fillOpacity=".35"
+                    stroke="#2f6f8f" strokeWidth={Math.max(4, (dragging === 'target' ? 4 : 3) * unitsPerPx)}
+                    strokeDasharray={dragging === 'target' ? undefined : `${6 * unitsPerPx} ${4 * unitsPerPx}`} />
+                  <text x={clamp(tx, 130 * unitsPerPx, MAP.svgWidth - 130 * unitsPerPx)} y={ty - Math.max(30, touchRadius) - 6 * unitsPerPx}
+                    textAnchor="middle" fill="#2f6f8f" fontSize={Math.max(15, 13 * unitsPerPx)} fontWeight="700"
+                    paintOrder="stroke" stroke="#fffdf8" strokeWidth={Math.max(4, 4 * unitsPerPx)} pointerEvents="none">
+                    {dragging === 'target' ? '向きを変更中（位置はそのまま）' : '向き'}</text>
+                </g>
+              </g>
+            })()}
           </svg>
         </div>
         <div className="plan-map-footer">

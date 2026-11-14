@@ -153,11 +153,17 @@ export function SelectionGizmo() {
               const distNow = new THREE.Vector3(...fixture.target).distanceTo(new THREE.Vector3(...fixture.position))
               const newTgt = new THREE.Vector3(...fixture.position).addScaledVector(dir, distNow)
               updateFixture(fixture.id, { target: [newTgt.x, newTgt.y, newTgt.z] })
+            } else if (handle === 'target') {
+              // 狙いのつまみ: 位置はそのまま、向きだけ変える
+              updateFixture(fixture.id, { target: [o.position.x, o.position.y, o.position.z] })
             } else {
-              const patch = handle === 'target'
-                ? { target: [o.position.x, o.position.y, o.position.z] as [number, number, number] }
-                : { position: [o.position.x, o.position.y, o.position.z] as [number, number, number] }
-              updateFixture(fixture.id, patch)
+              // 本体: 位置だけ動かす。狙いも同じだけ平行に動かして向きを保つ
+              const current = useStore.getState().fixtures.find(item => item.id === fixture.id) ?? fixture
+              const [dx, dy, dz] = [o.position.x - current.position[0], o.position.y - current.position[1], o.position.z - current.position[2]]
+              updateFixture(fixture.id, {
+                position: [o.position.x, o.position.y, o.position.z],
+                target: [current.target[0] + dx, current.target[1] + dy, current.target[2] + dz],
+              })
             }
           }}
         />
