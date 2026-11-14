@@ -10,11 +10,12 @@ import { createVenueTemplatePlan, VENUE_STUDY_LINKS, type VenueStudyKind } from 
 import { audienceSeatPositions } from '../audienceLayout'
 import { DEFAULT_VENUE_LAYOUT, stageFootprint } from '../venueLayout'
 import { AccountMenu } from './AccountMenu'
-import { CloudError, createCloudProject, fetchCloudProject, fetchCloudScene, listCloudProjects, listCloudScenes, loginUrl, replaceCloudProject, type CloudProjectMeta, type CloudSceneMeta } from '../io/cloud'
+import { CloudError, createCloudProject, deleteCloudProject, fetchCloudProject, fetchCloudScene, listCloudProjects, listCloudScenes, loginUrl, replaceCloudProject, type CloudProjectMeta, type CloudSceneMeta } from '../io/cloud'
 import { useCloudSession } from '../io/cloudSession'
 import { copyLegacyScene, ensureLegacyLocalProject, importedProjectName, listLegacyLocalScenes } from '../io/legacyMigration'
 import { importScene } from '../io/sceneIO'
 import { askConfirm } from './askConfirm'
+import { stopProjectEditor } from '../io/projectEditor'
 
 type LibraryItem = { key: string; scene: SerializedScene; draft: boolean }
 
@@ -298,6 +299,30 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
       setCreateError(error instanceof Error ? error.message : '作成できませんでした。もう一度お試しください。')
     } finally { setCreating(false) }
   }
+  const removeMemberProject = async (item: CloudProjectMeta) => {
+    if (!await askConfirm(`「${item.name}」をアカウントから削除しますか？\nほかの端末からも開けなくなります。元に戻せません。`, '削除する')) return
+    setMemberBusy(true)
+    setMemberError('')
+    try {
+      await deleteCloudProject(item.id)
+      if (getActiveCloudProject()?.id === item.id) {
+        // 開いていたプロジェクトを消したら、編集をやめて中身も空にする（残すと保存し直そうとして失敗する）
+        stopProjectEditor()
+        setActiveCloudProject(null)
+        setActiveSavedProjectName(null)
+        loadPreset('empty')
+        markSaved()
+        resetMockWorkspace()
+      }
+      setMemberProjects(items => items.filter(project => project.id !== item.id))
+      setFeedback(`「${item.name}」を削除しました`)
+    } catch (error) {
+      if (error instanceof CloudError && error.status === 404) {
+        setMemberProjects(items => items.filter(project => project.id !== item.id))
+        setFeedback(`「${item.name}」はすでに削除されています`)
+      } else setMemberError(error instanceof CloudError ? error.message : '削除できませんでした。接続を確認して、もう一度お試しください。')
+    } finally { setMemberBusy(false) }
+  }
   const openMemberProject = async (item: CloudProjectMeta) => {
     if (!flushMockAutosave()) { setMemberError('現在の変更を端末に保存できませんでした。'); return }
     if (cloudDirty) {
@@ -484,10 +509,14 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
           {memberBusy && <p className="project-library-list-empty">読み込み中…</p>}
           {memberError && <p className="project-library-feedback" role="status">{memberError}</p>}
           <div className="project-library-list">
-            {memberProjects.map(item => <button key={item.id} className="project-library-list-item"
-              disabled={memberBusy} onClick={() => openMemberProject(item)}>
-              <strong>{item.name}</strong><span>{savedDate(item.updatedAt)}<small>開く →</small></span>
-            </button>)}
+            {memberProjects.map(item => <div key={item.id} className="project-library-member-row">
+              <button className="project-library-list-item"
+                disabled={memberBusy} onClick={() => openMemberProject(item)}>
+                <strong>{item.name}</strong><span>{savedDate(item.updatedAt)}<small>開く →</small></span>
+              </button>
+              <button className="project-library-member-delete" disabled={memberBusy}
+                aria-label={`「${item.name}」を削除`} onClick={() => removeMemberProject(item)}>削除</button>
+            </div>)}
           </div>
         </>}
         {(!user || hasDeviceStorage()) && <>

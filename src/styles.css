@@ -4388,6 +4388,12 @@ body.embed .workspace-switch { display: none; }
 .project-library-list { display: grid; align-content: start; gap: 4px; }
 .project-library-list-item { display: grid; gap: 5px; width: 100%; min-height: 70px; padding: 11px 13px; border: 1px solid transparent; border-radius: 7px; background: transparent; color: #f0e8da; text-align: left; }
 .project-library-list-item:hover { background: rgba(255,255,255,.06); }
+/* アカウントのプロジェクトの行。開くボタンの右に削除を置く（押し間違えないよう離し、確認を出す） */
+.project-library-member-row { display: flex; align-items: stretch; gap: 6px; }
+.project-library-member-row .project-library-list-item { flex: 1; min-width: 0; }
+.project-library-member-delete { flex: none; align-self: center; min-width: 52px; min-height: 44px; padding: 0 10px; border: 1px solid rgba(220,120,100,.4); border-radius: 7px; background: transparent; color: #f0a896; font-size: 12px; cursor: pointer; }
+.project-library-member-delete:hover:not(:disabled) { background: rgba(220,80,60,.14); }
+.project-library-member-delete:disabled { opacity: .45; cursor: default; }
 .project-library-list-item.selected { border-color: rgba(212,175,111,.42); background: rgba(212,175,111,.14); }
 .project-library-list-item strong { overflow: hidden; font-size: 13px; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
 .project-library-list-item span { display: flex; justify-content: space-between; gap: 8px; color: #aaa094; font-size: 11px; }

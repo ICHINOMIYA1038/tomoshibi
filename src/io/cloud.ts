@@ -313,6 +313,11 @@ export function requestProjectEditor(id: string, editorId: string, action: 'acqu
   })
 }
 
+/** アカウントに保存したプロジェクトを消す。ほかの端末からも開けなくなる */
+export function deleteCloudProject(id: string) {
+  return req<{ ok: true }>(`/projects/${id}`, { method: 'DELETE' })
+}
+
 export async function replaceCloudProject(id: string, revision: number, name: string, data: SerializedScene) {
   const currentEditor = getProjectEditorIdentity(id)
   if (currentEditor) return updateCloudProject(id, revision, name, data, true, currentEditor)
