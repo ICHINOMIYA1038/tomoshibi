@@ -184,10 +184,14 @@ export function logoutUrl(): string {
 export function signupUrl(): string {
   return loginUrl()
 }
-/** アカウント設定と退会はポータルで行う（TOMOSHIBI 固有のアカウントは無い） */
+/**
+ * アカウント設定と退会は戯曲 ID のポータルで行う（TOMOSHIBI 固有のアカウントは無い）。
+ * iOS アプリ（1.0.4〜）はこの URL をログイン用のシートで開き、閉じると tomoshibi://account でアプリに戻る。
+ * 戯曲図書館のマイページには飛ばさない（2026-11-14 オーナー決定）
+ */
 export function accountUrl(): string {
-  if (isNativeApp()) return `${BASE}/mypage`
-  return `${PORTAL}/account`
+  if (isNativeApp()) return `${PORTAL}/account?return_to=${encodeURIComponent('tomoshibi://account')}`
+  return `${PORTAL}/account?return_to=${encodeURIComponent(here())}`
 }
 
 /**
