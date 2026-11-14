@@ -6,6 +6,7 @@ import {
   CloudError,
   loginUrl,
   isNativeApp,
+  APP_STORE_SUBSCRIPTIONS_URL,
   NATIVE_PURCHASE_URL,
 } from '../io/cloud'
 import { refreshSession, useCloudSession } from '../io/cloudSession'
@@ -344,6 +345,16 @@ function ProSubscribeButton() {
       <>
         <a href={loginUrl()} className="pro-subscribe-btn">ログインして申し込む</a>
         <div className="pro-subscribe-note">戯曲図書館アカウント (Google) でログインが必要です</div>
+      </>
+    )
+  }
+
+  if (user.plan === 'pro' && user.billing === 'app_store') {
+    // App Store で買った契約は Stripe のポータルでは扱えない（ポータルを開くと戯曲図書館の名前の空の画面になる）
+    return (
+      <>
+        <a className="pro-subscribe-btn" href={APP_STORE_SUBSCRIPTIONS_URL}>App Store で契約を管理・解約</a>
+        <div className="pro-subscribe-note">App Store でお申し込みの契約です。iPhone の「設定」→ 自分の名前 →「サブスクリプション」からも、解約・確認ができます。</div>
       </>
     )
   }

@@ -51,7 +51,14 @@ export interface CloudUser {
   /** 保存できるシーンの上限。バックエンドから返す。 */
   maxScenes: number
   maxProjects: number
+  /** Pro の契約の窓口。'stripe' は Web（Stripe のポータル）、'app_store' は iOS の App Store。free なら null */
+  billing: 'stripe' | 'app_store' | null
+  /** Stripe の顧客がある（Web で買ったことがある） */
+  hasStripeCustomer: boolean
 }
+
+/** App Store のサブスクリプションの管理画面。iPhone では App Store アプリの該当画面が開く */
+export const APP_STORE_SUBSCRIPTIONS_URL = 'https://apps.apple.com/account/subscriptions'
 
 export const FREE_MAX_SCENES = 3
 export interface CloudSceneMeta {
@@ -143,6 +150,9 @@ export async function getSessionSnapshot(): Promise<SessionSnapshot> {
         planExpiresAt: u.planExpiresAt ?? null,
         maxScenes: typeof u.maxScenes === 'number' ? u.maxScenes : FREE_MAX_SCENES,
         maxProjects: typeof u.maxProjects === 'number' ? u.maxProjects : u.plan === 'pro' ? 10 : 2,
+        // 古い API が billing を返さないときは、これまでどおり Stripe とみなす
+        billing: u.plan !== 'pro' ? null : u.billing === 'app_store' ? 'app_store' : 'stripe',
+        hasStripeCustomer: u.hasStripeCustomer !== false,
       },
       proAvailable,
     }
