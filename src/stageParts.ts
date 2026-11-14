@@ -237,3 +237,22 @@ export function sanitizeStageParts(raw: unknown): StagePart[] | undefined {
     })]
   })
 }
+
+/**
+ * 照明がこのバトンに吊ってあるか。照明の battenId がこのバトンの id のときだけ吊ってあるとみなす。
+ * 位置からの推測はしない（ドラッグ中に通りがかった照明や、たまたま近い照明まで動いてしまうため）。
+ * 吊る照明は、会場の配置でバトンを選んだときの「吊っている照明」で決める。
+ */
+export function isHungOn(fixture: { battenId?: string }, batten: StagePart) {
+  return batten.kind === 'batten' && !!fixture.battenId && fixture.battenId === batten.id
+}
+
+/** バトンの線から照明までの、平面図での距離（m）。「吊っている照明」の並び順に使う */
+export function distanceToBatten(position: [number, number, number], batten: StagePart, offset: StagePoint = [0, 0]) {
+  const angle = batten.rotationDeg * Math.PI / 180
+  const dx = position[0] - (batten.x + offset[0])
+  const dz = position[2] - (batten.z + offset[1])
+  const along = dx * Math.cos(angle) - dz * Math.sin(angle)
+  const across = dx * Math.sin(angle) + dz * Math.cos(angle)
+  return Math.hypot(Math.max(0, Math.abs(along) - batten.width / 2), across)
+}

@@ -37,6 +37,8 @@ export interface Fixture {
   colorTempK: number              // LED tunable only: 可変色温度
   rotationZDeg: number
   enabled: boolean
+  /** 吊っているバトン（舞台の部品の id）。無いか '' ならどれにも吊っていない。会場の配置のバトンの欄で決める */
+  battenId?: string
 }
 
 export interface Performer {
@@ -392,6 +394,10 @@ interface State {
   removeAudienceBlock: (id: string) => void
   updateVenueLayout: (patch: Partial<VenueLayout>) => void
   moveStageTo: (offset: StagePoint) => void
+  /** 舞台の部品を保存する。バトンを動かしたときは、吊った照明も全シーンで一緒に動かす */
+  updateStageParts: (parts: StagePart[], moved?: { before: StagePart; after: StagePart; fixtureIds: string[] }) => void
+  /** 照明を吊るバトンを決める。'' はどれにも吊らない。全シーンの同じ照明に反映する */
+  setFixtureBatten: (fixtureId: string, battenId: string) => void
   ensureScenes: () => void
   addScene: () => void
   addSceneAt: (chapterId: string, beforeSceneId: string | null) => string | null
@@ -704,6 +710,37 @@ export const useStore = create<State>((set, get) => ({
     return {
       productionPlan: { ...captured, venueLayout: { ...layout, stageOffset: next }, scenes },
       ...shift(s),
+    }
+  }),
+  updateStageParts: (parts, moved) => set(s => {
+    const layout = { ...DEFAULT_VENUE_LAYOUT, ...s.productionPlan.venueLayout, stageParts: parts }
+    const dx = moved ? moved.after.x - moved.before.x : 0
+    const dy = moved ? moved.after.elevation - moved.before.elevation : 0
+    const dz = moved ? moved.after.z - moved.before.z : 0
+    // 長さや向きを変えたときは照明を動かさない（吊った位置の意味が変わるため）
+    if (!moved || moved.before.kind !== 'batten' || (!dx && !dy && !dz)
+      || moved.after.width !== moved.before.width || moved.after.rotationDeg !== moved.before.rotationDeg)
+      return { productionPlan: { ...s.productionPlan, venueLayout: layout } }
+    // 吊った照明は動かし始めたときに決めておく。動かしながら決め直すと、通りがかった照明まで拾ってしまう
+    const ids = new Set(moved.fixtureIds)
+    const shift = (fixtures: Fixture[]) => fixtures.map(fixture => ids.has(fixture.id) ? {
+      ...fixture,
+      position: [fixture.position[0] + dx, fixture.position[1] + dy, fixture.position[2] + dz] as Fixture['position'],
+      // 向きを保ったまま動かす（狙う先も同じだけずらす）
+      target: [fixture.target[0] + dx, fixture.target[1] + dy, fixture.target[2] + dz] as Fixture['target'],
+    } : fixture)
+    const captured = captureActiveScene(s.productionPlan, s)
+    return {
+      productionPlan: { ...captured, venueLayout: layout, scenes: captured.scenes.map(scene => ({ ...scene, fixtures: shift(scene.fixtures) })) },
+      fixtures: shift(s.fixtures),
+    }
+  }),
+  setFixtureBatten: (fixtureId, battenId) => set(s => {
+    const apply = (fixtures: Fixture[]) => fixtures.map(fixture => fixture.id === fixtureId ? { ...fixture, battenId } : fixture)
+    const captured = captureActiveScene(s.productionPlan, s)
+    return {
+      productionPlan: { ...captured, scenes: captured.scenes.map(scene => ({ ...scene, fixtures: apply(scene.fixtures) })) },
+      fixtures: apply(s.fixtures),
     }
   }),
   ensureScenes: () => set(s => {

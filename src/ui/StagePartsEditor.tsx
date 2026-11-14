@@ -1,9 +1,9 @@
 import { useRef, type PointerEvent, type KeyboardEvent } from 'react'
 import * as THREE from 'three'
-import { useStore, type StagePoint, type VenueLayout } from '../store'
+import { useStore, type StagePoint } from '../store'
 import { DEFAULT_VENUE_LAYOUT } from '../venueLayout'
 import {
-  clampPart, DEFAULT_CYC_COLOR, DEFAULT_WALL_COLOR, FLOOR_FINISHES, isFlat, newPart, PART_LABELS, partCorners,
+  clampPart, DEFAULT_CYC_COLOR, distanceToBatten, isHungOn, DEFAULT_WALL_COLOR, FLOOR_FINISHES, isFlat, newPart, PART_LABELS, partCorners,
   resolveStageParts, snapValue, stageTemplateOf, TEMPLATE_LABELS, type StagePart, type StagePartKind, type StageTemplate,
 } from '../stageParts'
 import { askConfirm } from './askConfirm'
@@ -17,19 +17,25 @@ const PART_COLORS: Record<StagePartKind, string> = {
 
 export function useStageParts() {
   const layout = useStore(state => state.productionPlan.venueLayout ?? DEFAULT_VENUE_LAYOUT)
-  const updateVenue = useStore(state => state.updateVenueLayout)
+  const updateParts = useStore(state => state.updateStageParts)
   const parts = resolveStageParts(layout)
   const offset: StagePoint = layout.stageOffset ?? [0, 0]
   /** 部品の並びを保存する。保存すると、それ以降はこの並びが正になる（触っていない部品は引き続き舞台に合わせる） */
-  const commit = (next: StagePart[], patch: Partial<VenueLayout> = {}) => updateVenue({ stageParts: next, ...patch })
-  const change = (id: string, patch: Partial<StagePart>) => {
+  const commit = (next: StagePart[], moved?: { before: StagePart; after: StagePart; fixtureIds: string[] }) => updateParts(next, moved)
+  /** バトンに吊ってある照明の id。ドラッグでは動かし始めたときの分を使い続ける */
+  const hungIds = (batten: StagePart) => useStore.getState().fixtures.filter(fixture => isHungOn(fixture, batten)).map(fixture => fixture.id)
+  const change = (id: string, patch: Partial<StagePart>, fixtureIds?: string[]) => {
     const current = resolveStageParts(useStore.getState().productionPlan.venueLayout ?? DEFAULT_VENUE_LAYOUT)
-    commit(current.map(item => item.id === id ? clampPart({ ...item, ...patch, edited: true }, offset) : item))
+    const before = current.find(item => item.id === id)
+    if (!before) return
+    const after = clampPart({ ...before, ...patch, edited: true }, offset)
+    // バトンを動かしたときは、吊った照明も一緒に動く（store の updateStageParts）
+    commit(current.map(item => item.id === id ? after : item), { before, after, fixtureIds: fixtureIds ?? hungIds(before) })
   }
-  return { layout, parts, offset, commit, change }
+  return { layout, parts, offset, commit, change, hungIds }
 }
 
-type Drag = { id: string; handle: 'body' | 'end-a' | 'end-b' | 'left' | 'right' | 'rear' | 'front'; pointerId: number; at: StagePoint; from: StagePart; moved: boolean }
+type Drag = { id: string; handle: 'body' | 'end-a' | 'end-b' | 'left' | 'right' | 'rear' | 'front'; pointerId: number; at: StagePoint; from: StagePart; moved: boolean; fixtureIds: string[] }
 
 /** 平面図の上に部品を描き、選んだ部品には取っ手を出す。座標は世界の座標（舞台の移動を含む） */
 export function StagePartsLayer({ selectedId, onSelect, toWorld, mapX, mapY, unitsPerPx }: {
@@ -40,7 +46,7 @@ export function StagePartsLayer({ selectedId, onSelect, toWorld, mapX, mapY, uni
   mapY: (z: number) => number
   unitsPerPx: number
 }) {
-  const { parts, offset, change } = useStageParts()
+  const { parts, offset, change, hungIds } = useStageParts()
   const drag = useRef<Drag | null>(null)
   const toLocal = (event: PointerEvent<SVGElement>): StagePoint => {
     const [x, z] = toWorld(event)
@@ -52,7 +58,7 @@ export function StagePartsLayer({ selectedId, onSelect, toWorld, mapX, mapY, uni
     event.preventDefault()
     event.stopPropagation()
     onSelect(item.id)
-    drag.current = { id: item.id, handle, pointerId: event.pointerId, at: toLocal(event), from: item, moved: false }
+    drag.current = { id: item.id, handle, pointerId: event.pointerId, at: toLocal(event), from: item, moved: false, fixtureIds: hungIds(item) }
     event.currentTarget.setPointerCapture(event.pointerId)
   }
   const move = (event: PointerEvent<SVGElement>) => {
@@ -65,7 +71,7 @@ export function StagePartsLayer({ selectedId, onSelect, toWorld, mapX, mapY, uni
     if (!current.moved && Math.hypot(x - current.at[0], z - current.at[1]) < .15) return
     current.moved = true
     if (current.handle === 'body') {
-      change(from.id, { x: snapValue(from.x + x - current.at[0], fine), z: snapValue(from.z + z - current.at[1], fine) })
+      change(from.id, { x: snapValue(from.x + x - current.at[0], fine), z: snapValue(from.z + z - current.at[1], fine) }, current.fixtureIds)
       return
     }
     const angle = from.rotationDeg * Math.PI / 180
@@ -172,9 +178,11 @@ function NumberField({ label, value, min, max, step = .1, unit = 'm', onChange }
 
 /** 会場の配置の右側に出す、舞台の部品の欄 */
 export function StagePartsInspector({ selectedId, onSelect }: { selectedId: string | null; onSelect: (id: string | null) => void }) {
-  const { layout, parts, offset, commit, change } = useStageParts()
+  const { layout, parts, offset, commit, change, hungIds } = useStageParts()
   const updateVenue = useStore(state => state.updateVenueLayout)
   const template = stageTemplateOf(layout)
+  const fixtures = useStore(state => state.fixtures)
+  const setFixtureBatten = useStore(state => state.setFixtureBatten)
   const selected = parts.find(item => item.id === selectedId) ?? null
   // 一度でも部品を変えると stageParts が保存される
   const touched = Boolean(layout.stageParts)
@@ -189,7 +197,11 @@ export function StagePartsInspector({ selectedId, onSelect }: { selectedId: stri
     commit(parts.filter(other => other.id !== item.id))
     onSelect(null)
   }
-  const resetOne = (item: StagePart) => commit(parts.map(other => other.id === item.id ? { ...other, edited: undefined } : other))
+  const resetOne = (item: StagePart) => {
+    const next = parts.map(other => other.id === item.id ? { ...other, edited: undefined } : other)
+    const after = resolveStageParts({ ...layout, stageParts: next }).find(other => other.id === item.id)
+    commit(next, after ? { before: item, after, fixtureIds: hungIds(item) } : undefined)
+  }
   const chooseTemplate = async (next: StageTemplate) => {
     if (touched && !await askConfirm('いまの部品の配置を、選んだひな形の配置に置き換えますか？動かした部品や足した部品は元に戻ります。', '置き換える')) return
     updateVenue({ stageTemplate: next, stageParts: undefined })
@@ -224,6 +236,16 @@ export function StagePartsInspector({ selectedId, onSelect }: { selectedId: stri
       {(selected.kind === 'wall' || selected.kind === 'cyc' || selected.kind === 'wing') &&
         <NumberField label="下端の高さ" value={selected.elevation} min={0} max={10} onChange={value => change(selected.id, { elevation: value })} />}
       <NumberField label="向き" value={selected.rotationDeg} min={-180} max={180} step={5} unit="°" onChange={value => change(selected.id, { rotationDeg: value })} />
+      {selected.kind === 'batten' && <div className="stage-batten-fixtures">
+        <strong>吊っている照明</strong>
+        <p>チェックした照明は、このバトンを動かす・高さを変えると一緒に動きます（全シーン）。向きはそのままです。近い順に並んでいます。</p>
+        {fixtures.length ? [...fixtures].sort((a, b) => distanceToBatten(a.position, selected, offset) - distanceToBatten(b.position, selected, offset)).map(fixture => <label key={fixture.id}>
+          <input type="checkbox" checked={isHungOn(fixture, selected)}
+            onChange={event => setFixtureBatten(fixture.id, event.target.checked ? selected.id : '')} />
+          <span>{fixture.name}</span>
+          <small>バトンから {distanceToBatten(fixture.position, selected, offset).toFixed(1)}m・高さ {fixture.position[1].toFixed(1)}m</small>
+        </label>) : <p>照明がありません。</p>}
+      </div>}
       <div className="stage-part-actions">
         <button type="button" onClick={() => change(selected.id, { rotationDeg: selected.rotationDeg + 90 })}>90° 回す</button>
         {selected.auto && selected.edited && <button type="button" onClick={() => resetOne(selected)}>初期配置に戻す</button>}
