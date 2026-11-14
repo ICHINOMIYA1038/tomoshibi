@@ -419,7 +419,7 @@ function CloudScenes() {
       <footer className="scene-account">
         <span className="scene-account-name">{user.name ?? user.id}</span>
         <span className="scene-account-links">
-          <a href={accountUrl()} className="scene-account-logout" title="アカウントの管理・削除は戯曲図書館マイページで行えます">
+          <a href={accountUrl()} className="scene-account-logout" title="アカウントの管理・退会は戯曲 ID の画面で行えます">
             アカウント管理
           </a>
           <a href={logoutUrl()} className="scene-account-logout">ログアウト</a>
