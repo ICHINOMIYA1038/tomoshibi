@@ -41,14 +41,14 @@ type Drag = { id: string; handle: 'body' | 'end-a' | 'end-b' | 'left' | 'right' 
 export function StagePartsLayer({ selectedId, onSelect, toWorld, mapX, mapY, unitsPerPx }: {
   selectedId: string | null
   onSelect: (id: string | null) => void
-  toWorld: (event: PointerEvent<SVGElement>) => StagePoint
+  toWorld: (point: { clientX: number; clientY: number }) => StagePoint
   mapX: (x: number) => number
   mapY: (z: number) => number
   unitsPerPx: number
 }) {
   const { parts, offset, change, hungIds } = useStageParts()
   const drag = useRef<Drag | null>(null)
-  const toLocal = (event: PointerEvent<SVGElement>): StagePoint => {
+  const toLocal = (event: { clientX: number; clientY: number }): StagePoint => {
     const [x, z] = toWorld(event)
     return [x - offset[0], z - offset[1]]
   }
@@ -59,9 +59,20 @@ export function StagePartsLayer({ selectedId, onSelect, toWorld, mapX, mapY, uni
     event.stopPropagation()
     onSelect(item.id)
     drag.current = { id: item.id, handle, pointerId: event.pointerId, at: toLocal(event), from: item, moved: false, fixtureIds: hungIds(item) }
-    event.currentTarget.setPointerCapture(event.pointerId)
+    // 動きは window で受ける。押した要素で受けると、選んだときの再描画で要素が入れ替わり、ドラッグが途切れることがある
+    // （2026-11-15 の「動かせない」の原因）
+    const stop = (up: globalThis.PointerEvent) => {
+      if (up.pointerId !== event.pointerId) return
+      drag.current = null
+      window.removeEventListener('pointermove', move)
+      window.removeEventListener('pointerup', stop)
+      window.removeEventListener('pointercancel', stop)
+    }
+    window.addEventListener('pointermove', move)
+    window.addEventListener('pointerup', stop)
+    window.addEventListener('pointercancel', stop)
   }
-  const move = (event: PointerEvent<SVGElement>) => {
+  const move = (event: globalThis.PointerEvent) => {
     const current = drag.current
     if (!current || current.pointerId !== event.pointerId) return
     const fine = event.shiftKey
@@ -95,10 +106,6 @@ export function StagePartsLayer({ selectedId, onSelect, toWorld, mapX, mapY, uni
     const centerAlong = fixed + sign * depth / 2
     change(from.id, { depth, x: from.x + uz[0] * centerAlong, z: from.z + uz[1] * centerAlong })
   }
-  const end = (event: PointerEvent<SVGElement>) => {
-    if (drag.current?.pointerId === event.pointerId) drag.current = null
-    if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId)
-  }
   const nudge = (event: KeyboardEvent<SVGElement>, item: StagePart) => {
     const step = event.shiftKey ? .1 : .5
     const delta = event.key === 'ArrowLeft' ? [-step, 0] : event.key === 'ArrowRight' ? [step, 0]
@@ -111,20 +118,9 @@ export function StagePartsLayer({ selectedId, onSelect, toWorld, mapX, mapY, uni
   }
   // 指で掴める大きさ（画面で半径 22px 以上）にする
   const hitRadius = 22 * unitsPerPx
-  const ordered = [...parts].sort((a, b) => Number(a.id === selectedId) - Number(b.id === selectedId)
-    || Number(!isFlat(a.kind)) - Number(!isFlat(b.kind)))
-  return <g className="stage-parts-layer">
-    {ordered.map(item => {
-      const corners = partCorners(item)
-      const selected = item.id === selectedId
-      const common = {
-        role: 'button', tabIndex: 0, 'aria-label': `${PART_LABELS[item.kind]}を選んで移動`, 'aria-pressed': selected,
-        style: { cursor: 'grab', touchAction: 'none' as const },
-        onPointerDown: (event: PointerEvent<SVGElement>) => begin(event, item, 'body'),
-        onPointerMove: move, onPointerUp: end, onPointerCancel: end,
-        onKeyDown: (event: KeyboardEvent<SVGElement>) => nudge(event, item),
-      }
-      const handles: Array<{ handle: Drag['handle']; at: StagePoint; label: string }> = isFlat(item.kind) ? (() => {
+  const handlesOf = (item: StagePart): Array<{ handle: Drag['handle']; at: StagePoint; label: string }> => {
+    const corners = partCorners(item)
+    return isFlat(item.kind) ? (() => {
         const angle = item.rotationDeg * Math.PI / 180
         const ux: StagePoint = [Math.cos(angle), -Math.sin(angle)]
         const uz: StagePoint = [Math.sin(angle), Math.cos(angle)]
@@ -139,6 +135,20 @@ export function StagePartsLayer({ selectedId, onSelect, toWorld, mapX, mapY, uni
         { handle: 'end-a', at: corners[0], label: '長さ（片方の端）' },
         { handle: 'end-b', at: corners[1], label: '長さ（もう片方の端）' },
       ]
+  }
+  // 選んだかどうかで並びを変えない（並びが変わると、押した要素が入れ替わる）。取っ手は最後にまとめて描く
+  const selectedPart = parts.find(item => item.id === selectedId) ?? null
+  const ordered = [...parts].sort((a, b) => Number(!isFlat(a.kind)) - Number(!isFlat(b.kind)))
+  return <g className="stage-parts-layer">
+    {ordered.map(item => {
+      const corners = partCorners(item)
+      const selected = item.id === selectedId
+      const common = {
+        role: 'button', tabIndex: 0, 'aria-label': `${PART_LABELS[item.kind]}を選んで移動`, 'aria-pressed': selected,
+        style: { cursor: 'grab', touchAction: 'none' as const },
+        onPointerDown: (event: PointerEvent<SVGElement>) => begin(event, item, 'body'),
+        onKeyDown: (event: KeyboardEvent<SVGElement>) => nudge(event, item),
+      }
       return <g key={item.id}>
         {isFlat(item.kind)
           ? <polygon {...common} points={corners.map(([x, z]) => `${px(x)},${py(z)}`).join(' ')}
@@ -151,14 +161,15 @@ export function StagePartsLayer({ selectedId, onSelect, toWorld, mapX, mapY, uni
               stroke={selected ? '#f2c27b' : PART_COLORS[item.kind]} strokeWidth={item.kind === 'batten' ? 4 : 7}
               strokeDasharray={item.kind === 'batten' ? '10 5' : undefined} strokeLinecap="round" />
           </g>}
-        {selected && handles.map(handle => <g key={handle.handle} role="button" aria-label={`${PART_LABELS[item.kind]}の${handle.label}をドラッグして大きさを変える`}
-          style={{ cursor: 'ew-resize', touchAction: 'none' }}
-          onPointerDown={event => begin(event, item, handle.handle)} onPointerMove={move} onPointerUp={end} onPointerCancel={end}>
-          <circle cx={px(handle.at[0])} cy={py(handle.at[1])} r={hitRadius} fill="transparent" />
-          <circle cx={px(handle.at[0])} cy={py(handle.at[1])} r={Math.max(8, hitRadius * .45)} fill="#f2c27b" stroke="#3d2a17" strokeWidth="3" />
-        </g>)}
       </g>
     })}
+    {selectedPart && handlesOf(selectedPart).map(handle => <g key={handle.handle} role="button"
+      aria-label={`${PART_LABELS[selectedPart.kind]}の${handle.label}をドラッグして大きさを変える`}
+      style={{ cursor: 'ew-resize', touchAction: 'none' }}
+      onPointerDown={event => begin(event, selectedPart, handle.handle)}>
+      <circle cx={px(handle.at[0])} cy={py(handle.at[1])} r={hitRadius} fill="transparent" />
+      <circle cx={px(handle.at[0])} cy={py(handle.at[1])} r={Math.max(8, hitRadius * .45)} fill="#f2c27b" stroke="#3d2a17" strokeWidth="3" />
+    </g>)}
   </g>
 }
 
