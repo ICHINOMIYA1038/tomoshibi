@@ -7,7 +7,9 @@ import { importScene } from './sceneIO'
 import { resetMockWorkspace } from './mockWorkspace'
 
 type Status = 'idle' | 'checking' | 'owned' | 'blocked' | 'lost' | 'error' | 'stale'
-let state: { projectId: string | null; status: Status; error: string; deadline: number; epoch: number } = { projectId: null, status: 'idle', error: '', deadline: 0, epoch: 0 }
+// lostBy: 編集を止めた理由。'tab' は同じブラウザの別タブ、'other' はサーバーが別の画面に編集権を渡したと返したとき
+type LostBy = 'tab' | 'other' | null
+let state: { projectId: string | null; status: Status; error: string; deadline: number; epoch: number; lostBy: LostBy } = { projectId: null, status: 'idle', error: '', deadline: 0, epoch: 0, lostBy: null }
 let owner: { projectId: string; userId: string; editorId: string } | null = null
 let generation = 0
 let timer: ReturnType<typeof setInterval> | undefined
@@ -31,12 +33,12 @@ function install(project: CloudProject) {
   setActiveCloudProject({ id: project.id, name: project.name, revision: project.revision })
   resetMockWorkspace()
 }
-export async function loseProjectEditor() {
+export async function loseProjectEditor(by: Exclude<LostBy, null> = 'other') {
   if (!owner) return
   const current = owner
   const stamp = ++generation
   pendingRenew = false
-  publish({ status: 'lost', deadline: 0 })
+  publish({ status: 'lost', deadline: 0, lostBy: by })
   try {
     const latest = await fetchCloudProject(current.projectId)
     if (stamp === generation && state.status === 'lost') install(latest)
@@ -44,7 +46,7 @@ export async function loseProjectEditor() {
 }
 channel?.addEventListener('message', event => {
   if (owner && event.data?.projectId === owner.projectId && event.data?.userId === owner.userId &&
-      event.data?.editorId !== owner.editorId) void loseProjectEditor()
+      event.data?.editorId !== owner.editorId) void loseProjectEditor('tab')
 })
 export function stopProjectEditor() {
   const previous = owner
@@ -73,7 +75,7 @@ async function acquire(takeover: boolean, dirty: boolean, stamp: number, retry =
   if (!current) return
   needsSnapshot = true
   pendingDirty = dirty
-  publish({ status: 'checking', error: '' })
+  publish({ status: 'checking', error: '', lostBy: null })
   const started = Date.now()
   try {
     const result = await requestProjectEditor(current.projectId, current.editorId, takeover ? 'takeover' : 'acquire')
