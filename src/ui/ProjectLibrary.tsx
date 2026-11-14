@@ -14,6 +14,7 @@ import { CloudError, createCloudProject, fetchCloudProject, fetchCloudScene, lis
 import { useCloudSession } from '../io/cloudSession'
 import { copyLegacyScene, ensureLegacyLocalProject, importedProjectName, listLegacyLocalScenes } from '../io/legacyMigration'
 import { importScene } from '../io/sceneIO'
+import { askConfirm } from './askConfirm'
 
 type LibraryItem = { key: string; scene: SerializedScene; draft: boolean }
 
@@ -239,9 +240,9 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
       behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start',
     }), 50)
   }
-  const open = (item: LibraryItem) => {
+  const open = async (item: LibraryItem) => {
     if (item.draft) { onOpenEditor(); return }
-    if (!flushMockAutosave() && !window.confirm('現在の変更を保存できませんでした。別のプロジェクトを開きますか？')) return
+    if (!flushMockAutosave() && !await askConfirm('現在の変更を保存できませんでした。別のプロジェクトを開きますか？')) return
     if (!preserveMockDraftBeforeDemo()) { setFeedback('現在の変更を端末に控えられませんでした。'); return }
     loadSceneLS(item.scene.name)
     setActiveCloudProject(null)
@@ -256,15 +257,15 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
     const title = createName.trim()
     if (!title) { createNameRef.current?.focus(); return }
     if (cloudDirty) {
-      if (!window.confirm('編集中の変更がまだ保存されていません。保存が完了してから、新しいプロジェクトを作成しますか？')) return
+      if (!await askConfirm('編集中の変更がまだ保存されていません。保存が完了してから、新しいプロジェクトを作成しますか？')) return
       setCreating(true)
       try { await waitForCloudSave() }
       catch (error) { setCreateError(error instanceof Error ? error.message : '保存状態を確認できませんでした。'); setCreating(false); return }
       setCreating(false)
     }
-    if (!flushMockAutosave() && !window.confirm('現在の変更を保存できませんでした。新しいプロジェクトを作りますか？')) return
+    if (!flushMockAutosave() && !await askConfirm('現在の変更を保存できませんでした。新しいプロジェクトを作りますか？')) return
     if (hasDeviceStorage() && !preserveMockDraftBeforeDemo()) { setCreateError('現在の変更を保存できませんでした。'); return }
-    if (!user && !hasDeviceStorage() && hasDraft && !window.confirm('編集中のプロジェクトを新しい内容に置き換えますか？ブラウザで保持できるのは1件です。')) return
+    if (!user && !hasDeviceStorage() && hasDraft && !await askConfirm('編集中のプロジェクトを新しい内容に置き換えますか？ブラウザで保持できるのは1件です。')) return
     const previous = exportScene()
     const previousCloud = getActiveCloudProject()
     const previousName = getActiveSavedProjectName()
@@ -300,7 +301,7 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
   const openMemberProject = async (item: CloudProjectMeta) => {
     if (!flushMockAutosave()) { setMemberError('現在の変更を端末に保存できませんでした。'); return }
     if (cloudDirty) {
-      if (!window.confirm('編集中の変更がまだ保存されていません。保存が完了してから、選んだプロジェクトを開きますか？')) return
+      if (!await askConfirm('編集中の変更がまだ保存されていません。保存が完了してから、選んだプロジェクトを開きますか？')) return
       setMemberBusy(true)
       try { await waitForCloudSave() }
       catch (error) { setMemberError(error instanceof Error ? error.message : '保存状態を確認できませんでした。'); setMemberBusy(false); return }
@@ -317,11 +318,18 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
     } catch (error) { setMemberError(error instanceof CloudError ? error.status === 401 ? 'ログインの有効期限が切れました。再度ログインしてください。' : error.message : 'プロジェクトを開けませんでした。もう一度お試しください。') }
     finally { setMemberBusy(false) }
   }
-  const remove = (name: string) => {
-    if (!window.confirm(`「${name}」をこの端末から削除しますか？`)) return
+  const remove = async (name: string) => {
+    if (!await askConfirm(`「${name}」をこの端末から削除しますか？`)) return
     try {
       deleteSceneLS(name)
-      if (savedName === name) { setActiveSavedProjectName(null); resetMockWorkspace() }
+      if (savedName === name) {
+        // 開いていたプロジェクトを消したら、編集中の内容も空にする。残すと「編集中の変更」として一覧に残り、
+        // 次に一覧を開いたときに同じ名前のプロジェクトとして保存し直されてしまう
+        setActiveSavedProjectName(null)
+        loadPreset('empty')
+        markSaved()
+        resetMockWorkspace()
+      }
       setProjects(listSavedScenes())
       setSelectedKey(null)
       setFeedback(`「${name}」を削除しました`)
@@ -359,7 +367,7 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
       ...(hasDeviceStorage() ? [] : ['保存後、このブラウザのプロジェクトは、選ばなかったものも含めてすべて削除されます。']),
       'この内容で続けますか？',
     ].join('\n\n')
-    if (!window.confirm(warning)) return
+    if (!await askConfirm(warning)) return
     setTransferBusy(true)
     setTransferMessage('')
     try {

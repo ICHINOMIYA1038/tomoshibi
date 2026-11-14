@@ -127,6 +127,10 @@ export function preserveMockDraftBeforeDemo(): boolean {
       for (let number = 2; names.has(name); number++) name = `${base}${number}`
     }
     saveSerializedSceneLS({ ...scene, name, savedAt: new Date().toISOString() })
+    // 控えたプロジェクトを編集中の内容に結びつける。結びつけないと、一覧を開くたびに同じ下書きを
+    // 「（保存前）」「（保存前）2」…として保存し直し、同じプロジェクトが増えていく
+    workspaceStorage().setItem(SESSION_KEY, JSON.stringify({ ...session, activeSavedName: name, scene: { ...scene, name } }))
+    if (installed) setActiveSavedProjectName(name)
     return true
   } catch {
     return false

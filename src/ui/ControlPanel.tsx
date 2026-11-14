@@ -7,6 +7,7 @@ import { MEASURED_FRESNEL_KEY } from '../photometric/measuredFresnel'
 import { MEASURED_CYC_KEY } from '../photometric/measuredCyc'
 import { PERFORMER_POSES } from '../performerPoses'
 import { isWorkspacePath } from '../io/workspacePath'
+import { askConfirm } from './askConfirm'
 
 // 演劇関係者向け TOP パネル
 // タブ: 器具 / 役者 のみ。設定は ⚙ から SettingsModal で開く
@@ -247,9 +248,9 @@ function FixturesPanel({ planOpen }: { planOpen: boolean }) {
   const [addKind, setAddKind] = useState<FixtureKind>('Fresnel')
   const [addPreset, setAddPreset] = useState<string>('Fresnel8')
 
-  const bulkDelete = () => {
+  const bulkDelete = async () => {
     if (bulk.count === 0) return
-    if (!confirm(`${bulk.count} 件の器具を削除しますか?`)) return
+    if (!await askConfirm(`${bulk.count} 件の器具を削除しますか?`)) return
     for (const id of bulk.picked) useStore.getState().removeFixture(id)
     bulk.clear()
     setBulkMode(false)
@@ -486,8 +487,8 @@ function FixtureEditor({ fixture }: { fixture: Fixture }) {
 
       <div className="row" style={{ marginTop: 12 }}>
         <button onClick={() => dup(fixture.id)} style={{ flex: 1 }}>複製</button>
-        <button className="danger" onClick={() => {
-          if (confirm(`「${fixture.name}」を削除しますか？`)) remove(fixture.id)
+        <button className="danger" onClick={async () => {
+          if (await askConfirm(`「${fixture.name}」を削除しますか？`)) remove(fixture.id)
         }} style={{ flex: 1 }}>この照明を削除</button>
       </div>
     </>
@@ -579,9 +580,9 @@ function PerformersPanel() {
   const bulk = useBulkSelection(performers.map(p => p.id))
   const [bulkMode, setBulkMode] = useState(false)
 
-  const bulkDelete = () => {
+  const bulkDelete = async () => {
     if (bulk.count === 0) return
-    if (!confirm(`${bulk.count} 人の役者を削除しますか?`)) return
+    if (!await askConfirm(`${bulk.count} 人の役者を削除しますか?`)) return
     for (const id of bulk.picked) remove(id)
     bulk.clear()
     setBulkMode(false)
@@ -672,8 +673,8 @@ function PerformersPanel() {
             fmt={v => `${Math.round(v * 170)}cm`} />
           <PositionTrio label="位置" value={selected.position} onChange={v => update(selected.id, { position: [v[0], Math.max(0, v[1]), v[2]] })} ranges={[[-6, 6], [0, 2], [-7, 2]]} />
           <div className="row" style={{ marginTop: 12 }}>
-            <button className="danger" onClick={() => {
-              if (confirm(`「${selected.name}」を削除しますか？`)) remove(selected.id)
+            <button className="danger" onClick={async () => {
+              if (await askConfirm(`「${selected.name}」を削除しますか？`)) remove(selected.id)
             }} style={{ flex: 1 }}>この役者を削除</button>
           </div>
         </div>
@@ -710,9 +711,9 @@ function PropsPanel() {
   const bulk = useBulkSelection(pieces.map(p => p.id))
   const [bulkMode, setBulkMode] = useState(false)
 
-  const bulkDelete = () => {
+  const bulkDelete = async () => {
     if (bulk.count === 0) return
-    if (!confirm(`${bulk.count} 件の装置を削除しますか?`)) return
+    if (!await askConfirm(`${bulk.count} 件の装置を削除しますか?`)) return
     for (const id of bulk.picked) remove(id)
     bulk.clear()
     setBulkMode(false)
@@ -828,8 +829,8 @@ function PropsPanel() {
             ranges={[[-7, 7], [0, 5], [-7.5, 3]]}
           />
           <div className="row" style={{ marginTop: 12 }}>
-            <button className="danger" onClick={() => {
-              if (confirm(`「${selected.name}」を削除しますか？`)) remove(selected.id)
+            <button className="danger" onClick={async () => {
+              if (await askConfirm(`「${selected.name}」を削除しますか？`)) remove(selected.id)
             }} style={{ flex: 1 }}>このセットを削除</button>
           </div>
         </div>

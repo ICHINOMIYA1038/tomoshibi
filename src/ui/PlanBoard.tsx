@@ -1,3 +1,4 @@
+import { askConfirm } from './askConfirm'
 import { WorkspaceNotice } from './WorkspaceNotice'
 import { Fragment, useEffect, useRef, useState, type MouseEvent, type PointerEvent } from 'react'
 import { activeSceneDirections, LIMITS, PLAN_LIMITS, SCENE_TRIGGER_LABELS, sceneDisplayTitle, useStore,
@@ -588,16 +589,16 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
     })
     setSelectionAnchorId(ids[0])
   }
-  const deleteSelectedScenes = () => {
-    if (!visibleSelectedIds.length || !window.confirm(`選択した${visibleSelectedIds.length}シーンを削除しますか？`)) return
+  const deleteSelectedScenes = async () => {
+    if (!visibleSelectedIds.length || !await askConfirm(`選択した${visibleSelectedIds.length}シーンを削除しますか？`)) return
     const count = removeScenes(visibleSelectedIds)
     setSelectedSceneIds(new Set())
     setSelectionAnchorId(null)
     setFeedback(`${count}シーンを削除しました`)
   }
-  const deleteChapter = (id: string) => {
+  const deleteChapter = async (id: string) => {
     const item = plan.chapters?.find(chapter => chapter.id === id)
-    if (!item || plan.chapters!.length <= 1 || !window.confirm(`「${item.title || '無題の章'}」と中のシーンを削除しますか？`)) return
+    if (!item || plan.chapters!.length <= 1 || !await askConfirm(`「${item.title || '無題の章'}」と中のシーンを削除しますか？`)) return
     if (removeChapter(id)) {
       setSelectedSceneIds(new Set())
       setSelectionAnchorId(null)
@@ -620,8 +621,8 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
     const target = chapters[index + direction]
     if (target) reportMove(moveChapter(id, target.id, direction < 0 ? 'before' : 'after'), 'chapter')
   }
-  const deleteScene = (id: string) => {
-    if (plan.scenes.length <= 1 || !window.confirm('このシーンを削除しますか？')) return
+  const deleteScene = async (id: string) => {
+    if (plan.scenes.length <= 1 || !await askConfirm('このシーンを削除しますか？')) return
     removeScene(id)
     setLastMove(null)
     setFeedback('シーンを削除しました')
@@ -1279,8 +1280,8 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
           <button className="plan-add-actor" onClick={() => addPerformer()}
             disabled={performers.length >= LIMITS.performers}>＋ 役者を追加</button>
           <button onClick={undoMove} disabled={!lastMove}>移動を戻す</button>
-          {plan.scenes.length > 1 && <button onClick={() => {
-            if (window.confirm('このシーンを削除しますか？')) {
+          {plan.scenes.length > 1 && <button onClick={async () => {
+            if (await askConfirm('このシーンを削除しますか？')) {
               removeScene(scene.id)
               setLastMove(null)
             }
