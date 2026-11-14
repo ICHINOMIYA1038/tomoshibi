@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import type { FloorFinish, StagePart, StageTemplate } from './stageParts'
 import * as THREE from 'three'
 import { FIXTURE_PROFILES, kelvinToRGB } from './lighting/fixtureTypes'
 import { DEFAULT_VENUE_LAYOUT, pointInStage, stageFootprint, stageLocalFootprint } from './venueLayout'
@@ -83,6 +84,14 @@ export interface VenueLayout {
   stageVertices?: StagePoint[]
   stageOffset?: StagePoint
   targetCapacity: number
+  /** 舞台の部品。無ければ stageTemplate（無ければ舞台の形）から作る（stageParts.ts） */
+  stageParts?: StagePart[]
+  stageTemplate?: StageTemplate
+  floorFinish?: FloorFinish
+  /** #rrggbb。無ければ床は floorFinish の色、壁・ホリゾントは以前と同じ色 */
+  floorColor?: string
+  wallColor?: string
+  cycColor?: string
 }
 
 export interface AudienceBlock {
