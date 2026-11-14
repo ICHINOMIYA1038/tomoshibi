@@ -1,4 +1,5 @@
 import { getEditableState } from '../playback/editorState'
+import { FLOOR_FINISHES, HEX_COLOR, sanitizeStageParts } from '../stageParts'
 import { workspaceStorage } from './workspaceStorage'
 // シーン保存/読込
 // - localStorage に名前付きで複数保存
@@ -129,6 +130,13 @@ function normalizeProductionPlan(raw: unknown, fixtures: Fixture[], performers: 
         ? venueRaw.stageVertices.slice(0, 8).filter((point): point is StagePoint =>
           Array.isArray(point) && point.length === 2 && point.every(value =>
             typeof value === 'number' && Number.isFinite(value) && Math.abs(value) <= 30)) : undefined,
+      // 舞台の部品と色（2026-11 に追加）。無い古いプランは、これまでと同じ配置で開く
+      stageParts: sanitizeStageParts(venueRaw.stageParts),
+      stageTemplate: (['standard', 'proscenium', 'blackbox', 'bare'] as const).find(item => item === venueRaw.stageTemplate),
+      floorFinish: FLOOR_FINISHES.find(item => item.id === venueRaw.floorFinish)?.id,
+      floorColor: typeof venueRaw.floorColor === 'string' && HEX_COLOR.test(venueRaw.floorColor) ? venueRaw.floorColor : undefined,
+      wallColor: typeof venueRaw.wallColor === 'string' && HEX_COLOR.test(venueRaw.wallColor) ? venueRaw.wallColor : undefined,
+      cycColor: typeof venueRaw.cycColor === 'string' && HEX_COLOR.test(venueRaw.cycColor) ? venueRaw.cycColor : undefined,
     } : undefined
   if (Array.isArray(data.scenes)) {
     const chapters = Array.isArray(data.chapters) ? data.chapters.slice(0, PLAN_LIMITS.chapters).filter(item =>
