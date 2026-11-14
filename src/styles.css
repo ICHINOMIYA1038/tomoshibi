@@ -4666,3 +4666,9 @@ body.embed .workspace-switch { display: none; }
   .venue-mode-switch { flex-basis: 100%; }
   .audience-editor-header-actions .venue-mode-switch button { flex: 1; }
 }
+.stage-batten-fixtures { display: grid; gap: 6px; margin-top: 4px; padding-top: 10px; border-top: 1px solid var(--panel-edge); }
+.stage-batten-fixtures > strong { font-size: 12px; }
+.stage-batten-fixtures p { margin: 0; color: var(--ink-muted); font-size: 11px; line-height: 1.5; }
+.stage-batten-fixtures label { display: grid; grid-template-columns: 22px minmax(0,1fr) auto; align-items: center; gap: 6px; min-height: 40px; color: var(--ink-primary); font-size: 12px; cursor: pointer; }
+.stage-batten-fixtures input { width: 18px; height: 18px; min-height: 0; }
+.stage-batten-fixtures small { color: var(--ink-muted); font-size: 11px; }
