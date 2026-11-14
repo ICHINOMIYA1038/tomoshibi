@@ -13,7 +13,7 @@ const VIEWS = {
 }
 const clamp = (value: number, low: number, high: number) => Math.min(high, Math.max(low, value))
 
-function worldPoint(event: PointerEvent<SVGElement>, svg: SVGSVGElement, scale: number, centerZ: number): [number, number] {
+function worldPoint(event: { clientX: number; clientY: number }, svg: SVGSVGElement, scale: number, centerZ: number): [number, number] {
   const bounds = svg.getBoundingClientRect()
   const x = ((event.clientX - bounds.left) * SVG_WIDTH / bounds.width - SVG_WIDTH / 2) / scale
   const z = ((event.clientY - bounds.top) * SVG_HEIGHT / bounds.height - SVG_HEIGHT / 2) / scale + centerZ
