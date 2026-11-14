@@ -20,7 +20,7 @@ import { HelpOverlay } from './ui/HelpOverlay'
 import { SettingsModal } from './ui/SettingsModal'
 import { sceneDisplayTitle, useStore } from './store'
 import { refreshSession, useCloudSession } from './io/cloudSession'
-import { loginUrl, signupUrl, logoutUrl, createBillingPortal, CloudError } from './io/cloud'
+import { loginUrl, signupUrl, logoutUrl, createBillingPortal, CloudError, APP_STORE_SUBSCRIPTIONS_URL } from './io/cloud'
 import { ScenePanel } from './ui/ScenePanel'
 import { PlanBoard } from './ui/PlanBoard'
 import { ProjectLibrary } from './ui/ProjectLibrary'
@@ -702,7 +702,16 @@ function AccountMenu() {
             </header>
 
             <div className="account-menu-section">
-              {isPro ? (
+              {isPro && user.billing === 'app_store' ? (
+                <>
+                  {/* App Store で買った契約は Stripe のポータルでは扱えない。iOS の設定で管理する */}
+                  <a className="account-menu-item" href={APP_STORE_SUBSCRIPTIONS_URL}>
+                    <span className="account-menu-icon" aria-hidden>⚙</span>
+                    App Store で契約を管理・解約
+                  </a>
+                  <div className="account-menu-note">iPhone の「設定」→ 自分の名前 →「サブスクリプション」からも管理できます</div>
+                </>
+              ) : isPro ? (
                 <>
                   <button className="account-menu-item" onClick={openPortal} disabled={portalBusy}>
                     <span className="account-menu-icon" aria-hidden>📄</span>
