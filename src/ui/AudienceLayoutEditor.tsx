@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type PointerEvent } from 'react'
 import { useObjectMenu } from '../objectMenu'
 import { audienceSeatPositions, clampAudiencePosition } from '../audienceLayout'
 import { useStore, type AudienceBlock } from '../store'
-import { DEFAULT_VENUE_LAYOUT, pointInStage, STAGE_SIZE, stageFootprint } from '../venueLayout'
+import { DEFAULT_VENUE_LAYOUT, pointInStage, STAGE_SIZE, stageFootprint, THEATRE } from '../venueLayout'
 import { StagePartsLayer } from './StagePartsEditor'
 import { Inspector } from './Inspector'
 import { ToolButtons } from './ToolButtons'
@@ -56,17 +56,29 @@ export function AudienceLayoutEditor({ open, onClose }: { open: boolean; onClose
   const stageOffset = venue.stageOffset ?? [0, 0]
   const hasRearSeating = blocks.some(block => block.position[1] < -11)
   // 舞台と客席が図に収まる、いちばん近い縮尺を選ぶ（舞台を遠くへ動かしたときに、図の外へ消えないように）
+  const points: Array<[number, number]> = [...stageFootprint(venue), ...blocks.flatMap(block => {
+    const r = Math.hypot((block.seatsPerRow * block.seatSpacing) / 2, (block.rows * block.rowSpacing) / 2)
+    return [[block.position[0] - r, block.position[1] - r], [block.position[0] + r, block.position[1] + r]] as Array<[number, number]>
+  })]
   const fits = (view: { scale: number; centerZ: number }) => {
     const halfX = SVG_WIDTH / 2 / view.scale - 1
     const halfZ = SVG_HEIGHT / 2 / view.scale - 1
-    const points: Array<[number, number]> = [...stageFootprint(venue), ...blocks.flatMap(block => {
-      const r = Math.hypot((block.seatsPerRow * block.seatSpacing) / 2, (block.rows * block.rowSpacing) / 2)
-      return [[block.position[0] - r, block.position[1] - r], [block.position[0] + r, block.position[1] + r]] as Array<[number, number]>
-    })]
     return points.every(([x, z]) => Math.abs(x) <= halfX && Math.abs(z - view.centerZ) <= halfZ)
   }
-  const autoView = !hasRearSeating && fits(VIEWS.near) ? VIEWS.near : fits(VIEWS.surround) ? VIEWS.surround : VIEWS.wide
-  const { scale, centerZ } = wideView ? VIEWS.wide : autoView
+  // 決まった 3 つの縮尺に収まらない大きな会場は、全体が収まる縮尺を計算する
+  const fitAll = () => {
+    const minZ = Math.min(...points.map(point => point[1]))
+    const maxZ = Math.max(...points.map(point => point[1]))
+    const maxX = Math.max(...points.map(point => Math.abs(point[0])))
+    return { scale: Math.min(SVG_WIDTH / 2 / (maxX + 3), SVG_HEIGHT / (maxZ - minZ + 6)), centerZ: (minZ + maxZ) / 2 }
+  }
+  const autoView = !hasRearSeating && fits(VIEWS.near) ? VIEWS.near : fits(VIEWS.surround) ? VIEWS.surround : fits(VIEWS.wide) ? VIEWS.wide : fitAll()
+  // ドラッグの間は縮尺を変えない（大きさを変えるたびに縮尺が変わると、取っ手が指から逃げる）
+  const [frozenView, setFrozenView] = useState<{ scale: number; centerZ: number } | null>(null)
+  const computedView = wideView ? (fits(VIEWS.wide) ? VIEWS.wide : fitAll()) : autoView
+  const { scale, centerZ } = frozenView ?? computedView
+  /** 目盛りの間隔（m）。縮めて表示するほど広くする */
+  const gridStep = scale >= 10 ? 5 : scale >= 4 ? 10 : scale >= 2 ? 25 : 50
   const mapX = (x: number) => SVG_WIDTH / 2 + x * scale
   const mapY = (z: number) => SVG_HEIGHT / 2 + (z - centerZ) * scale
   const outline = stageFootprint(venue)
@@ -95,6 +107,7 @@ export function AudienceLayoutEditor({ open, onClose }: { open: boolean; onClose
     setSelectedId(block.id)
     if (!moving || !svgRef.current) return
     const at = worldPoint(event, svgRef.current, scale, centerZ)
+    setFrozenView({ scale, centerZ })
     dragging.current = { kind: 'block', id: block.id, pointerId: event.pointerId, at, from: [...block.position] }
     svgRef.current?.setPointerCapture(event.pointerId)
   }
@@ -102,6 +115,7 @@ export function AudienceLayoutEditor({ open, onClose }: { open: boolean; onClose
     event.preventDefault()
     event.stopPropagation()
     if (!svgRef.current) return
+    setFrozenView({ scale, centerZ })
     dragging.current = { kind: 'vertex', id: String(index), pointerId: event.pointerId,
       at: worldPoint(event, svgRef.current, scale, centerZ), from: [...outline[index]] }
     svgRef.current.setPointerCapture(event.pointerId)
@@ -111,6 +125,7 @@ export function AudienceLayoutEditor({ open, onClose }: { open: boolean; onClose
     event.stopPropagation()
     select('stage', 'stage')
     if (!moving || !svgRef.current) return
+    setFrozenView({ scale, centerZ })
     dragging.current = { kind: 'stage', id: '', pointerId: event.pointerId,
       at: worldPoint(event, svgRef.current, scale, centerZ), from: [...stageOffset] }
     svgRef.current.setPointerCapture(event.pointerId)
@@ -121,6 +136,7 @@ export function AudienceLayoutEditor({ open, onClose }: { open: boolean; onClose
     event.preventDefault()
     event.stopPropagation()
     if (!svgRef.current) return
+    setFrozenView({ scale, centerZ })
     dragging.current = { kind: 'size', id: axis, pointerId: event.pointerId,
       at: worldPoint(event, svgRef.current, scale, centerZ), from: [venue.stageWidth, venue.stageDepth] }
     svgRef.current.setPointerCapture(event.pointerId)
@@ -150,8 +166,8 @@ export function AudienceLayoutEditor({ open, onClose }: { open: boolean; onClose
       const current = useStore.getState().productionPlan.venueLayout
       const vertices = [...(current?.stageVertices ?? outline.map(([px, pz]) => [px - stageOffset[0], pz - stageOffset[1]] as [number, number]))]
       vertices[Number(drag.id)] = [
-        Math.round(clamp(drag.from[0] + x - drag.at[0], -24, 24) * 10) / 10 - stageOffset[0],
-        Math.round(clamp(drag.from[1] + z - drag.at[1], -21, 35) * 10) / 10 - stageOffset[1],
+        Math.round(clamp(drag.from[0] + x - drag.at[0], THEATRE.minX, THEATRE.maxX) * 10) / 10 - stageOffset[0],
+        Math.round(clamp(drag.from[1] + z - drag.at[1], THEATRE.minZ, THEATRE.maxZ) * 10) / 10 - stageOffset[1],
       ]
       updateVenue({ stageVertices: vertices })
       return
@@ -164,7 +180,7 @@ export function AudienceLayoutEditor({ open, onClose }: { open: boolean; onClose
     updateBlock(block.id, { position })
   }
   const endDrag = (event: PointerEvent<SVGSVGElement>) => {
-    if (dragging.current?.pointerId === event.pointerId) dragging.current = null
+    if (dragging.current?.pointerId === event.pointerId) { dragging.current = null; setFrozenView(null) }
     if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId)
   }
   const createBlock = () => {
@@ -202,7 +218,7 @@ export function AudienceLayoutEditor({ open, onClose }: { open: boolean; onClose
                 point: !kind || kind === 'stage' ? [Math.round(x * 10) / 10, 0, Math.round(z * 10) / 10] : undefined })
             }}>
             <rect width={SVG_WIDTH} height={SVG_HEIGHT} fill="#ede8df" />
-            {[-20, -15, -10, -5, 0, 5, 10, 15, 20, 25, 30, 35].filter(z => mapY(z) > 25 && mapY(z) < 635)
+            {Array.from({ length: 80 }, (_, index) => (Math.ceil((centerZ - SVG_HEIGHT / 2 / scale) / gridStep) + index) * gridStep).filter(z => mapY(z) > 25 && mapY(z) < 635)
               .map(z => <g key={z}>
                 <line x1="42" x2="818" y1={mapY(z)} y2={mapY(z)} stroke="#d2c9bd" strokeDasharray="5 9" />
                 <text x="45" y={mapY(z) - 5} fill="#73695e" fontSize="12">z {z}m</text>
@@ -286,7 +302,7 @@ export function AudienceLayoutEditor({ open, onClose }: { open: boolean; onClose
                 if (!delta) return
                 event.preventDefault()
                 const vertices = [...outline]
-                vertices[index] = [clamp(x + delta[0], -24, 24), clamp(z + delta[1], -21, 35)]
+                vertices[index] = [clamp(x + delta[0], THEATRE.minX, THEATRE.maxX), clamp(z + delta[1], THEATRE.minZ, THEATRE.maxZ)]
                 updateVenue({ stageVertices: vertices.map(([px, pz]) => [px - stageOffset[0], pz - stageOffset[1]]) })
               }} />)}
           </svg>

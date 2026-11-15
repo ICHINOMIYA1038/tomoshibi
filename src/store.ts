@@ -3,7 +3,7 @@ import { clampPart, resolveStageParts, type FloorFinish, type StagePart, type St
 import * as THREE from 'three'
 import { canBeParent, hierarchyContext, moveDescendants, parentOf, STAGE_ID, type ChildKind } from './hierarchy'
 import { FIXTURE_PROFILES, kelvinToRGB } from './lighting/fixtureTypes'
-import { DEFAULT_VENUE_LAYOUT, stageLocalFootprint } from './venueLayout'
+import { DEFAULT_VENUE_LAYOUT, stageLocalFootprint, THEATRE } from './venueLayout'
 import { isWorkspacePath } from './io/workspacePath'
 import type { PerformerPose } from './performerPoses'
 
@@ -739,8 +739,8 @@ export const useStore = create<State>((set, get) => ({
     const minZ = Math.min(...local.map(point => point[1]))
     const maxZ = Math.max(...local.map(point => point[1]))
     const next: StagePoint = [
-      Math.max(-24 - minX, Math.min(24 - maxX, requested[0])),
-      Math.max(-21 - minZ, Math.min(35 - maxZ, requested[1])),
+      Math.max(THEATRE.minX - minX, Math.min(THEATRE.maxX - maxX, requested[0])),
+      Math.max(THEATRE.minZ - minZ, Math.min(THEATRE.maxZ - maxZ, requested[1])),
     ]
     const current = layout.stageOffset ?? [0, 0]
     const dx = next[0] - current[0]

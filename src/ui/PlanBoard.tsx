@@ -8,7 +8,7 @@ import { activeSceneDirections, LIMITS, PLAN_LIMITS, SCENE_TRIGGER_LABELS, scene
 import { AudienceLayoutEditor } from './AudienceLayoutEditor'
 import { ToolButtons } from './ToolButtons'
 import { toolFor } from '../tools'
-import { DEFAULT_VENUE_LAYOUT, stageFootprint } from '../venueLayout'
+import { DEFAULT_VENUE_LAYOUT, stageFootprint, THEATRE } from '../venueLayout'
 
 const MAP = { left: 100, top: 70, width: 760, height: 480, svgWidth: 960, svgHeight: 630 }
 const pathColors: Record<DirectionKind, string> = {
@@ -300,7 +300,7 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
       } else {
         // 位置だけ変える: 器具を動かした分だけ狙いも平行に動かし、向きを保つ
         const x = round1(clamp(start.from[0] + dx, mapBounds.left + .5, mapBounds.right - .5))
-        const z = round1(clamp(start.from[1] + dz, mapBounds.rear + .5, 35))
+        const z = round1(clamp(start.from[1] + dz, mapBounds.rear + .5, THEATRE.maxZ))
         const fromTarget = start.fromTarget ?? [fixture.target[0], fixture.target[2]]
         updateFixture(fixture.id, {
           position: [x, fixture.position[1], z],
@@ -321,7 +321,7 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
     } else if (start.kind === 'fixture') {
       const fixture = useStore.getState().fixtures.find(item => item.id === start.id)
       if (fixture) updateFixture(fixture.id, {
-        position: [clamp(x, mapBounds.left + .5, mapBounds.right - .5), fixture.position[1], clamp(z, mapBounds.rear + .5, 35)],
+        position: [clamp(x, mapBounds.left + .5, mapBounds.right - .5), fixture.position[1], clamp(z, mapBounds.rear + .5, THEATRE.maxZ)],
       })
     } else {
       const piece = useStore.getState().setPieces.find(item => item.id === start.id)
@@ -1144,7 +1144,7 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
                     updateFixture(fixture.id, {
                       position: [
                         clamp(fixture.position[0] + delta[0], mapBounds.left + .5, mapBounds.right - .5), fixture.position[1],
-                        clamp(fixture.position[2] + delta[1], mapBounds.rear + .5, 35),
+                        clamp(fixture.position[2] + delta[1], mapBounds.rear + .5, THEATRE.maxZ),
                       ],
                       target: [
                         clamp(fixture.target[0] + delta[0], mapBounds.left + .2, mapBounds.right - .2), fixture.target[1],
