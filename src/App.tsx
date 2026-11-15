@@ -431,8 +431,7 @@ export default function App() {
         {!isMockPreview && <span className="workspace-scene-name" title={[projectTitle, scenePath].filter(Boolean).join(' › ')}>{scenePath}</span>}
         <div className="workspace-header-actions">
           {isMockPreview && <MockHistoryButtons />}
-          {/* ブラウザでは自動で保存されるので、保存ボタンはアプリ（名前をつけて保存）のときだけ出す */}
-          {isMockPreview && hasDeviceStorage() && <MockSaveButton />}
+          {isMockPreview && <MockSaveButton />}
           {!isMockPreview && <button className={'plan-board-toggle' + (planOpen ? ' active' : '')}
             aria-expanded={planOpen} aria-controls="plan-board"
             onClick={() => {
@@ -581,6 +580,10 @@ function MockProjectTitle({ title }: { title?: string }) {
 
 function MockSaveButton() {
   const { saveStatus } = useMockWorkspaceState()
+  const { user } = useCloudSession()
+  // ブラウザでは、押して意味があるときだけ出す: ログインしていて、まだアカウントに入れていないプロジェクト。
+  // ログインしていないときや、アカウントに保存済み（以後は自動保存）のときは、押しても保存するものが無い
+  if (!hasDeviceStorage() && (!user || getActiveCloudProject())) return null
   const label = hasDeviceStorage() ? getActiveSavedProjectName() ? '別名で保存' : '名前をつけて保存' : 'アカウントに保存'
   return <button className={'workspace-save-button' + (saveStatus === 'error' ? ' has-changes' : '')}
     aria-label={label} onClick={() => useStore.getState().updateSettings({ scenePanelOpen: true, panelOpen: false })}>

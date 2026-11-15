@@ -3,13 +3,21 @@ import { useSyncExternalStore } from 'react'
 import { CloudError, fetchCloudProject, requestProjectEditor, type CloudProject } from './cloud'
 import { getActiveCloudProject, setActiveCloudProject } from './mockProjectSession'
 import { setProjectEditorIdentity } from './projectEditorIdentity'
+import { refreshSession } from './cloudSession'
 import { importScene } from './sceneIO'
 import { resetMockWorkspace } from './mockWorkspace'
 
 type Status = 'idle' | 'checking' | 'owned' | 'blocked' | 'lost' | 'error' | 'stale'
 // lostBy: 編集を止めた理由。'tab' は同じブラウザの別タブ、'other' はサーバーが別の画面に編集権を渡したと返したとき
 type LostBy = 'tab' | 'other' | null
-let state: { projectId: string | null; status: Status; error: string; deadline: number; epoch: number; lostBy: LostBy } = { projectId: null, status: 'idle', error: '', deadline: 0, epoch: 0, lostBy: null }
+// signedOut: サーバーが 401 を返した（ログアウトしたか、ログインの期限が切れた）。画面は「ログインしていません」を出す
+let state: { projectId: string | null; status: Status; error: string; deadline: number; epoch: number; lostBy: LostBy; signedOut: boolean } = { projectId: null, status: 'idle', error: '', deadline: 0, epoch: 0, lostBy: null, signedOut: false }
+const isSignedOut = (error: unknown) => error instanceof CloudError && error.status === 401
+/** 401 のときは、編集権の確認の失敗ではなく、ログインが要る状態として出す。ログインの状態も取り直す */
+function publishSignedOut() {
+  publish({ status: 'error', signedOut: true, error: 'ログインしていません。' })
+  void refreshSession()
+}
 let owner: { projectId: string; userId: string; editorId: string } | null = null
 let generation = 0
 let timer: ReturnType<typeof setInterval> | undefined
@@ -54,7 +62,7 @@ export function stopProjectEditor() {
   owner = null
   pendingRenew = false
   clearInterval(timer)
-  publish({ projectId: null, status: 'idle', deadline: 0, error: '' })
+  publish({ projectId: null, status: 'idle', deadline: 0, error: '', signedOut: false })
   if (previous) void requestProjectEditor(previous.projectId, previous.editorId, 'release').catch(() => undefined)
 }
 export async function startProjectEditor(projectId: string, userId: string, dirty: boolean) {
@@ -75,7 +83,7 @@ async function acquire(takeover: boolean, dirty: boolean, stamp: number, retry =
   if (!current) return
   needsSnapshot = true
   pendingDirty = dirty
-  publish({ status: 'checking', error: '', lostBy: null })
+  publish({ status: 'checking', error: '', lostBy: null, signedOut: false })
   const started = Date.now()
   try {
     const result = await requestProjectEditor(current.projectId, current.editorId, takeover ? 'takeover' : 'acquire')
@@ -97,6 +105,7 @@ async function acquire(takeover: boolean, dirty: boolean, stamp: number, retry =
       if (stamp === generation) await acquire(false, dirty, stamp, 1)
       return
     }
+    if (isSignedOut(error)) { publishSignedOut(); return }
     publish({ status: error instanceof CloudError && error.status === 423 ? 'blocked' : 'error', error: '編集権を確認できませんでした。接続を確認して再試行してください。' })
   }
 }
@@ -119,10 +128,11 @@ export async function renewProjectEditor() {
   const started = Date.now()
   try {
     const result = await requestProjectEditor(current.projectId, current.editorId, 'renew')
-    if (stamp === generation) publish({ status: 'owned', deadline: started + result.ttlMs - 5000, error: '' })
+    if (stamp === generation) publish({ status: 'owned', deadline: started + result.ttlMs - 5000, error: '', signedOut: false })
   } catch (error) {
     if (stamp === generation) {
       if (error instanceof CloudError && error.status === 423) await loseProjectEditor()
+      else if (isSignedOut(error)) publishSignedOut()
       // 一時的な失敗（サーバーの 500 など）では止めない。期限まではそのまま編集でき、15 秒後の更新でやり直す
       else if (Date.now() < state.deadline) publish({ status: 'owned' })
       else publish({ status: 'error', error: '編集権を確認できません。接続を確認して再開してください。' })

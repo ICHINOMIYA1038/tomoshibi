@@ -4855,3 +4855,6 @@ body.embed .workspace-switch { display: none; }
 .object-menu-tools button:disabled { opacity: .3; cursor: default; }
 .object-menu-children { display: flex; flex-direction: column; margin: 2px 0 4px 10px; padding-left: 6px; border-left: 1px solid rgba(232, 178, 98, .3); }
 @media (pointer: coarse) { .object-menu button[role="menuitem"] { min-height: 40px; } }
+/* 「ログインしていません」の窓: ログインを主に、プロジェクト一覧へは控えめに */
+.workspace-connection-dialog .workspace-editor-actions a { text-decoration: none; font-weight: 600; }
+.workspace-connection-dialog .workspace-editor-actions a + button { background: transparent; border: 1px solid rgba(208, 161, 95, .6); color: #f2e6cf; }
