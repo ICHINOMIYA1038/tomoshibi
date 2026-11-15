@@ -9,6 +9,8 @@ function SeatingBlock({ block }: { block: AudienceBlock }) {
   const seats = useMemo(() => audienceSeatPositions(block), [block])
   const cushionRef = useRef<THREE.InstancedMesh>(null)
   const backRef = useRef<THREE.InstancedMesh>(null)
+  // 座面の下の脚。これが無いと、座席が床から 0.4m 浮いて見える（オーナー指摘、2026-11-15）
+  const legRef = useRef<THREE.InstancedMesh>(null)
   useLayoutEffect(() => {
     const object = new THREE.Object3D()
     const angle = block.rotationDeg * Math.PI / 180
@@ -18,12 +20,16 @@ function SeatingBlock({ block }: { block: AudienceBlock }) {
       object.position.set(x, .43, z)
       object.updateMatrix()
       cushionRef.current?.setMatrixAt(index, object.matrix)
+      object.position.set(x, .19, z)
+      object.updateMatrix()
+      legRef.current?.setMatrixAt(index, object.matrix)
       object.position.set(x + Math.sin(angle) * .23, .7, z + Math.cos(angle) * .23)
       object.updateMatrix()
       backRef.current?.setMatrixAt(index, object.matrix)
     }
     if (cushionRef.current) cushionRef.current.instanceMatrix.needsUpdate = true
     if (backRef.current) backRef.current.instanceMatrix.needsUpdate = true
+    if (legRef.current) legRef.current.instanceMatrix.needsUpdate = true
   }, [seats, block.rotationDeg])
   const selected = useStore(state => state.selection.kind === 'audience' && state.selection.id === block.id)
   const select = useStore(state => state.select)
@@ -44,6 +50,10 @@ function SeatingBlock({ block }: { block: AudienceBlock }) {
     <instancedMesh ref={cushionRef} args={[undefined, undefined, seats.length]} receiveShadow>
       <boxGeometry args={[.54, .11, .5]} />
       <meshBasicMaterial color="#503b43" toneMapped={false} />
+    </instancedMesh>
+    <instancedMesh ref={legRef} args={[undefined, undefined, seats.length]}>
+      <boxGeometry args={[.4, .38, .36]} />
+      <meshBasicMaterial color="#2b2229" toneMapped={false} />
     </instancedMesh>
     <instancedMesh ref={backRef} args={[undefined, undefined, seats.length]} receiveShadow>
       <boxGeometry args={[.54, .58, .08]} />
