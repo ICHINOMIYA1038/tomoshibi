@@ -14,4 +14,6 @@ export interface SetPiece {
   position: [number, number, number]
   rotation: [number, number, number]
   scale: number
+  /** 親（hierarchy.ts）。'stage'・舞台の部品・舞台セットの id。null は親なし、無ければ舞台の床 */
+  parentId?: string | null
 }

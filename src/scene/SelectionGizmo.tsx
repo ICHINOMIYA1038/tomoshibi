@@ -6,6 +6,7 @@ import { useStore } from '../store'
 import { useStageParts } from '../ui/StagePartsEditor'
 import { isFlat, snapValue, type StagePart } from '../stageParts'
 import { clampAudiencePosition } from '../audienceLayout'
+import { toolFor } from '../tools'
 
 function isTouchDevice() {
   if (typeof window === 'undefined') return false
@@ -77,8 +78,10 @@ export function SelectionGizmo() {
   // 回転・拡大はつかんだときの値からの変化で決める
   const partStart = useRef<StagePart | null>(null)
   const stageStart = useRef<{ width: number; depth: number } | null>(null)
-  /** 舞台・客席・舞台の部品で使える操作。使えない操作が選ばれていたら移動にする */
-  const venueMode = (allowed: Array<'translate' | 'rotate' | 'scale'>) => allowed.includes(transformMode) ? transformMode : 'translate'
+  const setPieceStart = useRef<{ size?: [number, number, number]; scale: number } | null>(null)
+  /** 選んだ物で使う道具（tools.ts）。選択の道具では矢印を出さない */
+  const tool = toolFor(transformMode, selection.kind, selection.fixtureHandle) as 'translate' | 'rotate' | 'scale'
+  const venueMode = (_allowed: unknown) => tool
 
   // 動的に position を反映するための Object3D
   const dragRef = useRef<THREE.Object3D>(new THREE.Object3D())
@@ -129,7 +132,7 @@ export function SelectionGizmo() {
       dragRef.current.rotation.set(0, part.rotationDeg * Math.PI / 180, 0)
     }
     // 拡大はつかむたびに 1 から測る（大きさは部品の数字に入っている）
-    if (!partStart.current && !stageStart.current) dragRef.current.scale.set(1, 1, 1)
+    if (!partStart.current && !stageStart.current && !setPieceStart.current) dragRef.current.scale.set(1, 1, 1)
   }, [
     selection.kind, selection.id, selection.fixtureHandle,
     fixture?.position.join(','), fixture?.target.join(','),
@@ -139,7 +142,7 @@ export function SelectionGizmo() {
     audience?.position.join(','), audience?.rotationDeg,
   ])
 
-  if (!showGizmos) return null
+  if (!showGizmos || transformMode === 'select') return null
 
   // ---- フィクスチャ選択 ----
   if (selection.kind === 'fixture' && fixture) {
@@ -147,7 +150,7 @@ export function SelectionGizmo() {
     const tgt = new THREE.Vector3(...fixture.target)
     const handle = selection.fixtureHandle ?? 'position'
     // 'target' の場合は translate 固定 (狙い点に回転は無意味)
-    const mode = handle === 'target' || transformMode === 'scale' ? 'translate' : transformMode
+    const mode = tool
 
     return (
       <group>
@@ -210,10 +213,26 @@ export function SelectionGizmo() {
         <TransformControls
           ref={tcRef as any}
           object={dragRef.current}
-          mode={transformMode === 'scale' ? 'translate' : transformMode}
+          mode={tool}
+          space={tool === 'scale' ? 'local' : 'world'}
           size={gizmoSize}
+          onMouseDown={() => { setPieceStart.current = { size: setPiece.size, scale: setPiece.scale } }}
+          onMouseUp={() => { setPieceStart.current = null; dragRef.current.scale.set(1, 1, 1) }}
           onObjectChange={() => {
             const o = dragRef.current
+            if (tool === 'scale') {
+              // 箱・平台などは幅・高さ・奥行を、3D モデルは全体の大きさを変える
+              const from = setPieceStart.current ?? { size: setPiece.size, scale: setPiece.scale }
+              const round = (value: number) => Math.max(.05, Math.round(value * 20) / 20)
+              if (from.size) {
+                const size: [number, number, number] = [round(from.size[0] * Math.abs(o.scale.x)), round(from.size[1] * Math.abs(o.scale.y)), round(from.size[2] * Math.abs(o.scale.z))]
+                // 床に置いてある物は、高さを変えても床に置いたままにする
+                const grounded = Math.abs(setPiece.position[1] - (setPiece.size?.[1] ?? 0) / 2) < .01
+                updateSetPiece(setPiece.id, grounded ? { size, position: [setPiece.position[0], size[1] / 2, setPiece.position[2]] } : { size })
+              }
+              else updateSetPiece(setPiece.id, { scale: round(from.scale * Math.abs(o.scale.x)) })
+              return
+            }
             updateSetPiece(setPiece.id, {
               position: [o.position.x, o.position.y, o.position.z],
               rotation: [o.rotation.x, o.rotation.y, o.rotation.z],

@@ -4697,3 +4697,88 @@ body.embed .workspace-switch { display: none; }
   background: var(--panel-bg-solid);
 }
 .venue-panel .venue-mode-buttons button { flex: 1; min-width: 0; }
+
+/* ========================================================
+   Unity に寄せた編集（2026-11-15）: 道具・ヒエラルキー・インスペクター
+   ======================================================== */
+.tool-buttons { display: inline-flex; gap: 2px; flex: none; }
+.tool-buttons button:disabled { opacity: .35; cursor: not-allowed; }
+.toolbar .tool-buttons button.active,
+.tool-buttons button.active { background: rgba(232, 178, 98, .22); color: var(--ink-primary); box-shadow: inset 0 0 0 1px rgba(232, 178, 98, .5); }
+.tool-buttons.compact button {
+  min-height: 28px; padding: 3px 10px; border: 1px solid rgba(120, 100, 80, .45); border-radius: 6px;
+  background: rgba(255, 255, 255, .06); color: inherit; font: 12px var(--font-sans); cursor: pointer;
+}
+.plan-map-caption .tool-buttons.compact button { background: #fffaf2; color: #3b3129; }
+.plan-map-caption .tool-buttons.compact button.active { background: #e8b262; color: #2a1f15; box-shadow: none; }
+
+.unity-panel { display: flex; flex-direction: column; gap: 10px; }
+.hierarchy-panel { border: 1px solid var(--panel-edge); border-radius: 8px; padding: 8px; background: rgba(255, 255, 255, .02); }
+.hierarchy-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px; }
+.hierarchy-head h2 { margin: 0; font-size: 12px; letter-spacing: .08em; color: var(--ink-secondary); }
+.hierarchy-add-button { padding: 5px 12px; border-radius: 6px; border: 1px solid rgba(232, 178, 98, .5); background: rgba(232, 178, 98, .12); color: var(--ink-primary); font: 12px var(--font-sans); cursor: pointer; }
+.hierarchy-add-button.active { background: rgba(232, 178, 98, .28); }
+.hierarchy-add-menu { display: grid; gap: 8px; margin: 0 0 8px; padding: 8px; border-radius: 6px; background: rgba(0, 0, 0, .25); }
+.hierarchy-add-menu > div { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
+.hierarchy-add-menu strong { width: 100%; font-size: 11px; color: var(--ink-secondary); }
+.hierarchy-add-menu select { flex: 1 1 140px; min-width: 0; }
+.hierarchy-add-menu button { padding: 4px 9px; border-radius: 5px; border: 1px solid var(--panel-edge); background: rgba(255, 255, 255, .05); color: var(--ink-primary); font: 12px var(--font-sans); cursor: pointer; }
+.hierarchy-tree, .hierarchy-tree ul { list-style: none; margin: 0; padding: 0; }
+.hierarchy-tree { max-height: 38vh; overflow-y: auto; }
+.hierarchy-row { display: flex; align-items: center; gap: 2px; min-height: 30px; border-radius: 5px; }
+.hierarchy-row:hover { background: rgba(255, 255, 255, .04); }
+.hierarchy-row.selected { background: rgba(232, 178, 98, .2); box-shadow: inset 0 0 0 1px rgba(232, 178, 98, .45); }
+.hierarchy-row.drop-target { box-shadow: inset 0 0 0 2px #6cf; }
+.hierarchy-row[draggable="true"] { cursor: grab; }
+.hierarchy-toggle { width: 18px; flex: none; padding: 0; border: 0; background: none; color: var(--ink-secondary); cursor: pointer; font-size: 11px; }
+.hierarchy-name { flex: 1; min-width: 0; display: flex; align-items: center; gap: 6px; padding: 4px 4px; border: 0; background: none; color: var(--ink-primary); text-align: left; cursor: pointer; font: 12px var(--font-sans); }
+.hierarchy-name strong { font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hierarchy-name small { margin-left: auto; color: var(--ink-secondary); font-size: 10px; white-space: nowrap; }
+.hierarchy-swatch { width: 10px; height: 10px; flex: none; border-radius: 50%; box-shadow: 0 0 0 1px rgba(0, 0, 0, .4); }
+.hierarchy-lamp { flex: none; width: 26px; height: 24px; border: 0; border-radius: 4px; background: none; color: #5d5148; cursor: pointer; font-size: 11px; }
+.hierarchy-lamp.on { color: #f2c27b; }
+.hierarchy-root-drop { margin-top: 6px; padding: 6px 8px; border: 1px dashed var(--panel-edge); border-radius: 6px; color: var(--ink-secondary); font-size: 10px; line-height: 1.5; }
+.hierarchy-root-drop.drop-target { border-color: #6cf; color: var(--ink-primary); }
+
+.inspector { display: grid; gap: 10px; }
+.inspector-empty p { margin: 0; color: var(--ink-secondary); font-size: 12px; line-height: 1.7; }
+.inspector-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding-bottom: 6px; border-bottom: 1px solid var(--panel-edge); }
+.inspector-head small { display: block; color: var(--ink-secondary); font-size: 10px; }
+.inspector-head strong { font-size: 14px; }
+.inspector-actions { display: flex; gap: 4px; }
+.inspector-actions button, .inspector-choice button, .inspector-wide-button, .inspector-text button {
+  padding: 5px 10px; border-radius: 5px; border: 1px solid var(--panel-edge); background: rgba(255, 255, 255, .05); color: var(--ink-primary); font: 12px var(--font-sans); cursor: pointer;
+}
+.inspector-actions button.danger { color: #f19a8a; border-color: rgba(241, 154, 138, .4); }
+.inspector-choice button.active { background: rgba(232, 178, 98, .22); border-color: rgba(232, 178, 98, .55); }
+.inspector-section { display: grid; gap: 6px; }
+.inspector-section h3 { margin: 0; font-size: 11px; letter-spacing: .06em; color: var(--ink-secondary); }
+.inspector-number, .inspector-text { display: grid; grid-template-columns: 88px minmax(0, 1fr) auto; align-items: center; gap: 6px; font-size: 12px; }
+.inspector-text { grid-template-columns: 88px minmax(0, 1fr) auto; }
+.inspector-number input, .inspector-text input[type="text"], .inspector-text select { min-width: 0; width: 100%; padding: 5px 7px; border-radius: 5px; border: 1px solid var(--panel-edge); background: rgba(0, 0, 0, .25); color: var(--ink-primary); font: 12px var(--font-sans); }
+.inspector-number small { min-width: 18px; color: var(--ink-secondary); font-size: 11px; }
+.inspector-check { display: flex; align-items: center; gap: 6px; font-size: 12px; }
+.inspector-choice { display: flex; align-items: center; gap: 4px; font-size: 12px; }
+.inspector-choice.wrap { flex-wrap: wrap; }
+.inspector-choice > span { width: 100%; color: var(--ink-secondary); font-size: 11px; }
+.inspector-note { margin: 0; color: var(--ink-secondary); font-size: 11px; line-height: 1.6; }
+.inspector-templates { display: grid; gap: 4px; }
+.inspector-templates button { display: grid; gap: 2px; padding: 6px 8px; border-radius: 6px; border: 1px solid var(--panel-edge); background: rgba(255, 255, 255, .04); color: var(--ink-primary); text-align: left; cursor: pointer; }
+.inspector-templates button.active { border-color: rgba(232, 178, 98, .6); background: rgba(232, 178, 98, .14); }
+.inspector-templates span { color: var(--ink-secondary); font-size: 10px; }
+.inspector-section .row { margin: 0; }
+.audience-editor-inspector .inspector { color: inherit; }
+.panel .hierarchy-name, .panel .hierarchy-toggle, .panel .hierarchy-lamp {
+  border: 0; background: none; border-radius: 4px; padding: 4px; color: var(--ink-primary); transform: none;
+}
+.panel .hierarchy-toggle { color: var(--ink-secondary); padding: 0; }
+.panel .hierarchy-lamp { color: #5d5148; }
+.panel .hierarchy-lamp.on { color: #f2c27b; }
+.panel .hierarchy-name:hover, .panel .hierarchy-toggle:hover, .panel .hierarchy-lamp:hover { background: none; border: 0; }
+.unified-shell.workspace-layout .plan-map-caption .tool-buttons { flex: none; }
+.unity-panel > *, .inspector, .inspector-section, .inspector-head > div { min-width: 0; max-width: 100%; }
+.inspector-number, .inspector-text { grid-template-columns: 72px minmax(0, 1fr) minmax(18px, auto); }
+.inspector-section .row { min-width: 0; }
+.inspector-section .row input[type="range"] { min-width: 0; flex: 1; }
+.inspector-head strong { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.inspector-choice:not(.wrap) > span { width: auto; margin-right: auto; }

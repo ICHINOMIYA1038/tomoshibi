@@ -1,8 +1,9 @@
 import { create } from 'zustand'
 import { clampPart, resolveStageParts, type FloorFinish, type StagePart, type StageTemplate } from './stageParts'
 import * as THREE from 'three'
+import { canBeParent, hierarchyContext, moveDescendants, parentOf, STAGE_ID, type ChildKind } from './hierarchy'
 import { FIXTURE_PROFILES, kelvinToRGB } from './lighting/fixtureTypes'
-import { DEFAULT_VENUE_LAYOUT, pointInStage, stageFootprint, stageLocalFootprint } from './venueLayout'
+import { DEFAULT_VENUE_LAYOUT, stageLocalFootprint } from './venueLayout'
 import { isWorkspacePath } from './io/workspacePath'
 import type { PerformerPose } from './performerPoses'
 
@@ -37,8 +38,10 @@ export interface Fixture {
   colorTempK: number              // LED tunable only: 可変色温度
   rotationZDeg: number
   enabled: boolean
-  /** 吊っているバトン（舞台の部品の id）。無いか '' ならどれにも吊っていない。会場の配置のバトンの欄で決める */
+  /** 古いプランの「吊っているバトン」。いまは parentId で決める（hierarchy.ts）。読み込みのためだけに残す */
   battenId?: string
+  /** 親（hierarchy.ts）。'stage'・舞台の部品・舞台セットの id。null は親なし、無ければ位置から決める */
+  parentId?: string | null
 }
 
 export interface Performer {
@@ -49,6 +52,8 @@ export interface Performer {
   scale: number       // 身長スケール 0.7=子, 1.0=平均, 1.2=高身長
   color: string       // 服色
   pose: PerformerPose
+  /** 親（hierarchy.ts）。null は親なし、無ければ舞台の床 */
+  parentId?: string | null
 }
 
 export type StagePoint = [number, number]
@@ -346,7 +351,8 @@ export interface SceneSettings {
   showGizmos: boolean
   showPerformers: boolean
   cameraView: 'audience' | 'aerial' | 'sidewing' | 'free' | 'house'
-  transformMode: 'translate' | 'rotate' | 'scale'
+  /** 3D と平面図で共通の道具（Unity の Q/W/E/R）。選択では選ぶだけで動かさない */
+  transformMode: 'select' | 'translate' | 'rotate' | 'scale'
   uiTab: 'fixtures' | 'performers' | 'props' | 'venue'
   settingsOpen: boolean
   settingsTab: 'scene' | 'look' | 'advanced'
@@ -384,6 +390,10 @@ interface State {
   removeFixture: (id: string) => void
   updateFixture: (id: string, patch: Partial<Fixture>) => void
   duplicateFixture: (id: string) => void
+  duplicatePerformer: (id: string) => void
+  duplicateSetPiece: (id: string) => void
+  /** 親を変える（全シーン）。親に選べないもの（自分・自分の子孫）なら何もしない */
+  setParent: (kind: ChildKind, id: string, parentId: string | null) => void
 
   addPerformer: (atPos?: [number, number, number]) => string
   removePerformer: (id: string) => void
@@ -528,13 +538,32 @@ export const useStore = create<State>((set, get) => ({
     }
     return { setPieces: [...s.setPieces, sp] }
   }),
-  removeSetPiece: (id) => set(s => ({
-    setPieces: s.setPieces.filter(x => x.id !== id),
-    selection: s.selection.id === id ? { kind: null, id: null } : s.selection,
-  })),
-  updateSetPiece: (id, patch) => set(s => ({
-    setPieces: s.setPieces.map(sp => sp.id === id ? { ...sp, ...patch } : sp),
-  })),
+  removeSetPiece: (id) => set(s => {
+    // 子は、消したセットの親に付け替える（Unity と同じく、子まで消しはしない）
+    const ctx = hierarchyContext(s.productionPlan.venueLayout, s.setPieces)
+    const removed = s.setPieces.find(x => x.id === id)
+    const parent = removed ? parentOf('setpiece', removed, ctx) : STAGE_ID
+    const adopt = <T extends { parentId?: string | null }>(items: T[]) => items.map(item => item.parentId === id ? { ...item, parentId: parent } : item)
+    return {
+      setPieces: adopt(s.setPieces.filter(x => x.id !== id)),
+      fixtures: adopt(s.fixtures),
+      performers: adopt(s.performers),
+      selection: s.selection.id === id ? { kind: null, id: null } : s.selection,
+    }
+  }),
+  updateSetPiece: (id, patch) => set(s => {
+    const before = s.setPieces.find(sp => sp.id === id)
+    const setPieces = s.setPieces.map(sp => sp.id === id ? { ...sp, ...patch } : sp)
+    const after = setPieces.find(sp => sp.id === id)
+    if (!before || !after || (!patch.position && !patch.rotation)) return { setPieces }
+    // セットを動かす・回すと、その上に載せた子も一緒に動く（このシーンだけ。セットはシーンごとに持つ）
+    const ctx = hierarchyContext(s.productionPlan.venueLayout, s.setPieces)
+    const moved = moveDescendants({ fixtures: s.fixtures, performers: s.performers, setPieces: s.setPieces }, id, {
+      dx: after.position[0] - before.position[0], dy: after.position[1] - before.position[1], dz: after.position[2] - before.position[2],
+      rotation: after.rotation[1] - before.rotation[1], pivot: [before.position[0], before.position[2]],
+    }, ctx)
+    return { fixtures: moved.fixtures, performers: moved.performers, setPieces: moved.setPieces.map(sp => sp.id === id ? after : sp) }
+  }),
   addPrimitiveSetPiece: (kind, atPos) => {
     const SIZE: Record<'box'|'platform'|'riser', [number,number,number]> = {
       box: [0.6, 0.4, 0.4],            // 箱馬
@@ -568,7 +597,7 @@ export const useStore = create<State>((set, get) => ({
     showGizmos: true,
     showPerformers: true,
     cameraView: 'audience',
-    transformMode: 'translate',
+    transformMode: 'select',
     uiTab: 'fixtures',
     settingsOpen: false,
     settingsTab: 'scene',
@@ -618,6 +647,32 @@ export const useStore = create<State>((set, get) => ({
     }
     set(s => ({ fixtures: [...s.fixtures, copy], selection: { kind: 'fixture', id: copy.id } }))
   },
+
+  duplicatePerformer: (id) => {
+    const p = get().performers.find(x => x.id === id)
+    if (!p || get().performers.length >= LIMITS.performers) return
+    const copy: Performer = { ...p, id: genPid(), name: p.name + ' (複製)', position: [p.position[0] + 0.6, p.position[1], p.position[2]] }
+    set(s => ({ performers: [...s.performers, copy], selection: { kind: 'performer', id: copy.id } }))
+  },
+  duplicateSetPiece: (id) => {
+    const piece = get().setPieces.find(x => x.id === id)
+    if (!piece || get().setPieces.length >= LIMITS.setPieces) return
+    const copy = { ...piece, id: `sp${Date.now()}-${get().setPieces.length}`, name: piece.name + ' (複製)',
+      position: [piece.position[0] + 0.6, piece.position[1], piece.position[2]] as typeof piece.position }
+    set(s => ({ setPieces: [...s.setPieces, copy], selection: { kind: 'setpiece', id: copy.id } }))
+  },
+  setParent: (kind, id, parentId) => set(s => {
+    const ctx = hierarchyContext(s.productionPlan.venueLayout, s.setPieces)
+    if (parentId !== null && !canBeParent(kind, id, parentId, ctx)) return {}
+    const key = kind === 'fixture' ? 'fixtures' : kind === 'performer' ? 'performers' : 'setPieces'
+    const apply = <T extends { id: string }>(items: T[]) => items.map(item => item.id === id
+      ? { ...item, parentId, ...(kind === 'fixture' ? { battenId: undefined } : {}) } : item)
+    const captured = captureActiveScene(s.productionPlan, s)
+    return {
+      productionPlan: { ...captured, scenes: captured.scenes.map(scene => ({ ...scene, [key]: apply(scene[key] as Array<{ id: string }>) })) },
+      [key]: apply(s[key] as Array<{ id: string }>),
+    } as Partial<State>
+  }),
 
   addPerformer: (atPos) => {
     // 重なり防止: 既存数で円周状に配置
@@ -691,22 +746,12 @@ export const useStore = create<State>((set, get) => ({
     const dx = next[0] - current[0]
     const dz = next[1] - current[1]
     if (!dx && !dz) return {}
-    const outline = stageFootprint(layout)
-    const shift = (stage: Pick<State, 'fixtures' | 'performers' | 'setPieces'>) => ({
-      fixtures: stage.fixtures.map(fixture => ({
-        ...fixture,
-        position: pointInStage(fixture.position[0], fixture.position[2], outline)
-          ? [fixture.position[0] + dx, fixture.position[1], fixture.position[2] + dz] as Fixture['position']
-          : fixture.position,
-        target: [fixture.target[0] + dx, fixture.target[1], fixture.target[2] + dz] as Fixture['target'],
-      })),
-      performers: stage.performers.map(person => ({
-        ...person, position: [person.position[0] + dx, person.position[1], person.position[2] + dz] as Performer['position'],
-      })),
-      setPieces: stage.setPieces.map(piece => ({
-        ...piece, position: [piece.position[0] + dx, piece.position[1], piece.position[2] + dz] as typeof piece.position,
-      })),
-    })
+    // 舞台の床の子孫（舞台に載せた役者・セット・照明、バトンに吊った照明）だけを一緒に動かす（hierarchy.ts）
+    const motion = { dx, dy: 0, dz, rotation: 0, pivot: current }
+    const shift = <S extends { fixtures: Fixture[]; performers: Performer[]; setPieces: import('./types').SetPiece[] }>(stage: S) => {
+      const moved = moveDescendants(stage, STAGE_ID, motion, hierarchyContext(layout, stage.setPieces))
+      return { fixtures: moved.fixtures, performers: moved.performers, setPieces: moved.setPieces }
+    }
     const captured = captureActiveScene(s.productionPlan, s)
     const scenes = captured.scenes.map(scene => ({ ...scene, ...shift(scene) }))
     return {
@@ -715,26 +760,24 @@ export const useStore = create<State>((set, get) => ({
     }
   }),
   updateStageParts: (parts, moved) => set(s => {
-    const layout = { ...DEFAULT_VENUE_LAYOUT, ...s.productionPlan.venueLayout, stageParts: parts }
-    const dx = moved ? moved.after.x - moved.before.x : 0
-    const dy = moved ? moved.after.elevation - moved.before.elevation : 0
-    const dz = moved ? moved.after.z - moved.before.z : 0
-    // 長さや向きを変えたときは照明を動かさない（吊った位置の意味が変わるため）
-    if (!moved || moved.before.kind !== 'batten' || (!dx && !dy && !dz)
-      || moved.after.width !== moved.before.width || moved.after.rotationDeg !== moved.before.rotationDeg)
-      return { productionPlan: { ...s.productionPlan, venueLayout: layout } }
-    // 吊った照明は動かし始めたときに決めておく。動かしながら決め直すと、通りがかった照明まで拾ってしまう
-    const ids = new Set(moved.fixtureIds)
-    const shift = (fixtures: Fixture[]) => fixtures.map(fixture => ids.has(fixture.id) ? {
-      ...fixture,
-      position: [fixture.position[0] + dx, fixture.position[1] + dy, fixture.position[2] + dz] as Fixture['position'],
-      // 向きを保ったまま動かす（狙う先も同じだけずらす）
-      target: [fixture.target[0] + dx, fixture.target[1] + dy, fixture.target[2] + dz] as Fixture['target'],
-    } : fixture)
+    const before = { ...DEFAULT_VENUE_LAYOUT, ...s.productionPlan.venueLayout }
+    const layout = { ...before, stageParts: parts }
+    if (!moved) return { productionPlan: { ...s.productionPlan, venueLayout: layout } }
+    // 部品を動かす・回すと、その子（バトンに吊った照明など）も一緒に動く。長さを変えただけでは動かさない
+    const offset = before.stageOffset ?? [0, 0]
+    const motion = {
+      dx: moved.after.x - moved.before.x, dy: moved.after.elevation - moved.before.elevation, dz: moved.after.z - moved.before.z,
+      rotation: (moved.after.rotationDeg - moved.before.rotationDeg) * Math.PI / 180,
+      pivot: [moved.before.x + offset[0], moved.before.z + offset[1]] as StagePoint,
+    }
+    const shift = <S extends { fixtures: Fixture[]; performers: Performer[]; setPieces: import('./types').SetPiece[] }>(stage: S) => {
+      const next = moveDescendants(stage, moved.before.id, motion, hierarchyContext(before, stage.setPieces))
+      return { fixtures: next.fixtures, performers: next.performers, setPieces: next.setPieces }
+    }
     const captured = captureActiveScene(s.productionPlan, s)
     return {
-      productionPlan: { ...captured, venueLayout: layout, scenes: captured.scenes.map(scene => ({ ...scene, fixtures: shift(scene.fixtures) })) },
-      fixtures: shift(s.fixtures),
+      productionPlan: { ...captured, venueLayout: layout, scenes: captured.scenes.map(scene => ({ ...scene, ...shift(scene) })) },
+      ...shift(s),
     }
   }),
   duplicateStagePart: (id) => {
@@ -747,14 +790,7 @@ export const useStore = create<State>((set, get) => ({
     get().updateStageParts([...parts, copy])
     return copy.id
   },
-  setFixtureBatten: (fixtureId, battenId) => set(s => {
-    const apply = (fixtures: Fixture[]) => fixtures.map(fixture => fixture.id === fixtureId ? { ...fixture, battenId } : fixture)
-    const captured = captureActiveScene(s.productionPlan, s)
-    return {
-      productionPlan: { ...captured, scenes: captured.scenes.map(scene => ({ ...scene, fixtures: apply(scene.fixtures) })) },
-      fixtures: apply(s.fixtures),
-    }
-  }),
+  setFixtureBatten: (fixtureId, battenId) => get().setParent('fixture', fixtureId, battenId || null),
   ensureScenes: () => set(s => {
     if (s.productionPlan.scenes.length) return { productionPlan: ensurePlanHierarchy(s.productionPlan) }
     const scene = sceneSnapshot(s, isMockPath ? '' : '開始')

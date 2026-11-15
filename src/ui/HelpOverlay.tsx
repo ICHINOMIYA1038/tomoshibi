@@ -16,7 +16,7 @@ export function HelpOverlay() {
         <p className="subtitle">舞台に灯をともす、ちいさな小屋 — 3D で組む・見る・残す</p>
 
         <h2>はじめに</h2>
-        <p>操作パネル (PCは画面右 / スマホは右下☰メニュー) の <b>器具</b> タブで吊り込みを足し、<b>役者</b> タブで人を配置します。各要素は 3D 内で直接ドラッグして動かせます。</p>
+        <p>操作パネル (PCは画面右 / スマホは右下の「追加・編集」) の <b>＋ 追加</b> で、照明・役者・舞台セット・舞台の部品・客席を足します。上の一覧（ヒエラルキー）で選び、下の欄で設定します。動かすときは、画面上の道具で <b>移動・回転・拡大</b> を選びます。</p>
 
         <div className="help-pc-only">
           <h2>カメラ操作 (PC)</h2>
@@ -24,8 +24,9 @@ export function HelpOverlay() {
             <div><kbd>左ドラッグ</kbd></div><div>回転</div>
             <div><kbd>ホイール</kbd></div><div>ズーム</div>
             <div><kbd>右ドラッグ</kbd></div><div>パン</div>
-            <div><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd></div><div>カメラを前後左右へ</div>
-            <div><kbd>Q</kbd> <kbd>E</kbd></div><div>カメラを上下へ</div>
+            <div><kbd>右ボタン</kbd>＋<kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd></div><div>カメラを前後左右へ（右ボタンを押している間）</div>
+            <div><kbd>右ボタン</kbd>＋<kbd>Q</kbd> <kbd>E</kbd></div><div>カメラを上下へ</div>
+            <div><kbd>矢印キー</kbd></div><div>カメラを前後左右へ</div>
             <div><kbd>1</kbd>〜<kbd>4</kbd></div><div>視点切替 (客席 / 俯瞰 / 袖 / 自由)</div>
           </div>
         </div>
@@ -35,16 +36,17 @@ export function HelpOverlay() {
           <div><kbd>1本指ドラッグ</kbd></div><div>回転</div>
           <div><kbd>2本指ピンチ</kbd></div><div>ズーム</div>
           <div><kbd>2本指ドラッグ</kbd></div><div>パン</div>
-          <div><kbd>器具タップ</kbd></div><div>選択 → 3D矢印で移動</div>
+          <div><kbd>タップ</kbd></div><div>選択 → 道具を「移動」にして 3D の矢印で動かす</div>
         </div>
 
-        <h2>器具と役者の操作</h2>
+        <h2>物の操作（Unity と同じ）</h2>
         <div className="help-grid">
-          <div><kbd>クリック</kbd></div><div>器具・役者を選択</div>
-          <div><kbd>3D 矢印</kbd></div><div>選択後、ドラッグで位置/狙いを移動</div>
+          <div><kbd>クリック</kbd></div><div>選ぶ</div>
+          <div><kbd>Q</kbd> <kbd>W</kbd> <kbd>E</kbd> <kbd>R</kbd></div><div>道具を 選択・移動・回転・拡大 に切り替え（3D と平面図で共通）</div>
+          <div><kbd>⌘D</kbd> / <kbd>Ctrl+D</kbd></div><div>複製</div>
+          <div><kbd>Delete</kbd></div><div>削除（⌘Z で戻せる）</div>
+          <div><kbd>一覧のドラッグ</kbd></div><div>行を別の行に重ねると、その子になる（親を動かすと子も動く）</div>
           <div><kbd>Esc</kbd></div><div>選択を外す</div>
-          <div><kbd>Del</kbd> / <kbd>⌫</kbd></div><div>選択中の器具/役者を削除</div>
-          <div><kbd>⌘ + D</kbd></div><div>フィクスチャ複製</div>
         </div>
 
         <h2>シーンの保存と共有</h2>

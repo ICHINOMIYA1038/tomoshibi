@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState, type PointerEvent } from 'react'
 import { audienceSeatPositions, clampAudiencePosition } from '../audienceLayout'
-import { useStore, type AudienceBlock, type StageShape } from '../store'
+import { useStore, type AudienceBlock } from '../store'
 import { DEFAULT_VENUE_LAYOUT, pointInStage, stageFootprint } from '../venueLayout'
-import { StagePartsInspector, StagePartsLayer } from './StagePartsEditor'
+import { StagePartsLayer } from './StagePartsEditor'
+import { Inspector } from './Inspector'
+import { ToolButtons } from './ToolButtons'
 
 const SVG_WIDTH = 860
 const SVG_HEIGHT = 660
@@ -26,16 +28,21 @@ export function AudienceLayoutEditor({ open, onClose }: { open: boolean; onClose
   const setPieces = useStore(state => state.setPieces)
   const addBlock = useStore(state => state.addAudienceBlock)
   const updateBlock = useStore(state => state.updateAudienceBlock)
-  const removeBlock = useStore(state => state.removeAudienceBlock)
   const venue = useStore(state => state.productionPlan.venueLayout ?? DEFAULT_VENUE_LAYOUT)
   const updateVenue = useStore(state => state.updateVenueLayout)
   const moveStageTo = useStore(state => state.moveStageTo)
   const updateSettings = useStore(state => state.updateSettings)
-  const [selectedId, setSelectedId] = useState<string | null>(null)
   const [wideView, setWideView] = useState(false)
-  // 「客席・舞台の形」と「舞台の部品」で、図の上で動かせるものを切り替える
-  const [mode, setMode] = useState<'venue' | 'parts'>('venue')
-  const [partId, setPartId] = useState<string | null>(null)
+  // 選んでいる物と道具は、3D の画面・右パネルと共通（Unity と同じく、移動の道具でだけドラッグで動かす）
+  const selection = useStore(state => state.selection)
+  const select = useStore(state => state.select)
+  const tool = useStore(state => state.settings.transformMode)
+  const selectedId = selection.kind === 'audience' ? selection.id : null
+  const partId = selection.kind === 'stagepart' ? selection.id : null
+  const setSelectedId = (id: string | null) => select(id ? 'audience' : null, id)
+  const setPartId = (id: string | null) => select(id ? 'stagepart' : null, id)
+  const moving = tool === 'translate'
+  const resizing = tool === 'scale'
   const svgRef = useRef<SVGSVGElement>(null)
   const dragging = useRef<{
     kind: 'block' | 'vertex' | 'stage'; id: string; pointerId: number; at: [number, number]; from: [number, number]
@@ -58,7 +65,6 @@ export function AudienceLayoutEditor({ open, onClose }: { open: boolean; onClose
   const mapY = (z: number) => SVG_HEIGHT / 2 + (z - centerZ) * scale
   const outline = stageFootprint(venue)
   const stagePoints = outline.map(([x, z]) => `${mapX(x)},${mapY(z)}`).join(' ')
-  const selected = blocks.find(block => block.id === selectedId) ?? null
   const seatCount = blocks.reduce((sum, block) => sum + block.rows * block.seatsPerRow, 0)
   const stageOverlap = blocks.reduce((sum, block) => sum + audienceSeatPositions(block)
     .filter(([x, z]) => pointInStage(x, z, outline)).length, 0)
@@ -70,9 +76,6 @@ export function AudienceLayoutEditor({ open, onClose }: { open: boolean; onClose
   }).length
 
   useEffect(() => {
-    if (open && !blocks.some(block => block.id === selectedId)) setSelectedId(blocks[0]?.id ?? null)
-  }, [open, blocks, selectedId])
-  useEffect(() => {
     if (!open) return
     const onKeyDown = (event: KeyboardEvent) => { if (event.key === 'Escape') onClose() }
     window.addEventListener('keydown', onKeyDown)
@@ -80,17 +83,11 @@ export function AudienceLayoutEditor({ open, onClose }: { open: boolean; onClose
   }, [open, onClose])
   if (!open) return null
 
-  const changeSelected = (patch: Partial<AudienceBlock>) => {
-    if (!selected) return
-    const next = { ...selected, ...patch }
-    next.position = clampAudiencePosition(next, next.position[0], next.position[1])
-    updateBlock(selected.id, { ...patch, position: next.position })
-  }
   const beginDrag = (event: PointerEvent<SVGGElement>, block: AudienceBlock) => {
     event.preventDefault()
     event.stopPropagation()
     setSelectedId(block.id)
-    if (!svgRef.current) return
+    if (!moving || !svgRef.current) return
     const at = worldPoint(event, svgRef.current, scale, centerZ)
     dragging.current = { kind: 'block', id: block.id, pointerId: event.pointerId, at, from: [...block.position] }
     svgRef.current?.setPointerCapture(event.pointerId)
@@ -106,7 +103,8 @@ export function AudienceLayoutEditor({ open, onClose }: { open: boolean; onClose
   const beginStageDrag = (event: PointerEvent<SVGPolygonElement>) => {
     event.preventDefault()
     event.stopPropagation()
-    if (!svgRef.current) return
+    select('stage', 'stage')
+    if (!moving || !svgRef.current) return
     dragging.current = { kind: 'stage', id: '', pointerId: event.pointerId,
       at: worldPoint(event, svgRef.current, scale, centerZ), from: [...stageOffset] }
     svgRef.current.setPointerCapture(event.pointerId)
@@ -147,30 +145,6 @@ export function AudienceLayoutEditor({ open, onClose }: { open: boolean; onClose
     const id = addBlock()
     if (id) setSelectedId(id)
   }
-  const chooseShape = (shape: StageShape) => {
-    if (shape === 'custom' && venue.stageShape !== 'custom') {
-      const vertices = outline.length > 8 ? Array.from({ length: 8 }, (_, index) =>
-        outline[Math.floor(index * outline.length / 8)]) : outline
-      updateVenue({ stageShape: shape, stageVertices: vertices.map(([x, z]) => [x - stageOffset[0], z - stageOffset[1]]) })
-    }
-    else if (shape === 'round') updateVenue({ stageShape: shape, stageWidth: 12, stageDepth: 12 })
-    else updateVenue({ stageShape: shape })
-  }
-  const addStageVertex = () => {
-    if (outline.length >= 8) return
-    let edge = 0
-    let longest = 0
-    outline.forEach(([x, z], index) => {
-      const [nextX, nextZ] = outline[(index + 1) % outline.length]
-      const length = Math.hypot(nextX - x, nextZ - z)
-      if (length > longest) { longest = length; edge = index }
-    })
-    const [x, z] = outline[edge]
-    const [nextX, nextZ] = outline[(edge + 1) % outline.length]
-    const vertices = [...outline]
-    vertices.splice(edge + 1, 0, [(x + nextX) / 2, (z + nextZ) / 2])
-    updateVenue({ stageVertices: vertices.map(([x, z]) => [x - stageOffset[0], z - stageOffset[1]]) })
-  }
 
   return <div className="audience-editor-backdrop" onPointerDown={event => {
     if (event.target === event.currentTarget) onClose()
@@ -179,10 +153,7 @@ export function AudienceLayoutEditor({ open, onClose }: { open: boolean; onClose
       <header className="audience-editor-header">
         <div><strong>会場の配置</strong><span>配置済み {seatCount} 席{venue.targetCapacity > 0 ? ` ／ 目標 ${venue.targetCapacity} 席` : ''}・全シーン共通</span></div>
         <div className="audience-editor-header-actions">
-          <div className="venue-mode-switch" role="group" aria-label="編集するもの">
-            <button type="button" className={mode === 'venue' ? 'active' : ''} aria-pressed={mode === 'venue'} onClick={() => setMode('venue')}>客席・舞台の形</button>
-            <button type="button" className={mode === 'parts' ? 'active' : ''} aria-pressed={mode === 'parts'} onClick={() => setMode('parts')}>舞台の部品</button>
-          </div>
+          <ToolButtons compact />
           <button type="button" onClick={() => setWideView(value => !value)}>{wideView ? '舞台付近' : '全体を表示'}</button>
           <button type="button" onClick={createBlock} disabled={blocks.length >= 16}>＋ 客席</button>
           <button type="button" onClick={() => { updateSettings({ cameraView: 'house' }); onClose() }} disabled={!blocks.length}>3Dで見る</button>
@@ -200,11 +171,13 @@ export function AudienceLayoutEditor({ open, onClose }: { open: boolean; onClose
                 <line x1="42" x2="818" y1={mapY(z)} y2={mapY(z)} stroke="#d2c9bd" strokeDasharray="5 9" />
                 <text x="45" y={mapY(z) - 5} fill="#73695e" fontSize="12">z {z}m</text>
               </g>)}
-            <polygon points={stagePoints} fill="#423d3a" stroke="#a57545" strokeWidth="4"
+            <polygon points={stagePoints} fill="#423d3a" strokeWidth="4"
               role="button" tabIndex={0} aria-label="舞台をドラッグして移動。矢印キーでも移動できます"
-              style={{ cursor: mode === 'venue' ? 'grab' : 'default', touchAction: 'none' }}
-              onPointerDown={event => { if (mode === 'venue') beginStageDrag(event); else setPartId(null) }}
+              style={{ cursor: moving ? 'grab' : 'pointer', touchAction: 'none' }}
+              stroke={selection.kind === 'stage' ? '#f2c27b' : '#a57545'}
+              onPointerDown={beginStageDrag}
               onKeyDown={event => {
+                if (!moving) return
                 const delta = event.key === 'ArrowLeft' ? [-.5, 0] : event.key === 'ArrowRight' ? [.5, 0]
                   : event.key === 'ArrowUp' ? [0, -.5] : event.key === 'ArrowDown' ? [0, .5] : null
                 if (!delta) return
@@ -212,13 +185,13 @@ export function AudienceLayoutEditor({ open, onClose }: { open: boolean; onClose
                 moveStageTo([stageOffset[0] + delta[0], stageOffset[1] + delta[1]])
               }} />
             <text x={mapX(stageOffset[0])} y={mapY(-3 + stageOffset[1]) + 6} textAnchor="middle" fill="#f6f1e8" fontSize="21" fontWeight="700" pointerEvents="none">舞台</text>
-            {blocks.map(block => <g key={block.id} role="button" tabIndex={mode === 'venue' ? 0 : -1}
-              opacity={mode === 'venue' ? 1 : .35} pointerEvents={mode === 'venue' ? undefined : 'none'}
+            {blocks.map(block => <g key={block.id} role="button" tabIndex={0}
               aria-label={`${block.name} ${block.rows}列 ${block.seatsPerRow}席を移動`}
-              style={{ cursor: 'grab', touchAction: 'none' }}
+              style={{ cursor: moving ? 'grab' : 'pointer', touchAction: 'none' }}
               onPointerDown={event => beginDrag(event, block)}
               onKeyDown={event => {
                 if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); setSelectedId(block.id); return }
+                if (!moving) return
                 const delta = event.key === 'ArrowLeft' ? [-.5, 0] : event.key === 'ArrowRight' ? [.5, 0]
                   : event.key === 'ArrowUp' ? [0, -.5] : event.key === 'ArrowDown' ? [0, .5] : null
                 if (!delta) return
@@ -241,10 +214,10 @@ export function AudienceLayoutEditor({ open, onClose }: { open: boolean; onClose
               <circle cx={mapX(fixture.position[0])} cy={mapY(fixture.position[2])} r="9" fill="#d59a45" stroke="#4c3321" strokeWidth="2" />
               <title>{fixture.name}</title>
             </g>)}
-            {mode === 'parts' && <StagePartsLayer selectedId={partId} onSelect={setPartId}
+            {<StagePartsLayer selectedId={partId} onSelect={setPartId} tool={tool}
               toWorld={event => worldPoint(event, svgRef.current!, scale, centerZ)} mapX={mapX} mapY={mapY}
               unitsPerPx={SVG_WIDTH / (svgRef.current?.clientWidth || SVG_WIDTH)} />}
-            {mode === 'venue' && venue.stageShape === 'custom' && outline.map(([x, z], index) => <circle key={index}
+            {resizing && selection.kind === 'stage' && venue.stageShape === 'custom' && outline.map(([x, z], index) => <circle key={index}
               cx={mapX(x)} cy={mapY(z)} r="11" fill="#e1ad6d" stroke="#4e321d" strokeWidth="3"
               role="button" tabIndex={0} aria-label={`舞台の頂点 ${index + 1} を移動`}
               style={{ cursor: 'grab', touchAction: 'none' }}
@@ -259,110 +232,21 @@ export function AudienceLayoutEditor({ open, onClose }: { open: boolean; onClose
                 updateVenue({ stageVertices: vertices.map(([px, pz]) => [px - stageOffset[0], pz - stageOffset[1]]) })
               }} />)}
           </svg>
-          <div className="audience-editor-legend">{mode === 'venue'
-            ? blocks.length ? <><span>■ 客席</span><span>● 客席側の照明</span><span>舞台・客席をドラッグして移動</span></>
-              : <><span>客席はまだありません（なくても使えます）。置くときは上の「＋ 客席」</span><span>舞台をドラッグして移動</span></>
-            : <><span>━ 壁</span><span>╍ バトン</span><span>部品を選ぶと取っ手が出ます</span></>}</div>
+          <div className="audience-editor-legend">
+            <span>■ 客席</span><span>━ 壁</span><span>╍ バトン</span><span>● 客席側の照明</span>
+            <span>{tool === 'select' ? '選ぶだけの道具です。動かすときは上の「移動」、大きさは「拡大」'
+              : tool === 'translate' ? '舞台・客席・部品をドラッグして移動'
+                : tool === 'scale' ? '部品を選ぶと出る金色の点で大きさを変える（自由形状の舞台は、舞台を選ぶと角が出ます）'
+                  : '回転は 3D の画面か、右の数字で変えます'}</span>
+            {!blocks.length && <span>客席はまだありません（なくても使えます）</span>}
+          </div>
         </div>
         <aside className="audience-editor-inspector">
-          {mode === 'parts' ? <StagePartsInspector selectedId={partId} onSelect={setPartId} /> : <>
-          <h2>舞台の床・形</h2>
-          <p>床を広げるには幅・奥行を変更します。張り出しや変形した床も選べます。</p>
-          <div className="venue-shape-options" role="group" aria-label="舞台の形">
-            {([['proscenium', '額縁'], ['round', '円形'], ['thrust', '張り出し'], ['custom', '自由形状']] as const)
-              .map(([shape, label]) => <button key={shape} type="button"
-                className={venue.stageShape === shape ? 'active' : ''} aria-pressed={venue.stageShape === shape}
-                onClick={() => chooseShape(shape)}>{label}</button>)}
-          </div>
-          {venue.stageShape === 'custom'
-            ? <div className="venue-custom-controls">
-              <p>図の金色の点をドラッグして舞台の輪郭を変えます。</p>
-              <button type="button" onClick={addStageVertex} disabled={outline.length >= 8}>＋ 角を追加</button>
-              <button type="button" onClick={() => updateVenue({ stageVertices: outline.slice(0, -1)
-                .map(([x, z]) => [x - stageOffset[0], z - stageOffset[1]]) })}
-                disabled={outline.length <= 3}>最後の角を削除</button>
-            </div>
-            : <div className="audience-editor-fields venue-stage-fields">
-              <label>{venue.stageShape === 'round' ? '直径' : '舞台の幅'}
-                <input type="range" min="6" max="24" step="0.5" value={venue.stageWidth}
-                  onChange={event => {
-                    const width = Number(event.target.value)
-                    updateVenue(venue.stageShape === 'round' ? { stageWidth: width, stageDepth: width } : { stageWidth: width })
-                  }} /><output>{venue.stageWidth}m</output></label>
-              {venue.stageShape !== 'round' && <label>奥行
-                <input type="range" min="6" max="20" step="0.5" value={venue.stageDepth}
-                  onChange={event => updateVenue({ stageDepth: Number(event.target.value) })} />
-                <output>{venue.stageDepth}m</output></label>}
-            </div>}
-          {venue.stageShape === 'proscenium' && <label className="venue-frame-option">
-            <input type="checkbox" checked={venue.showProsceniumFrame === true}
-              onChange={event => updateVenue({ showProsceniumFrame: event.target.checked })} />
-            赤い舞台枠を表示
-          </label>}
-          <p>床に段差を付ける場合は「セット」から「床・平台を追加」を選び、幅・奥行・高さを調整できます。</p>
-          <div className="venue-stage-position">
-            <strong>舞台の位置</strong>
-            <p>舞台をドラッグして移動。全シーンの役者・セットと、舞台の範囲内にある照明も一緒に動きます。客席側の照明は狙いが追従します。</p>
-            <div><label>左右 <input type="number" min="-24" max="24" step="0.1" value={stageOffset[0]}
-              onChange={event => moveStageTo([Number(event.target.value), stageOffset[1]])} />m</label>
-              <label>前後 <input type="number" min="-21" max="35" step="0.1" value={stageOffset[1]}
-                onChange={event => moveStageTo([stageOffset[0], Number(event.target.value)])} />m</label></div>
-            <button type="button" onClick={() => moveStageTo([0, 0])} disabled={!stageOffset[0] && !stageOffset[1]}>中央に戻す</button>
-          </div>
-          <div className="venue-capacity">
-            <label>目標定員 <input type="number" min="0" max="6400" step="1" placeholder="未設定" value={venue.targetCapacity || ''}
-              onChange={event => updateVenue({ targetCapacity: clamp(Math.round(Number(event.target.value) || 0), 0, 6400) })} />席</label>
-            <p>配置済み {seatCount} 席{venue.targetCapacity > 0 && ` ／ ${seatCount < venue.targetCapacity
-              ? `あと ${venue.targetCapacity - seatCount} 席` : seatCount > venue.targetCapacity
-                ? `${seatCount - venue.targetCapacity} 席超過` : '目標と一致'}`}</p>
-            {stageOverlap > 0 && <p className="venue-capacity-warning">{stageOverlap} 席が舞台と重なっています。客席の位置を調整してください。</p>}
-            {protrudingSetPieces > 0 && <p className="venue-capacity-warning">現在のシーンで {protrudingSetPieces} 個の舞台セットが新しい輪郭からはみ出しています。セットの大きさと位置を確認してください。</p>}
-          </div>
-          <h2>客席ブロック</h2>
-          <div className="audience-editor-block-list">{blocks.map(block => <button key={block.id} type="button"
-            className={selectedId === block.id ? 'active' : ''} onClick={() => setSelectedId(block.id)}>
-            <strong>{block.name}</strong><span>{block.rows * block.seatsPerRow}席</span>
-          </button>)}</div>
-          {selected ? <AudienceBlockFields block={selected} /> : <p>客席ブロックを選ぶと、列数や席数を変更できます。</p>}
-          <p className="audience-editor-note">客席を舞台の横や後ろにも置けます。通路はブロック間に空けます。会場の配置は全シーン共通で自動保存されます。</p>
-          </>}
+          <Inspector />
+          {stageOverlap > 0 && <p className="venue-capacity-warning">{stageOverlap} 席が舞台と重なっています。客席の位置を調整してください。</p>}
+          {protrudingSetPieces > 0 && <p className="venue-capacity-warning">現在のシーンで {protrudingSetPieces} 個の舞台セットが舞台の輪郭からはみ出しています。</p>}
         </aside>
       </div>
     </section>
-  </div>
-}
-
-/** 客席ブロックの名前・列数・位置などの欄。客席の編集画面と、右パネルの「舞台・客席」で使う */
-export function AudienceBlockFields({ block }: { block: AudienceBlock }) {
-  const updateBlock = useStore(state => state.updateAudienceBlock)
-  const removeBlock = useStore(state => state.removeAudienceBlock)
-  const venue = useStore(state => state.productionPlan.venueLayout ?? DEFAULT_VENUE_LAYOUT)
-  const stageOffset = venue.stageOffset ?? [0, 0]
-  const changeSelected = (patch: Partial<AudienceBlock>) => {
-    const next = { ...block, ...patch }
-    next.position = clampAudiencePosition(next, next.position[0], next.position[1])
-    updateBlock(block.id, { ...patch, position: next.position })
-  }
-  return <div className="audience-editor-fields">
-            <label>名前<input type="text" maxLength={60} value={block.name}
-              onChange={event => changeSelected({ name: event.target.value })} /></label>
-            <label>列数 <input type="range" min="1" max="20" value={block.rows}
-              onChange={event => changeSelected({ rows: Number(event.target.value) })} /><output>{block.rows}列</output></label>
-            <label>1列の席数 <input type="range" min="1" max="20" value={block.seatsPerRow}
-              onChange={event => changeSelected({ seatsPerRow: Number(event.target.value) })} /><output>{block.seatsPerRow}席</output></label>
-            <label>列の間隔 <input type="range" min="0.6" max="1.4" step="0.05" value={block.rowSpacing}
-              onChange={event => changeSelected({ rowSpacing: Number(event.target.value) })} /><output>{block.rowSpacing.toFixed(2)}m</output></label>
-            <label>席の間隔 <input type="range" min="0.5" max="1.2" step="0.05" value={block.seatSpacing}
-              onChange={event => changeSelected({ seatSpacing: Number(event.target.value) })} /><output>{block.seatSpacing.toFixed(2)}m</output></label>
-            <label>位置 X <input type="range" min="-24" max="24" step="0.1" value={block.position[0]}
-              onChange={event => changeSelected({ position: [Number(event.target.value), block.position[1]] })} /><output>{block.position[0].toFixed(1)}m</output></label>
-            <label>位置 Z <input type="range" min="-21" max="35" step="0.1" value={block.position[1]}
-              onChange={event => changeSelected({ position: [block.position[0], Number(event.target.value)] })} /><output>{block.position[1].toFixed(1)}m</output></label>
-            <label>回転 <input type="range" min="-180" max="180" step="1" value={block.rotationDeg}
-              onChange={event => changeSelected({ rotationDeg: Number(event.target.value) })} /><output>{block.rotationDeg}°</output></label>
-            <button className="venue-face-stage" type="button" onClick={() => changeSelected({
-              rotationDeg: Math.round(Math.atan2(block.position[0] - stageOffset[0], block.position[1] + 3 - stageOffset[1]) * 180 / Math.PI),
-            })}>舞台の中心へ向ける</button>
-            <button className="audience-editor-delete" type="button" onClick={() => removeBlock(block.id)}>このブロックを削除</button>
   </div>
 }
