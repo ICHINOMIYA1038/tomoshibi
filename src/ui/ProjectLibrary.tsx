@@ -136,7 +136,7 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
   const [creating, setCreating] = useState(false)
   const [createError, setCreateError] = useState('')
   const [createName, setCreateName] = useState('')
-  const [createTemplate, setCreateTemplate] = useState<'empty' | VenueStudyKind>('empty')
+  const [createTemplate, setCreateTemplate] = useState<'empty' | VenueStudyKind>('proscenium')
   const createNameRef = useRef<HTMLInputElement>(null)
   const createDialogRef = useRef<HTMLFormElement>(null)
   const detailsRef = useRef<HTMLElement>(null)
@@ -231,7 +231,7 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
   const openCreate = () => {
     setCreateError('')
     setCreateName('')
-    setCreateTemplate('empty')
+    setCreateTemplate('proscenium')
     setCreateOpen(true)
   }
 
@@ -252,11 +252,19 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
     resetMockWorkspace()
     onOpenEditor()
   }
+  const defaultProjectName = () => {
+    const taken = new Set([...memberProjects.map(item => item.name), ...projects.map(item => item.name)])
+    const base = '新しいプロジェクト'
+    if (!taken.has(base)) return base
+    let index = 2
+    while (taken.has(`${base} ${index}`)) index++
+    return `${base} ${index}`
+  }
   const create = async () => {
     if (creating) return
     if (user && memberProjects.length >= user.maxProjects) { setCreateError(`プロジェクトは${user.maxProjects}件まで保存できます。`); return }
-    const title = createName.trim()
-    if (!title) { createNameRef.current?.focus(); return }
+    // 名前が空なら「新しいプロジェクト」「新しいプロジェクト 2」…と、まだ無い名前を付ける
+    const title = createName.trim() || defaultProjectName()
     if (cloudDirty) {
       if (!await askConfirm('編集中の変更がまだ保存されていません。保存が完了してから、新しいプロジェクトを作成しますか？')) return
       setCreating(true)
@@ -610,7 +618,7 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
         </div>
         <label className="project-create-name">プロジェクト名
           <input ref={createNameRef} value={createName} onChange={event => setCreateName(event.target.value)}
-            placeholder="例：星の夜" required maxLength={80} />
+            placeholder={`空欄なら「${defaultProjectName()}」`} maxLength={80} />
         </label>
         <fieldset className="project-create-templates">
           <legend>舞台のひな形</legend>
@@ -621,10 +629,10 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
             </label>
             {VENUE_STUDY_LINKS.map(study => <label key={study.kind} className={createTemplate === study.kind ? 'selected' : ''}>
               <input type="radio" name="project-template" checked={createTemplate === study.kind} onChange={() => setCreateTemplate(study.kind)} />
-              <span><strong>{study.label}</strong><small>{study.detail}を配置</small></span>
+              <span><strong>{study.label}</strong><small>{study.detail}・基本の照明・役者 2 人</small></span>
             </label>)}
           </div>
-          <p>ひな形には舞台と客席のみが入ります。役者・照明・シーンは自由に追加できます。</p>
+          <p>白紙以外のひな形には、舞台と客席に加えて、基本の照明（地明かり・前明かり・サス）と役者 2 人が入ります。</p>
         </fieldset>
         {cloudDirty && <div role="status" className="project-create-save-notice">
           <p>編集中のプロジェクトに、まだクラウドに保存されていない変更があります。保存が完了すると新規作成できます。</p>
