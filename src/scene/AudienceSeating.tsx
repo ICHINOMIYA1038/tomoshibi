@@ -55,8 +55,10 @@ export function AudienceSeating() {
   const blocks = useStore(state => state.productionPlan.audienceBlocks ?? [])
   if (!blocks.length) return null
   return <group>
+    {/* 客席の床。端が見えると、床の板を置いたように見えるので、果てまで続いて見える大きさにする
+        （カメラの描く距離は 100m、視点は劇場の中なので、1km 四方なら端は描かれない。オーナー指示、2026-11-15） */}
     <mesh position={[0, -.06, 7]} rotation={[-Math.PI / 2, 0, 0]}>
-      <planeGeometry args={[52, 60]} />
+      <planeGeometry args={[1000, 1000]} />
       <meshBasicMaterial color="#211d24" toneMapped={false} />
     </mesh>
     {blocks.map(block => <SeatingBlock key={block.id} block={block} />)}
