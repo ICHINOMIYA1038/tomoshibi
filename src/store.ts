@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import type { FloorFinish, StagePart, StageTemplate } from './stageParts'
+import { clampPart, resolveStageParts, type FloorFinish, type StagePart, type StageTemplate } from './stageParts'
 import * as THREE from 'three'
 import { FIXTURE_PROFILES, kelvinToRGB } from './lighting/fixtureTypes'
 import { DEFAULT_VENUE_LAYOUT, pointInStage, stageFootprint, stageLocalFootprint } from './venueLayout'
@@ -346,7 +346,7 @@ export interface SceneSettings {
   showGizmos: boolean
   showPerformers: boolean
   cameraView: 'audience' | 'aerial' | 'sidewing' | 'free' | 'house'
-  transformMode: 'translate' | 'rotate'
+  transformMode: 'translate' | 'rotate' | 'scale'
   uiTab: 'fixtures' | 'performers' | 'props' | 'venue'
   settingsOpen: boolean
   settingsTab: 'scene' | 'look' | 'advanced'
@@ -398,6 +398,8 @@ interface State {
   updateStageParts: (parts: StagePart[], moved?: { before: StagePart; after: StagePart; fixtureIds: string[] }) => void
   /** 照明を吊るバトンを決める。'' はどれにも吊らない。全シーンの同じ照明に反映する */
   setFixtureBatten: (fixtureId: string, battenId: string) => void
+  /** 舞台の部品を少しずらして複製し、新しい id を返す。吊った照明は複製しない */
+  duplicateStagePart: (id: string) => string | null
   ensureScenes: () => void
   addScene: () => void
   addSceneAt: (chapterId: string, beforeSceneId: string | null) => string | null
@@ -735,6 +737,16 @@ export const useStore = create<State>((set, get) => ({
       fixtures: shift(s.fixtures),
     }
   }),
+  duplicateStagePart: (id) => {
+    const layout = { ...DEFAULT_VENUE_LAYOUT, ...get().productionPlan.venueLayout }
+    const parts = resolveStageParts(layout)
+    const source = parts.find(item => item.id === id)
+    if (!source || parts.length >= 80) return null
+    const copy = clampPart({ ...source, id: `part-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`,
+      auto: undefined, edited: undefined, x: source.x + 1, z: source.z + 1 }, layout.stageOffset ?? [0, 0])
+    get().updateStageParts([...parts, copy])
+    return copy.id
+  },
   setFixtureBatten: (fixtureId, battenId) => set(s => {
     const apply = (fixtures: Fixture[]) => fixtures.map(fixture => fixture.id === fixtureId ? { ...fixture, battenId } : fixture)
     const captured = captureActiveScene(s.productionPlan, s)

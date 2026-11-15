@@ -4,7 +4,7 @@ import { TransformControls } from '@react-three/drei'
 import { useThree } from '@react-three/fiber'
 import { useStore } from '../store'
 import { useStageParts } from '../ui/StagePartsEditor'
-import { snapValue } from '../stageParts'
+import { isFlat, snapValue, type StagePart } from '../stageParts'
 import { clampAudiencePosition } from '../audienceLayout'
 
 function isTouchDevice() {
@@ -72,6 +72,13 @@ export function SelectionGizmo() {
   const moveStageTo = useStore(s => s.moveStageTo)
   const audience = useStore(s => selection.kind === 'audience' ? (s.productionPlan.audienceBlocks ?? []).find(block => block.id === selection.id) : undefined)
   const updateAudienceBlock = useStore(s => s.updateAudienceBlock)
+  const layout = stageParts.layout
+  const updateVenueLayout = useStore(s => s.updateVenueLayout)
+  // 回転・拡大はつかんだときの値からの変化で決める
+  const partStart = useRef<StagePart | null>(null)
+  const stageStart = useRef<{ width: number; depth: number } | null>(null)
+  /** 舞台・客席・舞台の部品で使える操作。使えない操作が選ばれていたら移動にする */
+  const venueMode = (allowed: Array<'translate' | 'rotate' | 'scale'>) => allowed.includes(transformMode) ? transformMode : 'translate'
 
   // 動的に position を反映するための Object3D
   const dragRef = useRef<THREE.Object3D>(new THREE.Object3D())
@@ -116,18 +123,20 @@ export function SelectionGizmo() {
       dragRef.current.rotation.set(0, 0, 0)
     } else if (audience) {
       dragRef.current.position.set(audience.position[0], 0.9, audience.position[1])
-      dragRef.current.rotation.set(0, 0, 0)
+      dragRef.current.rotation.set(0, audience.rotationDeg * Math.PI / 180, 0)
     } else if (part) {
       dragRef.current.position.set(part.x + stageParts.offset[0], partHandleY(part), part.z + stageParts.offset[1])
-      dragRef.current.rotation.set(0, 0, 0)
+      dragRef.current.rotation.set(0, part.rotationDeg * Math.PI / 180, 0)
     }
+    // 拡大はつかむたびに 1 から測る（大きさは部品の数字に入っている）
+    if (!partStart.current && !stageStart.current) dragRef.current.scale.set(1, 1, 1)
   }, [
     selection.kind, selection.id, selection.fixtureHandle,
     fixture?.position.join(','), fixture?.target.join(','),
     performer?.position.join(','),
     setPiece?.position.join(','), setPiece?.rotation.join(','),
-    part?.x, part?.z, part?.elevation, part?.height, stageParts.offset.join(','),
-    audience?.position.join(','),
+    part?.x, part?.z, part?.elevation, part?.height, part?.rotationDeg, stageParts.offset.join(','),
+    audience?.position.join(','), audience?.rotationDeg,
   ])
 
   if (!showGizmos) return null
@@ -138,7 +147,7 @@ export function SelectionGizmo() {
     const tgt = new THREE.Vector3(...fixture.target)
     const handle = selection.fixtureHandle ?? 'position'
     // 'target' の場合は translate 固定 (狙い点に回転は無意味)
-    const mode = handle === 'target' ? 'translate' : transformMode
+    const mode = handle === 'target' || transformMode === 'scale' ? 'translate' : transformMode
 
     return (
       <group>
@@ -201,7 +210,7 @@ export function SelectionGizmo() {
         <TransformControls
           ref={tcRef as any}
           object={dragRef.current}
-          mode={transformMode}
+          mode={transformMode === 'scale' ? 'translate' : transformMode}
           size={gizmoSize}
           onObjectChange={() => {
             const o = dragRef.current
@@ -215,26 +224,55 @@ export function SelectionGizmo() {
     )
   }
 
-  // ---- 舞台の部品（壁・バトンなど）: 位置だけ動かす。大きさと向きは平面図で変える ----
+  // ---- 舞台の部品（床・壁・バトンなど）: 照明や役者と同じく、3D で移動・回転・拡大する ----
   if (selection.kind === 'stagepart' && part) {
+    const mode = venueMode(['translate', 'rotate', 'scale'])
+    const hanging = part.kind === 'batten' || part.kind === 'wall' || part.kind === 'cyc' || part.kind === 'wing'
+    const hasHeight = part.kind === 'wall' || part.kind === 'cyc' || part.kind === 'wing' || part.kind === 'platform'
     return (
       <group>
         <primitive object={dragRef.current} />
         <TransformControls
           ref={tcRef as any}
           object={dragRef.current}
-          mode="translate"
+          mode={mode}
+          space={mode === 'translate' ? 'world' : 'local'}
           size={gizmoSize}
-          showY={part.kind === 'batten'}
-          onMouseDown={() => { partFixtures.current = part.kind === 'batten' ? stageParts.hungIds(part) : [] }}
-          onMouseUp={() => { partFixtures.current = undefined }}
+          showX={mode !== 'rotate'}
+          showY={mode === 'rotate' || (mode === 'translate' ? hanging : hasHeight)}
+          showZ={mode === 'translate' || (mode === 'scale' && isFlat(part.kind))}
+          rotationSnap={Math.PI / 12}
+          onMouseDown={() => {
+            partFixtures.current = part.kind === 'batten' ? stageParts.hungIds(part) : []
+            partStart.current = part
+          }}
+          onMouseUp={() => {
+            partFixtures.current = undefined
+            partStart.current = null
+            dragRef.current.scale.set(1, 1, 1)
+          }}
           onObjectChange={() => {
             const o = dragRef.current
-            const patch: { x: number; z: number; elevation?: number } = {
+            const from = partStart.current ?? part
+            if (mode === 'rotate') {
+              // Y 軸まわりの角度（rotationDeg と同じ向き）。Euler の y は 90° を超えると折り返すので、向きから求める
+              const axis = new THREE.Vector3(1, 0, 0).applyQuaternion(o.quaternion)
+              stageParts.change(part.id, { rotationDeg: Math.round(Math.atan2(-axis.z, axis.x) * 180 / Math.PI / 5) * 5 }, partFixtures.current)
+              return
+            }
+            if (mode === 'scale') {
+              const patch: Partial<StagePart> = { width: Math.max(.5, snapValue(from.width * Math.abs(o.scale.x))) }
+              if (isFlat(part.kind)) patch.depth = Math.max(.5, snapValue(from.depth * Math.abs(o.scale.z)))
+              if (hasHeight) patch.height = Math.max(.1, snapValue(from.height * Math.abs(o.scale.y)))
+              stageParts.change(part.id, patch, partFixtures.current)
+              return
+            }
+            const patch: Partial<StagePart> = {
               x: snapValue(o.position.x - stageParts.offset[0]),
               z: snapValue(o.position.z - stageParts.offset[1]),
             }
-            if (part.kind === 'batten') patch.elevation = snapValue(o.position.y)
+            // 矢印は部品の高さの途中に出しているので、つかんだときとの差だけ吊る高さ・下端を動かす
+            if (hanging) patch.elevation = Math.max(0, snapValue(from.elevation + o.position.y - partHandleY(from)))
             stageParts.change(part.id, patch, partFixtures.current)
           }}
         />
@@ -242,15 +280,27 @@ export function SelectionGizmo() {
     )
   }
 
-  // ---- 舞台の床: 舞台全体を動かす（役者・セット・舞台の上の照明も一緒に動く。store の moveStageTo） ----
+  // ---- 舞台の床: 舞台全体を動かす（役者・セット・舞台の上の照明も一緒に動く。store の moveStageTo）、拡大で広さを変える ----
   // 視点は舞台に付いて動かない（App.tsx）。付いて動くと、引っぱるたびに視点もずれて舞台が劇場の端まで飛ぶ
   if (selection.kind === 'stage') {
+    const mode = venueMode(['translate', 'scale'])
+    const round = layout.stageShape === 'round'
     return (
       <group>
         <primitive object={dragRef.current} />
-        <TransformControls ref={tcRef as any} object={dragRef.current} mode="translate" size={gizmoSize} showY={false}
+        <TransformControls ref={tcRef as any} object={dragRef.current} mode={mode} size={gizmoSize} showY={false}
+          showZ={mode === 'translate' || !round}
+          onMouseDown={() => { stageStart.current = { width: layout.stageWidth, depth: layout.stageDepth } }}
+          onMouseUp={() => { stageStart.current = null; dragRef.current.scale.set(1, 1, 1) }}
           onObjectChange={() => {
             const o = dragRef.current
+            if (mode === 'scale') {
+              const from = stageStart.current ?? { width: layout.stageWidth, depth: layout.stageDepth }
+              const width = Math.min(24, Math.max(6, snapValue(from.width * Math.abs(o.scale.x))))
+              const depth = Math.min(20, Math.max(6, snapValue(from.depth * Math.abs(o.scale.z))))
+              updateVenueLayout(round ? { stageWidth: width, stageDepth: width } : { stageWidth: width, stageDepth: depth })
+              return
+            }
             moveStageTo([snapValue(o.position.x), snapValue(o.position.z + 3)])
           }} />
       </group>
@@ -262,9 +312,17 @@ export function SelectionGizmo() {
     return (
       <group>
         <primitive object={dragRef.current} />
-        <TransformControls ref={tcRef as any} object={dragRef.current} mode="translate" size={gizmoSize} showY={false}
+        <TransformControls ref={tcRef as any} object={dragRef.current} mode={venueMode(['translate', 'rotate'])}
+          size={gizmoSize} showX={venueMode(['translate', 'rotate']) === 'translate'} showY={venueMode(['translate', 'rotate']) === 'rotate'}
+          showZ={venueMode(['translate', 'rotate']) === 'translate'} rotationSnap={Math.PI / 12}
           onObjectChange={() => {
             const o = dragRef.current
+            if (venueMode(['translate', 'rotate']) === 'rotate') {
+              const axis = new THREE.Vector3(1, 0, 0).applyQuaternion(o.quaternion)
+              const rotationDeg = Math.round(Math.atan2(-axis.z, axis.x) * 180 / Math.PI / 5) * 5
+              updateAudienceBlock(audience.id, { rotationDeg, position: clampAudiencePosition({ ...audience, rotationDeg }, ...audience.position) })
+              return
+            }
             updateAudienceBlock(audience.id, { position: clampAudiencePosition(audience, snapValue(o.position.x), snapValue(o.position.z)) })
           }} />
       </group>

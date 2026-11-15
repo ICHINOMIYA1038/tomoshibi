@@ -4685,3 +4685,15 @@ body.embed .workspace-switch { display: none; }
 /* タブが 4 つになったので、ラベルを折り返さない */
 .object-panel .panel-tabs .tab-btn { min-width: 0; padding-inline: 2px; letter-spacing: 0; white-space: nowrap; }
 .venue-panel .venue-stage-position label { white-space: nowrap; }
+
+/* 右パネル「舞台・客席」の移動・回転・拡大。選んでいる間はパネルの上に留める */
+.venue-panel .venue-mode-buttons {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  gap: 4px;
+  padding: 6px 0;
+  background: var(--panel-bg-solid);
+}
+.venue-panel .venue-mode-buttons button { flex: 1; min-width: 0; }
