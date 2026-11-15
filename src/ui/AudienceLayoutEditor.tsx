@@ -42,7 +42,18 @@ export function AudienceLayoutEditor({ open, onClose }: { open: boolean; onClose
   } | null>(null)
   const stageOffset = venue.stageOffset ?? [0, 0]
   const hasRearSeating = blocks.some(block => block.position[1] < -11)
-  const { scale, centerZ } = wideView ? VIEWS.wide : hasRearSeating ? VIEWS.surround : VIEWS.near
+  // 舞台と客席が図に収まる、いちばん近い縮尺を選ぶ（舞台を遠くへ動かしたときに、図の外へ消えないように）
+  const fits = (view: { scale: number; centerZ: number }) => {
+    const halfX = SVG_WIDTH / 2 / view.scale - 1
+    const halfZ = SVG_HEIGHT / 2 / view.scale - 1
+    const points: Array<[number, number]> = [...stageFootprint(venue), ...blocks.flatMap(block => {
+      const r = Math.hypot((block.seatsPerRow * block.seatSpacing) / 2, (block.rows * block.rowSpacing) / 2)
+      return [[block.position[0] - r, block.position[1] - r], [block.position[0] + r, block.position[1] + r]] as Array<[number, number]>
+    })]
+    return points.every(([x, z]) => Math.abs(x) <= halfX && Math.abs(z - view.centerZ) <= halfZ)
+  }
+  const autoView = !hasRearSeating && fits(VIEWS.near) ? VIEWS.near : fits(VIEWS.surround) ? VIEWS.surround : VIEWS.wide
+  const { scale, centerZ } = wideView ? VIEWS.wide : autoView
   const mapX = (x: number) => SVG_WIDTH / 2 + x * scale
   const mapY = (z: number) => SVG_HEIGHT / 2 + (z - centerZ) * scale
   const outline = stageFootprint(venue)
@@ -248,13 +259,9 @@ export function AudienceLayoutEditor({ open, onClose }: { open: boolean; onClose
                 updateVenue({ stageVertices: vertices.map(([px, pz]) => [px - stageOffset[0], pz - stageOffset[1]]) })
               }} />)}
           </svg>
-          {mode === 'venue' && !blocks.length && <div className="audience-editor-empty">
-            <strong>客席を追加して配置します</strong>
-            <span>ブロックごとに列数と席数を決め、図の上で移動できます。</span>
-            <button type="button" onClick={createBlock}>＋ 最初の客席ブロック</button>
-          </div>}
           <div className="audience-editor-legend">{mode === 'venue'
-            ? <><span>■ 客席</span><span>● 客席側の照明</span><span>舞台・客席をドラッグして移動</span></>
+            ? blocks.length ? <><span>■ 客席</span><span>● 客席側の照明</span><span>舞台・客席をドラッグして移動</span></>
+              : <><span>客席はまだありません（なくても使えます）。置くときは上の「＋ 客席」</span><span>舞台をドラッグして移動</span></>
             : <><span>━ 壁</span><span>╍ バトン</span><span>部品を選ぶと取っ手が出ます</span></>}</div>
         </div>
         <aside className="audience-editor-inspector">
