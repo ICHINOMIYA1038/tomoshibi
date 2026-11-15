@@ -1,4 +1,5 @@
 import { askConfirm } from './askConfirm'
+import { useObjectMenu } from '../objectMenu'
 import { WorkspaceNotice } from './WorkspaceNotice'
 import { createPortal } from 'react-dom'
 import { Fragment, useEffect, useRef, useState, type MouseEvent, type PointerEvent } from 'react'
@@ -994,7 +995,17 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
         <div className="plan-map-scroll">
           <svg ref={svgRef} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 630"
             aria-label="舞台の平面図。役者の立ち位置と器具の狙う位置を変更できます"
-            onPointerMove={moveDrag} onPointerUp={endDrag} onPointerCancel={endDrag}>
+            onPointerMove={moveDrag} onPointerUp={endDrag} onPointerCancel={endDrag}
+            onContextMenu={event => {
+              // 右クリック: 物の上ならその物の、何も無い所なら「ここに足す」のメニュー（ObjectContextMenu.tsx）
+              event.preventDefault()
+              const item = (event.target as Element).closest<SVGElement>('[data-menu-kind]')
+              const kind = item?.dataset.menuKind as 'fixture' | 'performer' | 'setpiece' | undefined
+              const [x, z] = rawMapPoint(event as unknown as PointerEvent<SVGSVGElement>, event.currentTarget, true, mapBounds)
+              useObjectMenu.getState().open({ x: event.clientX, y: event.clientY,
+                target: kind && item?.dataset.menuId ? { kind, id: item.dataset.menuId } : null,
+                point: kind ? undefined : [round1(x), 0, round1(z)] })
+            }}>
             <defs>
               {Object.entries(pathColors).map(([kind, color]) => <marker key={kind}
                 id={'plan-arrow-' + kind} markerWidth="10" markerHeight="10"
@@ -1031,7 +1042,7 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
               const y = mapY(piece.position[2])
               const labelAnchor = x < 230 ? 'start' : x > 730 ? 'end' : 'middle'
               return <g key={piece.id} transform={`translate(${x} ${y})`}
-                role="button" tabIndex={0} aria-label={`${name}を選択・移動`}
+                role="button" tabIndex={0} aria-label={`${name}を選択・移動`} data-menu-kind="setpiece" data-menu-id={piece.id}
                 style={{ cursor: 'grab', touchAction: 'none' }}
                 onPointerDown={event => beginDrag(event, 'setpiece', piece.id, [piece.position[0], piece.position[2]])}
                 onKeyDown={event => {
@@ -1114,7 +1125,7 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
                 <circle cx={tx} cy={ty} r={active ? 19 : 13}
                   fill={colorToHex(fixture.color)} fillOpacity=".3" stroke={active ? '#c8482d' : '#7b6b5a'}
                   strokeWidth={active ? 5 : 2} pointerEvents="none" />
-                <g role="button" tabIndex={0} aria-label={fixture.name + 'の位置を動かす（向きはそのまま）'}
+                <g role="button" tabIndex={0} aria-label={fixture.name + 'の位置を動かす（向きはそのまま）'} data-menu-kind="fixture" data-menu-id={fixture.id}
                   style={{ cursor: 'grab', touchAction: 'none' }}
                   onPointerDown={event => beginDrag(event, 'fixture', fixture.id, [fixture.position[0], fixture.position[2]])}
                   onKeyDown={event => {
@@ -1167,7 +1178,7 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
                 <circle cx={x} cy={mapY(point[1])} r="27"
                   fill={actorColors[index % actorColors.length]} stroke={active ? '#181519' : '#fffdf8'}
                   strokeWidth={active ? 6 : 4} style={{ cursor: 'grab', touchAction: 'none' }}
-                  role="button" tabIndex={0} aria-label={performer.name + 'の立ち位置を移動'}
+                  role="button" tabIndex={0} aria-label={performer.name + 'の立ち位置を移動'} data-menu-kind="performer" data-menu-id={performer.id}
                   onPointerDown={event => beginDrag(event, 'performer', performer.id, point)}
                   onKeyDown={event => {
                     const delta = event.key === 'ArrowLeft' ? [-.5, 0] : event.key === 'ArrowRight' ? [.5, 0]
@@ -1205,7 +1216,7 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
                 ] })
               }
               return <g opacity={fixture.enabled ? 1 : .6}>
-                <g className="plan-aim-handle" role="button" tabIndex={0}
+                <g className="plan-aim-handle" role="button" tabIndex={0} data-menu-kind="fixture" data-menu-id={fixture.id}
                   aria-label={fixture.name + 'の向きを変える（位置はそのまま）'}
                   style={{ cursor: 'grab', touchAction: 'none' }}
                   onPointerDown={event => beginDrag(event, 'target', fixture.id, [fixture.target[0], fixture.target[2]])}

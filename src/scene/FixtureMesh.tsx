@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { recordHit } from '../objectMenu'
 import * as THREE from 'three'
 import { useStore } from '../store'
 import { FIXTURE_PROFILES, type FixtureKind } from '../lighting/fixtureTypes'
@@ -168,6 +169,7 @@ function FixtureMeshSingle({ id }: { id: string }) {
       position={pos.toArray()}
       onPointerOver={(e) => { e.stopPropagation(); setHover('fixture', f.id) }}
       onPointerOut={(e) => { e.stopPropagation(); setHover(null, null) }}
+      onContextMenu={(e) => { e.stopPropagation(); recordHit({ kind: 'fixture', id: f.id }) }}
       onClick={(e) => {
         e.stopPropagation()
         const s = useStore.getState()

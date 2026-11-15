@@ -1,4 +1,5 @@
 import { useState, type DragEvent } from 'react'
+import { useObjectMenu } from '../objectMenu'
 import { useStore, type SelectionKind } from '../store'
 import { DEFAULT_VENUE_LAYOUT } from '../venueLayout'
 import { PART_LABELS, resolveStageParts, type StagePart, type StagePartKind } from '../stageParts'
@@ -145,7 +146,8 @@ export function HierarchyPanel() {
         onDragEnd={() => { setDragging(false); setDropTarget(null) }}
         onDragOver={event => { if (canDrop && accepts(event, node.id)) { event.preventDefault(); setDropTarget(key) } }}
         onDragLeave={() => setDropTarget(value => value === key ? null : value)}
-        onDrop={event => { if (canDrop) drop(event, node.id) }}>
+        onDrop={event => { if (canDrop) drop(event, node.id) }}
+        onContextMenu={event => { event.preventDefault(); useObjectMenu.getState().open({ x: event.clientX, y: event.clientY, target: { kind: node.kind, id: node.id } }) }}>
         {node.children.length ? <button type="button" className="hierarchy-toggle" aria-label={open ? 'たたむ' : '開く'}
           onClick={() => setCollapsed(prev => { const next = new Set(prev); if (open) next.add(key); else next.delete(key); return next })}>
           <svg viewBox="0 0 10 10" width="10" height="10" aria-hidden="true" style={{ transform: open ? 'rotate(90deg)' : undefined, transition: 'transform .12s' }}>
@@ -170,7 +172,12 @@ export function HierarchyPanel() {
         onClick={() => setAdding(value => !value)}>＋ 追加</button>
     </div>
     {adding && <AddMenu onDone={() => setAdding(false)} />}
-    <ul className="hierarchy-tree" role="tree">{tree.map(node => row(node, 0))}</ul>
+    <ul className="hierarchy-tree" role="tree" onContextMenu={event => {
+      // 行の外（何も無い所）は、足すためのメニュー
+      if (event.defaultPrevented) return
+      event.preventDefault()
+      useObjectMenu.getState().open({ x: event.clientX, y: event.clientY, target: null })
+    }}>{tree.map(node => row(node, 0))}</ul>
     {dragging ? <div className={'hierarchy-root-drop' + (dropTarget === 'root' ? ' drop-target' : '')}
       onDragOver={event => { if (accepts(event, null)) { event.preventDefault(); setDropTarget('root') } }}
       onDragLeave={() => setDropTarget(value => value === 'root' ? null : value)}

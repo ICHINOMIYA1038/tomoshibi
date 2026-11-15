@@ -4828,3 +4828,30 @@ body.embed .workspace-switch { display: none; }
   .unified-shell.workspace-layout .plan-scene-slot-line { background: transparent; }
   .unified-shell.workspace-layout .plan-outline-node.dragging { opacity: .3; }
 }
+/* ---- 右クリックのメニュー（ObjectContextMenu.tsx）。会場の配置の窓（109）より手前に出す ---- */
+.object-menu {
+  position: fixed; z-index: 141; display: flex; flex-direction: column; min-width: 220px; max-width: min(300px, calc(100vw - 16px));
+  max-height: calc(100vh - 16px); overflow-y: auto; padding: 5px; border: 1px solid rgba(212, 175, 111, .4); border-radius: 9px;
+  background: #221d21; box-shadow: 0 16px 40px rgba(0, 0, 0, .55); color: var(--ink-primary); font: 12px var(--font-sans);
+}
+.object-menu-head { display: grid; gap: 1px; padding: 5px 9px 7px; border-bottom: 1px solid rgba(255, 255, 255, .08); margin-bottom: 4px; }
+.object-menu-head small { color: var(--ink-muted); font-size: 10px; }
+.object-menu-head strong { overflow: hidden; font-size: 13px; text-overflow: ellipsis; white-space: nowrap; }
+.object-menu button[role="menuitem"] {
+  display: flex; align-items: center; justify-content: flex-start; gap: 8px; width: 100%; min-height: 28px; padding: 4px 9px;
+  border: 0; border-radius: 5px; background: none; color: var(--ink-primary); font: 12px var(--font-sans); text-align: left; cursor: pointer;
+}
+.object-menu button[role="menuitem"]:hover:not(:disabled), .object-menu button[role="menuitem"]:focus-visible, .object-menu-sub.open > button { background: rgba(232, 178, 98, .2); outline: none; }
+.object-menu button[role="menuitem"]:disabled { opacity: .4; cursor: default; }
+.object-menu button[role="menuitem"].danger { color: #f19a8a; }
+.object-menu-children button[role="menuitem"]::before { content: ""; flex: none; width: 10px; color: #f2c27b; }
+.object-menu-children button[role="menuitem"].active::before { content: "✓"; }
+.object-menu button kbd, .object-menu button > span[aria-hidden] { margin-left: auto; padding-left: 16px; color: var(--ink-muted); font: 10px var(--font-sans); }
+.object-menu hr { width: 100%; height: 1px; margin: 4px 0; border: 0; background: rgba(255, 255, 255, .08); }
+.object-menu-tools { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2px; padding: 2px 2px 5px; margin-bottom: 3px; border-bottom: 1px solid rgba(255, 255, 255, .08); }
+.object-menu-tools button { min-height: 26px; padding: 0; border: 1px solid transparent; border-radius: 5px; background: rgba(255, 255, 255, .04); color: var(--ink-secondary); font: 11px var(--font-sans); cursor: pointer; }
+.object-menu-tools button:hover:not(:disabled) { color: var(--ink-primary); border-color: rgba(232, 178, 98, .4); }
+.object-menu-tools button.active { background: rgba(232, 178, 98, .22); color: var(--ink-primary); border-color: rgba(232, 178, 98, .5); }
+.object-menu-tools button:disabled { opacity: .3; cursor: default; }
+.object-menu-children { display: flex; flex-direction: column; margin: 2px 0 4px 10px; padding-left: 6px; border-left: 1px solid rgba(232, 178, 98, .3); }
+@media (pointer: coarse) { .object-menu button[role="menuitem"] { min-height: 40px; } }

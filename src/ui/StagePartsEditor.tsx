@@ -141,6 +141,7 @@ export function StagePartsLayer({ selectedId, onSelect, tool = 'translate', toWo
       const selected = item.id === selectedId
       const common = {
         role: 'button', tabIndex: 0, 'aria-label': `${PART_LABELS[item.kind]}を選んで移動`, 'aria-pressed': selected,
+        'data-menu-kind': 'stagepart', 'data-menu-id': item.id,
         style: { cursor: tool === 'translate' ? 'grab' : 'pointer', touchAction: 'none' as const },
         onPointerDown: (event: PointerEvent<SVGElement>) => begin(event, item, 'body'),
         onKeyDown: (event: KeyboardEvent<SVGElement>) => nudge(event, item),

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef } from 'react'
+import { recordHit } from '../objectMenu'
 import type { ThreeEvent } from '@react-three/fiber'
 import * as THREE from 'three'
 import { createStageMaterial } from '../lighting/StageMaterial'
@@ -30,6 +31,11 @@ export function Stage({ onMaterialsReady }: { onMaterialsReady: (mats: THREE.Sha
     if (useStore.getState().settings.probeMode || event.delta > 4) return
     event.stopPropagation()
     select(kind, id)
+  }
+  // 右クリック: 指した物（と床の位置）を覚えておく。メニューは離したときに開く（objectMenu.ts）
+  const hit = (kind: 'stagepart' | 'stage', id: string) => (event: ThreeEvent<MouseEvent>) => {
+    event.stopPropagation()
+    recordHit({ kind, id }, [event.point.x, event.point.y, event.point.z])
   }
   const finish = FLOOR_FINISHES.find(item => item.id === layout.floorFinish) ?? FLOOR_FINISHES[0]
   const floorMat = useMemo(() => createStageMaterial({
@@ -84,11 +90,11 @@ export function Stage({ onMaterialsReady }: { onMaterialsReady: (mats: THREE.Sha
 
   return (
     <group position={[layout.stageOffset?.[0] ?? 0, 0, layout.stageOffset?.[1] ?? 0]}>
-      <mesh geometry={floorGeom} material={floorMat} receiveShadow onClick={pick('stage', 'stage')} />
+      <mesh geometry={floorGeom} material={floorMat} receiveShadow onClick={pick('stage', 'stage')} onContextMenu={hit('stage', 'stage')} />
       {selection.kind === 'stage' && <mesh geometry={floorGeom} position={[0, 0.02, 0]} raycast={() => null}>
         <meshBasicMaterial color="#6cf" wireframe transparent opacity={0.5} depthTest={false} />
       </mesh>}
-      {parts.map(item => <group key={item.id} position={[item.x, 0, item.z]} rotation={[0, item.rotationDeg * Math.PI / 180, 0]} onClick={pick('stagepart', item.id)}>
+      {parts.map(item => <group key={item.id} position={[item.x, 0, item.z]} rotation={[0, item.rotationDeg * Math.PI / 180, 0]} onClick={pick('stagepart', item.id)} onContextMenu={hit('stagepart', item.id)}>
         {item.kind === 'floor' && <mesh position={[0, 0.006, 0]} rotation={[-Math.PI / 2, 0, 0]} material={floorMat} receiveShadow>
           <planeGeometry args={[item.width, item.depth]} />
         </mesh>}
