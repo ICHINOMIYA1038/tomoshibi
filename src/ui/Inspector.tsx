@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { useStore, type AudienceBlock, type Fixture, type Performer, type StageShape } from '../store'
 import type { SetPiece, SetPieceAppearance } from '../types'
-import { DEFAULT_VENUE_LAYOUT, stageFootprint } from '../venueLayout'
+import { DEFAULT_VENUE_LAYOUT, STAGE_SIZE, stageFootprint } from '../venueLayout'
 import { clampAudiencePosition } from '../audienceLayout'
 import {
   DEFAULT_CYC_COLOR, DEFAULT_WALL_COLOR, FLOOR_FINISHES, isFlat, stageTemplateOf, TEMPLATE_LABELS, type StagePart, type StageTemplate,
@@ -35,7 +35,7 @@ export function Inspector() {
 
   if (!selection.kind) return <div className="inspector inspector-empty">
     <p>上の一覧か、3D の画面・平面図で物を選ぶと、ここに設定が出ます。</p>
-    <p>動かすときは、画面上の道具で「移動・回転・拡大」を選びます（キーは W・E・R、選ぶだけなら Q）。</p>
+    <p>選んだ物は、画面上の道具（移動・回転・拡大。キーは W・E・R）で動かせます。動かさずに選ぶだけにしたいときは「選択」（Q）にします。</p>
   </div>
 
   const title = fixture?.name ?? performer?.name ?? setPiece?.name ?? block?.name
@@ -276,9 +276,9 @@ function StageInspector() {
       <NumberField label="X" value={offset[0]} min={-24} max={24} step={.5} onChange={value => moveStageTo([value, offset[1]])} />
       <NumberField label="Z" value={offset[1]} min={-21} max={35} step={.5} onChange={value => moveStageTo([offset[0], value])} />
       {layout.stageShape !== 'custom' && <>
-        <NumberField label={round ? '直径' : '幅'} value={layout.stageWidth} min={6} max={24} step={.5}
+        <NumberField label={round ? '直径' : '幅'} value={layout.stageWidth} min={STAGE_SIZE.min} max={STAGE_SIZE.maxWidth} step={.5}
           onChange={value => updateVenue(round ? { stageWidth: value, stageDepth: value } : { stageWidth: value })} />
-        {!round && <NumberField label="奥行" value={layout.stageDepth} min={6} max={20} step={.5} onChange={value => updateVenue({ stageDepth: value })} />}
+        {!round && <NumberField label="奥行" value={layout.stageDepth} min={STAGE_SIZE.min} max={STAGE_SIZE.maxDepth} step={.5} onChange={value => updateVenue({ stageDepth: value })} />}
       </>}
     </InspectorSection>
     <InspectorSection title="形">

@@ -16,7 +16,30 @@ type Node = {
   detail?: string
   swatch?: string
   enabled?: boolean
+  /** 舞台の部品の種類（印を選ぶため） */
+  part?: StagePartKind
   children: Node[]
+}
+
+/** 行の頭に付ける印。種類ごとに形を変え、色のある物（照明・役者・セット）はその色で描く */
+function KindIcon({ node }: { node: Node }) {
+  const color = node.swatch ?? 'currentColor'
+  const shape = (() => {
+    switch (node.kind) {
+      case 'stage': return <path d="M2 11 5 4h6l3 7Z" fill="none" stroke={color} strokeWidth="1.4" strokeLinejoin="round" />
+      case 'stagepart':
+        if (node.part === 'batten') return <path d="M2 5h12M4 5v6m4-6v6m4-6v6" stroke={color} strokeWidth="1.4" strokeLinecap="round" />
+        if (node.part === 'wall' || node.part === 'wing') return <rect x="5.5" y="2" width="5" height="12" rx="1" fill="none" stroke={color} strokeWidth="1.4" />
+        if (node.part === 'cyc') return <path d="M2 12C2 6 5 3 8 3s6 3 6 9" fill="none" stroke={color} strokeWidth="1.4" strokeLinecap="round" />
+        return <rect x="2.5" y="4.5" width="11" height="7" rx="1" fill="none" stroke={color} strokeWidth="1.4" />
+      case 'setpiece': return <path d="m8 2 6 3v6l-6 3-6-3V5Zm0 6 6-3M8 8 2 5m6 3v6" fill="none" stroke={color} strokeWidth="1.3" strokeLinejoin="round" />
+      case 'performer': return <><circle cx="8" cy="4.5" r="2.3" fill={color} /><path d="M3.5 14c.4-3.4 2.1-5 4.5-5s4.1 1.6 4.5 5Z" fill={color} /></>
+      case 'fixture': return <><circle cx="8" cy="8" r="3.2" fill={color} /><path d="M8 1.5v1.8m0 9.4v1.8M1.5 8h1.8m9.4 0h1.8M3.4 3.4l1.3 1.3m6.6 6.6 1.3 1.3m0-9.2-1.3 1.3m-6.6 6.6-1.3 1.3" stroke={color} strokeWidth="1.2" strokeLinecap="round" /></>
+      case 'audience': return <path d="M2.5 4h3v3h-3Zm4 0h3v3h-3Zm4 0h3v3h-3ZM2.5 9h3v3h-3Zm4 0h3v3h-3Zm4 0h3v3h-3Z" fill={color} />
+      default: return null
+    }
+  })()
+  return <svg className="hierarchy-icon" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">{shape}</svg>
 }
 
 const STAGE_PART_KINDS: StagePartKind[] = ['floor', 'wall', 'cyc', 'batten', 'wing']
@@ -56,7 +79,7 @@ function useTree(): Node[] {
       kind: 'stage', id: STAGE_ID, label: '舞台', detail: `${layout.stageWidth}m × ${layout.stageDepth}m`,
       children: [
         ...parts.map(part => ({
-          kind: 'stagepart' as const, id: part.id, label: partName(parts, part),
+          kind: 'stagepart' as const, id: part.id, label: partName(parts, part), part: part.kind,
           detail: part.kind === 'floor' || part.kind === 'platform' ? `${part.width}m × ${part.depth}m` : `${part.width}m`,
           children: childrenOf(part.id),
         })),
@@ -81,6 +104,8 @@ export function HierarchyPanel() {
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set())
   const [dropTarget, setDropTarget] = useState<string | null>(null)
   const [adding, setAdding] = useState(false)
+  /** 行をドラッグしている間だけ「親なしにする」置き場を出す */
+  const [dragging, setDragging] = useState(false)
 
   const dragged = (event: DragEvent): { kind: ChildKind; id: string } | null => {
     try { return JSON.parse(event.dataTransfer.getData(DRAG_TYPE)) } catch { return null }
@@ -94,6 +119,7 @@ export function HierarchyPanel() {
   const drop = (event: DragEvent, parentId: string | null) => {
     event.preventDefault()
     setDropTarget(null)
+    setDragging(false)
     const item = dragged(event)
     if (!item || item.id === parentId) return
     const s = useStore.getState()
@@ -109,20 +135,23 @@ export function HierarchyPanel() {
     const canDrop = PARENT_KINDS.has(node.kind)
     return <li key={key} role="treeitem" aria-selected={selected} aria-expanded={node.children.length ? open : undefined}>
       <div className={'hierarchy-row' + (selected ? ' selected' : '') + (dropTarget === key ? ' drop-target' : '')}
-        style={{ paddingLeft: 6 + depth * 14 }}
+        style={{ paddingLeft: 4 + depth * 16 }}
         draggable={CHILD_KINDS.has(node.kind)}
         onDragStart={event => {
           event.dataTransfer.setData(DRAG_TYPE, JSON.stringify({ kind: node.kind, id: node.id }))
           event.dataTransfer.effectAllowed = 'move'
+          setDragging(true)
         }}
+        onDragEnd={() => { setDragging(false); setDropTarget(null) }}
         onDragOver={event => { if (canDrop && accepts(event, node.id)) { event.preventDefault(); setDropTarget(key) } }}
         onDragLeave={() => setDropTarget(value => value === key ? null : value)}
         onDrop={event => { if (canDrop) drop(event, node.id) }}>
         {node.children.length ? <button type="button" className="hierarchy-toggle" aria-label={open ? 'たたむ' : '開く'}
           onClick={() => setCollapsed(prev => { const next = new Set(prev); if (open) next.add(key); else next.delete(key); return next })}>
-          {open ? '▾' : '▸'}</button> : <span className="hierarchy-toggle" aria-hidden="true" />}
+          <svg viewBox="0 0 10 10" width="10" height="10" aria-hidden="true" style={{ transform: open ? 'rotate(90deg)' : undefined, transition: 'transform .12s' }}>
+            <path d="M3.5 2 7 5 3.5 8" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg></button> : <span className="hierarchy-toggle" aria-hidden="true" />}
         <button type="button" className="hierarchy-name" onClick={() => select(node.kind, node.id, node.kind === 'fixture' ? 'position' : undefined)}>
-          {node.swatch && <span className="hierarchy-swatch" style={{ background: node.swatch }} aria-hidden="true" />}
+          <KindIcon node={node} />
           <strong>{node.label}</strong>
           {node.detail && <small>{node.detail}</small>}
         </button>
@@ -130,7 +159,7 @@ export function HierarchyPanel() {
           aria-pressed={node.enabled} aria-label={`${node.label}を${node.enabled ? '消灯' : '点灯'}`} title={node.enabled ? '点灯中' : '消灯中'}
           onClick={() => updateFixture(node.id, { enabled: !node.enabled })}>●</button>}
       </div>
-      {node.children.length > 0 && open && <ul role="group">{node.children.map(child => row(child, depth + 1))}</ul>}
+      {node.children.length > 0 && open && <ul role="group" className="hierarchy-children" style={{ ['--guide-x' as string]: `${12 + depth * 16}px` }}>{node.children.map(child => row(child, depth + 1))}</ul>}
     </li>
   }
 
@@ -142,12 +171,12 @@ export function HierarchyPanel() {
     </div>
     {adding && <AddMenu onDone={() => setAdding(false)} />}
     <ul className="hierarchy-tree" role="tree">{tree.map(node => row(node, 0))}</ul>
-    <div className={'hierarchy-root-drop' + (dropTarget === 'root' ? ' drop-target' : '')}
+    {dragging ? <div className={'hierarchy-root-drop' + (dropTarget === 'root' ? ' drop-target' : '')}
       onDragOver={event => { if (accepts(event, null)) { event.preventDefault(); setDropTarget('root') } }}
       onDragLeave={() => setDropTarget(value => value === 'root' ? null : value)}
       onDrop={event => drop(event, null)}>
-      行をドラッグして別の行に重ねると、その子になります（親が動くと一緒に動きます）。ここに落とすと親なし。
-    </div>
+      ここに落とすと親なしにする
+    </div> : <p className="hierarchy-hint">行を別の行に重ねると、その子になります（親と一緒に動きます）</p>}
   </section>
 }
 

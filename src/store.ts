@@ -597,7 +597,7 @@ export const useStore = create<State>((set, get) => ({
     showGizmos: true,
     showPerformers: true,
     cameraView: 'audience',
-    transformMode: 'select',
+    transformMode: 'translate',
     uiTab: 'fixtures',
     settingsOpen: false,
     settingsTab: 'scene',

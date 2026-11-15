@@ -1,3 +1,4 @@
+import { STAGE_SIZE } from '../venueLayout'
 import { useRef, useEffect } from 'react'
 import * as THREE from 'three'
 import { TransformControls } from '@react-three/drei'
@@ -315,8 +316,8 @@ export function SelectionGizmo() {
             const o = dragRef.current
             if (mode === 'scale') {
               const from = stageStart.current ?? { width: layout.stageWidth, depth: layout.stageDepth }
-              const width = Math.min(24, Math.max(6, snapValue(from.width * Math.abs(o.scale.x))))
-              const depth = Math.min(20, Math.max(6, snapValue(from.depth * Math.abs(o.scale.z))))
+              const width = Math.min(STAGE_SIZE.maxWidth, Math.max(STAGE_SIZE.min, snapValue(from.width * Math.abs(o.scale.x))))
+              const depth = Math.min(STAGE_SIZE.maxDepth, Math.max(STAGE_SIZE.min, snapValue(from.depth * Math.abs(o.scale.z))))
               updateVenueLayout(round ? { stageWidth: width, stageDepth: width } : { stageWidth: width, stageDepth: depth })
               return
             }

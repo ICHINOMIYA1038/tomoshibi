@@ -36,7 +36,7 @@ export function HelpOverlay() {
           <div><kbd>1本指ドラッグ</kbd></div><div>回転</div>
           <div><kbd>2本指ピンチ</kbd></div><div>ズーム</div>
           <div><kbd>2本指ドラッグ</kbd></div><div>パン</div>
-          <div><kbd>タップ</kbd></div><div>選択 → 道具を「移動」にして 3D の矢印で動かす</div>
+          <div><kbd>タップ</kbd></div><div>選んで、3D の矢印で動かす（道具が「移動」のとき）</div>
         </div>
 
         <h2>物の操作（Unity と同じ）</h2>
