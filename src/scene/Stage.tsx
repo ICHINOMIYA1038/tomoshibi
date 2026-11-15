@@ -25,10 +25,11 @@ export function Stage({ onMaterialsReady }: { onMaterialsReady: (mats: THREE.Sha
   const select = useStore(state => state.select)
   const selectedPart = selection.kind === 'stagepart' ? parts.find(item => item.id === selection.id) : undefined
   // 3D の画面で部品をクリックすると選ぶ（照度計測中は計測を優先する）
-  const pick = (id: string) => (event: ThreeEvent<MouseEvent>) => {
-    if (useStore.getState().settings.probeMode) return
+  const pick = (kind: 'stagepart' | 'stage', id: string) => (event: ThreeEvent<MouseEvent>) => {
+    // 矢印をドラッグして離したときも、下にある床や壁に click が届く。動かした後の click では選び直さない
+    if (useStore.getState().settings.probeMode || event.delta > 4) return
     event.stopPropagation()
-    select('stagepart', id)
+    select(kind, id)
   }
   const finish = FLOOR_FINISHES.find(item => item.id === layout.floorFinish) ?? FLOOR_FINISHES[0]
   const floorMat = useMemo(() => createStageMaterial({
@@ -83,8 +84,11 @@ export function Stage({ onMaterialsReady }: { onMaterialsReady: (mats: THREE.Sha
 
   return (
     <group position={[layout.stageOffset?.[0] ?? 0, 0, layout.stageOffset?.[1] ?? 0]}>
-      <mesh geometry={floorGeom} material={floorMat} receiveShadow />
-      {parts.map(item => <group key={item.id} position={[item.x, 0, item.z]} rotation={[0, item.rotationDeg * Math.PI / 180, 0]} onClick={pick(item.id)}>
+      <mesh geometry={floorGeom} material={floorMat} receiveShadow onClick={pick('stage', 'stage')} />
+      {selection.kind === 'stage' && <mesh geometry={floorGeom} position={[0, 0.02, 0]} raycast={() => null}>
+        <meshBasicMaterial color="#6cf" wireframe transparent opacity={0.5} depthTest={false} />
+      </mesh>}
+      {parts.map(item => <group key={item.id} position={[item.x, 0, item.z]} rotation={[0, item.rotationDeg * Math.PI / 180, 0]} onClick={pick('stagepart', item.id)}>
         {item.kind === 'floor' && <mesh position={[0, 0.006, 0]} rotation={[-Math.PI / 2, 0, 0]} material={floorMat} receiveShadow>
           <planeGeometry args={[item.width, item.depth]} />
         </mesh>}

@@ -5,6 +5,7 @@ import { useThree } from '@react-three/fiber'
 import { useStore } from '../store'
 import { useStageParts } from '../ui/StagePartsEditor'
 import { snapValue } from '../stageParts'
+import { clampAudiencePosition } from '../audienceLayout'
 
 function isTouchDevice() {
   if (typeof window === 'undefined') return false
@@ -68,6 +69,9 @@ export function SelectionGizmo() {
   const part = selection.kind === 'stagepart' ? stageParts.parts.find(item => item.id === selection.id) : undefined
   // バトンに吊った照明は、つかんだときの分を使い続ける（動かす途中で近くの照明を拾わない）
   const partFixtures = useRef<string[] | undefined>(undefined)
+  const moveStageTo = useStore(s => s.moveStageTo)
+  const audience = useStore(s => selection.kind === 'audience' ? (s.productionPlan.audienceBlocks ?? []).find(block => block.id === selection.id) : undefined)
+  const updateAudienceBlock = useStore(s => s.updateAudienceBlock)
 
   // 動的に position を反映するための Object3D
   const dragRef = useRef<THREE.Object3D>(new THREE.Object3D())
@@ -106,6 +110,13 @@ export function SelectionGizmo() {
     } else if (selection.kind === 'setpiece' && setPiece) {
       dragRef.current.position.set(...setPiece.position)
       dragRef.current.rotation.set(...setPiece.rotation)
+    } else if (selection.kind === 'stage') {
+      // 矢印は舞台の中心（舞台の座標で z = -3）に置く
+      dragRef.current.position.set(stageParts.offset[0], 0.05, stageParts.offset[1] - 3)
+      dragRef.current.rotation.set(0, 0, 0)
+    } else if (audience) {
+      dragRef.current.position.set(audience.position[0], 0.9, audience.position[1])
+      dragRef.current.rotation.set(0, 0, 0)
     } else if (part) {
       dragRef.current.position.set(part.x + stageParts.offset[0], partHandleY(part), part.z + stageParts.offset[1])
       dragRef.current.rotation.set(0, 0, 0)
@@ -116,6 +127,7 @@ export function SelectionGizmo() {
     performer?.position.join(','),
     setPiece?.position.join(','), setPiece?.rotation.join(','),
     part?.x, part?.z, part?.elevation, part?.height, stageParts.offset.join(','),
+    audience?.position.join(','),
   ])
 
   if (!showGizmos) return null
@@ -226,6 +238,34 @@ export function SelectionGizmo() {
             stageParts.change(part.id, patch, partFixtures.current)
           }}
         />
+      </group>
+    )
+  }
+
+  // ---- 舞台の床: 舞台全体を動かす（役者・セット・舞台の上の照明も一緒に動く。store の moveStageTo） ----
+  if (selection.kind === 'stage') {
+    return (
+      <group>
+        <primitive object={dragRef.current} />
+        <TransformControls ref={tcRef as any} object={dragRef.current} mode="translate" size={gizmoSize} showY={false}
+          onObjectChange={() => {
+            const o = dragRef.current
+            moveStageTo([snapValue(o.position.x), snapValue(o.position.z + 3)])
+          }} />
+      </group>
+    )
+  }
+
+  // ---- 客席ブロック ----
+  if (selection.kind === 'audience' && audience) {
+    return (
+      <group>
+        <primitive object={dragRef.current} />
+        <TransformControls ref={tcRef as any} object={dragRef.current} mode="translate" size={gizmoSize} showY={false}
+          onObjectChange={() => {
+            const o = dragRef.current
+            updateAudienceBlock(audience.id, { position: clampAudiencePosition(audience, snapValue(o.position.x), snapValue(o.position.z)) })
+          }} />
       </group>
     )
   }

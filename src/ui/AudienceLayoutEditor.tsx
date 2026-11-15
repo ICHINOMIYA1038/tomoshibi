@@ -316,32 +316,46 @@ export function AudienceLayoutEditor({ open, onClose }: { open: boolean; onClose
             className={selectedId === block.id ? 'active' : ''} onClick={() => setSelectedId(block.id)}>
             <strong>{block.name}</strong><span>{block.rows * block.seatsPerRow}席</span>
           </button>)}</div>
-          {selected ? <div className="audience-editor-fields">
-            <label>名前<input type="text" maxLength={60} value={selected.name}
-              onChange={event => changeSelected({ name: event.target.value })} /></label>
-            <label>列数 <input type="range" min="1" max="20" value={selected.rows}
-              onChange={event => changeSelected({ rows: Number(event.target.value) })} /><output>{selected.rows}列</output></label>
-            <label>1列の席数 <input type="range" min="1" max="20" value={selected.seatsPerRow}
-              onChange={event => changeSelected({ seatsPerRow: Number(event.target.value) })} /><output>{selected.seatsPerRow}席</output></label>
-            <label>列の間隔 <input type="range" min="0.6" max="1.4" step="0.05" value={selected.rowSpacing}
-              onChange={event => changeSelected({ rowSpacing: Number(event.target.value) })} /><output>{selected.rowSpacing.toFixed(2)}m</output></label>
-            <label>席の間隔 <input type="range" min="0.5" max="1.2" step="0.05" value={selected.seatSpacing}
-              onChange={event => changeSelected({ seatSpacing: Number(event.target.value) })} /><output>{selected.seatSpacing.toFixed(2)}m</output></label>
-            <label>左右位置 <input type="range" min="-24" max="24" step="0.1" value={selected.position[0]}
-              onChange={event => changeSelected({ position: [Number(event.target.value), selected.position[1]] })} /><output>{selected.position[0].toFixed(1)}m</output></label>
-            <label>前後位置 <input type="range" min="-21" max="35" step="0.1" value={selected.position[1]}
-              onChange={event => changeSelected({ position: [selected.position[0], Number(event.target.value)] })} /><output>{selected.position[1].toFixed(1)}m</output></label>
-            <label>向き <input type="range" min="-180" max="180" step="1" value={selected.rotationDeg}
-              onChange={event => changeSelected({ rotationDeg: Number(event.target.value) })} /><output>{selected.rotationDeg}°</output></label>
-            <button className="venue-face-stage" type="button" onClick={() => changeSelected({
-              rotationDeg: Math.round(Math.atan2(selected.position[0] - stageOffset[0], selected.position[1] + 3 - stageOffset[1]) * 180 / Math.PI),
-            })}>舞台の中心へ向ける</button>
-            <button className="audience-editor-delete" type="button" onClick={() => removeBlock(selected.id)}>このブロックを削除</button>
-          </div> : <p>客席ブロックを選ぶと、列数や席数を変更できます。</p>}
+          {selected ? <AudienceBlockFields block={selected} /> : <p>客席ブロックを選ぶと、列数や席数を変更できます。</p>}
           <p className="audience-editor-note">客席を舞台の横や後ろにも置けます。通路はブロック間に空けます。会場の配置は全シーン共通で自動保存されます。</p>
           </>}
         </aside>
       </div>
     </section>
+  </div>
+}
+
+/** 客席ブロックの名前・列数・位置などの欄。客席の編集画面と、右パネルの「舞台・客席」で使う */
+export function AudienceBlockFields({ block }: { block: AudienceBlock }) {
+  const updateBlock = useStore(state => state.updateAudienceBlock)
+  const removeBlock = useStore(state => state.removeAudienceBlock)
+  const venue = useStore(state => state.productionPlan.venueLayout ?? DEFAULT_VENUE_LAYOUT)
+  const stageOffset = venue.stageOffset ?? [0, 0]
+  const changeSelected = (patch: Partial<AudienceBlock>) => {
+    const next = { ...block, ...patch }
+    next.position = clampAudiencePosition(next, next.position[0], next.position[1])
+    updateBlock(block.id, { ...patch, position: next.position })
+  }
+  return <div className="audience-editor-fields">
+            <label>名前<input type="text" maxLength={60} value={block.name}
+              onChange={event => changeSelected({ name: event.target.value })} /></label>
+            <label>列数 <input type="range" min="1" max="20" value={block.rows}
+              onChange={event => changeSelected({ rows: Number(event.target.value) })} /><output>{block.rows}列</output></label>
+            <label>1列の席数 <input type="range" min="1" max="20" value={block.seatsPerRow}
+              onChange={event => changeSelected({ seatsPerRow: Number(event.target.value) })} /><output>{block.seatsPerRow}席</output></label>
+            <label>列の間隔 <input type="range" min="0.6" max="1.4" step="0.05" value={block.rowSpacing}
+              onChange={event => changeSelected({ rowSpacing: Number(event.target.value) })} /><output>{block.rowSpacing.toFixed(2)}m</output></label>
+            <label>席の間隔 <input type="range" min="0.5" max="1.2" step="0.05" value={block.seatSpacing}
+              onChange={event => changeSelected({ seatSpacing: Number(event.target.value) })} /><output>{block.seatSpacing.toFixed(2)}m</output></label>
+            <label>左右位置 <input type="range" min="-24" max="24" step="0.1" value={block.position[0]}
+              onChange={event => changeSelected({ position: [Number(event.target.value), block.position[1]] })} /><output>{block.position[0].toFixed(1)}m</output></label>
+            <label>前後位置 <input type="range" min="-21" max="35" step="0.1" value={block.position[1]}
+              onChange={event => changeSelected({ position: [block.position[0], Number(event.target.value)] })} /><output>{block.position[1].toFixed(1)}m</output></label>
+            <label>向き <input type="range" min="-180" max="180" step="1" value={block.rotationDeg}
+              onChange={event => changeSelected({ rotationDeg: Number(event.target.value) })} /><output>{block.rotationDeg}°</output></label>
+            <button className="venue-face-stage" type="button" onClick={() => changeSelected({
+              rotationDeg: Math.round(Math.atan2(block.position[0] - stageOffset[0], block.position[1] + 3 - stageOffset[1]) * 180 / Math.PI),
+            })}>舞台の中心へ向ける</button>
+            <button className="audience-editor-delete" type="button" onClick={() => removeBlock(block.id)}>このブロックを削除</button>
   </div>
 }

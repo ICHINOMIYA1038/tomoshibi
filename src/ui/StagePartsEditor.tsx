@@ -188,7 +188,7 @@ function NumberField({ label, value, min, max, step = .1, unit = 'm', onChange }
 }
 
 /** 会場の配置の右側に出す、舞台の部品の欄 */
-export function StagePartsInspector({ selectedId, onSelect }: { selectedId: string | null; onSelect: (id: string | null) => void }) {
+export function StagePartsInspector({ selectedId, onSelect, hint }: { selectedId: string | null; onSelect: (id: string | null) => void; hint?: string }) {
   const { layout, parts, offset, commit, change, hungIds } = useStageParts()
   const updateVenue = useStore(state => state.updateVenueLayout)
   const template = stageTemplateOf(layout)
@@ -225,7 +225,7 @@ export function StagePartsInspector({ selectedId, onSelect }: { selectedId: stri
   }
   return <>
     <h2>舞台の部品</h2>
-    <p>図の部品を選ぶと取っ手が出ます。本体をドラッグで移動、取っ手で大きさを変えます。0.5m ごとに吸い付き、Shift を押しながらだと 0.1m ごとに動きます。</p>
+    <p>{hint ?? '図の部品を選ぶと取っ手が出ます。本体をドラッグで移動、取っ手で大きさを変えます。0.5m ごとに吸い付き、Shift を押しながらだと 0.1m ごとに動きます。'}</p>
     <div className="stage-parts-add" role="group" aria-label="部品を足す">
       {KINDS.map(kind => <button key={kind} type="button" onClick={() => add(kind)} disabled={parts.length >= 80}>＋ {PART_LABELS[kind]}</button>)}
     </div>
