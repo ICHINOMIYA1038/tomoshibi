@@ -1,5 +1,6 @@
 import { useLayoutEffect, useMemo, useRef } from 'react'
 import * as THREE from 'three'
+import type { ThreeEvent } from '@react-three/fiber'
 import { audienceSeatPositions } from '../audienceLayout'
 import { useStore, type AudienceBlock } from '../store'
 
@@ -23,7 +24,22 @@ function SeatingBlock({ block }: { block: AudienceBlock }) {
     if (cushionRef.current) cushionRef.current.instanceMatrix.needsUpdate = true
     if (backRef.current) backRef.current.instanceMatrix.needsUpdate = true
   }, [seats, block.rotationDeg])
-  return <group>
+  const selected = useStore(state => state.selection.kind === 'audience' && state.selection.id === block.id)
+  const select = useStore(state => state.select)
+  const halfWidth = ((block.seatsPerRow - 1) * block.seatSpacing + .54) / 2
+  const halfDepth = ((block.rows - 1) * block.rowSpacing + .5) / 2
+  // 3D の画面でクリックすると客席を選ぶ（照度計測中は計測を優先する）
+  const pick = (event: ThreeEvent<MouseEvent>) => {
+    // 矢印をドラッグして離したときも、下にある床や壁に click が届く。動かした後の click では選び直さない
+    if (useStore.getState().settings.probeMode || event.delta > 4) return
+    event.stopPropagation()
+    select('audience', block.id)
+  }
+  return <group onClick={pick}>
+    {selected && <mesh position={[block.position[0], .45, block.position[1]]} rotation={[0, block.rotationDeg * Math.PI / 180, 0]} raycast={() => null}>
+      <boxGeometry args={[halfWidth * 2 + .2, .9, halfDepth * 2 + .2]} />
+      <meshBasicMaterial color="#6cf" wireframe transparent opacity={0.6} depthTest={false} />
+    </mesh>}
     <instancedMesh ref={cushionRef} args={[undefined, undefined, seats.length]} receiveShadow>
       <boxGeometry args={[.54, .11, .5]} />
       <meshBasicMaterial color="#503b43" toneMapped={false} />

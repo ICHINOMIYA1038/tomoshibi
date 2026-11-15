@@ -4673,6 +4673,15 @@ body.embed .workspace-switch { display: none; }
 .stage-batten-fixtures input { width: 18px; height: 18px; min-height: 0; }
 .stage-batten-fixtures small { color: var(--ink-muted); font-size: 11px; }
 
-.stage-part-selected { margin: 8px 12px; padding: 10px 12px; border: 1px solid rgba(102, 204, 255, .45); border-radius: 8px; background: rgba(102, 204, 255, .06); }
-.stage-part-selected p { margin: 6px 0 0; font-size: 12px; line-height: 1.6; opacity: .85; }
-.stage-part-selected .stage-part-actions { margin-top: 8px; }
+
+.venue-panel h2 { margin: 0 0 8px; color: var(--ink-primary); font-size: 13px; }
+.venue-panel p { color: var(--ink-muted); font-size: 11px; line-height: 1.6; }
+.venue-panel-intro { margin: 0 0 12px; }
+.venue-panel-section { padding: 12px 0; border-top: 1px solid var(--panel-edge); }
+.venue-panel-section:first-of-type { border-top: 0; padding-top: 0; }
+.venue-panel-section > .props-item { display: flex; justify-content: space-between; align-items: center; width: 100%; }
+.venue-panel-add { width: 100%; min-height: 40px; margin-bottom: 8px; border: 1px solid var(--panel-edge-strong); border-radius: 6px; background: #252024; color: var(--ink-primary); font-size: 12px; }
+.venue-panel-add:disabled { opacity: .4; cursor: default; }
+/* タブが 4 つになったので、ラベルを折り返さない */
+.object-panel .panel-tabs .tab-btn { min-width: 0; padding-inline: 2px; letter-spacing: 0; white-space: nowrap; }
+.venue-panel .venue-stage-position label { white-space: nowrap; }

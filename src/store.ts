@@ -280,7 +280,7 @@ export function syncEntityIds(fixtures: Fixture[], performers: Performer[]) {
   }
 }
 
-export type SelectionKind = 'fixture' | 'performer' | 'setpiece' | 'stagepart' | null
+export type SelectionKind = 'fixture' | 'performer' | 'setpiece' | 'stagepart' | 'stage' | 'audience' | null
 export interface Selection {
   kind: SelectionKind
   id: string | null
@@ -347,7 +347,7 @@ export interface SceneSettings {
   showPerformers: boolean
   cameraView: 'audience' | 'aerial' | 'sidewing' | 'free' | 'house'
   transformMode: 'translate' | 'rotate'
-  uiTab: 'fixtures' | 'performers' | 'props'
+  uiTab: 'fixtures' | 'performers' | 'props' | 'venue'
   settingsOpen: boolean
   settingsTab: 'scene' | 'look' | 'advanced'
   quality: QualityPreset
