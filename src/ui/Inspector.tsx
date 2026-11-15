@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { useStore, type AudienceBlock, type Fixture, type Performer, type StageShape } from '../store'
 import type { SetPiece, SetPieceAppearance } from '../types'
-import { DEFAULT_VENUE_LAYOUT, STAGE_SIZE, stageFootprint } from '../venueLayout'
+import { DEFAULT_VENUE_LAYOUT, STAGE_SIZE, stageFootprint, THEATRE } from '../venueLayout'
 import { clampAudiencePosition } from '../audienceLayout'
 import {
   DEFAULT_CYC_COLOR, DEFAULT_WALL_COLOR, FLOOR_FINISHES, isFlat, stageTemplateOf, TEMPLATE_LABELS, type StagePart, type StageTemplate,
@@ -214,10 +214,10 @@ function PartInspector({ part }: { part: StagePart }) {
       <p className="inspector-note">舞台の部品は、いつも「舞台」の子です。舞台を動かすと一緒に動きます。</p>
     </InspectorSection>
     <InspectorSection title="位置・回転・大きさ">
-      <NumberField label="X" value={part.x + offset[0]} min={-24} max={24} onChange={value => change(part.id, { x: value - offset[0] })} />
+      <NumberField label="X" value={part.x + offset[0]} min={THEATRE.minX} max={THEATRE.maxX} onChange={value => change(part.id, { x: value - offset[0] })} />
       {HANGING.has(part.kind) && <NumberField label={part.kind === 'batten' ? 'Y（吊る高さ）' : 'Y（下端）'} value={part.elevation}
         min={part.kind === 'batten' ? 1 : 0} max={20} onChange={value => change(part.id, { elevation: value })} />}
-      <NumberField label="Z" value={part.z + offset[1]} min={-21} max={35} onChange={value => change(part.id, { z: value - offset[1] })} />
+      <NumberField label="Z" value={part.z + offset[1]} min={THEATRE.minZ} max={THEATRE.maxZ} onChange={value => change(part.id, { z: value - offset[1] })} />
       <NumberField label="回転" value={part.rotationDeg} step={5} unit="°" onChange={value => change(part.id, { rotationDeg: value })} />
       <NumberField label={isFlat(part.kind) ? '幅' : '長さ'} value={part.width} min={.5} max={48} onChange={value => change(part.id, { width: value })} />
       {part.kind !== 'floor' && part.kind !== 'batten' && <NumberField label="高さ" value={part.height} min={.1} max={20} onChange={value => change(part.id, { height: value })} />}
@@ -273,8 +273,8 @@ function StageInspector() {
   return <>
     <InspectorSection title="位置・大きさ">
       <p className="inspector-note">舞台を動かすと、舞台の子（一覧で「舞台」の下にある物）が一緒に動きます。</p>
-      <NumberField label="X" value={offset[0]} min={-24} max={24} step={.5} onChange={value => moveStageTo([value, offset[1]])} />
-      <NumberField label="Z" value={offset[1]} min={-21} max={35} step={.5} onChange={value => moveStageTo([offset[0], value])} />
+      <NumberField label="X" value={offset[0]} min={THEATRE.minX} max={THEATRE.maxX} step={.5} onChange={value => moveStageTo([value, offset[1]])} />
+      <NumberField label="Z" value={offset[1]} min={THEATRE.minZ} max={THEATRE.maxZ} step={.5} onChange={value => moveStageTo([offset[0], value])} />
       {layout.stageShape !== 'custom' && <>
         <NumberField label={round ? '直径' : '幅'} value={layout.stageWidth} min={STAGE_SIZE.min} max={STAGE_SIZE.maxWidth} step={.5}
           onChange={value => updateVenue(round ? { stageWidth: value, stageDepth: value } : { stageWidth: value })} />
@@ -344,8 +344,8 @@ function AudienceInspector({ block }: { block: AudienceBlock }) {
       <NameField value={block.name} onChange={name => change({ name })} />
     </InspectorSection>
     <InspectorSection title="位置・回転">
-      <NumberField label="X" value={block.position[0]} min={-24} max={24} onChange={value => change({ position: [value, block.position[1]] })} />
-      <NumberField label="Z" value={block.position[1]} min={-21} max={35} onChange={value => change({ position: [block.position[0], value] })} />
+      <NumberField label="X" value={block.position[0]} min={THEATRE.minX} max={THEATRE.maxX} onChange={value => change({ position: [value, block.position[1]] })} />
+      <NumberField label="Z" value={block.position[1]} min={THEATRE.minZ} max={THEATRE.maxZ} onChange={value => change({ position: [block.position[0], value] })} />
       <NumberField label="回転" value={block.rotationDeg} min={-180} max={180} step={5} unit="°" onChange={value => change({ rotationDeg: value })} />
       <button type="button" className="inspector-wide-button" onClick={() => change({
         rotationDeg: Math.round(Math.atan2(block.position[0] - offset[0], block.position[1] + 3 - offset[1]) * 180 / Math.PI),

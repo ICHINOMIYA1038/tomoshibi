@@ -1,5 +1,5 @@
 import type { StagePoint, VenueLayout } from './store'
-import { DEFAULT_VENUE_LAYOUT, stageLocalFootprint } from './venueLayout'
+import { DEFAULT_VENUE_LAYOUT, stageLocalFootprint, THEATRE } from './venueLayout'
 
 // 舞台の部品（床・壁・ホリゾント・バトン・袖幕・平台）。種類は決めておき、置き方と大きさは自由に変えられる。
 // 座標は舞台の中心線を x=0 とする舞台の座標（stageOffset を足す前）。高さは床からの m。
@@ -45,7 +45,7 @@ export const FLOOR_FINISHES: Array<{ id: FloorFinish; label: string; color: [num
 ]
 
 /** 劇場の範囲（世界の座標）。客席の配置と同じ範囲 */
-export const THEATRE = { minX: -24, maxX: 24, minZ: -21, maxZ: 35, maxHeight: 20 }
+export { THEATRE } from './venueLayout'
 export const SNAP = 0.5
 export const FINE_SNAP = 0.1
 

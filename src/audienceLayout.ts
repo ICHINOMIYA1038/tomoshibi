@@ -1,3 +1,4 @@
+import { THEATRE } from './venueLayout'
 import type { AudienceBlock } from './store'
 
 export function audienceSeatPositions(block: AudienceBlock): [number, number][] {
@@ -25,7 +26,7 @@ export function clampAudiencePosition(block: AudienceBlock, x: number, z: number
   const extentX = Math.abs(Math.cos(angle)) * halfWidth + Math.abs(Math.sin(angle)) * halfDepth
   const extentZ = Math.abs(Math.sin(angle)) * halfWidth + Math.abs(Math.cos(angle)) * halfDepth
   const clamp = (value: number, low: number, high: number) => Math.min(high, Math.max(low, value))
-  return [clamp(x, -24 + extentX, 24 - extentX), clamp(z, -21 + extentZ, 35 - extentZ)]
+  return [clamp(x, THEATRE.minX + extentX, THEATRE.maxX - extentX), clamp(z, THEATRE.minZ + extentZ, THEATRE.maxZ - extentZ)]
 }
 
 export function demoAudienceBlocks(): AudienceBlock[] {

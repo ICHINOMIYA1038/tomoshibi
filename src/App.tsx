@@ -368,7 +368,7 @@ export default function App() {
           onPointerMissed={(event) => { if (event.button !== 2) select(null, null) }}
         >
           <ExposureSync exposure={settings.exposure ?? 1.0} />
-          <PerspectiveCamera key={`cam-${viewKey}`} makeDefault position={cameraPose.pos} fov={BASE_FOV} near={0.1} far={100} />
+          <PerspectiveCamera key={`cam-${viewKey}`} makeDefault position={cameraPose.pos} fov={BASE_FOV} near={0.1} far={600} />
           <ResponsiveFov />
           <OrbitControls
             key={`ctl-${viewKey}`}

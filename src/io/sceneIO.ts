@@ -1,4 +1,4 @@
-import { STAGE_SIZE } from '../venueLayout'
+import { STAGE_SIZE, THEATRE } from '../venueLayout'
 import { getEditableState } from '../playback/editorState'
 import { FLOOR_FINISHES, HEX_COLOR, sanitizeStageParts } from '../stageParts'
 import { workspaceStorage } from './workspaceStorage'
@@ -106,7 +106,7 @@ function normalizeProductionPlan(raw: unknown, fixtures: Fixture[], performers: 
         typeof input === 'number' && Number.isFinite(input) ? Math.max(low, Math.min(high, input)) : fallback
       return [{
         id: value.id.slice(0, 80), name: typeof value.name === 'string' ? value.name.slice(0, 60) : '客席',
-        position: [numeric(value.position[0], 0, -24, 24), numeric(value.position[1], 10, -21, 35)] as [number, number],
+        position: [numeric(value.position[0], 0, THEATRE.minX, THEATRE.maxX), numeric(value.position[1], 10, THEATRE.minZ, THEATRE.maxZ)] as [number, number],
         rows: Math.round(numeric(value.rows, 6, 1, 20)), seatsPerRow: Math.round(numeric(value.seatsPerRow, 7, 1, 20)),
         rowSpacing: numeric(value.rowSpacing, .9, .6, 1.4), seatSpacing: numeric(value.seatSpacing, .62, .5, 1.2),
         rotationDeg: numeric(value.rotationDeg, 0, -180, 180),
@@ -122,7 +122,7 @@ function normalizeProductionPlan(raw: unknown, fixtures: Fixture[], performers: 
       stageDepth: typeof venueRaw.stageDepth === 'number' && Number.isFinite(venueRaw.stageDepth)
         ? Math.max(STAGE_SIZE.min, Math.min(STAGE_SIZE.maxDepth, venueRaw.stageDepth)) : 12,
       stageOffset: Array.isArray(venueRaw.stageOffset) && venueRaw.stageOffset.length === 2 &&
-        venueRaw.stageOffset.every(value => typeof value === 'number' && Number.isFinite(value) && Math.abs(value) <= 50)
+        venueRaw.stageOffset.every(value => typeof value === 'number' && Number.isFinite(value) && Math.abs(value) <= THEATRE.maxX)
         ? [venueRaw.stageOffset[0], venueRaw.stageOffset[1]] : [0, 0],
       showProsceniumFrame: venueRaw.showProsceniumFrame === true,
       targetCapacity: typeof venueRaw.targetCapacity === 'number' && Number.isFinite(venueRaw.targetCapacity)
