@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef } from 'react'
+import { recordHit } from '../objectMenu'
 import * as THREE from 'three'
 import { useStore, type Performer } from '../store'
 import { createStageMaterial } from '../lighting/StageMaterial'
@@ -63,6 +64,7 @@ function PerformerMeshSingle({ performer, material }: { performer: Performer; ma
       visible={performer.onStage !== false}
       onPointerOver={(e) => { e.stopPropagation(); setHover('performer', performer.id) }}
       onPointerOut={(e) => { e.stopPropagation(); setHover(null, null) }}
+      onContextMenu={(e) => { e.stopPropagation(); recordHit({ kind: 'performer', id: performer.id }) }}
       onClick={(e) => {
         e.stopPropagation()
         const st = useStore.getState()

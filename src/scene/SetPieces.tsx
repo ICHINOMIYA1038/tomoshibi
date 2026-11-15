@@ -1,4 +1,5 @@
 import { useGLTF } from '@react-three/drei'
+import { recordHit } from '../objectMenu'
 import { useStore } from '../store'
 import type { SetPiece } from '../types'
 
@@ -20,11 +21,12 @@ function SetPieceItem({ piece }: { piece: SetPiece }) {
     e.stopPropagation()
     select('setpiece', piece.id)
   }
+  const onContextMenu = (e: any) => { e.stopPropagation(); recordHit({ kind: 'setpiece', id: piece.id }) }
 
   if (piece.kind === 'gltf') {
     return piece.url
-      ? <GLTFItem piece={piece} onClick={onClick} selected={isSelected} />
-      : <group position={piece.position} rotation={piece.rotation} scale={piece.scale} onClick={onClick}>
+      ? <GLTFItem piece={piece} onClick={onClick} onContextMenu={onContextMenu} selected={isSelected} />
+      : <group position={piece.position} rotation={piece.rotation} scale={piece.scale} onClick={onClick} onContextMenu={onContextMenu}>
           <mesh castShadow>
             <boxGeometry args={[1, 1, 1]} />
             <meshStandardMaterial color={isSelected ? '#6cf' : '#876040'} transparent opacity={0.45} wireframe />
@@ -38,6 +40,7 @@ function SetPieceItem({ piece }: { piece: SetPiece }) {
       rotation={piece.rotation}
       scale={piece.scale}
       onClick={onClick}
+      onContextMenu={onContextMenu}
     >
       <SetPieceShape piece={piece} size={[w, h, d]} />
       {isSelected && (
@@ -133,7 +136,7 @@ function SetPieceShape({ piece, size: [w, h, d] }: { piece: SetPiece; size: [num
   return <Solid size={[w, h, d]} color={color} />
 }
 
-function GLTFItem({ piece, onClick, selected }: { piece: SetPiece; onClick: (e: any) => void; selected: boolean }) {
+function GLTFItem({ piece, onClick, onContextMenu, selected }: { piece: SetPiece; onClick: (e: any) => void; onContextMenu: (e: any) => void; selected: boolean }) {
   const { scene } = useGLTF(piece.url!)
   return (
     <group
@@ -141,6 +144,7 @@ function GLTFItem({ piece, onClick, selected }: { piece: SetPiece; onClick: (e: 
       rotation={piece.rotation}
       scale={piece.scale}
       onClick={onClick}
+      onContextMenu={onContextMenu}
     >
       <primitive object={scene.clone()} />
       {selected && (

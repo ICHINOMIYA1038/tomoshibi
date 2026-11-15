@@ -1,4 +1,6 @@
 import { canEditProject, loseProjectEditor, useProjectEditor, getProjectEditorEpoch } from './io/projectEditor'
+import { canvasPointerDown, canvasPointerUp } from './objectMenu'
+import { ObjectContextMenu } from './ui/ObjectContextMenu'
 import { OnlineWorkspace } from './ui/OnlineWorkspace'
 import { WorkspaceNotice, WorkspaceNotices } from './ui/WorkspaceNotice'
 import { UpdateNotice } from './ui/UpdateNotice'
@@ -347,7 +349,9 @@ export default function App() {
       {isMockPreview && mockPage === 'projects'
         ? <ProjectLibrary onOpenEditor={() => navigateMock('editor')} />
         : <div className={'unified-shell' + (planOpen ? ' plan-open' : '') + (settings.panelOpen ? ' panel-open' : '') + (playbackOpen ? ' playback-open' : '') + (isMockPreview ? ' workspace-layout mobile-view-' + mobileView : '') + (mapVisible ? '' : ' map-hidden') + (outlineVisible ? ' outline-visible' : '')}>
-      <div className="canvas-wrap">
+      {/* 右ボタンを押して離しただけのときに、右クリックのメニューを出す（ドラッグは視点の移動。objectMenu.ts） */}
+      <div className="canvas-wrap" onContextMenu={event => event.preventDefault()}
+        onPointerDownCapture={canvasPointerDown} onPointerUpCapture={canvasPointerUp}>
        <WebGLErrorBoundary>
         <Canvas
           gl={{
@@ -361,7 +365,7 @@ export default function App() {
             gl.toneMapping = THREE.ACESFilmicToneMapping
             gl.toneMappingExposure = EXPOSURE_SCALE * (settings.exposure ?? 1.0)
           }}
-          onPointerMissed={() => select(null, null)}
+          onPointerMissed={(event) => { if (event.button !== 2) select(null, null) }}
         >
           <ExposureSync exposure={settings.exposure ?? 1.0} />
           <PerspectiveCamera key={`cam-${viewKey}`} makeDefault position={cameraPose.pos} fov={BASE_FOV} near={0.1} far={100} />
@@ -489,6 +493,7 @@ export default function App() {
 
       {!playbackOpen && <ControlPanel planOpen={planOpen} />}
       {!playbackOpen && <ScenePanel />}
+      {!playbackOpen && <ObjectContextMenu />}
       {!playbackOpen && <SettingsModal />}
       {!playbackOpen && <PlanBoard open={planOpen} persistent={isMockPreview}
         onClose={() => setPlanOpen(false)} onPlay={startPlayback}

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type PointerEvent } from 'react'
+import { useObjectMenu } from '../objectMenu'
 import { audienceSeatPositions, clampAudiencePosition } from '../audienceLayout'
 import { useStore, type AudienceBlock } from '../store'
 import { DEFAULT_VENUE_LAYOUT, pointInStage, STAGE_SIZE, stageFootprint } from '../venueLayout'
@@ -189,14 +190,24 @@ export function AudienceLayoutEditor({ open, onClose }: { open: boolean; onClose
         <div className="audience-editor-map">
           <svg ref={svgRef} viewBox={`0 0 ${SVG_WIDTH} ${SVG_HEIGHT}`}
             aria-label="舞台と客席の平面図。舞台、客席と自由形状の頂点をドラッグして配置できます"
-            onPointerMove={moveDrag} onPointerUp={endDrag} onPointerCancel={endDrag}>
+            onPointerMove={moveDrag} onPointerUp={endDrag} onPointerCancel={endDrag}
+            onContextMenu={event => {
+              // 右クリック: 舞台・客席・部品の上ならその物の、何も無い所なら「ここに足す」のメニュー（ObjectContextMenu.tsx）
+              event.preventDefault()
+              const item = (event.target as Element).closest<SVGElement>('[data-menu-kind]')
+              const kind = item?.dataset.menuKind as 'audience' | 'stage' | 'stagepart' | undefined
+              const [x, z] = worldPoint(event, event.currentTarget, scale, centerZ)
+              useObjectMenu.getState().open({ x: event.clientX, y: event.clientY,
+                target: kind && item?.dataset.menuId ? { kind, id: item.dataset.menuId } : null,
+                point: !kind || kind === 'stage' ? [Math.round(x * 10) / 10, 0, Math.round(z * 10) / 10] : undefined })
+            }}>
             <rect width={SVG_WIDTH} height={SVG_HEIGHT} fill="#ede8df" />
             {[-20, -15, -10, -5, 0, 5, 10, 15, 20, 25, 30, 35].filter(z => mapY(z) > 25 && mapY(z) < 635)
               .map(z => <g key={z}>
                 <line x1="42" x2="818" y1={mapY(z)} y2={mapY(z)} stroke="#d2c9bd" strokeDasharray="5 9" />
                 <text x="45" y={mapY(z) - 5} fill="#73695e" fontSize="12">z {z}m</text>
               </g>)}
-            <polygon points={stagePoints} fill="#423d3a" strokeWidth="4"
+            <polygon points={stagePoints} fill="#423d3a" strokeWidth="4" data-menu-kind="stage" data-menu-id="stage"
               role="button" tabIndex={0} aria-label="舞台をドラッグして移動。矢印キーでも移動できます"
               style={{ cursor: moving ? 'grab' : 'pointer', touchAction: 'none' }}
               stroke={selection.kind === 'stage' ? '#f2c27b' : '#a57545'}
@@ -210,7 +221,7 @@ export function AudienceLayoutEditor({ open, onClose }: { open: boolean; onClose
                 moveStageTo([stageOffset[0] + delta[0], stageOffset[1] + delta[1]])
               }} />
             <text x={mapX(stageOffset[0])} y={mapY(-3 + stageOffset[1]) + 6} textAnchor="middle" fill="#f6f1e8" fontSize="21" fontWeight="700" pointerEvents="none">舞台</text>
-            {blocks.map(block => <g key={block.id} role="button" tabIndex={0}
+            {blocks.map(block => <g key={block.id} role="button" tabIndex={0} data-menu-kind="audience" data-menu-id={block.id}
               aria-label={`${block.name} ${block.rows}列 ${block.seatsPerRow}席を移動`}
               style={{ cursor: moving ? 'grab' : 'pointer', touchAction: 'none' }}
               onPointerDown={event => beginDrag(event, block)}

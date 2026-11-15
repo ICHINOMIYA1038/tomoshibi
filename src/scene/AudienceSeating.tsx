@@ -1,4 +1,5 @@
 import { useLayoutEffect, useMemo, useRef } from 'react'
+import { recordHit } from '../objectMenu'
 import * as THREE from 'three'
 import type { ThreeEvent } from '@react-three/fiber'
 import { audienceSeatPositions } from '../audienceLayout'
@@ -35,7 +36,7 @@ function SeatingBlock({ block }: { block: AudienceBlock }) {
     event.stopPropagation()
     select('audience', block.id)
   }
-  return <group onClick={pick}>
+  return <group onClick={pick} onContextMenu={event => { event.stopPropagation(); recordHit({ kind: 'audience', id: block.id }) }}>
     {selected && <mesh position={[block.position[0], .45, block.position[1]]} rotation={[0, block.rotationDeg * Math.PI / 180, 0]} raycast={() => null}>
       <boxGeometry args={[halfWidth * 2 + .2, .9, halfDepth * 2 + .2]} />
       <meshBasicMaterial color="#6cf" wireframe transparent opacity={0.6} depthTest={false} />
@@ -57,7 +58,8 @@ export function AudienceSeating() {
   return <group>
     {/* 客席の床。端が見えると、床の板を置いたように見えるので、果てまで続いて見える大きさにする
         （カメラの描く距離は 100m、視点は劇場の中なので、1km 四方なら端は描かれない。オーナー指示、2026-11-15） */}
-    <mesh position={[0, -.06, 7]} rotation={[-Math.PI / 2, 0, 0]}>
+    <mesh position={[0, -.06, 7]} rotation={[-Math.PI / 2, 0, 0]}
+      onContextMenu={event => { event.stopPropagation(); recordHit(null, [event.point.x, 0, event.point.z]) }}>
       <planeGeometry args={[1000, 1000]} />
       <meshBasicMaterial color="#211d24" toneMapped={false} />
     </mesh>
