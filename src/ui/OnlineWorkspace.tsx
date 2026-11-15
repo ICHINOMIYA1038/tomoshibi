@@ -40,7 +40,8 @@ export function OnlineWorkspace({ children, enabled, editorVisible, onProjects }
     return () => window.removeEventListener('beforeunload', warnBeforeLeaving)
   }, [enabled, pendingChanges])
   const offline = enabled && (connectionError || !navigator.onLine)
-  const loginRequired = enabled && !loading && !user && !!getActiveCloudProject()
+  // ログアウトしたあとや、ログインの期限が切れたあと。画面にまだ前のログインが残っていても、サーバーが 401 を返せばこちらにする
+  const loginRequired = enabled && !loading && !!getActiveCloudProject() && (!user || editor.signedOut)
   const blocked = offline || loginRequired || editorBlocked
   useEffect(() => {
     if (content.current) content.current.inert = blocked
@@ -56,11 +57,13 @@ export function OnlineWorkspace({ children, enabled, editorVisible, onProjects }
     <div ref={content} style={{ display: 'contents' }}>{children}</div>
     {(offline || loginRequired) && <div className="workspace-connection-backdrop">
       <section className="workspace-connection-dialog" role="alertdialog" aria-modal="true" aria-labelledby="workspace-connection-title">
-        <h2 id="workspace-connection-title">{offline ? 'インターネット接続が必要です' : 'ログインを更新してください'}</h2>
-        <p>{offline ? 'オフラインでは編集・新規作成できません。接続を確認してから続けてください。' : 'アカウントに保存したプロジェクトを表示するため、ログインし直してください。'}</p>
+        <h2 id="workspace-connection-title">{offline ? 'インターネット接続が必要です' : 'ログインしていません'}</h2>
+        <p>{offline ? 'オフラインでは編集・新規作成できません。接続を確認してから続けてください。'
+          : 'このプロジェクトはアカウントに保存されています。編集を続けるには、もう一度ログインしてください（ログアウトしたか、ログインの期限が切れています）。'}</p>
         <p>アカウントに保存済みのプロジェクトは、そのまま残っています。</p>
         {offline ? <button disabled={loading} onClick={() => void refreshSession()}>{loading ? '接続を確認中…' : '接続を確認して再開'}</button>
-          : <a href={loginUrl()}>ログインして続ける</a>}
+          : <div className="workspace-editor-actions"><a href={loginUrl()}>ログインして続ける</a>
+            <button onClick={onProjects}>プロジェクト一覧へ</button></div>}
       </section>
     </div>}
     {editorBlocked && !offline && !loginRequired && (viewOnly
