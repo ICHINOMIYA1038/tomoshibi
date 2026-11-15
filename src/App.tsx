@@ -4,7 +4,8 @@ import { WorkspaceNotice, WorkspaceNotices } from './ui/WorkspaceNotice'
 import { UpdateNotice } from './ui/UpdateNotice'
 import { hasDeviceStorage } from './io/workspaceStorage'
 import { useEffect, useRef, useState } from 'react'
-import { isVenueKind, VenueModeButtons } from './ui/VenuePanel'
+import { ToolButtons } from './ui/ToolButtons'
+import { canDelete, deleteSelection, duplicateSelection } from './objectActions'
 import { Canvas, useThree } from '@react-three/fiber'
 import { OrbitControls, PerspectiveCamera } from '@react-three/drei'
 import * as THREE from 'three'
@@ -300,24 +301,18 @@ export default function App() {
         case '?': case '/': up({ showHelp: !s.settings.showHelp }); break
         case 'h': up({ showHelp: !s.settings.showHelp }); break
         case 'p': up({ probeMode: !s.settings.probeMode }); break
-        case 'g': if (s.selection.kind === 'fixture' || isVenueKind(s.selection.kind)) up({ transformMode: 'translate' }); break
-        case 'r': if (s.selection.kind === 'fixture' || s.selection.kind === 'stagepart' || s.selection.kind === 'audience') up({ transformMode: 'rotate' }); break
-        case 's': if (s.selection.kind === 'stagepart' || s.selection.kind === 'stage') up({ transformMode: 'scale' }); break
+        // 道具は Unity と同じ Q/W/E/R。右ボタンで視点を動かしている間は、WASD・QE の視点移動に使う
+        case 'q': if (!cameraFlying) up({ transformMode: 'select' }); break
+        case 'w': if (!cameraFlying) up({ transformMode: 'translate' }); break
+        case 'e': if (!cameraFlying) up({ transformMode: 'rotate' }); break
+        case 'r': if (!cameraFlying) up({ transformMode: 'scale' }); break
         case 'delete': case 'backspace': {
-          if (s.selection.kind === 'fixture' && s.selection.id) s.removeFixture(s.selection.id)
-          else if (s.selection.kind === 'performer' && s.selection.id) s.removePerformer(s.selection.id)
+          if (canDelete(s.selection.kind)) { e.preventDefault(); deleteSelection() }
           break
         }
         case 'd': {
-          // Cmd/Ctrl+D で複製
-          if ((e.metaKey || e.ctrlKey) && s.selection.kind === 'fixture' && s.selection.id) {
-            e.preventDefault()
-            s.duplicateFixture(s.selection.id)
-          } else if ((e.metaKey || e.ctrlKey) && s.selection.kind === 'stagepart' && s.selection.id) {
-            e.preventDefault()
-            const id = s.duplicateStagePart(s.selection.id)
-            if (id) s.select('stagepart', id)
-          }
+          // Cmd/Ctrl+D で複製（どの種類でも）
+          if (e.metaKey || e.ctrlKey) { e.preventDefault(); duplicateSelection() }
           break
         }
       }
@@ -466,6 +461,9 @@ export default function App() {
           </div>
           <span className="toolbar-divider" aria-hidden="true" />
         </>}
+        <span className="toolbar-label">道具</span>
+        <ToolButtons />
+        <span className="toolbar-divider" aria-hidden="true" />
         <span className="toolbar-label">視点</span>
         <ViewButton view="audience" label="客席" hint="1" />
         <ViewButton view="aerial" label="上から" hint="2" />
@@ -499,8 +497,6 @@ export default function App() {
       {playbackOpen && <StagePlayback onClose={() => setPlaybackOpen(false)} simplified={isMockPreview} />}
       {!playbackOpen && <HelpOverlay />}
 
-      {!playbackOpen && <FixtureGizmoToolbar />}
-      {!playbackOpen && <VenueGizmoToolbar />}
       {!playbackOpen && <SelectionStatusHint />}
       {!isEmbed && <KeyHint />}
     </div>}
@@ -653,6 +649,7 @@ function BrandStrip() {
 function KeyHint() {
   return (
     <div className="keyhint">
+      <span className="keyhint-item"><kbd>Q W E R</kbd>選択・移動・回転・拡大</span>
       <span className="keyhint-item"><kbd>1-4</kbd>視点</span>
       <span className="keyhint-item"><kbd>P</kbd>照度計測</span>
       <span className="keyhint-item"><kbd>H</kbd>ヘルプ</span>
@@ -662,7 +659,10 @@ function KeyHint() {
   )
 }
 
-// WASD/矢印キーで OrbitControls をパン
+/** 右ボタンを押している間（Unity と同じ）。この間だけ WASD・QE で視点を動かし、Q/W/E/R の道具の切り替えはしない */
+let cameraFlying = false
+
+// 矢印キーで OrbitControls をパン。右ボタンを押している間は WASD・QE も使う
 function CameraKeyboardPan() {
   const { camera, controls } = useThree() as any
   const pressed = useRef<Set<string>>(new Set())
@@ -673,10 +673,18 @@ function CameraKeyboardPan() {
       pressed.current.add(e.key.toLowerCase())
     }
     const up = (e: KeyboardEvent) => pressed.current.delete(e.key.toLowerCase())
+    const press = (e: PointerEvent) => { if (e.button === 2) cameraFlying = true }
+    const release = (e: PointerEvent) => { if (e.button === 2) cameraFlying = false }
+    const blur = () => { cameraFlying = false; pressed.current.clear() }
     window.addEventListener('keydown', down)
     window.addEventListener('keyup', up)
+    window.addEventListener('pointerdown', press)
+    window.addEventListener('pointerup', release)
+    window.addEventListener('blur', blur)
     return () => {
       window.removeEventListener('keydown', down); window.removeEventListener('keyup', up)
+      window.removeEventListener('pointerdown', press); window.removeEventListener('pointerup', release)
+      window.removeEventListener('blur', blur)
     }
   }, [])
   useEffect(() => {
@@ -687,12 +695,13 @@ function CameraKeyboardPan() {
       const ctl: any = controls
       const speed = 0.06
       let mx = 0, my = 0, mz = 0
-      if (ks.has('w') || ks.has('arrowup')) mz -= speed
-      if (ks.has('s') || ks.has('arrowdown')) mz += speed
-      if (ks.has('a') || ks.has('arrowleft')) mx -= speed
-      if (ks.has('d') || ks.has('arrowright')) mx += speed
-      if (ks.has('q')) my -= speed
-      if (ks.has('e')) my += speed
+      const fly = cameraFlying
+      if ((fly && ks.has('w')) || ks.has('arrowup')) mz -= speed
+      if ((fly && ks.has('s')) || ks.has('arrowdown')) mz += speed
+      if ((fly && ks.has('a')) || ks.has('arrowleft')) mx -= speed
+      if ((fly && ks.has('d')) || ks.has('arrowright')) mx += speed
+      if (fly && ks.has('q')) my -= speed
+      if (fly && ks.has('e')) my += speed
       if (mx || my || mz) {
         const forward = new THREE.Vector3()
         camera.getWorldDirection(forward)
@@ -743,49 +752,6 @@ function HouseLightsToggle() {
       客電 {on ? 'ON' : 'OFF'}
     </button>
   )
-}
-
-function FixtureGizmoToolbar() {
-  const selection = useStore(s => s.selection)
-  const mode = useStore(s => s.settings.transformMode)
-  const handle = selection.fixtureHandle ?? 'position'
-  const update = useStore(s => s.updateSettings)
-  const select = useStore(s => s.select)
-  if (selection.kind !== 'fixture' || !selection.id) return null
-  return (
-    <div className="gizmo-toolbar">
-      <button
-        className={handle === 'position' ? 'active' : ''}
-        onClick={() => select('fixture', selection.id!, 'position')}
-        title="光源を操作 (P)"
-      >光源</button>
-      <button
-        className={handle === 'target' ? 'active' : ''}
-        onClick={() => select('fixture', selection.id!, 'target')}
-        title="狙いを操作 (T)"
-      >狙い</button>
-      <span className="gizmo-sep" />
-      <button
-        className={mode === 'translate' ? 'active' : ''}
-        onClick={() => update({ transformMode: 'translate' })}
-        disabled={handle === 'target'}
-        title="移動 (G)"
-      >移動</button>
-      <button
-        className={mode === 'rotate' ? 'active' : ''}
-        onClick={() => update({ transformMode: 'rotate' })}
-        disabled={handle === 'target'}
-        title="回転 (R)"
-      >回転</button>
-    </div>
-  )
-}
-
-/** 舞台の床・部品・客席を選んだときの、移動・回転・拡大の切り替え。照明の「移動・回転」と同じ並び */
-function VenueGizmoToolbar() {
-  const kind = useStore(s => s.selection.kind)
-  if (!isVenueKind(kind)) return null
-  return <div className="gizmo-toolbar"><VenueModeButtons /></div>
 }
 
 function ViewButton({ view, label, hint }: { view: string; label: string; hint?: string }) {

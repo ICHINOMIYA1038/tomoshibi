@@ -4,6 +4,8 @@ import { Fragment, useEffect, useRef, useState, type MouseEvent, type PointerEve
 import { activeSceneDirections, LIMITS, PLAN_LIMITS, SCENE_TRIGGER_LABELS, sceneDisplayTitle, useStore,
   type DirectionKind, type MoveSceneResult, type SceneTriggerType, type StagePoint } from '../store'
 import { AudienceLayoutEditor } from './AudienceLayoutEditor'
+import { ToolButtons } from './ToolButtons'
+import { toolFor } from '../tools'
 import { DEFAULT_VENUE_LAYOUT, stageFootprint } from '../venueLayout'
 
 const MAP = { left: 100, top: 70, width: 760, height: 480, svgWidth: 960, svgHeight: 630 }
@@ -121,6 +123,7 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
   const selection = useStore(s => s.selection)
   const select = useStore(s => s.select)
   const updateSettings = useStore(s => s.updateSettings)
+  const tool = useStore(s => s.settings.transformMode)
   const ensureScenes = useStore(s => s.ensureScenes)
   const addScene = useStore(s => s.addScene)
   const addSceneAt = useStore(s => s.addSceneAt)
@@ -236,25 +239,30 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
   const selectedSetPiece = selection.kind === 'setpiece'
     ? setPieces.find(item => item.id === selection.id) : undefined
   const selectedName = selectedPerformer?.name ?? selectedFixture?.name ?? selectedSetPiece?.name
-  const selectedTab = selectedPerformer ? 'performers' : selectedFixture ? 'fixtures' : 'props'
   const selectedPath = directions.find(item => item.performerId === selectedPerformer?.id)
   const stageIsEmpty = performers.length === 0 && fixtures.length === 0 && setPieces.length === 0
 
   const selectActor = (id: string) => {
     select('performer', id)
-    updateSettings({ uiTab: 'performers' })
   }
   const selectFixture = (id: string, handle: 'position' | 'target' = 'position') => {
     select('fixture', id, handle)
-    updateSettings({ uiTab: 'fixtures' })
   }
   const selectSetPiece = (id: string) => {
     select('setpiece', id)
-    updateSettings({ uiTab: 'props' })
   }
   const beginDrag = (event: PointerEvent<SVGElement>, kind: DragStart['kind'], id: string, from: StagePoint) => {
     event.preventDefault()
     event.stopPropagation()
+    // 平面図でも道具に従う。「移動」のときだけドラッグで動かし、ほかの道具では選ぶだけ
+    const selectKind = kind === 'target' ? 'fixture' : kind
+    const tool = useStore.getState().settings.transformMode
+    if (tool === 'select' || toolFor(tool, selectKind, kind === 'target' ? 'target' : 'position') !== 'translate') {
+      if (kind === 'performer') selectActor(id)
+      else if (kind === 'target' || kind === 'fixture') selectFixture(id, kind === 'target' ? 'target' : 'position')
+      else selectSetPiece(id)
+      return
+    }
     const fixture = kind === 'fixture' ? useStore.getState().fixtures.find(item => item.id === id) : undefined
     const svg = svgRef.current
     dragStart.current = { kind, id, sceneId: scene.id, from,
@@ -946,15 +954,17 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
       <div className="plan-map-pane">
         <div className="plan-map-caption"><strong>平面図</strong><span>{stageIsEmpty
           ? 'まず舞台に置くものを選んでください'
-          : selectedPerformer ? `${selectedPerformer.name}を選択中 · 丸をドラッグして立ち位置を変更`
+          : tool === 'select' ? '選ぶだけの道具です。動かすときは「移動」を選びます'
+            : selectedPerformer ? `${selectedPerformer.name}を選択中 · 丸をドラッグして立ち位置を変更`
             : selectedFixture ? `${selectedFixture.name}を選択中 · 番号をドラッグして設置位置、色の輪で光の狙いを変更`
               : selectedSetPiece ? `${selectedSetPiece.name}を選択中 · 四角をドラッグして位置を変更`
-                : '丸や四角をドラッグして移動。選ぶと編集パネルで詳しく変更できます'}</span>
+                : '丸や四角をドラッグして移動します'}</span>
+          <ToolButtons compact />
           {persistent && selectedName && <button className="plan-inspect-button" onClick={() =>
-            updateSettings({ uiTab: selectedTab, panelOpen: true })}>名前・設定を編集</button>}
+            updateSettings({ panelOpen: true })}>名前・設定を編集</button>}
           {persistent && lastMove && <button type="button" className="plan-map-undo" onClick={undoMove}>↶ 移動を戻す</button>}
           {persistent && <button type="button" className="plan-audience-button" onClick={() => setAudienceEditorOpen(true)}>
-            舞台・客席を編集
+            会場の配置
           </button>}
           {persistent && <button type="button" className="plan-pane-close plan-map-close"
             aria-label="平面図を閉じる" title="平面図を閉じる" onClick={onCloseMap}>×</button>}
@@ -1264,7 +1274,7 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
           </label>}
           <button onClick={() => {
             onClose()
-            updateSettings({ uiTab: selectedTab, panelOpen: true })
+            updateSettings({ panelOpen: true })
           }}>詳細を編集</button>
         </div>}
         <label>シーン名<input value={scene.title} maxLength={60} placeholder="例：A 登場後"

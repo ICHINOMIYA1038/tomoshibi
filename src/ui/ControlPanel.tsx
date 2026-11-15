@@ -1,17 +1,15 @@
-import { useEffect, useState, useRef, type ReactNode } from 'react'
-import { useStore, type Fixture, type Performer } from '../store'
-import { FIXTURE_PROFILES, FIXTURE_PRESETS_BY_KIND, KIND_LABELS, type FixtureKind } from '../lighting/fixtureTypes'
-import type { SetPiece, SetPieceAppearance } from '../types'
+import { useEffect, useRef } from 'react'
+import { useStore, type Fixture } from '../store'
+import { FIXTURE_PROFILES, KIND_LABELS } from '../lighting/fixtureTypes'
 import { useDraggablePanel } from './useDraggablePanel'
 import { MEASURED_FRESNEL_KEY } from '../photometric/measuredFresnel'
 import { MEASURED_CYC_KEY } from '../photometric/measuredCyc'
-import { PERFORMER_POSES } from '../performerPoses'
 import { isWorkspacePath } from '../io/workspacePath'
-import { askConfirm } from './askConfirm'
-import { VenuePanel } from './VenuePanel'
+import { HierarchyPanel } from './HierarchyPanel'
+import { Inspector } from './Inspector'
 
 // 演劇関係者向け TOP パネル
-// タブ: 器具 / 役者 のみ。設定は ⚙ から SettingsModal で開く
+// 上: 舞台にある物の一覧（HierarchyPanel）、下: 選んだ物の設定（Inspector）。設定は ⚙ から SettingsModal で開く
 
 function Slider({ label, value, min, max, step, onChange, unit, fmt }: {
   label: string; value: number; min: number; max: number; step?: number;
@@ -97,10 +95,8 @@ function hexToRgb(hex: string): [number, number, number] {
 export function ControlPanel({ planOpen = false }: { planOpen?: boolean }) {
   const settings = useStore(s => s.settings)
   const update = useStore(s => s.updateSettings)
-  const tab = settings.uiTab
   const open = settings.panelOpen
   const selection = useStore(s => s.selection)
-  const previousSelection = useRef({ kind: selection.kind, id: selection.id })
   const dragStartY = useRef<number | null>(null)
   const dragDelta = useRef(0)
   const isMobile = typeof window !== 'undefined' && window.innerWidth <= 960
@@ -112,19 +108,11 @@ export function ControlPanel({ planOpen = false }: { planOpen?: boolean }) {
     y: 12,
   })
 
+  // 選び直したら、設定（インスペクター）が見えるところまでスクロールする
   useEffect(() => {
-    if (selection.kind === previousSelection.current.kind && selection.id === previousSelection.current.id) return
-    previousSelection.current = { kind: selection.kind, id: selection.id }
-    const nextTab = selection.kind === 'fixture' ? 'fixtures'
-      : selection.kind === 'performer' ? 'performers'
-      : selection.kind === 'setpiece' ? 'props'
-      : selection.kind === 'stagepart' || selection.kind === 'stage' || selection.kind === 'audience' ? 'venue' : null
-    if (nextTab && nextTab !== useStore.getState().settings.uiTab) update({ uiTab: nextTab })
-    // 「舞台・客席」は選んだ部品の欄まで自分でスクロールする（VenuePanel）
-    if (isMockPreview && nextTab && nextTab !== 'venue') requestAnimationFrame(() => {
-      document.querySelector('.object-panel .panel-body')?.scrollTo({ top: 0, behavior: 'instant' })
-    })
-  }, [selection.kind, selection.id, update, isMockPreview])
+    if (!selection.kind) return
+    requestAnimationFrame(() => document.querySelector('.object-panel .inspector')?.scrollIntoView({ block: 'nearest', behavior: 'smooth' }))
+  }, [selection.kind, selection.id])
 
   const onHeaderTouchStart = (e: React.TouchEvent) => {
     dragStartY.current = e.touches[0].clientY
@@ -170,196 +158,29 @@ export function ControlPanel({ planOpen = false }: { planOpen?: boolean }) {
           </div>
         </div>
         {isMockPreview && <div className="panel-purpose">
-          <span>{selection.kind === 'stagepart' || selection.kind === 'stage' || selection.kind === 'audience' ? '3D の画面で、矢印をドラッグして動かせます' : selection.kind ? '選択中のものをここで編集できます' : '種類を選んで舞台に追加できます'}</span>
+          <span>{selection.kind ? '動かすときは、上の道具で「移動・回転・拡大」を選びます' : '一覧から選ぶか、「＋ 追加」で足します'}</span>
           <button type="button" onClick={() => update({ panelOpen: false })}>平面図に戻る</button>
         </div>}
-        <div className="panel-tabs">
-          <TabButton id="fixtures" label={isMockPreview ? '照明' : '器具'} />
-          <TabButton id="performers" label="役者" />
-          <TabButton id="props" label={isMockPreview ? '舞台セット' : '装置'} />
-          <TabButton id="venue" label="舞台・客席" />
+        <div className="panel-body unity-panel">
+          {planOpen && <p className="fixture-scope-note">照明・役者・セットの変更は、いまのシーンに入ります。舞台と客席は全シーン共通です。</p>}
+          <HierarchyPanel />
+          <Inspector />
         </div>
-
-        {tab === 'fixtures' && <FixturesPanel planOpen={planOpen} />}
-        {tab === 'performers' && <PerformersPanel />}
-        {tab === 'props' && <PropsPanel />}
-        {tab === 'venue' && <VenuePanel />}
       </div>
     </>
   )
 }
 
-function TabButton({ id, label }: { id: 'fixtures' | 'performers' | 'props' | 'venue'; label: string }) {
-  const cur = useStore(s => s.settings.uiTab)
-  const update = useStore(s => s.updateSettings)
-  return (
-    <button
-      className={'tab-btn' + (cur === id ? ' active' : '')}
-      onClick={() => update({ uiTab: id })}
-    >{label}</button>
-  )
-}
-
-// ============ 一括選択: チェックボックス + 上部アクションバー ============
-function useBulkSelection(ids: string[]) {
-  const [picked, setPicked] = useState<Set<string>>(new Set())
-  // 一覧から消えた id をクリーンアップ
-  const valid = new Set(ids)
-  for (const p of picked) if (!valid.has(p)) picked.delete(p)
-
-  const toggle = (id: string) => {
-    setPicked(prev => {
-      const n = new Set(prev)
-      if (n.has(id)) n.delete(id); else n.add(id)
-      return n
-    })
-  }
-  const clear = () => setPicked(new Set())
-  const allOn = ids.length > 0 && picked.size === ids.length
-  const toggleAll = () => setPicked(allOn ? new Set() : new Set(ids))
-  return { picked, toggle, clear, allOn, toggleAll, count: picked.size }
-}
-
-function BulkBar({ count, allOn, onToggleAll, onClear, children }: {
-  count: number; allOn: boolean; onToggleAll: () => void; onClear: () => void;
-  children?: ReactNode
-}) {
-  return (
-    <div className={'bulk-bar' + (count > 0 ? ' active' : '')}>
-      <label className="bulk-checkall" onClick={e => e.stopPropagation()}>
-        <input type="checkbox" checked={allOn} onChange={onToggleAll} />
-        <span>{count > 0 ? `${count} 件選択中` : '一括選択'}</span>
-      </label>
-      {count > 0 && (
-        <div className="bulk-actions">
-          {children}
-          <button className="small" onClick={onClear}>解除</button>
-        </div>
-      )}
-    </div>
-  )
-}
-
-// ============ 器具 タブ ============
-function FixturesPanel({ planOpen }: { planOpen: boolean }) {
-  const fixtures = useStore(s => s.fixtures)
-  const selection = useStore(s => s.selection)
-  const selected = fixtures.find(f => f.id === selection.id && selection.kind === 'fixture')
-  const select = useStore(s => s.select)
-  const add = useStore(s => s.addFixture)
-  const bulk = useBulkSelection(fixtures.map(f => f.id))
-  const [bulkMode, setBulkMode] = useState(false)
-
-  const [addKind, setAddKind] = useState<FixtureKind>('Fresnel')
-  const [addPreset, setAddPreset] = useState<string>('Fresnel8')
-
-  const bulkDelete = async () => {
-    if (bulk.count === 0) return
-    if (!await askConfirm(`${bulk.count} 件の器具を削除しますか?`)) return
-    for (const id of bulk.picked) useStore.getState().removeFixture(id)
-    bulk.clear()
-    setBulkMode(false)
-  }
-  const bulkToggle = (enabled: boolean) => {
-    for (const id of bulk.picked) useStore.getState().updateFixture(id, { enabled })
-  }
-  const toggleBulkMode = () => {
-    bulk.clear()
-    setBulkMode(value => !value)
-  }
-
-  return (
-    <div className="panel-body">
-      {planOpen && <p className="fixture-scope-note">照明の変更は現在のシーンに反映されます。</p>}
-      <details className="props-add fixture-add">
-        <summary>＋ 照明を追加</summary>
-        <div>
-          <div className="row">
-            <label>種別</label>
-            <select value={addKind} onChange={e => {
-              const k = e.target.value as FixtureKind
-              setAddKind(k)
-              setAddPreset(FIXTURE_PRESETS_BY_KIND[k][0])
-            }}>
-              {(Object.keys(KIND_LABELS) as FixtureKind[]).map(k => (
-                <option key={k} value={k}>{KIND_LABELS[k]}</option>
-              ))}
-            </select>
-          </div>
-          <div className="row">
-            <label>モデル</label>
-            <select value={addPreset} onChange={e => setAddPreset(e.target.value)}>
-              {FIXTURE_PRESETS_BY_KIND[addKind].map(k => {
-                const p = FIXTURE_PROFILES[k]
-                return <option key={k} value={k}>{p.brand ? `${p.brand} — ${p.model || k}` : (p.model || k)}</option>
-              })}
-            </select>
-          </div>
-          <div className="row">
-            <button className="primary" onClick={() => add(addPreset)} style={{ flex: 1 }}>＋ この照明を追加</button>
-          </div>
-        </div>
-      </details>
-
-      <div className="props-list-heading">
-        <h3>照明（{fixtures.length}灯）</h3>
-        {fixtures.length > 0 && <button type="button" className={bulkMode ? 'active' : ''}
-          aria-pressed={bulkMode} onClick={toggleBulkMode}>{bulkMode ? '選択を終了' : 'まとめて選ぶ'}</button>}
-      </div>
-      {bulkMode && <BulkBar count={bulk.count} allOn={bulk.allOn} onToggleAll={bulk.toggleAll} onClear={bulk.clear}>
-        <button className="small" onClick={() => bulkToggle(true)}>点灯</button>
-        <button className="small" onClick={() => bulkToggle(false)}>消灯</button>
-        <button className="small danger" onClick={bulkDelete}>選択した照明を削除</button>
-      </BulkBar>}
-      <div className="list managed-list">
-        {fixtures.map(f => (
-          <div
-            key={f.id}
-            className={'props-item' + (selection.kind === 'fixture' && selection.id === f.id ? ' selected' : '') + (bulk.picked.has(f.id) ? ' picked' : '')}
-          >
-            {bulkMode && <input
-              type="checkbox"
-              className="row-check"
-              checked={bulk.picked.has(f.id)}
-              onChange={() => bulk.toggle(f.id)}
-              aria-label={`${f.name}をまとめて選ぶ`} />}
-            <button type="button" className="props-item-main"
-              aria-label={bulkMode ? `${f.name}をまとめて選ぶ` : `${f.name}の設定を開く`}
-              aria-pressed={bulkMode ? bulk.picked.has(f.id) : selection.kind === 'fixture' && selection.id === f.id}
-              onClick={() => bulkMode ? bulk.toggle(f.id) : select('fixture', f.id, 'position')}>
-              <span className="props-item-color" style={{ background: colorToHex(f.color) }} aria-hidden="true" />
-              <span className="props-item-text"><strong>{f.name}</strong><small>{KIND_LABELS[FIXTURE_PROFILES[f.presetKey].kind]}</small></span>
-              {!bulkMode && <span className="props-item-action" aria-hidden="true">設定 ›</span>}
-            </button>
-            {!bulkMode && <button type="button" className={'item-status-toggle' + (f.enabled ? ' active' : '')}
-              aria-pressed={f.enabled} aria-label={`${f.name}を${f.enabled ? '消灯' : '点灯'}`}
-              onClick={() => useStore.getState().updateFixture(f.id, { enabled: !f.enabled })}>
-              {f.enabled ? '点灯中' : '消灯中'}
-            </button>}
-          </div>
-        ))}
-        {fixtures.length === 0 && <div className="empty-hint">「+ 追加」で配置してください</div>}
-      </div>
-
-      {selected && <div className="selected-editor"><FixtureEditor fixture={selected} /></div>}
-    </div>
-  )
-}
-
-function FixtureEditor({ fixture }: { fixture: Fixture }) {
+export function FixtureEditor({ fixture }: { fixture: Fixture }) {
   const profile = FIXTURE_PROFILES[fixture.presetKey]
   const update = (patch: Partial<Fixture>) => useStore.getState().updateFixture(fixture.id, patch)
-  const remove = useStore(s => s.removeFixture)
-  const dup = useStore(s => s.duplicateFixture)
   const isMeasured = fixture.photometricProfile === MEASURED_FRESNEL_KEY
   const isMeasuredCyc = fixture.photometricProfile === MEASURED_CYC_KEY
   const isLED = profile.source !== 'tungsten' || isMeasured
 
   return (
     <>
-      <h3>選択中</h3>
       <div className="callout">
-        <b>{fixture.name}</b>
         <div style={{ fontSize: 10, color: '#998468', marginTop: 2, fontFamily: 'var(--font-sans)' }}>
           {isMeasured ? 'ETC fos/4 Fresnel 10 Mid の配光を使用中（光の色は試作値）'
             : isMeasuredCyc ? 'ETC Source Four LED CYC の配光を使用中（取付角度は試作値）'
@@ -368,11 +189,6 @@ function FixtureEditor({ fixture }: { fixture: Fixture }) {
         {fixture.position[2] > 2 && <div style={{ fontSize: 11, color: 'var(--kin)', marginTop: 5 }}>
           客席側・舞台前から {(fixture.position[2] - 2).toFixed(1)}m・高さ {fixture.position[1].toFixed(1)}m
         </div>}
-      </div>
-
-      <div className="row">
-        <label>名前</label>
-        <input type="text" value={fixture.name} onChange={e => update({ name: e.target.value })} />
       </div>
 
       <Slider label="調光" value={fixture.intensity} min={0} max={1.5}
@@ -454,392 +270,7 @@ function FixtureEditor({ fixture }: { fixture: Fixture }) {
           fmt={v => `${Math.round(v * 100)}%`} />
       )}
 
-      <h3>位置 / 狙い</h3>
-      <div className="row">
-        <button
-          className={selection_isPos(fixture.id) ? 'active' : ''}
-          onClick={() => useStore.getState().select('fixture', fixture.id, 'position')}
-          style={{ flex: 1 }}
-        >光源</button>
-        <button
-          className={selection_isTgt(fixture.id) ? 'active' : ''}
-          onClick={() => useStore.getState().select('fixture', fixture.id, 'target')}
-          style={{ flex: 1 }}
-        >狙い</button>
-      </div>
-      {selection_isPos(fixture.id) && (
-        <div className="row" style={{ marginTop: 4 }}>
-          <button
-            className={useStore.getState().settings.transformMode === 'translate' ? 'active' : ''}
-            onClick={() => useStore.getState().updateSettings({ transformMode: 'translate' })}
-            style={{ flex: 1 }}
-          >移動</button>
-          <button
-            className={useStore.getState().settings.transformMode === 'rotate' ? 'active' : ''}
-            onClick={() => useStore.getState().updateSettings({ transformMode: 'rotate' })}
-            style={{ flex: 1 }}
-          >回転</button>
-        </div>
-      )}
-      <div className="info-block" style={{ fontSize: 10, marginTop: 4 }}>
-        3D上の矢印/リングハンドルで掴んで操作
-      </div>
-
-      {fixture.position[2] > 2
-        ? <FOHPositionEditor value={fixture.position} onChange={v => update({ position: v })} />
-        : <PositionTrio label="光源" value={fixture.position} onChange={v => update({ position: v })} ranges={[[-9, 9], [0.3, 18], [-7.5, 24]]} />}
-      <PositionTrio label="狙い" value={fixture.target} onChange={v => update({ target: v })} ranges={[[-7, 7], [0, 7], [-7.5, 3]]} />
-
-      <div className="row" style={{ marginTop: 12 }}>
-        <button onClick={() => dup(fixture.id)} style={{ flex: 1 }}>複製</button>
-        <button className="danger" onClick={async () => {
-          if (await askConfirm(`「${fixture.name}」を削除しますか？`)) remove(fixture.id)
-        }} style={{ flex: 1 }}>この照明を削除</button>
-      </div>
     </>
   )
 }
 
-function selection_isPos(id: string): boolean {
-  const sel = useStore.getState().selection
-  return sel.kind === 'fixture' && sel.id === id && (sel.fixtureHandle ?? 'position') === 'position'
-}
-function selection_isTgt(id: string): boolean {
-  const sel = useStore.getState().selection
-  return sel.kind === 'fixture' && sel.id === id && sel.fixtureHandle === 'target'
-}
-
-function PositionTrio({ label, value, onChange, ranges }: {
-  label: string;
-  value: [number, number, number];
-  onChange: (v: [number, number, number]) => void;
-  ranges: Array<[number, number]>;
-}) {
-  const axes = ['X', 'Y', 'Z'] as const
-  return (
-    <>
-      {axes.map((a, i) => (
-        <div className="row" key={a}>
-          <label>{label} {a}</label>
-          <input type="range" min={ranges[i][0]} max={ranges[i][1]} step={0.1} value={value[i]}
-            onChange={e => {
-              const nv = [...value] as [number, number, number]
-              nv[i] = parseFloat(e.target.value)
-              onChange(nv)
-            }} />
-          <span className="numval">{value[i].toFixed(1)}m</span>
-        </div>
-      ))}
-    </>
-  )
-}
-
-function FOHPositionEditor({ value, onChange }: {
-  value: [number, number, number]; onChange: (value: [number, number, number]) => void;
-}) {
-  const options = [8, 12, 16, 22]
-  const distance = value[2] - 2
-  const [distanceDraft, setDistanceDraft] = useState(distance.toFixed(1))
-  const [heightDraft, setHeightDraft] = useState(value[1].toFixed(1))
-  useEffect(() => setDistanceDraft(distance.toFixed(1)), [distance])
-  useEffect(() => setHeightDraft(value[1].toFixed(1)), [value[1]])
-  const commitDistance = () => {
-    const metres = Number(distanceDraft)
-    if (Number.isFinite(metres) && distanceDraft.trim() !== '') onChange([value[0], value[1], Math.max(3, Math.min(24, metres + 2))])
-    else setDistanceDraft(distance.toFixed(1))
-  }
-  const commitHeight = () => {
-    const metres = Number(heightDraft)
-    if (Number.isFinite(metres) && heightDraft.trim() !== '') onChange([value[0], Math.max(3, Math.min(18, metres)), value[2]])
-    else setHeightDraft(value[1].toFixed(1))
-  }
-  return <div className="foh-position-editor">
-    <strong>客席側の設置位置</strong>
-    <p>舞台前からの距離を選ぶか、会場に合わせて入力してください。</p>
-    <div className="foh-position-options">
-      {options.map(metres => <button key={metres} type="button" className={Math.abs(distance - metres) < .1 ? 'active' : ''}
-        onClick={() => onChange([value[0], metres === 22 ? 16.5 : metres === 16 ? 14.5 : metres === 12 ? 12.5 : 10, metres + 2])}>
-        {metres}m
-      </button>)}
-    </div>
-    <label>舞台前から <input type="number" min="1" max="22" step="0.5" value={distanceDraft}
-      onChange={event => setDistanceDraft(event.target.value)} onBlur={commitDistance}
-      onKeyDown={event => { if (event.key === 'Enter') event.currentTarget.blur() }} /> m</label>
-    <label>吊り高さ <input type="number" min="3" max="18" step="0.5" value={heightDraft}
-      onChange={event => setHeightDraft(event.target.value)} onBlur={commitHeight}
-      onKeyDown={event => { if (event.key === 'Enter') event.currentTarget.blur() }} /> m</label>
-    <div className="row"><label>左右</label><input type="range" min="-9" max="9" step="0.1" value={value[0]}
-      onChange={event => onChange([Number(event.target.value), value[1], value[2]])} /><span className="numval">{value[0].toFixed(1)}m</span></div>
-  </div>
-}
-
-// ============ 役者 タブ ============
-function PerformersPanel() {
-  const performers = useStore(s => s.performers)
-  const add = useStore(s => s.addPerformer)
-  const remove = useStore(s => s.removePerformer)
-  const select = useStore(s => s.select)
-  const selection = useStore(s => s.selection)
-  const selected = performers.find(p => p.id === selection.id && selection.kind === 'performer')
-  const update = (id: string, patch: Partial<Performer>) => useStore.getState().updatePerformer(id, patch)
-  const bulk = useBulkSelection(performers.map(p => p.id))
-  const [bulkMode, setBulkMode] = useState(false)
-
-  const bulkDelete = async () => {
-    if (bulk.count === 0) return
-    if (!await askConfirm(`${bulk.count} 人の役者を削除しますか?`)) return
-    for (const id of bulk.picked) remove(id)
-    bulk.clear()
-    setBulkMode(false)
-  }
-  const toggleBulkMode = () => {
-    bulk.clear()
-    setBulkMode(value => !value)
-  }
-
-  return (
-    <div className="panel-body">
-      <h3>役者を追加</h3>
-      <div className="row">
-        <button className="primary" onClick={() => add()} style={{ flex: 1 }}>+ 追加</button>
-      </div>
-
-      <div className="props-list-heading">
-        <h3>役者（{performers.length}人）</h3>
-        {performers.length > 0 && <button type="button" className={bulkMode ? 'active' : ''}
-          aria-pressed={bulkMode} onClick={toggleBulkMode}>{bulkMode ? '選択を終了' : 'まとめて選ぶ'}</button>}
-      </div>
-      {bulkMode && <BulkBar count={bulk.count} allOn={bulk.allOn} onToggleAll={bulk.toggleAll} onClear={bulk.clear}>
-        <button className="small danger" onClick={bulkDelete}>選択した役者を削除</button>
-      </BulkBar>}
-      <div className="list managed-list">
-        {performers.map(p => (
-          <div
-            key={p.id}
-            className={'props-item' + (selection.kind === 'performer' && selection.id === p.id ? ' selected' : '') + (bulk.picked.has(p.id) ? ' picked' : '')}
-          >
-            {bulkMode && <input
-              type="checkbox"
-              className="row-check"
-              checked={bulk.picked.has(p.id)}
-              onChange={() => bulk.toggle(p.id)}
-              aria-label={`${p.name}をまとめて選ぶ`} />}
-            <button type="button" className="props-item-main"
-              aria-label={bulkMode ? `${p.name}をまとめて選ぶ` : `${p.name}の設定を開く`}
-              aria-pressed={bulkMode ? bulk.picked.has(p.id) : selection.kind === 'performer' && selection.id === p.id}
-              onClick={() => bulkMode ? bulk.toggle(p.id) : select('performer', p.id)}>
-              <span className="props-item-color" style={{ background: p.color }} aria-hidden="true" />
-              <span className="props-item-text"><strong>{p.name}</strong><small>{p.onStage === false ? 'このシーンでは舞台外' : 'このシーンで舞台上'}</small></span>
-              {!bulkMode && <span className="props-item-action" aria-hidden="true">設定 ›</span>}
-            </button>
-            {!bulkMode && <button type="button" className={'item-status-toggle' + (p.onStage !== false ? ' active' : '')}
-              aria-pressed={p.onStage !== false} aria-label={`${p.name}を${p.onStage === false ? '舞台上に出す' : '舞台外にする'}`}
-              onClick={() => update(p.id, { onStage: p.onStage === false })}>
-              {p.onStage === false ? '舞台外' : '舞台上'}
-            </button>}
-          </div>
-        ))}
-        {performers.length === 0 && <div className="empty-hint">舞台上に役者がいません</div>}
-      </div>
-
-      {selected && (
-        <div className="selected-editor">
-          <h3>選択中</h3>
-          <div className="callout">
-            <b>{selected.name}</b>
-            <div style={{ fontSize: 10, color: '#998468', marginTop: 2, fontFamily: 'var(--font-sans)' }}>
-              役者 / {Math.round(selected.scale * 170)}cm
-            </div>
-          </div>
-          <div className="row">
-            <label>名前</label>
-            <input type="text" value={selected.name} onChange={e => update(selected.id, { name: e.target.value })} />
-          </div>
-          <div className="row">
-            <label>舞台上</label>
-            <input type="checkbox" checked={selected.onStage !== false}
-              onChange={e => update(selected.id, { onStage: e.target.checked })} />
-          </div>
-          <div className="pose-presets" role="group" aria-label={`${selected.name}のポーズ`}>
-            <span>ポーズ</span>
-            <div>
-              {PERFORMER_POSES.map(pose => <button key={pose.value} type="button"
-                className={(selected.pose ?? 'standing') === pose.value ? 'active' : ''}
-                aria-pressed={(selected.pose ?? 'standing') === pose.value}
-                onClick={() => update(selected.id, { pose: pose.value })}>{pose.label}</button>)}
-            </div>
-          </div>
-          <div className="row">
-            <label>服色</label>
-            <input type="color" value={selected.color} onChange={e => update(selected.id, { color: e.target.value })} />
-          </div>
-          <Slider label="身長" value={selected.scale} min={0.6} max={1.3} step={0.01}
-            onChange={v => update(selected.id, { scale: v })}
-            fmt={v => `${Math.round(v * 170)}cm`} />
-          <PositionTrio label="位置" value={selected.position} onChange={v => update(selected.id, { position: [v[0], Math.max(0, v[1]), v[2]] })} ranges={[[-6, 6], [0, 2], [-7, 2]]} />
-          <div className="row" style={{ marginTop: 12 }}>
-            <button className="danger" onClick={async () => {
-              if (await askConfirm(`「${selected.name}」を削除しますか？`)) remove(selected.id)
-            }} style={{ flex: 1 }}>この役者を削除</button>
-          </div>
-        </div>
-      )}
-    </div>
-  )
-}
-
-// ============ 装置 タブ ============
-function PropsPanel() {
-  const pieces = useStore(s => s.setPieces)
-  const selection = useStore(s => s.selection)
-  const selected = pieces.find(p => p.id === selection.id && selection.kind === 'setpiece')
-  const select = useStore(s => s.select)
-  const addPrim = useStore(s => s.addPrimitiveSetPiece)
-  const remove = useStore(s => s.removeSetPiece)
-  const update = (id: string, patch: Partial<SetPiece>) => useStore.getState().updateSetPiece(id, patch)
-  const addAppearance = (appearance: Exclude<SetPieceAppearance, 'basic'>) => {
-    const presets: Record<Exclude<SetPieceAppearance, 'basic'>, { name: string; size: [number, number, number]; color: string }> = {
-      bench: { name: 'ベンチ', size: [2.8, 0.9, 0.85], color: '#765c48' },
-      door: { name: '扉', size: [1.45, 2.2, 0.22], color: '#555767' },
-      suitcase: { name: '鞄', size: [0.72, 0.48, 0.4], color: '#a86d48' },
-      table: { name: '机', size: [2.2, 0.8, 1.1], color: '#75523c' },
-      bookshelf: { name: '書架', size: [2.3, 2.7, 0.5], color: '#4c3a35' },
-      window: { name: '窓', size: [2.5, 2.8, 0.16], color: '#5c6774' },
-    }
-    const preset = presets[appearance]
-    const id = addPrim('box')
-    const position = useStore.getState().setPieces.find(piece => piece.id === id)?.position
-    if (position) update(id, {
-      ...preset, appearance, position: [position[0], preset.size[1] / 2, position[2]],
-    })
-  }
-  const bulk = useBulkSelection(pieces.map(p => p.id))
-  const [bulkMode, setBulkMode] = useState(false)
-
-  const bulkDelete = async () => {
-    if (bulk.count === 0) return
-    if (!await askConfirm(`${bulk.count} 件の装置を削除しますか?`)) return
-    for (const id of bulk.picked) remove(id)
-    bulk.clear()
-    setBulkMode(false)
-  }
-
-  const toggleBulkMode = () => {
-    bulk.clear()
-    setBulkMode(value => !value)
-  }
-
-  const kindLabel = (piece: SetPiece) => piece.appearance && piece.appearance !== 'basic'
-    ? { bench: 'ベンチ', door: '扉', suitcase: '鞄', table: '机', bookshelf: '書架', window: '窓' }[piece.appearance]
-    : { box: '箱型', platform: '平台', riser: '高台', gltf: '3Dモデル' }[piece.kind]
-
-  return (
-    <div className="panel-body props-panel">
-      <button type="button" className="props-floor-add" onClick={() => addPrim('platform')}>＋ 床・平台を追加</button>
-      <p className="empty-hint">追加した平台の幅・奥行・高さを調整して、床や段差を作れます。</p>
-      <details className="props-add">
-        <summary>＋ 舞台セットを追加</summary>
-        <div>
-          <button type="button" onClick={() => addPrim('box')}>箱馬</button>
-          <button type="button" onClick={() => addPrim('platform')}>平台</button>
-          <button type="button" onClick={() => addPrim('riser')}>高台</button>
-          <button type="button" onClick={() => addAppearance('bench')}>ベンチ</button>
-          <button type="button" onClick={() => addAppearance('door')}>扉</button>
-          <button type="button" onClick={() => addAppearance('suitcase')}>鞄</button>
-          <button type="button" onClick={() => addAppearance('table')}>机</button>
-          <button type="button" onClick={() => addAppearance('bookshelf')}>書架</button>
-          <button type="button" onClick={() => addAppearance('window')}>窓</button>
-        </div>
-      </details>
-
-      <div className="props-list-heading">
-        <h3>舞台セット（{pieces.length}点）</h3>
-        {pieces.length > 0 && <button type="button" className={bulkMode ? 'active' : ''}
-          aria-pressed={bulkMode} onClick={toggleBulkMode}>{bulkMode ? '選択を終了' : 'まとめて選ぶ'}</button>}
-      </div>
-      {bulkMode && <BulkBar count={bulk.count} allOn={bulk.allOn} onToggleAll={bulk.toggleAll} onClear={bulk.clear}>
-        <button type="button" className="small danger" onClick={bulkDelete}>選択したセットを削除</button>
-      </BulkBar>}
-      <div className="list props-list">
-        {pieces.map(p => (
-          <div
-            key={p.id}
-            className={'props-item' + (selection.kind === 'setpiece' && selection.id === p.id ? ' selected' : '') + (bulk.picked.has(p.id) ? ' picked' : '')}
-          >
-            {bulkMode && <input
-              type="checkbox"
-              className="row-check"
-              checked={bulk.picked.has(p.id)}
-              onChange={() => bulk.toggle(p.id)}
-              aria-label={`${p.name}をまとめて選ぶ`} />}
-            <button type="button" className="props-item-main"
-              aria-label={bulkMode ? `${p.name}をまとめて選ぶ` : `${p.name}の設定を開く`}
-              aria-pressed={bulkMode ? bulk.picked.has(p.id) : selection.kind === 'setpiece' && selection.id === p.id}
-              onClick={() => bulkMode ? bulk.toggle(p.id) : select('setpiece', p.id)}>
-              <span className="props-item-color" style={{ background: p.color ?? '#876040' }} aria-hidden="true" />
-              <span className="props-item-text"><strong>{p.name}</strong><small>{kindLabel(p)}</small></span>
-              <span className="props-item-action" aria-hidden="true">{bulkMode ? '' : '設定 ›'}</span>
-            </button>
-          </div>
-        ))}
-        {pieces.length === 0 && <div className="empty-hint">「舞台セットを追加」から配置してください</div>}
-      </div>
-
-      {selected && (
-        <div className="selected-editor props-selected-editor">
-          <h3>セットの設定</h3>
-          <div className="callout">
-            <b>{selected.name}</b>
-            <div style={{ fontSize: 10, color: '#998468', marginTop: 2, fontFamily: 'var(--font-sans)' }}>
-              舞台セット / {kindLabel(selected)}
-            </div>
-          </div>
-          <div className="row">
-            <label>名前</label>
-            <input type="text" value={selected.name} onChange={e => update(selected.id, { name: e.target.value })} />
-          </div>
-          {selected.kind !== 'gltf' && <div className="row">
-            <label>色</label>
-            <input type="color" value={selected.color ?? '#876040'} onChange={e => update(selected.id, { color: e.target.value })} />
-          </div>}
-          {selected.kind !== 'gltf' && <div className="row">
-            <label>見た目</label>
-            <select value={selected.appearance ?? 'basic'} onChange={e => update(selected.id, { appearance: e.target.value as SetPieceAppearance })}>
-              <option value="basic">基本形</option>
-              <option value="bench">ベンチ</option>
-              <option value="door">扉</option>
-              <option value="suitcase">鞄</option>
-              <option value="table">机</option>
-              <option value="bookshelf">書架</option>
-              <option value="window">窓</option>
-            </select>
-          </div>}
-          {selected.size && (
-            <>
-              <Slider label="幅" value={selected.size[0]} min={0.2} max={4} step={0.05}
-                onChange={v => update(selected.id, { size: [v, selected.size![1], selected.size![2]] })}
-                fmt={v => `${v.toFixed(2)}m`} />
-              <Slider label="高" value={selected.size[1]} min={0.1} max={3} step={0.05}
-                onChange={v => update(selected.id, { size: [selected.size![0], v, selected.size![2]] })}
-                fmt={v => `${v.toFixed(2)}m`} />
-              <Slider label="奥行" value={selected.size[2]} min={0.2} max={4} step={0.05}
-                onChange={v => update(selected.id, { size: [selected.size![0], selected.size![1], v] })}
-                fmt={v => `${v.toFixed(2)}m`} />
-            </>
-          )}
-          <PositionTrio
-            label="位置"
-            value={selected.position}
-            onChange={v => update(selected.id, { position: v })}
-            ranges={[[-7, 7], [0, 5], [-7.5, 3]]}
-          />
-          <div className="row" style={{ marginTop: 12 }}>
-            <button className="danger" onClick={async () => {
-              if (await askConfirm(`「${selected.name}」を削除しますか？`)) remove(selected.id)
-            }} style={{ flex: 1 }}>このセットを削除</button>
-          </div>
-        </div>
-      )}
-    </div>
-  )
-}
