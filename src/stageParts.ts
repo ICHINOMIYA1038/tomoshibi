@@ -204,7 +204,7 @@ export function newPart(kind: StagePartKind, layout: VenueLayout, id: string): S
   const b = stageBounds(layout)
   const cx = (b.left + b.right) / 2
   const base = { id, kind, x: cx, z: b.centerZ, width: 4, depth: 0, height: 0, elevation: 0, rotationDeg: 0 }
-  if (kind === 'floor') return { ...base, z: b.front + 1.5, width: Math.min(8, b.width), depth: 2 }
+  if (kind === 'floor') return { ...base, width: Math.min(4, b.width), depth: 3 }
   if (kind === 'platform') return { ...base, width: 3, depth: 2, height: 0.6 }
   if (kind === 'wall') return { ...base, z: b.rear + 0.5, width: Math.min(8, b.width), height: 6 }
   if (kind === 'cyc') return { ...base, z: b.rear + 1, width: Math.max(4, b.width - 2), height: 6.5, elevation: 0.25 }

@@ -8,8 +8,6 @@ import {
 } from '../stageParts'
 import { askConfirm } from './askConfirm'
 
-/** 舞台の座標で、舞台の中心の前後位置。数字の欄は、ここからの距離で見せる */
-const STAGE_CENTER_Z = -3
 const KINDS: StagePartKind[] = ['floor', 'wall', 'cyc', 'batten', 'wing', 'platform']
 const PART_COLORS: Record<StagePartKind, string> = {
   floor: '#6d625a', platform: '#9b7650', wall: '#1d1a1d', cyc: '#d9dbe4', wing: '#3a2f37', batten: '#7f8fa3',
@@ -208,19 +206,14 @@ export function StagePartsInspector({ selectedId, onSelect, hint }: { selectedId
     commit(parts.filter(other => other.id !== item.id))
     onSelect(null)
   }
-  const resetOne = (item: StagePart) => {
-    const next = parts.map(other => other.id === item.id ? { ...other, edited: undefined } : other)
-    const after = resolveStageParts({ ...layout, stageParts: next }).find(other => other.id === item.id)
-    commit(next, after ? { before: item, after, fixtureIds: hungIds(item) } : undefined)
+  const duplicate = (item: StagePart) => {
+    const id = useStore.getState().duplicateStagePart(item.id)
+    if (id) onSelect(id)
   }
+  const sizeOf = (item: StagePart) => isFlat(item.kind) ? `${item.width}m × ${item.depth}m` : `${item.width}m`
   const chooseTemplate = async (next: StageTemplate) => {
-    if (touched && !await askConfirm('いまの部品の配置を、選んだひな形の配置に置き換えますか？動かした部品や足した部品は元に戻ります。', '置き換える')) return
+    if (touched && !await askConfirm('いまの部品を、選んだひな形の部品に置き換えますか？いま置いている部品は消えます。', '置き換える')) return
     updateVenue({ stageTemplate: next, stageParts: undefined })
-    onSelect(null)
-  }
-  const resetAll = async () => {
-    if (!await askConfirm('すべての部品を初期配置に戻しますか？足した部品は消えます。', '戻す')) return
-    updateVenue({ stageParts: undefined })
     onSelect(null)
   }
   return <>
@@ -231,22 +224,22 @@ export function StagePartsInspector({ selectedId, onSelect, hint }: { selectedId
     </div>
     <div className="audience-editor-block-list stage-parts-list">{parts.map(item => <button key={item.id} type="button"
       className={item.id === selectedId ? 'active' : ''} onClick={() => onSelect(item.id)}>
-      <strong>{nameOf(item)}</strong><span>{item.auto && !item.edited ? '初期配置' : item.auto ? '動かした' : '足した'}</span>
+      <strong>{nameOf(item)}</strong><span>{sizeOf(item)}</span>
     </button>)}
       {!parts.length && <p>部品はありません。「＋」で足すか、下のひな形を選んでください。</p>}
     </div>
     {selected && <div className="stage-part-fields">
       <strong>{nameOf(selected)}</strong>
-      <NumberField label="左右（中心から）" value={selected.x} min={-30} max={30} onChange={value => change(selected.id, { x: value })} />
-      <NumberField label="前後（中心から・客席側が＋）" value={selected.z - STAGE_CENTER_Z} min={-30} max={40}
-        onChange={value => change(selected.id, { z: value + STAGE_CENTER_Z })} />
       <NumberField label={isFlat(selected.kind) ? '幅' : '長さ'} value={selected.width} min={.5} max={48} onChange={value => change(selected.id, { width: value })} />
-      {isFlat(selected.kind) && <NumberField label="奥行" value={selected.depth} min={.5} max={56} onChange={value => change(selected.id, { depth: value })} />}
       {selected.kind !== 'floor' && selected.kind !== 'batten' && <NumberField label="高さ" value={selected.height} min={.1} max={20} onChange={value => change(selected.id, { height: value })} />}
-      {selected.kind === 'batten' && <NumberField label="吊る高さ" value={selected.elevation} min={1} max={20} onChange={value => change(selected.id, { elevation: value })} />}
-      {(selected.kind === 'wall' || selected.kind === 'cyc' || selected.kind === 'wing') &&
-        <NumberField label="下端の高さ" value={selected.elevation} min={0} max={10} onChange={value => change(selected.id, { elevation: value })} />}
-      <NumberField label="向き" value={selected.rotationDeg} min={-180} max={180} step={5} unit="°" onChange={value => change(selected.id, { rotationDeg: value })} />
+      {isFlat(selected.kind) && <NumberField label="奥行" value={selected.depth} min={.5} max={56} onChange={value => change(selected.id, { depth: value })} />}
+      {/* 位置は照明・役者と同じ、劇場の座標（X: 左右、Y: 高さ、Z: 前後で客席側が＋） */}
+      <NumberField label="位置 X" value={selected.x + offset[0]} min={-24} max={24} onChange={value => change(selected.id, { x: value - offset[0] })} />
+      {(selected.kind === 'batten' || selected.kind === 'wall' || selected.kind === 'cyc' || selected.kind === 'wing') &&
+        <NumberField label={selected.kind === 'batten' ? '位置 Y（吊る高さ）' : '位置 Y（下端）'} value={selected.elevation}
+          min={selected.kind === 'batten' ? 1 : 0} max={20} onChange={value => change(selected.id, { elevation: value })} />}
+      <NumberField label="位置 Z" value={selected.z + offset[1]} min={-21} max={35} onChange={value => change(selected.id, { z: value - offset[1] })} />
+      <NumberField label="回転" value={selected.rotationDeg} min={-180} max={180} step={5} unit="°" onChange={value => change(selected.id, { rotationDeg: value })} />
       {selected.kind === 'batten' && <div className="stage-batten-fixtures">
         <strong>吊っている照明</strong>
         <p>チェックした照明は、このバトンを動かす・高さを変えると一緒に動きます（全シーン）。向きはそのままです。近い順に並んでいます。</p>
@@ -259,17 +252,16 @@ export function StagePartsInspector({ selectedId, onSelect, hint }: { selectedId
       </div>}
       <div className="stage-part-actions">
         <button type="button" onClick={() => change(selected.id, { rotationDeg: selected.rotationDeg + 90 })}>90° 回す</button>
-        {selected.auto && selected.edited && <button type="button" onClick={() => resetOne(selected)}>初期配置に戻す</button>}
+        <button type="button" onClick={() => duplicate(selected)} title="Ctrl / ⌘ + D">複製</button>
         <button type="button" className="audience-editor-delete" onClick={() => remove(selected)}>この部品を削除</button>
       </div>
     </div>}
     <h2>ひな形</h2>
-    <p>選ぶと、いまの舞台の大きさに合わせて部品を並べ直します。</p>
+    <p>選ぶと、いまの舞台の大きさに合わせて部品を並べ直します。いま置いている部品は消えます。</p>
     <div className="stage-template-options">{TEMPLATE_LABELS.map(item => <button key={item.id} type="button"
       className={template === item.id ? 'active' : ''} aria-pressed={template === item.id} onClick={() => chooseTemplate(item.id)}>
       <strong>{item.label}</strong><span>{item.detail}</span>
     </button>)}</div>
-    <button type="button" className="stage-parts-reset" onClick={resetAll} disabled={!touched}>すべて初期配置に戻す</button>
     <h2>床・壁の色</h2>
     <div className="venue-shape-options stage-floor-finishes" role="group" aria-label="床の仕上げ">
       {FLOOR_FINISHES.map(item => <button key={item.id} type="button"

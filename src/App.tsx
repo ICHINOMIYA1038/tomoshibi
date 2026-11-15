@@ -4,6 +4,7 @@ import { WorkspaceNotice, WorkspaceNotices } from './ui/WorkspaceNotice'
 import { UpdateNotice } from './ui/UpdateNotice'
 import { hasDeviceStorage } from './io/workspaceStorage'
 import { useEffect, useRef, useState } from 'react'
+import { isVenueKind, VenueModeButtons } from './ui/VenuePanel'
 import { Canvas, useThree } from '@react-three/fiber'
 import { OrbitControls, PerspectiveCamera } from '@react-three/drei'
 import * as THREE from 'three'
@@ -299,8 +300,9 @@ export default function App() {
         case '?': case '/': up({ showHelp: !s.settings.showHelp }); break
         case 'h': up({ showHelp: !s.settings.showHelp }); break
         case 'p': up({ probeMode: !s.settings.probeMode }); break
-        case 'g': if (s.selection.kind === 'fixture') up({ transformMode: 'translate' }); break
-        case 'r': if (s.selection.kind === 'fixture') up({ transformMode: 'rotate' }); break
+        case 'g': if (s.selection.kind === 'fixture' || isVenueKind(s.selection.kind)) up({ transformMode: 'translate' }); break
+        case 'r': if (s.selection.kind === 'fixture' || s.selection.kind === 'stagepart' || s.selection.kind === 'audience') up({ transformMode: 'rotate' }); break
+        case 's': if (s.selection.kind === 'stagepart' || s.selection.kind === 'stage') up({ transformMode: 'scale' }); break
         case 'delete': case 'backspace': {
           if (s.selection.kind === 'fixture' && s.selection.id) s.removeFixture(s.selection.id)
           else if (s.selection.kind === 'performer' && s.selection.id) s.removePerformer(s.selection.id)
@@ -311,6 +313,10 @@ export default function App() {
           if ((e.metaKey || e.ctrlKey) && s.selection.kind === 'fixture' && s.selection.id) {
             e.preventDefault()
             s.duplicateFixture(s.selection.id)
+          } else if ((e.metaKey || e.ctrlKey) && s.selection.kind === 'stagepart' && s.selection.id) {
+            e.preventDefault()
+            const id = s.duplicateStagePart(s.selection.id)
+            if (id) s.select('stagepart', id)
           }
           break
         }
@@ -494,6 +500,7 @@ export default function App() {
       {!playbackOpen && <HelpOverlay />}
 
       {!playbackOpen && <FixtureGizmoToolbar />}
+      {!playbackOpen && <VenueGizmoToolbar />}
       {!playbackOpen && <SelectionStatusHint />}
       {!isEmbed && <KeyHint />}
     </div>}
@@ -772,6 +779,13 @@ function FixtureGizmoToolbar() {
       >回転</button>
     </div>
   )
+}
+
+/** 舞台の床・部品・客席を選んだときの、移動・回転・拡大の切り替え。照明の「移動・回転」と同じ並び */
+function VenueGizmoToolbar() {
+  const kind = useStore(s => s.selection.kind)
+  if (!isVenueKind(kind)) return null
+  return <div className="gizmo-toolbar"><VenueModeButtons /></div>
 }
 
 function ViewButton({ view, label, hint }: { view: string; label: string; hint?: string }) {

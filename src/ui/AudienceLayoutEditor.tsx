@@ -354,11 +354,11 @@ export function AudienceBlockFields({ block }: { block: AudienceBlock }) {
               onChange={event => changeSelected({ rowSpacing: Number(event.target.value) })} /><output>{block.rowSpacing.toFixed(2)}m</output></label>
             <label>席の間隔 <input type="range" min="0.5" max="1.2" step="0.05" value={block.seatSpacing}
               onChange={event => changeSelected({ seatSpacing: Number(event.target.value) })} /><output>{block.seatSpacing.toFixed(2)}m</output></label>
-            <label>左右位置 <input type="range" min="-24" max="24" step="0.1" value={block.position[0]}
+            <label>位置 X <input type="range" min="-24" max="24" step="0.1" value={block.position[0]}
               onChange={event => changeSelected({ position: [Number(event.target.value), block.position[1]] })} /><output>{block.position[0].toFixed(1)}m</output></label>
-            <label>前後位置 <input type="range" min="-21" max="35" step="0.1" value={block.position[1]}
+            <label>位置 Z <input type="range" min="-21" max="35" step="0.1" value={block.position[1]}
               onChange={event => changeSelected({ position: [block.position[0], Number(event.target.value)] })} /><output>{block.position[1].toFixed(1)}m</output></label>
-            <label>向き <input type="range" min="-180" max="180" step="1" value={block.rotationDeg}
+            <label>回転 <input type="range" min="-180" max="180" step="1" value={block.rotationDeg}
               onChange={event => changeSelected({ rotationDeg: Number(event.target.value) })} /><output>{block.rotationDeg}°</output></label>
             <button className="venue-face-stage" type="button" onClick={() => changeSelected({
               rotationDeg: Math.round(Math.atan2(block.position[0] - stageOffset[0], block.position[1] + 3 - stageOffset[1]) * 180 / Math.PI),
