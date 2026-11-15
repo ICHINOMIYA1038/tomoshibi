@@ -1,5 +1,6 @@
 import { askConfirm } from './askConfirm'
 import { WorkspaceNotice } from './WorkspaceNotice'
+import { createPortal } from 'react-dom'
 import { Fragment, useEffect, useRef, useState, type MouseEvent, type PointerEvent } from 'react'
 import { activeSceneDirections, LIMITS, PLAN_LIMITS, SCENE_TRIGGER_LABELS, sceneDisplayTitle, useStore,
   type DirectionKind, type MoveSceneResult, type SceneTriggerType, type StagePoint } from '../store'
@@ -156,6 +157,8 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
   const [feedback, setFeedback] = useState('')
   const [contextMenu, setContextMenu] = useState<{ kind: 'chapter' | 'scene' | 'empty'; id: string; x: number; y: number } | null>(null)
   const [draggingOutline, setDraggingOutline] = useState<{ kind: OutlineKind; id: string } | null>(null)
+  /** 並べ替えの間、指（マウス）に付いてくる名札。動きは再描画せずに style で直接動かす */
+  const outlineGhostRef = useRef<HTMLDivElement>(null)
   const blockOutlineClickUntil = useRef(0)
   const [movedOutlineId, setMovedOutlineId] = useState<string | null>(null)
   useEffect(() => {
@@ -529,6 +532,7 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
       setDraggingOutline({ kind: drag.kind, id: drag.id })
       animateOutlineScroll(performance.now())
     }
+    if (outlineGhostRef.current) outlineGhostRef.current.style.transform = `translate(${drag.x + 14}px, ${drag.y - 22}px)`
     updateOutlinePosition(drag.x, drag.y)
   }
   const endOutlineDrag = (event: PointerEvent<HTMLElement>) => {
@@ -685,16 +689,24 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
                 setSelectionMode(value => !value)
                 setSelectedSceneIds(new Set())
                 setSelectionAnchorId(null)
-              }}>{selectionMode ? '完了' : '選択'}</button>
+              }} title={selectionMode ? 'まとめて削除をやめる' : 'シーンにチェックを付けて、まとめて削除する'}>{selectionMode ? '完了' : 'まとめて削除'}</button>
             <button type="button" className="plan-pane-close" aria-label="シーン一覧を閉じる"
               title="シーン一覧を閉じる" onClick={onCloseOutline}>×</button></div>
-          {selectionMode ? <small>シーンを選択してまとめて削除。Shiftで範囲選択</small>
+          {selectionMode ? <small>消すシーンにチェックを付けて「削除」。Shift を押しながらで範囲をまとめて選べます</small>
             : <><small>章を開き、シーンを選ぶと舞台が切り替わります</small>
               <small>行をドラッグして並べ替え · 行間の＋で追加 · ⋯で編集</small></>}
         </div> : <div className="plan-outline-project">
           <label>プロジェクト名<input value={plan.projectTitle ?? ''} maxLength={60} placeholder="例：秋公演 A劇場"
             onChange={event => updateProductionPlan({ projectTitle: event.target.value })} /></label>
         </div>}
+        {/* 一覧は引き出しで transform が付くので、名札は body に出す（fixed の基準がずれないように） */}
+        {draggingOutline && createPortal(<div ref={outlineGhostRef} className="plan-outline-ghost" aria-hidden="true"
+          style={{ transform: `translate(${(outlinePointer.current?.x ?? 0) + 14}px, ${(outlinePointer.current?.y ?? 0) - 22}px)` }}>
+          <span>{draggingOutline.kind === 'chapter' ? '章' : 'シーン'}</span>
+          {draggingOutline.kind === 'chapter'
+            ? plan.chapters?.find(item => item.id === draggingOutline.id)?.title || '無題の章'
+            : sceneDisplayTitle(plan, draggingOutline.id)}
+        </div>, document.body)}
         {persistent && selectionMode && <div className="plan-outline-selection-bar">
           <strong>{visibleSelectedIds.length} / {plan.scenes.length} シーン選択中</strong>
           <button type="button" disabled={visibleSelectedIds.length === plan.scenes.length}

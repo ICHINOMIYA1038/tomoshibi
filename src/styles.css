@@ -4756,7 +4756,7 @@ body.embed .workspace-switch { display: none; }
 .unity-panel .hierarchy-head h2 { margin: 0; padding: 0; border: 0; font-size: 11px; font-weight: 600; letter-spacing: .1em; color: var(--ink-muted); }
 .unified-shell .unity-panel button.hierarchy-add-button { min-height: 0; padding: 3px 10px; border-radius: 5px; border: 1px solid rgba(232, 178, 98, .45); background: rgba(232, 178, 98, .1); color: var(--ink-primary); font: 12px var(--font-sans); cursor: pointer; }
 .unified-shell .unity-panel button.hierarchy-add-button:hover, .unified-shell .unity-panel button.hierarchy-add-button.active { background: rgba(232, 178, 98, .24); border-color: rgba(232, 178, 98, .6); }
-.unity-panel .hierarchy-add-menu { display: grid; gap: 8px; margin: 0; padding: 10px; border-bottom: 1px solid var(--panel-edge); background: rgba(0, 0, 0, .22); }
+.unity-panel .hierarchy-add-menu { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; margin: 0; padding: 10px; border-bottom: 1px solid var(--panel-edge); background: rgba(0, 0, 0, .22); }
 .unity-panel .hierarchy-add-menu > div { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
 .unity-panel .hierarchy-add-menu strong { width: 100%; font-size: 10px; font-weight: 600; letter-spacing: .06em; color: var(--ink-muted); }
 .unity-panel .hierarchy-add-menu select { flex: 1 1 140px; min-width: 0; padding: 4px 6px; border-radius: 5px; border: 1px solid var(--panel-edge); background: rgba(0, 0, 0, .25); color: var(--ink-primary); font: 12px var(--font-sans); }
@@ -4790,3 +4790,41 @@ body.embed .workspace-switch { display: none; }
   .unified-shell .unity-panel button.hierarchy-lamp { width: 36px; height: 36px; }
 }
 .unity-panel span.hierarchy-toggle { display: inline-block; width: 16px; flex: none; }
+/* ログインしていないときは、アカウントのアイコンの代わりに「設定」と「ログイン」を並べる（AccountMenu.tsx） */
+.account-menu-root { display: flex; align-items: center; gap: 6px; }
+.account-menu-settings { flex: none; min-width: 36px; min-height: 36px; padding: 0 8px; border: 1px solid rgba(212, 175, 111, .25); border-radius: 8px; background: rgba(15, 10, 6, .72); color: #f2e6cf; font-size: 14px; cursor: pointer; }
+.account-menu-settings:hover { border-color: rgba(255, 217, 163, .55); }
+.unified-shell .workspace-header > .account-menu-root .account-menu-settings { min-height: 44px; }
+@media (max-width: 600px) { .unified-shell .workspace-header > .account-menu-root .account-menu-settings { min-width: 32px; min-height: 36px; padding: 0 6px; } }
+/* 照明を選んでいるときに道具の横に出す「つかむ（照明・狙い）」 */
+.toolbar .tool-buttons + .toolbar-divider + .toolbar-label + .tool-buttons button.active { background: rgba(102, 204, 255, .18); box-shadow: inset 0 0 0 1px rgba(102, 204, 255, .5); }
+/* ---- 並べ替えの名札（PlanBoard.tsx の plan-outline-ghost） ---- */
+.plan-outline-ghost {
+  position: fixed; left: 0; top: 0; z-index: 1000; display: flex; align-items: center; gap: 8px;
+  max-width: 70vw; padding: 9px 14px; border: 1px solid rgba(232, 178, 98, .8); border-radius: 10px;
+  background: #2d2520; color: #fff4e5; font: 600 14px var(--font-sans); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, .55); pointer-events: none;
+}
+.plan-outline-ghost span { flex: none; padding: 2px 6px; border-radius: 4px; background: rgba(232, 178, 98, .25); color: #f2c27b; font-size: 10px; }
+/* 並べ替え中は、落とす先の線を太く、はっきり出す */
+.unified-shell.workspace-layout .plan-outline.outline-dragging .plan-scene-slot.drop-active { height: 22px; }
+.unified-shell.workspace-layout .plan-outline.outline-dragging .plan-scene-slot.drop-active .plan-scene-slot-line { height: 4px; margin-top: -2px; border-radius: 2px; background: #f2c27b; box-shadow: 0 0 10px rgba(242, 194, 123, .6); }
+
+/* ---- スマートフォンのシーン一覧: 画面いっぱいの、行の一覧にする ---- */
+@media (max-width: 600px) {
+  .unified-shell.workspace-layout .plan-outline { width: 100vw; background: #151215; box-shadow: none; }
+  .unified-shell.workspace-layout .plan-outline-chapter { gap: 0; margin-bottom: 14px; }
+  .unified-shell.workspace-layout .plan-outline-node { min-height: 52px; border: 0; border-bottom: 1px solid rgba(255, 255, 255, .07); border-radius: 0; background: transparent; }
+  .unified-shell.workspace-layout .plan-outline-node.chapter { border-radius: 8px; border: 0; background: #2a2428; }
+  .unified-shell.workspace-layout .plan-outline-node.chapter .plan-outline-node-main strong { font-size: 15px; }
+  .unified-shell.workspace-layout .plan-outline-node.scene { margin-left: 0; }
+  .unified-shell.workspace-layout .plan-outline-node.scene .plan-outline-node-main strong { font-size: 15px; font-weight: 500; }
+  .unified-shell.workspace-layout .plan-outline-node.active { position: relative; background: rgba(232, 178, 98, .16); }
+  .unified-shell.workspace-layout .plan-outline-node.active::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: #f2c27b; }
+  .unified-shell.workspace-layout .plan-outline-node.active .plan-outline-node-main strong { color: #fff4e5; font-weight: 700; }
+  .unified-shell.workspace-layout .plan-scene-grip { width: 48px; border-right: 0; color: #d7c6ad; font-size: 22px; }
+  .unified-shell.workspace-layout .plan-outline-tree .plan-outline-node-edit { border-left: 0; color: #d7c6ad; }
+  .unified-shell.workspace-layout .plan-scene-slot { height: 4px; margin-left: 0; }
+  .unified-shell.workspace-layout .plan-scene-slot-line { background: transparent; }
+  .unified-shell.workspace-layout .plan-outline-node.dragging { opacity: .3; }
+}

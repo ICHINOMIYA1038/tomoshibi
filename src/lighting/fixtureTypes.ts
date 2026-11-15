@@ -55,7 +55,7 @@ export const FIXTURE_PROFILES: Record<string, FixtureProfile> = {
   // ============ 在来 PAR (白熱) ============
   PAR64_VNSP: {
     kind: 'PAR', source: 'tungsten',
-    brand: '在来', model: 'PAR64 VNSP (Very Narrow Spot)',
+    brand: 'ハロゲン', model: 'PAR64 VNSP (Very Narrow Spot)',
     beamAngleDeg: 9, fieldAngleDeg: 14,
     flatness: 1.3, peak: 0.8, ellipticity: 1.8,
     fluxLumens: 4500, beamAdjustable: false,
@@ -64,7 +64,7 @@ export const FIXTURE_PROFILES: Record<string, FixtureProfile> = {
   },
   PAR64_NSP: {
     kind: 'PAR', source: 'tungsten',
-    brand: '在来', model: 'PAR64 NSP (Narrow Spot)',
+    brand: 'ハロゲン', model: 'PAR64 NSP (Narrow Spot)',
     beamAngleDeg: 11, fieldAngleDeg: 24,
     flatness: 1.2, peak: 0.6, ellipticity: 2.0,
     fluxLumens: 4500, beamAdjustable: false,
@@ -73,7 +73,7 @@ export const FIXTURE_PROFILES: Record<string, FixtureProfile> = {
   },
   PAR64_MFL: {
     kind: 'PAR', source: 'tungsten',
-    brand: '在来', model: 'PAR64 MFL (Medium Flood)',
+    brand: 'ハロゲン', model: 'PAR64 MFL (Medium Flood)',
     beamAngleDeg: 14, fieldAngleDeg: 26,
     flatness: 1.2, peak: 0.5, ellipticity: 1.7,
     fluxLumens: 4500, beamAdjustable: false,
@@ -82,7 +82,7 @@ export const FIXTURE_PROFILES: Record<string, FixtureProfile> = {
   },
   PAR64_WFL: {
     kind: 'PAR', source: 'tungsten',
-    brand: '在来', model: 'PAR64 WFL (Wide Flood)',
+    brand: 'ハロゲン', model: 'PAR64 WFL (Wide Flood)',
     beamAngleDeg: 24, fieldAngleDeg: 48,
     flatness: 1.1, peak: 0.4, ellipticity: 1.5,
     fluxLumens: 4500, beamAdjustable: false,
@@ -93,7 +93,7 @@ export const FIXTURE_PROFILES: Record<string, FixtureProfile> = {
   // ============ 在来 Fresnel ============
   Fresnel6: {
     kind: 'Fresnel', source: 'tungsten',
-    brand: '在来', model: '6インチ フレネル 500W',
+    brand: 'ハロゲン', model: '6インチ フレネル 500W',
     beamAngleDeg: 20, fieldAngleDeg: 45,
     flatness: 1.0, peak: 0.15, ellipticity: 1.0,
     fluxLumens: 2000, beamAdjustable: true,
@@ -103,7 +103,7 @@ export const FIXTURE_PROFILES: Record<string, FixtureProfile> = {
   },
   Fresnel8: {
     kind: 'Fresnel', source: 'tungsten',
-    brand: '在来', model: '8インチ フレネル 1kW',
+    brand: 'ハロゲン', model: '8インチ フレネル 1kW',
     beamAngleDeg: 18, fieldAngleDeg: 42,
     flatness: 1.0, peak: 0.12, ellipticity: 1.0,
     fluxLumens: 3500, beamAdjustable: true,
@@ -113,7 +113,7 @@ export const FIXTURE_PROFILES: Record<string, FixtureProfile> = {
   },
   Fresnel10: {
     kind: 'Fresnel', source: 'tungsten',
-    brand: '在来', model: '10インチ フレネル 2kW',
+    brand: 'ハロゲン', model: '10インチ フレネル 2kW',
     beamAngleDeg: 16, fieldAngleDeg: 40,
     flatness: 1.0, peak: 0.12, ellipticity: 1.0,
     fluxLumens: 5000, beamAdjustable: true,
@@ -125,7 +125,7 @@ export const FIXTURE_PROFILES: Record<string, FixtureProfile> = {
   // ============ 在来 PC (Plano-Convex) ============
   PC6: {
     kind: 'PC', source: 'tungsten',
-    brand: '在来', model: '6インチ PC 500W',
+    brand: 'ハロゲン', model: '6インチ PC 500W',
     beamAngleDeg: 14, fieldAngleDeg: 24,
     flatness: 1.6, peak: 0.08, ellipticity: 1.0,
     fluxLumens: 2000, beamAdjustable: true,
@@ -135,7 +135,7 @@ export const FIXTURE_PROFILES: Record<string, FixtureProfile> = {
   },
   PC8: {
     kind: 'PC', source: 'tungsten',
-    brand: '在来', model: '8インチ PC 1kW',
+    brand: 'ハロゲン', model: '8インチ PC 1kW',
     beamAngleDeg: 12, fieldAngleDeg: 22,
     flatness: 1.7, peak: 0.08, ellipticity: 1.0,
     fluxLumens: 3500, beamAdjustable: true,
