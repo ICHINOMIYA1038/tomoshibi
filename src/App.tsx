@@ -164,6 +164,19 @@ export default function App() {
       target: [stageDx / 2, .5, (maxSeatZ + minSeatZ + stageDz) / 2] as [number, number, number] }
     : { pos: [baseView.pos[0] + stageDx, baseView.pos[1], baseView.pos[2] + stageDz] as [number, number, number],
       target: [baseView.target[0] + stageDx, baseView.target[1], baseView.target[2] + stageDz] as [number, number, number] }
+  // 視点は、視点を選んだときの舞台・客席の位置に向けて、そのあとは固定する（オーナー指示、2026-11-15）。
+  // 舞台や客席を動かすたびに視点が付いてくると、3D で舞台を引っぱったときに視点ごとずれて止まらなくなる
+  // いま選んでいる視点のボタンをもう一度押すと、いまの舞台に向け直す
+  const [reaim, setReaim] = useState(0)
+  useEffect(() => {
+    const onReaim = () => setReaim(n => n + 1)
+    window.addEventListener('tomoshibi-reaim-camera', onReaim)
+    return () => window.removeEventListener('tomoshibi-reaim-camera', onReaim)
+  }, [])
+  const viewKey = `${settings.cameraView}-${reaim}`
+  const frozenView = useRef<{ key: string; view: typeof view } | null>(null)
+  if (frozenView.current?.key !== viewKey) frozenView.current = { key: viewKey, view }
+  const cameraPose = frozenView.current.view
   const noopMaterials = () => {}
 
   useEffect(() => {
@@ -350,12 +363,12 @@ export default function App() {
           onPointerMissed={() => select(null, null)}
         >
           <ExposureSync exposure={settings.exposure ?? 1.0} />
-          <PerspectiveCamera key={`cam-${settings.cameraView}`} makeDefault position={view.pos} fov={BASE_FOV} near={0.1} far={100} />
+          <PerspectiveCamera key={`cam-${viewKey}`} makeDefault position={cameraPose.pos} fov={BASE_FOV} near={0.1} far={100} />
           <ResponsiveFov />
           <OrbitControls
-            key={`ctl-${settings.cameraView}`}
+            key={`ctl-${viewKey}`}
             makeDefault
-            target={view.target}
+            target={cameraPose.target}
             enableDamping
             dampingFactor={0.16}
             rotateSpeed={0.6}
@@ -766,7 +779,9 @@ function ViewButton({ view, label, hint }: { view: string; label: string; hint?:
   const update = useStore(s => s.updateSettings)
   return (
     <button
-      onClick={() => update({ cameraView: view as any })}
+      onClick={() => cur === view
+        ? window.dispatchEvent(new Event('tomoshibi-reaim-camera'))
+        : update({ cameraView: view as any })}
       style={{ background: cur === view ? 'rgba(50, 90, 160, 0.8)' : undefined }}
       title={hint ? `キー ${hint}` : undefined}
     >
