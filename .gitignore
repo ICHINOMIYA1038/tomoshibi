@@ -26,3 +26,6 @@ public/studio/
 public/mock/index.html
 public/mock/projects/
 public/mock/version.json
+
+# 操作説明の動画の録画（scripts/help-videos/record.sh）。載せるのは public/help-media/ の mp4
+scripts/help-videos/out/

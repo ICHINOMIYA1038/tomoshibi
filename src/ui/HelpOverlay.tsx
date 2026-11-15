@@ -39,6 +39,8 @@ export function HelpOverlay() {
           <div><kbd>タップ</kbd></div><div>選んで、3D の矢印で動かす（道具が「移動」のとき）</div>
         </div>
 
+        <p className="help-note">操作は<a href="/help" target="_blank" rel="noopener">操作説明</a>の短い動画でも見られます。</p>
+
         <h2>物の操作（Unity と同じ）</h2>
         <div className="help-grid">
           <div><kbd>クリック</kbd></div><div>選ぶ</div>

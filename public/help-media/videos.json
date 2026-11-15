@@ -1,0 +1,53 @@
+{
+ "_": "操作説明の動画の一覧（scripts/help-videos/publish.mjs が作る。手で直さない）",
+ "items": [
+  {
+   "id": "01",
+   "title": "道具を切り替える",
+   "goal": "選択・移動・回転・拡大の違いと、キーでの切り替え方",
+   "sec": 22,
+   "src": "/help-media/01-c22fff25.mp4",
+   "poster": "/help-media/01-32d92c17.jpg"
+  },
+  {
+   "id": "02",
+   "title": "一覧で選ぶ・足す・親子にする",
+   "goal": "ヒエラルキーで物を選び、「＋ 追加」で足し、「親」で一緒に動かす",
+   "sec": 17,
+   "src": "/help-media/02-7b66131d.mp4",
+   "poster": "/help-media/02-9dd4e9ba.jpg"
+  },
+  {
+   "id": "03",
+   "title": "右クリックのメニュー",
+   "goal": "物の操作と、押した場所に役者や照明を足す方法",
+   "sec": 16,
+   "src": "/help-media/03-0841f6a8.mp4",
+   "poster": "/help-media/03-3f8c1041.jpg"
+  },
+  {
+   "id": "04",
+   "title": "会場の配置",
+   "goal": "客席を足して動かし、舞台の大きさを変える",
+   "sec": 21,
+   "src": "/help-media/04-27c30877.mp4",
+   "poster": "/help-media/04-8bef6f15.jpg"
+  },
+  {
+   "id": "05",
+   "title": "照明の狙いを動かす",
+   "goal": "「つかむ: 照明・狙い」と、平面図の色の輪",
+   "sec": 12,
+   "src": "/help-media/05-50c1beeb.mp4",
+   "poster": "/help-media/05-d2bf092f.jpg"
+  },
+  {
+   "id": "06",
+   "title": "シーンを組み立てる",
+   "goal": "シーンを足し、並べ替え、通しで見る",
+   "sec": 19,
+   "src": "/help-media/06-9b56e3f0.mp4",
+   "poster": "/help-media/06-29aaeda9.jpg"
+  }
+ ]
+}
