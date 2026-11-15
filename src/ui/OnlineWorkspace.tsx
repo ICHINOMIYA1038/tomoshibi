@@ -60,7 +60,6 @@ export function OnlineWorkspace({ children, enabled, editorVisible, onProjects }
         <h2 id="workspace-connection-title">{offline ? 'インターネット接続が必要です' : 'ログインしていません'}</h2>
         <p>{offline ? 'オフラインでは編集・新規作成できません。接続を確認してから続けてください。'
           : '編集を続けるには、もう一度ログインしてください。'}</p>
-        {offline && <p>アカウントに保存済みのプロジェクトは、そのまま残っています。</p>}
         {offline ? <button disabled={loading} onClick={() => void refreshSession()}>{loading ? '接続を確認中…' : '接続を確認して再開'}</button>
           : <div className="workspace-editor-actions"><a href={loginUrl()}>ログインして続ける</a>
             <button onClick={onProjects}>プロジェクト一覧へ</button></div>}
