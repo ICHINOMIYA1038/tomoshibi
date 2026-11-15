@@ -4713,32 +4713,6 @@ body.embed .workspace-switch { display: none; }
 .plan-map-caption .tool-buttons.compact button.active { background: #e8b262; color: #2a1f15; box-shadow: none; }
 
 .unity-panel { display: flex; flex-direction: column; gap: 10px; }
-.hierarchy-panel { border: 1px solid var(--panel-edge); border-radius: 8px; padding: 8px; background: rgba(255, 255, 255, .02); }
-.hierarchy-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px; }
-.hierarchy-head h2 { margin: 0; font-size: 12px; letter-spacing: .08em; color: var(--ink-secondary); }
-.hierarchy-add-button { padding: 5px 12px; border-radius: 6px; border: 1px solid rgba(232, 178, 98, .5); background: rgba(232, 178, 98, .12); color: var(--ink-primary); font: 12px var(--font-sans); cursor: pointer; }
-.hierarchy-add-button.active { background: rgba(232, 178, 98, .28); }
-.hierarchy-add-menu { display: grid; gap: 8px; margin: 0 0 8px; padding: 8px; border-radius: 6px; background: rgba(0, 0, 0, .25); }
-.hierarchy-add-menu > div { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
-.hierarchy-add-menu strong { width: 100%; font-size: 11px; color: var(--ink-secondary); }
-.hierarchy-add-menu select { flex: 1 1 140px; min-width: 0; }
-.hierarchy-add-menu button { padding: 4px 9px; border-radius: 5px; border: 1px solid var(--panel-edge); background: rgba(255, 255, 255, .05); color: var(--ink-primary); font: 12px var(--font-sans); cursor: pointer; }
-.hierarchy-tree, .hierarchy-tree ul { list-style: none; margin: 0; padding: 0; }
-.hierarchy-tree { max-height: 38vh; overflow-y: auto; }
-.hierarchy-row { display: flex; align-items: center; gap: 2px; min-height: 30px; border-radius: 5px; }
-.hierarchy-row:hover { background: rgba(255, 255, 255, .04); }
-.hierarchy-row.selected { background: rgba(232, 178, 98, .2); box-shadow: inset 0 0 0 1px rgba(232, 178, 98, .45); }
-.hierarchy-row.drop-target { box-shadow: inset 0 0 0 2px #6cf; }
-.hierarchy-row[draggable="true"] { cursor: grab; }
-.hierarchy-toggle { width: 18px; flex: none; padding: 0; border: 0; background: none; color: var(--ink-secondary); cursor: pointer; font-size: 11px; }
-.hierarchy-name { flex: 1; min-width: 0; display: flex; align-items: center; gap: 6px; padding: 4px 4px; border: 0; background: none; color: var(--ink-primary); text-align: left; cursor: pointer; font: 12px var(--font-sans); }
-.hierarchy-name strong { font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.hierarchy-name small { margin-left: auto; color: var(--ink-secondary); font-size: 10px; white-space: nowrap; }
-.hierarchy-swatch { width: 10px; height: 10px; flex: none; border-radius: 50%; box-shadow: 0 0 0 1px rgba(0, 0, 0, .4); }
-.hierarchy-lamp { flex: none; width: 26px; height: 24px; border: 0; border-radius: 4px; background: none; color: #5d5148; cursor: pointer; font-size: 11px; }
-.hierarchy-lamp.on { color: #f2c27b; }
-.hierarchy-root-drop { margin-top: 6px; padding: 6px 8px; border: 1px dashed var(--panel-edge); border-radius: 6px; color: var(--ink-secondary); font-size: 10px; line-height: 1.5; }
-.hierarchy-root-drop.drop-target { border-color: #6cf; color: var(--ink-primary); }
 
 .inspector { display: grid; gap: 10px; }
 .inspector-empty p { margin: 0; color: var(--ink-secondary); font-size: 12px; line-height: 1.7; }
@@ -4768,13 +4742,6 @@ body.embed .workspace-switch { display: none; }
 .inspector-templates span { color: var(--ink-secondary); font-size: 10px; }
 .inspector-section .row { margin: 0; }
 .audience-editor-inspector .inspector { color: inherit; }
-.panel .hierarchy-name, .panel .hierarchy-toggle, .panel .hierarchy-lamp {
-  border: 0; background: none; border-radius: 4px; padding: 4px; color: var(--ink-primary); transform: none;
-}
-.panel .hierarchy-toggle { color: var(--ink-secondary); padding: 0; }
-.panel .hierarchy-lamp { color: #5d5148; }
-.panel .hierarchy-lamp.on { color: #f2c27b; }
-.panel .hierarchy-name:hover, .panel .hierarchy-toggle:hover, .panel .hierarchy-lamp:hover { background: none; border: 0; }
 .unified-shell.workspace-layout .plan-map-caption .tool-buttons { flex: none; }
 .unity-panel > *, .inspector, .inspector-section, .inspector-head > div { min-width: 0; max-width: 100%; }
 .inspector-number, .inspector-text { grid-template-columns: 72px minmax(0, 1fr) minmax(18px, auto); }
@@ -4782,3 +4749,44 @@ body.embed .workspace-switch { display: none; }
 .inspector-section .row input[type="range"] { min-width: 0; flex: 1; }
 .inspector-head strong { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .inspector-choice:not(.wrap) > span { width: auto; margin-right: auto; }
+
+/* ---- ヒエラルキー（HierarchyPanel.tsx）。.object-panel button の最低の高さ（36〜44px）や .panel-body h2 の下線を打ち消すため、.unity-panel から書く ---- */
+.unity-panel .hierarchy-panel { flex: none; display: flex; flex-direction: column; border: 1px solid var(--panel-edge); border-radius: 8px; background: rgba(255, 255, 255, .02); overflow: hidden; }
+.unity-panel .hierarchy-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 6px 6px 6px 10px; border-bottom: 1px solid var(--panel-edge); }
+.unity-panel .hierarchy-head h2 { margin: 0; padding: 0; border: 0; font-size: 11px; font-weight: 600; letter-spacing: .1em; color: var(--ink-muted); }
+.unified-shell .unity-panel button.hierarchy-add-button { min-height: 0; padding: 3px 10px; border-radius: 5px; border: 1px solid rgba(232, 178, 98, .45); background: rgba(232, 178, 98, .1); color: var(--ink-primary); font: 12px var(--font-sans); cursor: pointer; }
+.unified-shell .unity-panel button.hierarchy-add-button:hover, .unified-shell .unity-panel button.hierarchy-add-button.active { background: rgba(232, 178, 98, .24); border-color: rgba(232, 178, 98, .6); }
+.unity-panel .hierarchy-add-menu { display: grid; gap: 8px; margin: 0; padding: 10px; border-bottom: 1px solid var(--panel-edge); background: rgba(0, 0, 0, .22); }
+.unity-panel .hierarchy-add-menu > div { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
+.unity-panel .hierarchy-add-menu strong { width: 100%; font-size: 10px; font-weight: 600; letter-spacing: .06em; color: var(--ink-muted); }
+.unity-panel .hierarchy-add-menu select { flex: 1 1 140px; min-width: 0; padding: 4px 6px; border-radius: 5px; border: 1px solid var(--panel-edge); background: rgba(0, 0, 0, .25); color: var(--ink-primary); font: 12px var(--font-sans); }
+.unified-shell .unity-panel .hierarchy-add-menu button { min-height: 0; padding: 3px 9px; border-radius: 5px; border: 1px solid var(--panel-edge); background: rgba(255, 255, 255, .05); color: var(--ink-primary); font: 12px var(--font-sans); cursor: pointer; }
+.unified-shell .unity-panel .hierarchy-add-menu button:hover { border-color: rgba(232, 178, 98, .55); }
+.unity-panel .hierarchy-tree, .unity-panel .hierarchy-tree ul { list-style: none; margin: 0; padding: 0; }
+.unity-panel .hierarchy-tree { max-height: 42vh; overflow-y: auto; padding: 4px 0; }
+.unity-panel .hierarchy-children { position: relative; }
+.unity-panel .hierarchy-children::before { content: ""; position: absolute; top: 0; bottom: 6px; left: var(--guide-x); width: 1px; background: rgba(255, 220, 180, .1); pointer-events: none; }
+.unity-panel .hierarchy-row { position: relative; display: flex; align-items: center; gap: 0; height: 26px; padding-right: 4px; border-radius: 0; }
+.unity-panel .hierarchy-row:hover { background: rgba(255, 255, 255, .045); }
+.unity-panel .hierarchy-row.selected { background: rgba(232, 178, 98, .2); }
+.unity-panel .hierarchy-row.selected::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 2px; background: #e8b262; }
+.unity-panel .hierarchy-row.drop-target { box-shadow: inset 0 0 0 2px #6cf; }
+.unity-panel .hierarchy-row[draggable="true"] { cursor: grab; }
+.unified-shell .unity-panel button.hierarchy-toggle { display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 26px; min-height: 0; flex: none; padding: 0; border: 0; border-radius: 0; background: none; color: var(--ink-muted); font-size: 13px; cursor: pointer; }
+.unified-shell .unity-panel button.hierarchy-name { flex: 1; min-width: 0; height: 26px; min-height: 0; display: flex; align-items: center; gap: 6px; padding: 0 4px; border: 0; border-radius: 0; background: none; color: var(--ink-primary); text-align: left; font: 12px/1 var(--font-sans); letter-spacing: 0; cursor: pointer; }
+.unified-shell .unity-panel button.hierarchy-name:hover, .unified-shell .unity-panel button.hierarchy-toggle:hover { background: none; border: 0; color: var(--ink-primary); }
+.unity-panel .hierarchy-icon { flex: none; color: var(--ink-secondary); }
+.unified-shell .unity-panel button.hierarchy-name strong { min-width: 0; font-weight: 400; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.unity-panel .hierarchy-row.selected .hierarchy-name strong { font-weight: 600; }
+.unified-shell .unity-panel button.hierarchy-name small { flex: none; margin-left: auto; padding-left: 6px; color: var(--ink-muted); font-size: 10px; white-space: nowrap; }
+.unified-shell .unity-panel button.hierarchy-lamp { flex: none; width: 22px; height: 22px; min-height: 0; padding: 0; border: 0; border-radius: 4px; background: none; color: #5d5148; font-size: 10px; cursor: pointer; }
+.unified-shell .unity-panel button.hierarchy-lamp:hover { background: rgba(255, 255, 255, .06); border: 0; }
+.unified-shell .unity-panel button.hierarchy-lamp.on { color: #f2c27b; }
+.unity-panel .hierarchy-hint { margin: 0; padding: 6px 10px; border-top: 1px solid var(--panel-edge); color: var(--ink-muted); font-size: 10px; line-height: 1.5; }
+.unity-panel .hierarchy-root-drop { margin: 6px; padding: 8px; border: 1px dashed rgba(102, 204, 255, .5); border-radius: 6px; color: var(--ink-secondary); font-size: 11px; text-align: center; }
+.unity-panel .hierarchy-root-drop.drop-target { border-color: #6cf; background: rgba(102, 204, 255, .08); color: var(--ink-primary); }
+@media (pointer: coarse) {
+  .unity-panel .hierarchy-row, .unified-shell .unity-panel button.hierarchy-name, .unified-shell .unity-panel button.hierarchy-toggle { height: 36px; }
+  .unified-shell .unity-panel button.hierarchy-lamp { width: 36px; height: 36px; }
+}
+.unity-panel span.hierarchy-toggle { display: inline-block; width: 16px; flex: none; }

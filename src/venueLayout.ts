@@ -39,3 +39,6 @@ export function pointInStage(x: number, z: number, outline: StagePoint[]): boole
   }
   return inside
 }
+
+/** 舞台の床の大きさの範囲（m）。上は劇場の広さ（X は ±24m）に収まる範囲 */
+export const STAGE_SIZE = { min: 3, maxWidth: 48, maxDepth: 40 } as const

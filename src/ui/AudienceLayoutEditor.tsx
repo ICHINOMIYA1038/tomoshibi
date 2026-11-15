@@ -22,6 +22,11 @@ function worldPoint(event: { clientX: number; clientY: number }, svg: SVGSVGElem
   return [x, z]
 }
 
+/** 客席ブロックの名前札。長い名前は 8 文字で切る */
+const blockLabel = (name: string) => { const chars = Array.from(name); return chars.length > 8 ? `${chars.slice(0, 7).join('')}…` : name }
+/** 名前札の幅。全角は 13px、半角は 7.5px として、左右に 12px ずつ余白をとる */
+const labelWidth = (text: string) => Array.from(text).reduce((sum, char) => sum + (/[\x20-\x7e]/.test(char) ? 7.5 : 13), 24)
+
 export function AudienceLayoutEditor({ open, onClose }: { open: boolean; onClose: () => void }) {
   const blocks = useStore(state => state.productionPlan.audienceBlocks ?? [])
   const fixtures = useStore(state => state.fixtures)
@@ -205,10 +210,16 @@ export function AudienceLayoutEditor({ open, onClose }: { open: boolean; onClose
                 transform={`rotate(${-block.rotationDeg} ${mapX(x)} ${mapY(z)})`}
                 fill={pointInStage(x, z, outline) ? '#df8548' : selectedId === block.id ? '#b26349' : '#71565c'}
                 stroke="#f6ede4" strokeWidth=".8" />)}
-              <rect x={mapX(block.position[0]) - 28} y={mapY(block.position[1]) - 13} width="56" height="26" rx="13"
-                fill={selectedId === block.id ? '#9a432a' : '#42383c'} stroke="#fff4e5" strokeWidth="2" />
-              <text x={mapX(block.position[0])} y={mapY(block.position[1]) + 5}
-                textAnchor="middle" fill="white" fontSize="13" fontWeight="700" pointerEvents="none">{block.name.slice(0, 6)}</text>
+              {(() => {
+                const name = blockLabel(block.name)
+                const width = labelWidth(name)
+                return <>
+                  <rect x={mapX(block.position[0]) - width / 2} y={mapY(block.position[1]) - 13} width={width} height="26" rx="13"
+                    fill={selectedId === block.id ? '#9a432a' : '#42383c'} stroke="#fff4e5" strokeWidth="2" />
+                  <text x={mapX(block.position[0])} y={mapY(block.position[1]) + 5}
+                    textAnchor="middle" fill="white" fontSize="13" fontWeight="700" pointerEvents="none">{name}</text>
+                </>
+              })()}
             </g>)}
             {fixtures.filter(fixture => fixture.position[2] > 2).map(fixture => <g key={fixture.id} pointerEvents="none">
               <circle cx={mapX(fixture.position[0])} cy={mapY(fixture.position[2])} r="9" fill="#d59a45" stroke="#4c3321" strokeWidth="2" />

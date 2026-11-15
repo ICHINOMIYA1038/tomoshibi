@@ -1,3 +1,4 @@
+import { STAGE_SIZE } from '../venueLayout'
 import { getEditableState } from '../playback/editorState'
 import { FLOOR_FINISHES, HEX_COLOR, sanitizeStageParts } from '../stageParts'
 import { workspaceStorage } from './workspaceStorage'
@@ -117,9 +118,9 @@ function normalizeProductionPlan(raw: unknown, fixtures: Fixture[], performers: 
     ? {
       stageShape: stageShapes.includes(venueRaw.stageShape) ? venueRaw.stageShape : 'proscenium',
       stageWidth: typeof venueRaw.stageWidth === 'number' && Number.isFinite(venueRaw.stageWidth)
-        ? Math.max(6, Math.min(24, venueRaw.stageWidth)) : 16,
+        ? Math.max(STAGE_SIZE.min, Math.min(STAGE_SIZE.maxWidth, venueRaw.stageWidth)) : 16,
       stageDepth: typeof venueRaw.stageDepth === 'number' && Number.isFinite(venueRaw.stageDepth)
-        ? Math.max(6, Math.min(20, venueRaw.stageDepth)) : 12,
+        ? Math.max(STAGE_SIZE.min, Math.min(STAGE_SIZE.maxDepth, venueRaw.stageDepth)) : 12,
       stageOffset: Array.isArray(venueRaw.stageOffset) && venueRaw.stageOffset.length === 2 &&
         venueRaw.stageOffset.every(value => typeof value === 'number' && Number.isFinite(value) && Math.abs(value) <= 50)
         ? [venueRaw.stageOffset[0], venueRaw.stageOffset[1]] : [0, 0],
