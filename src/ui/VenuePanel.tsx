@@ -27,7 +27,7 @@ export function VenuePanel() {
     if (id) select('audience', id)
   }
   return <div className="panel-body venue-panel" ref={root}>
-    <p className="venue-panel-intro">3D の画面で床・壁・バトン・客席をクリックすると選べます。矢印をドラッグして動かします（0.5m ごと）。</p>
+    <p className="venue-panel-intro">3D の画面で床・壁・バトン・客席をクリックすると選べます。壁・バトン・客席などは、矢印をドラッグして動かします（0.5m ごと）。</p>
 
     <section className="venue-panel-section">
       <h2>舞台の床</h2>
@@ -36,7 +36,7 @@ export function VenuePanel() {
         <strong>舞台</strong><span>{layout.stageWidth}m × {layout.stageDepth}m</span>
       </button>
       {stageSelected && <div className="venue-stage-position">
-        <p>舞台を動かすと、全シーンの役者・セットと、舞台の上の照明も一緒に動きます。広さと形は、平面図の「舞台・客席を編集」で変えられます。</p>
+        <p>舞台の位置は、客席に対する位置です。動かすと、全シーンの役者・セットと舞台の上の照明も一緒に動き、3D の視点も舞台に付いていきます。広さと形は、平面図の「舞台・客席を編集」で変えられます。</p>
         <div><label>左右 <input type="number" min="-24" max="24" step="0.5" value={offset[0]}
           onChange={event => moveStageTo([Number(event.target.value), offset[1]])} />m</label>
           <label>前後 <input type="number" min="-21" max="35" step="0.5" value={offset[1]}

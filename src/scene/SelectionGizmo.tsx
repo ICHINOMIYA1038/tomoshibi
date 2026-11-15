@@ -69,7 +69,6 @@ export function SelectionGizmo() {
   const part = selection.kind === 'stagepart' ? stageParts.parts.find(item => item.id === selection.id) : undefined
   // バトンに吊った照明は、つかんだときの分を使い続ける（動かす途中で近くの照明を拾わない）
   const partFixtures = useRef<string[] | undefined>(undefined)
-  const moveStageTo = useStore(s => s.moveStageTo)
   const audience = useStore(s => selection.kind === 'audience' ? (s.productionPlan.audienceBlocks ?? []).find(block => block.id === selection.id) : undefined)
   const updateAudienceBlock = useStore(s => s.updateAudienceBlock)
 
@@ -110,10 +109,6 @@ export function SelectionGizmo() {
     } else if (selection.kind === 'setpiece' && setPiece) {
       dragRef.current.position.set(...setPiece.position)
       dragRef.current.rotation.set(...setPiece.rotation)
-    } else if (selection.kind === 'stage') {
-      // 矢印は舞台の中心（舞台の座標で z = -3）に置く
-      dragRef.current.position.set(stageParts.offset[0], 0.05, stageParts.offset[1] - 3)
-      dragRef.current.rotation.set(0, 0, 0)
     } else if (audience) {
       dragRef.current.position.set(audience.position[0], 0.9, audience.position[1])
       dragRef.current.rotation.set(0, 0, 0)
@@ -242,19 +237,9 @@ export function SelectionGizmo() {
     )
   }
 
-  // ---- 舞台の床: 舞台全体を動かす（役者・セット・舞台の上の照明も一緒に動く。store の moveStageTo） ----
-  if (selection.kind === 'stage') {
-    return (
-      <group>
-        <primitive object={dragRef.current} />
-        <TransformControls ref={tcRef as any} object={dragRef.current} mode="translate" size={gizmoSize} showY={false}
-          onObjectChange={() => {
-            const o = dragRef.current
-            moveStageTo([snapValue(o.position.x), snapValue(o.position.z + 3)])
-          }} />
-      </group>
-    )
-  }
+  // ---- 舞台の床: 矢印は出さない ----
+  // 視点（カメラ）は舞台の位置に付いて動くため、3D で舞台を引っぱると、動かすたびに視点もずれて
+  // 舞台が劇場の端まで飛んでいく（2026-11-15、前後 31.5m まで動いた）。舞台の位置は右パネルの数字か平面図で変える
 
   // ---- 客席ブロック ----
   if (selection.kind === 'audience' && audience) {
