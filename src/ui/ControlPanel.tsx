@@ -8,6 +8,8 @@ import { MEASURED_CYC_KEY } from '../photometric/measuredCyc'
 import { PERFORMER_POSES } from '../performerPoses'
 import { isWorkspacePath } from '../io/workspacePath'
 import { askConfirm } from './askConfirm'
+import { useStageParts } from './StagePartsEditor'
+import { PART_LABELS, resolveStageParts } from '../stageParts'
 
 // 演劇関係者向け TOP パネル
 // タブ: 器具 / 役者 のみ。設定は ⚙ から SettingsModal で開く
@@ -167,9 +169,10 @@ export function ControlPanel({ planOpen = false }: { planOpen?: boolean }) {
           </div>
         </div>
         {isMockPreview && <div className="panel-purpose">
-          <span>{selection.kind ? '選択中のものをここで編集できます' : '種類を選んで舞台に追加できます'}</span>
+          <span>{selection.kind === 'stagepart' ? '3D の画面で、矢印をドラッグして動かせます' : selection.kind ? '選択中のものをここで編集できます' : '種類を選んで舞台に追加できます'}</span>
           <button type="button" onClick={() => update({ panelOpen: false })}>平面図に戻る</button>
         </div>}
+        {selection.kind === 'stagepart' && <SelectedStagePart />}
         <div className="panel-tabs">
           <TabButton id="fixtures" label={isMockPreview ? '照明' : '器具'} />
           <TabButton id="performers" label="役者" />
@@ -182,6 +185,30 @@ export function ControlPanel({ planOpen = false }: { planOpen?: boolean }) {
       </div>
     </>
   )
+}
+
+/** 3D の画面で選んだ舞台の部品。位置は 3D の矢印で、大きさ・向き・高さの数字は平面図の「舞台の部品」で変える */
+function SelectedStagePart() {
+  const selection = useStore(s => s.selection)
+  const select = useStore(s => s.select)
+  const { layout, parts, commit, hungIds } = useStageParts()
+  const item = parts.find(part => part.id === selection.id)
+  if (!item) return null
+  const number = parts.filter(part => part.kind === item.kind).indexOf(item) + 1
+  const reset = () => {
+    const next = parts.map(part => part.id === item.id ? { ...part, edited: undefined } : part)
+    const after = resolveStageParts({ ...layout, stageParts: next }).find(part => part.id === item.id)
+    commit(next, after ? { before: item, after, fixtureIds: hungIds(item) } : undefined)
+  }
+  return <div className="stage-part-selected" role="status">
+    <strong>{PART_LABELS[item.kind]} {number}</strong>
+    <p>矢印をドラッグすると、前後・左右{item.kind === 'batten' ? '・高さ' : ''}に動きます。0.5m ごとに止まります。{item.kind === 'batten' ? '吊った照明も一緒に動きます。' : ''}</p>
+    <p>大きさ・向きや、数字での指定は、平面図の「舞台・客席を編集」→「舞台の部品」で変えられます。</p>
+    <div className="stage-part-actions">
+      {item.auto && item.edited && <button type="button" onClick={reset}>初期配置に戻す</button>}
+      <button type="button" onClick={() => select(null, null)}>選択を外す</button>
+    </div>
+  </div>
 }
 
 function TabButton({ id, label }: { id: 'fixtures' | 'performers' | 'props'; label: string }) {

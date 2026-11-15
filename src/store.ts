@@ -280,7 +280,7 @@ export function syncEntityIds(fixtures: Fixture[], performers: Performer[]) {
   }
 }
 
-export type SelectionKind = 'fixture' | 'performer' | 'setpiece' | null
+export type SelectionKind = 'fixture' | 'performer' | 'setpiece' | 'stagepart' | null
 export interface Selection {
   kind: SelectionKind
   id: string | null
