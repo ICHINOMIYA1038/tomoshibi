@@ -4,7 +4,7 @@ import { WorkspaceNotice, WorkspaceNotices } from './ui/WorkspaceNotice'
 import { UpdateNotice } from './ui/UpdateNotice'
 import { hasDeviceStorage } from './io/workspaceStorage'
 import { useEffect, useRef, useState } from 'react'
-import { ToolButtons } from './ui/ToolButtons'
+import { FixtureHandleButtons, ToolButtons } from './ui/ToolButtons'
 import { canDelete, deleteSelection, duplicateSelection } from './objectActions'
 import { Canvas, useThree } from '@react-three/fiber'
 import { OrbitControls, PerspectiveCamera } from '@react-three/drei'
@@ -427,7 +427,8 @@ export default function App() {
         {!isMockPreview && <span className="workspace-scene-name" title={[projectTitle, scenePath].filter(Boolean).join(' › ')}>{scenePath}</span>}
         <div className="workspace-header-actions">
           {isMockPreview && <MockHistoryButtons />}
-          {isMockPreview && <MockSaveButton />}
+          {/* ブラウザでは自動で保存されるので、保存ボタンはアプリ（名前をつけて保存）のときだけ出す */}
+          {isMockPreview && hasDeviceStorage() && <MockSaveButton />}
           {!isMockPreview && <button className={'plan-board-toggle' + (planOpen ? ' active' : '')}
             aria-expanded={planOpen} aria-controls="plan-board"
             onClick={() => {
@@ -435,10 +436,11 @@ export default function App() {
               if (window.innerWidth <= 960) useStore.getState().updateSettings({ panelOpen: false })
             }}>{planOpen ? '演出プランを閉じる' : '平面図・演出プラン'}</button>}
           {isMockPreview && <button className="workspace-play-button" onClick={startPlayback}>▶ 通しで見る</button>}
-          <button onClick={() => useStore.getState().updateSettings({ settingsOpen: true })} aria-label="設定">⚙</button>
+          {/* 設定は、アカウントのアイコンのメニューに入れた（AccountMenu）。アイコンが無い埋め込みと旧画面だけここに出す */}
+          {(isEmbed || !isMockPreview) && <button onClick={() => useStore.getState().updateSettings({ settingsOpen: true })} aria-label="設定">⚙</button>}
           {!isMockPreview && <button onClick={() => useStore.getState().updateSettings({ showHelp: true })} aria-label="ヘルプ">?</button>}
         </div>
-        {isMockPreview && !isEmbed && <AccountMenu />}
+        {isMockPreview && !isEmbed && <AccountMenu onOpenSettings={() => useStore.getState().updateSettings({ settingsOpen: true })} />}
       </header>
       {isMockPreview && !playbackOpen && <nav className="mobile-workspace-views" aria-label="編集画面の切り替え">
         <button aria-pressed={mobileView === 'stage'} onClick={() => { setMobileView('stage'); setDisplayMenuOpen(false) }}>3Dで確認</button>
@@ -463,6 +465,7 @@ export default function App() {
         </>}
         <span className="toolbar-label">道具</span>
         <ToolButtons />
+        <FixtureHandleButtons />
         <span className="toolbar-divider" aria-hidden="true" />
         <span className="toolbar-label">視点</span>
         <ViewButton view="audience" label="客席" hint="1" />

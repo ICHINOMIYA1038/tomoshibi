@@ -15,7 +15,7 @@ function initialOf(name: string | null): string {
  * Web 版とアプリで同じ部品を使う（アプリではログインと戯曲 ID の画面がシートで開く）。
  * `floating` は旧画面用で、画面の右上に固定する。
  */
-export function AccountMenu({ floating = false }: { floating?: boolean }) {
+export function AccountMenu({ floating = false, onOpenSettings }: { floating?: boolean; onOpenSettings?: () => void }) {
   const { user, loading } = useCloudSession()
   const [open, setOpen] = useState(false)
   const [portalBusy, setPortalBusy] = useState(false)
@@ -45,6 +45,7 @@ export function AccountMenu({ floating = false }: { floating?: boolean }) {
   if (!user) {
     return (
       <div className={rootClass}>
+        {onOpenSettings && <button type="button" className="account-menu-settings" aria-label="設定" title="設定" onClick={onOpenSettings}>⚙</button>}
         <a className="account-menu-trigger login" href={loginUrl()}>ログイン</a>
       </div>
     )
@@ -112,6 +113,13 @@ export function AccountMenu({ floating = false }: { floating?: boolean }) {
               {portalBusy && <div className="account-menu-note">契約の管理画面へ移動中…</div>}
               {portalErr && <div className="account-menu-err">{portalErr}</div>}
             </div>
+
+            {onOpenSettings && <div className="account-menu-section">
+              <button className="account-menu-item" role="menuitem" onClick={() => { setOpen(false); onOpenSettings() }}>
+                <span className="account-menu-icon" aria-hidden>⚙</span>
+                設定（表示・操作）
+              </button>
+            </div>}
 
             <div className="account-menu-section">
               <a className="account-menu-item" role="menuitem" href={logoutUrl()}>
