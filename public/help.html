@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0a0805" />
+    <title>操作説明 | TOMOSHIBI小屋</title>
+    <meta name="description" content="TOMOSHIBI小屋の操作を、20 秒ほどの短い動画で説明します。道具の切り替え、一覧（ヒエラルキー）、右クリックのメニュー、会場の配置、照明の狙い、シーンの組み立て方。" />
+    <link rel="canonical" href="https://tomoshibi.gikyokutosyokan.com/help" />
+    <meta property="og:type" content="article" />
+    <meta property="og:site_name" content="戯曲図書館" />
+    <meta property="og:title" content="操作説明 | TOMOSHIBI小屋" />
+    <meta property="og:description" content="TOMOSHIBI小屋の操作を、短い動画で説明します。" />
+    <meta property="og:url" content="https://tomoshibi.gikyokutosyokan.com/help" />
+    <meta property="og:image" content="https://tomoshibi.gikyokutosyokan.com/og.png" />
+    <meta property="og:locale" content="ja_JP" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <style>
+      :root { color-scheme: dark; }
+      * { box-sizing: border-box; }
+      body { margin: 0; background: #0a0805; color: #e9dfd0; font-family: "Hiragino Sans", "Noto Sans JP", sans-serif; line-height: 1.85; }
+      main { max-width: 760px; margin: 0 auto; padding: 56px 20px 72px; }
+      h1 { color: #fff4d8; font-size: 2rem; line-height: 1.4; margin: 0 0 12px; }
+      h2 { color: #f0c98a; font-size: 1.25rem; margin: 44px 0 12px; }
+      a { color: #f0c98a; }
+      .lead { margin: 0 0 8px; }
+      .cta { display: inline-block; margin: 12px 0 4px; padding: 12px 24px; border-radius: 8px; background: #d4905a; color: #1a1410; font-weight: 700; text-decoration: none; }
+      .cta:focus-visible, a:focus-visible { outline: 2px solid #fff4d8; outline-offset: 3px; }
+
+      /* 動画の一覧。押すと、その場で動画を重ねて開く */
+      .clips { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+      .clip { display: flex; align-items: center; gap: 16px; width: 100%; padding: 10px; border: 1px solid #3a2e24; border-radius: 12px; background: #15100c;
+        color: inherit; font: inherit; text-align: left; cursor: pointer; transition: border-color .15s, background .15s; }
+      .clip:hover { border-color: #d4905a; background: #1d1611; }
+      .clip:focus-visible { outline: 2px solid #fff4d8; outline-offset: 2px; }
+      .clip .thumb { position: relative; flex: none; width: 176px; aspect-ratio: 16 / 10; overflow: hidden; border-radius: 8px; background: #000; }
+      .clip .thumb img { display: block; width: 100%; height: 100%; object-fit: cover; }
+      .clip .thumb::after { content: "▶"; position: absolute; inset: 0; display: grid; place-items: center; color: #fff4d8; font-size: 22px; background: rgba(0, 0, 0, .28); }
+      .clip .thumb .sec { position: absolute; right: 6px; bottom: 4px; z-index: 1; padding: 0 6px; border-radius: 4px; background: rgba(0, 0, 0, .7); font-size: .72rem; }
+      .clip .n { flex: none; width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; background: #d4905a; color: #1a1410; font-weight: 800; font-size: .82rem; }
+      .clip .t { min-width: 0; }
+      .clip .t b { display: block; color: #fff4d8; font-size: 1rem; }
+      .clip .t small { color: #b8a690; font-size: .85rem; line-height: 1.6; }
+      @media (max-width: 560px) {
+        .clip { flex-wrap: wrap; }
+        .clip .thumb { width: 100%; }
+        .clip .n { width: 24px; height: 24px; }
+        .clip .t { flex: 1; }
+      }
+
+      /* 動画の窓 */
+      .player { position: fixed; inset: 0; z-index: 10; display: grid; place-items: center; padding: 16px; background: rgba(5, 4, 3, .86); }
+      .player[hidden] { display: none; }
+      .player-box { width: min(1100px, 100%); padding: 14px; border: 1px solid #3a2e24; border-radius: 14px; background: #15100c; }
+      .player-head { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+      .player-head b { flex: 1; min-width: 0; color: #fff4d8; }
+      .player video { display: block; width: 100%; max-height: calc(100vh - 170px); aspect-ratio: 16 / 10; object-fit: contain; border-radius: 8px; background: #000; }
+      .player-box { max-height: calc(100vh - 32px); }
+      .player-foot { display: flex; justify-content: space-between; gap: 10px; margin-top: 10px; }
+      .player button { min-height: 40px; padding: 6px 16px; border: 1px solid #5a4636; border-radius: 8px; background: #241b14; color: #e9dfd0; font: inherit; cursor: pointer; }
+      .player button:hover { border-color: #d4905a; }
+      .player button:disabled { opacity: .4; cursor: default; }
+
+      table { width: 100%; border-collapse: collapse; font-size: .92rem; }
+      th, td { padding: 8px 10px; border-bottom: 1px solid #2a2018; text-align: left; vertical-align: top; }
+      th { color: #f0c98a; font-weight: 600; white-space: nowrap; }
+      kbd { display: inline-block; min-width: 1.7em; padding: 0 6px; border: 1px solid #5a4636; border-radius: 5px; background: #241b14; font: inherit; font-size: .85em; text-align: center; }
+      footer { margin-top: 56px; padding-top: 20px; border-top: 1px solid #2a2018; font-size: .875rem; }
+      footer a { margin-right: 16px; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>操作説明</h1>
+      <p class="lead">TOMOSHIBI小屋の基本の操作を、20 秒ほどの短い動画で説明します。見たい項目を押すと、その場で動画が流れます。音は出ません。</p>
+      <a class="cta" href="/studio/projects/">プロジェクトを開く</a>
+
+      <h2>動画で見る</h2>
+      <ol class="clips" id="clips"><li>読み込んでいます…</li></ol>
+      <noscript><p>動画の一覧を出すには、JavaScript を有効にしてください。</p></noscript>
+
+      <h2>キーの一覧</h2>
+      <table>
+        <tr><th><kbd>Q</kbd> <kbd>W</kbd> <kbd>E</kbd> <kbd>R</kbd></th><td>道具を 選択・移動・回転・拡大 に切り替えます。3D の画面と平面図で同じ道具を使います。</td></tr>
+        <tr><th>右クリック</th><td>物の上なら、その物の操作が出ます。床の上なら、押した場所に役者・照明・舞台セットを足せます。</td></tr>
+        <tr><th>右ボタンでドラッグ</th><td>3D の画面の視点を回します。押したまま <kbd>W</kbd> <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd> で視点が動きます。</td></tr>
+        <tr><th><kbd>1</kbd>〜<kbd>5</kbd></th><td>視点を 客席・上から・袖・自由・客席全体 に切り替えます。<kbd>5</kbd> は客席を置いたときだけ使えます。</td></tr>
+        <tr><th><kbd>⌘</kbd> <kbd>D</kbd></th><td>選んでいる物を複製します。</td></tr>
+        <tr><th><kbd>Delete</kbd></th><td>選んでいる物を削除します。</td></tr>
+        <tr><th><kbd>⌘</kbd> <kbd>Z</kbd></th><td>元に戻します。やり直しは <kbd>⇧</kbd> <kbd>⌘</kbd> <kbd>Z</kbd> です。</td></tr>
+        <tr><th><kbd>Esc</kbd></th><td>選んでいる物を外します。平面図を開いているときは、平面図を閉じます。</td></tr>
+      </table>
+      <p>Windows では <kbd>⌘</kbd> の代わりに <kbd>Ctrl</kbd> を使います。</p>
+
+      <h2>困ったときは</h2>
+      <p>うまく動かないときは、<a href="/contact">お問い合わせ</a>からお知らせください。どの画面で、何をしたら、どうなったかを書いていただけると助かります。</p>
+
+      <footer>
+        <a href="/studio/projects/">プロジェクト一覧</a>
+        <a href="/about">TOMOSHIBI小屋とは</a>
+        <a href="/pro">Pro プラン</a>
+        <a href="/contact">お問い合わせ</a>
+        <a href="https://gikyokutosyokan.com">戯曲図書館</a>
+      </footer>
+    </main>
+
+    <div class="player" id="player" hidden role="dialog" aria-modal="true" aria-labelledby="player-title">
+      <div class="player-box">
+        <div class="player-head"><b id="player-title"></b><button type="button" id="player-close" aria-label="閉じる">閉じる</button></div>
+        <video id="player-video" controls autoplay muted playsinline preload="metadata"></video>
+        <div class="player-foot">
+          <button type="button" id="player-prev">← 前の動画</button>
+          <button type="button" id="player-next">次の動画 →</button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // 動画の一覧は /help-media/videos.json（scripts/help-videos/publish.mjs が作る）から作る
+      (function () {
+        var list = document.getElementById('clips')
+        var player = document.getElementById('player')
+        var video = document.getElementById('player-video')
+        var title = document.getElementById('player-title')
+        var prev = document.getElementById('player-prev')
+        var next = document.getElementById('player-next')
+        var items = []
+        var current = -1
+        var opener = null
+        function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c] }) }
+        function open(index) {
+          var item = items[index]
+          if (!item) return
+          if (current < 0) opener = document.activeElement
+          current = index
+          title.textContent = (index + 1) + '. ' + item.title
+          video.poster = item.poster
+          video.src = item.src
+          prev.disabled = index === 0
+          next.disabled = index === items.length - 1
+          player.hidden = false
+          video.play().catch(function () {})
+          document.getElementById('player-close').focus()
+        }
+        function close() {
+          video.pause()
+          video.removeAttribute('src')
+          video.load()
+          player.hidden = true
+          current = -1
+          if (opener) opener.focus()
+        }
+        document.getElementById('player-close').onclick = close
+        prev.onclick = function () { open(current - 1) }
+        next.onclick = function () { open(current + 1) }
+        player.addEventListener('click', function (event) { if (event.target === player) close() })
+        document.addEventListener('keydown', function (event) { if (event.key === 'Escape' && !player.hidden) close() })
+        fetch('/help-media/videos.json', { cache: 'no-cache' }).then(function (res) { return res.json() }).then(function (data) {
+          items = data.items || []
+          list.innerHTML = items.map(function (item, index) {
+            return '<li><button type="button" class="clip" data-index="' + index + '" aria-label="' + esc(item.title) + 'の動画を見る（' + item.sec + '秒）">' +
+              '<span class="thumb"><img src="' + esc(item.poster) + '" alt="" loading="lazy" width="640" height="400" /><span class="sec">' + item.sec + '秒</span></span>' +
+              '<span class="n">' + (index + 1) + '</span><span class="t"><b>' + esc(item.title) + '</b><small>' + esc(item.goal) + '</small></span></button></li>'
+          }).join('')
+          list.querySelectorAll('.clip').forEach(function (button) {
+            button.onclick = function () { open(Number(button.dataset.index)) }
+          })
+          // /help#3 のように番号を付けると、その動画を開く
+          var hash = Number(location.hash.slice(1))
+          if (hash >= 1 && hash <= items.length) open(hash - 1)
+        }).catch(function () {
+          list.innerHTML = '<li>動画の一覧を読み込めませんでした。時間をおいて開き直してください。</li>'
+        })
+      })()
+    </script>
+  </body>
+</html>
