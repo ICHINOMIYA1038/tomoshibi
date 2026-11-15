@@ -3,6 +3,8 @@ import * as THREE from 'three'
 import { TransformControls } from '@react-three/drei'
 import { useThree } from '@react-three/fiber'
 import { useStore } from '../store'
+import { useStageParts } from '../ui/StagePartsEditor'
+import { snapValue } from '../stageParts'
 
 function isTouchDevice() {
   if (typeof window === 'undefined') return false
@@ -62,6 +64,10 @@ export function SelectionGizmo() {
   const updatePerformer = useStore(s => s.updatePerformer)
   const select = useStore(s => s.select)
   const gizmoSize = useGizmoSize()
+  const stageParts = useStageParts()
+  const part = selection.kind === 'stagepart' ? stageParts.parts.find(item => item.id === selection.id) : undefined
+  // バトンに吊った照明は、つかんだときの分を使い続ける（動かす途中で近くの照明を拾わない）
+  const partFixtures = useRef<string[] | undefined>(undefined)
 
   // 動的に position を反映するための Object3D
   const dragRef = useRef<THREE.Object3D>(new THREE.Object3D())
@@ -100,12 +106,16 @@ export function SelectionGizmo() {
     } else if (selection.kind === 'setpiece' && setPiece) {
       dragRef.current.position.set(...setPiece.position)
       dragRef.current.rotation.set(...setPiece.rotation)
+    } else if (part) {
+      dragRef.current.position.set(part.x + stageParts.offset[0], partHandleY(part), part.z + stageParts.offset[1])
+      dragRef.current.rotation.set(0, 0, 0)
     }
   }, [
     selection.kind, selection.id, selection.fixtureHandle,
     fixture?.position.join(','), fixture?.target.join(','),
     performer?.position.join(','),
     setPiece?.position.join(','), setPiece?.rotation.join(','),
+    part?.x, part?.z, part?.elevation, part?.height, stageParts.offset.join(','),
   ])
 
   if (!showGizmos) return null
@@ -193,6 +203,33 @@ export function SelectionGizmo() {
     )
   }
 
+  // ---- 舞台の部品（壁・バトンなど）: 位置だけ動かす。大きさと向きは平面図で変える ----
+  if (selection.kind === 'stagepart' && part) {
+    return (
+      <group>
+        <primitive object={dragRef.current} />
+        <TransformControls
+          ref={tcRef as any}
+          object={dragRef.current}
+          mode="translate"
+          size={gizmoSize}
+          showY={part.kind === 'batten'}
+          onMouseDown={() => { partFixtures.current = part.kind === 'batten' ? stageParts.hungIds(part) : [] }}
+          onMouseUp={() => { partFixtures.current = undefined }}
+          onObjectChange={() => {
+            const o = dragRef.current
+            const patch: { x: number; z: number; elevation?: number } = {
+              x: snapValue(o.position.x - stageParts.offset[0]),
+              z: snapValue(o.position.z - stageParts.offset[1]),
+            }
+            if (part.kind === 'batten') patch.elevation = snapValue(o.position.y)
+            stageParts.change(part.id, patch, partFixtures.current)
+          }}
+        />
+      </group>
+    )
+  }
+
   // ---- 役者選択 ----
   if (selection.kind === 'performer' && performer && performer.onStage !== false) {
     return (
@@ -214,4 +251,12 @@ export function SelectionGizmo() {
   }
 
   return null
+}
+
+/** 部品をつかむ矢印を置く高さ。バトンは吊る高さ、壁などは目の高さあたり */
+function partHandleY(part: { kind: string; elevation: number; height: number }) {
+  if (part.kind === 'batten') return part.elevation
+  if (part.kind === 'floor') return 0.05
+  if (part.kind === 'platform') return part.height
+  return part.elevation + Math.min(part.height / 2, 1.5)
 }
