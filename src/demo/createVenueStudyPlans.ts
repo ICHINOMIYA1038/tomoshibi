@@ -1,6 +1,7 @@
 import { useStore, type AudienceBlock, type Fixture, type SceneTriggerType, type VenueLayout } from '../store'
 import type { SetPiece } from '../types'
 import { areaWashFixture } from './areaWash'
+import { addBasicPerformers, addBasicRig } from './basicRig'
 
 export type VenueStudyKind = 'proscenium' | 'round' | 'thrust' | 'custom'
 
@@ -171,13 +172,18 @@ export function createVenueTemplatePlan(kind: VenueStudyKind) {
   const store = useStore.getState()
   store.loadPreset('empty')
   store.ensureScenes()
-  store.updateVenueLayout(study.venue)
+  // 額縁舞台は壁・ホリゾント・バトン 4 本の「最初の配置」、ほかの形は照明を吊るバトンだけを置く
+  store.updateVenueLayout({ ...study.venue, stageTemplate: study.venue.stageTemplate ?? (kind === 'proscenium' ? 'standard' : 'bare') })
   useStore.setState(state => ({
     productionPlan: {
       ...state.productionPlan,
       audienceBlocks: study.seats.map(seat => ({ ...seat, position: [...seat.position] as AudienceBlock['position'] })),
     },
   }))
+  // 基本の吊り込み（地明かり・前明かり・サス・ホリゾント）と役者 2 人を入れておく
+  addBasicRig()
+  addBasicPerformers()
+  useStore.getState().select(null, null)
 }
 
 export function createVenueStudyPlan(kind: VenueStudyKind) {
