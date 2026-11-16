@@ -2,7 +2,7 @@ import { create } from 'zustand'
 import { clampPart, resolveStageParts, type FloorFinish, type StagePart, type StageTemplate } from './stageParts'
 import * as THREE from 'three'
 import { canBeParent, hierarchyContext, moveDescendants, parentOf, STAGE_ID, type ChildKind } from './hierarchy'
-import { FIXTURE_PROFILES, kelvinToRGB } from './lighting/fixtureTypes'
+import { FIXTURE_PROFILES, dimmedKelvin, kelvinToRGB } from './lighting/fixtureTypes'
 import { DEFAULT_VENUE_LAYOUT, stageLocalFootprint, THEATRE } from './venueLayout'
 import { isWorkspacePath } from './io/workspacePath'
 import type { PerformerPose } from './performerPoses'
@@ -1187,7 +1187,7 @@ export function packFixture(f: Fixture): PackedFixture {
   // 光源タイプ別に基本色を決定
   let r = 1, g = 1, b = 1
   if (profile.source === 'tungsten') {
-    const [tr, tg, tb] = kelvinToRGB(profile.colorTemperatureK)
+    const [tr, tg, tb] = kelvinToRGB(dimmedKelvin(profile, f.intensity))
     r = tr; g = tg; b = tb
     if (f.gelEnabled) { r *= f.color[0]; g *= f.color[1]; b *= f.color[2] }
   } else if (profile.source === 'led-tunable') {
