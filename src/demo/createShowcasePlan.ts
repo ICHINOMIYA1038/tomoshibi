@@ -33,6 +33,11 @@ export function createShowcasePlan() {
   const dawn = store.addFixture('Chauvet_COLORado2Solo', [0, 6.8, -6])
   const frontLeft = store.addFixture('Chauvet_COLORado2Solo', [-5, 6.5, 2])
   const frontRight = store.addFixture('Chauvet_COLORado2Solo', [5, 6.5, 2])
+  // 照明の吊る位置は全シーン共通。途中のシーンで別の位置から当てる明かりは、最初から別に吊っておく
+  const frontCenter = store.addFixture('Chauvet_COLORado2Solo', [0, 6.5, 2])
+  const followRight = store.addFixture('Chauvet_COLORado2Solo', [1.5, 7.2, 2])
+  store.updateFixture(frontCenter, { enabled: false })
+  store.updateFixture(followRight, { enabled: false })
   store.updateFixture(moonLeft, {
     name: '月明かり・下手', target: [-3, 1.2, -3], intensity: 0.42,
     color: [0.42, 0.62, 1], gelEnabled: true, whiteMix: 0, enabled: true,
@@ -114,9 +119,9 @@ export function createShowcasePlan() {
   store.updatePerformer(stationMaster, { position: [4.2, 0, -3.2] })
   store.updateFixture(dawn, { intensity: 0.62, target: [3, 1.4, -3.5] })
   store.updateFixture(moonLeft, { enabled: true, intensity: 0.22, target: [-2, 0.8, -3.6] })
-  store.updateFixture(frontLeft, {
-    enabled: true, position: [0, 6.5, 2], target: [2.2, 1.2, -3.2],
-    intensity: 0.4, color: [1, 0.75, 0.52],
+  store.updateFixture(frontCenter, {
+    name: '中央の前明かり', enabled: true, target: [2.2, 1.2, -3.2], beamAngleDeg: 30,
+    intensity: 0.4, color: [1, 0.75, 0.52], gelEnabled: true, whiteMix: 0.18,
   })
   store.updateFixture(frontRight, {
     enabled: true, intensity: 0.52, target: [5.1, 1.2, -4.4], color: [1, 0.78, 0.55],
@@ -130,9 +135,10 @@ export function createShowcasePlan() {
   store.updatePerformer(traveler, { position: [3.8, 0, -2.2] })
   store.updatePerformer(stationMaster, { position: [5.3, 0, -3.5] })
   store.updateSetPiece(suitcase, { position: [4.1, 0.24, -2] })
-  store.updateFixture(follow, {
-    enabled: true, position: [1.5, 7.2, 2], target: [3.8, 1.2, -2.2],
-    intensity: 0.5, color: [1, 0.82, 0.57],
+  store.updateFixture(follow, { enabled: false })
+  store.updateFixture(followRight, {
+    name: '旅人の追い明かり（上手）', enabled: true, target: [3.8, 1.2, -2.2], beamAngleDeg: 26,
+    intensity: 0.5, color: [1, 0.82, 0.57], gelEnabled: true, whiteMix: 0.12,
   })
   store.updateScene(goHome, {
     title: '帰ろう', triggerType: 'dialogue', trigger: '帰ろう',
@@ -143,9 +149,9 @@ export function createShowcasePlan() {
   store.updatePerformer(traveler, { onStage: false, position: [8.7, 0, -2.2] })
   store.updatePerformer(stationMaster, { onStage: false, position: [8.7, 0, -3.5] })
   store.removeSetPiece(suitcase)
-  store.updateFixture(follow, { enabled: false })
+  store.updateFixture(followRight, { enabled: false })
   store.updateFixture(dawn, { intensity: 0.9, target: [0, 1.5, -2.8] })
-  store.updateFixture(frontLeft, { intensity: 0.48, color: [1, 0.88, 0.72] })
+  store.updateFixture(frontCenter, { intensity: 0.48, color: [1, 0.88, 0.72] })
   store.updateFixture(frontRight, { intensity: 0.48, color: [1, 0.88, 0.72] })
   store.updateScene(sunrise, {
     title: '朝の光', triggerType: 'light', trigger: '夜が明ける',

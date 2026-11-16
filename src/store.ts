@@ -3,6 +3,7 @@ import { clampPart, resolveStageParts, type FloorFinish, type StagePart, type St
 import * as THREE from 'three'
 import { canBeParent, hierarchyContext, moveDescendants, parentOf, STAGE_ID, type ChildKind } from './hierarchy'
 import { FIXTURE_PROFILES, dimmedKelvin, kelvinToRGB } from './lighting/fixtureTypes'
+import { propagateRig } from './rig'
 import { DEFAULT_VENUE_LAYOUT, stageLocalFootprint, THEATRE } from './venueLayout'
 import { isWorkspacePath } from './io/workspacePath'
 import type { PerformerPose } from './performerPoses'
@@ -244,7 +245,8 @@ export function sceneSnapshot(source: Pick<State, 'fixtures' | 'performers' | 's
 }
 export function captureActiveScene(plan: ProductionPlan, source: Pick<State, 'fixtures' | 'performers' | 'setPieces'> & { settings?: Partial<SceneSettings> }): ProductionPlan {
   if (!plan.activeSceneId) return plan
-  return {
+  // 照明の仕込み（吊る位置・機種・名前）は全シーンで 1 つ。いまのシーンの仕込みをほかのシーンへ写す（rig.ts）
+  return propagateRig({
     ...plan,
     scenes: plan.scenes.map(scene => scene.id === plan.activeSceneId ? {
       ...scene,
@@ -253,7 +255,7 @@ export function captureActiveScene(plan: ProductionPlan, source: Pick<State, 'fi
       setPieces: cloneSetPieces(source.setPieces),
       look: captureLook(source.settings) ?? scene.look,
     } : scene),
-  }
+  }, source.fixtures)
 }
 
 export function activeSceneDirections(plan: ProductionPlan, performers: Performer[]): StageDirection[] {
