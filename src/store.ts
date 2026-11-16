@@ -38,6 +38,10 @@ export interface Fixture {
   colorTempK: number              // LED tunable only: 可変色温度
   rotationZDeg: number
   enabled: boolean
+  /** ムービングライトの、シーンの中で動き続ける動き（lighting/movingHead.ts）。無ければ止まっている */
+  movement?: import('./lighting/movingHead').FixtureMovement
+  /** ゴボ（光に付ける模様）。エリスポとムービングだけ */
+  gobo?: import('./lighting/movingHead').GoboPattern
   /** 古いプランの「吊っているバトン」。いまは parentId で決める（hierarchy.ts）。読み込みのためだけに残す */
   battenId?: string
   /** 親（hierarchy.ts）。'stage'・舞台の部品・舞台セットの id。null は親なし、無ければ位置から決める */

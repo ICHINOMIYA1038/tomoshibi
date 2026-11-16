@@ -1,5 +1,6 @@
 import { sceneStage, type Fixture, type Performer, type PlanScene } from '../store'
 import type { SetPiece } from '../types'
+import { interpolateMoverTarget, isMover } from '../lighting/movingHead'
 
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t
 const lerp3 = (a: [number, number, number], b: [number, number, number], t: number): [number, number, number] => [
@@ -17,15 +18,19 @@ export function interpolateStage(from: PlanScene, to: PlanScene, progress: numbe
   const fixtures: Fixture[] = [...new Set([...oldFixtures.keys(), ...newFixtures.keys()])].flatMap(id => {
     const old = oldFixtures.get(id)
     const next = newFixtures.get(id)
-    if (old && next) return [{
+    if (old && next) {
+      const position = lerp3(old.position, next.position, t)
+      return [{
       ...next,
-      position: lerp3(old.position, next.position, t),
-      target: lerp3(old.target, next.target, t),
+      position,
+      // ムービングライトは、狙いの点をまっすぐ動かさず、パン・チルトの角度を回して動かす
+      target: isMover(next) && old.presetKey === next.presetKey ? interpolateMoverTarget(old, next, position, t) : lerp3(old.target, next.target, t),
       color: lerp3(old.color, next.color, t),
       intensity: lerp(old.enabled ? old.intensity : 0, next.enabled ? next.intensity : 0, t),
       beamAngleDeg: lerp(old.beamAngleDeg, next.beamAngleDeg, t),
       enabled: old.enabled || next.enabled,
     }]
+    }
     if (old) return [{ ...old, intensity: (old.enabled ? old.intensity : 0) * (1 - t) }]
     return next ? [{ ...next, intensity: (next.enabled ? next.intensity : 0) * t }] : []
   })
