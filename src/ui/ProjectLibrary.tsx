@@ -15,6 +15,7 @@ import { useCloudSession } from '../io/cloudSession'
 import { copyLegacyScene, ensureLegacyLocalProject, importedProjectName, listLegacyLocalScenes } from '../io/legacyMigration'
 import { importScene } from '../io/sceneIO'
 import { askConfirm } from './askConfirm'
+import { EmptyLibrary } from './EmptyLibrary'
 import { stopProjectEditor } from '../io/projectEditor'
 
 type LibraryItem = { key: string; scene: SerializedScene; draft: boolean }
@@ -574,12 +575,7 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
               {!selected.draft && <button className="project-library-delete" onClick={() => remove(selected.scene.name)}>このプロジェクトを削除</button>}
             </section>
           </div>
-        </> : <div className="project-library-empty-detail">
-          <div className="project-library-empty-stage" aria-hidden="true"><span>舞台</span><span>客席</span></div>
-          <h2>新しい舞台をつくる</h2>
-          <p>プロジェクトを作ると、照明・役者・舞台セットを同じ舞台で配置できます。</p>
-          <button className="project-library-open" onClick={openCreate}>新しいプロジェクトを作る</button>
-        </div>}
+        </> : <EmptyLibrary onStart={openCreate} />}
       </section>
     </div>
     {transferOpen && user && <div className="project-create-backdrop">
