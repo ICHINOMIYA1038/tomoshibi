@@ -333,6 +333,16 @@ export const KIND_LABELS: Record<FixtureKind, string> = {
   FollowSpot: 'ピンスポット（フォロー）',
 }
 
+/**
+ * 調光したときの電球の色温度（K）。ハロゲンは絞るほど赤くなる（色温度は明るさのおよそ 0.11 乗に比例）。
+ * 10% で 3200K → 約 2500K。クセノンのピンスポットとLEDは絞っても色が変わらない
+ */
+export function dimmedKelvin(profile: FixtureProfile, intensity: number) {
+  if (profile.source !== 'tungsten' || profile.kind === 'FollowSpot') return profile.colorTemperatureK
+  const level = Math.max(0.01, Math.min(1, intensity))
+  return profile.colorTemperatureK * Math.pow(level, 0.11)
+}
+
 // 色温度 (K) → RGB近似 (sRGB, 線形でない簡易変換)
 // Tanner Helland's approximation
 export function kelvinToRGB(k: number): [number, number, number] {

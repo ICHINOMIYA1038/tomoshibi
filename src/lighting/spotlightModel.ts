@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 import type { Fixture } from '../store'
-import { FIXTURE_PROFILES, kelvinToRGB } from './fixtureTypes'
+import { dimmedKelvin, FIXTURE_PROFILES, kelvinToRGB } from './fixtureTypes'
 import { hasMeasuredFresnel, measuredFresnelSpotlight } from '../photometric/measuredFresnel'
 import { hasMeasuredCyc, measuredCycSpotlight } from '../photometric/measuredCyc'
 
@@ -25,7 +25,7 @@ export function fixtureSpotlightColor(fixture: Fixture): THREE.Color {
   const profile = FIXTURE_PROFILES[fixture.presetKey]
   if (!profile) return new THREE.Color(...fixture.color)
   if (profile.source === 'tungsten') {
-    const color = new THREE.Color(...kelvinToRGB(profile.colorTemperatureK))
+    const color = new THREE.Color(...kelvinToRGB(dimmedKelvin(profile, fixture.intensity)))
     if (fixture.gelEnabled) color.multiply(new THREE.Color(...fixture.color))
     return color
   }

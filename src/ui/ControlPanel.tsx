@@ -1,7 +1,8 @@
 import { aimFrom, canFollow, canUseGobo, followPoint, GOBO_LABELS, goboOf, isMover, MOVEMENT_LABELS, MOVEMENT_LIMITS, movementOf, panTiltOf, type FixtureMovement, type GoboPattern, type MovementPattern } from '../lighting/movingHead'
 import { useEffect, useRef } from 'react'
 import { useStore, type Fixture } from '../store'
-import { FIXTURE_PROFILES, KIND_LABELS } from '../lighting/fixtureTypes'
+import { dimmedKelvin, FIXTURE_PROFILES, KIND_LABELS } from '../lighting/fixtureTypes'
+import { gelByHex, GEL_GROUPS, GELS } from '../lighting/gels'
 import { useDraggablePanel } from './useDraggablePanel'
 import { MEASURED_FRESNEL_KEY } from '../photometric/measuredFresnel'
 import { MEASURED_CYC_KEY } from '../photometric/measuredCyc'
@@ -277,6 +278,8 @@ export function FixtureEditor({ fixture }: { fixture: Fixture }) {
         />
         <span className="numval" style={{ flex: 1, textAlign: 'left' }}>{colorToHex(fixture.color)}</span>
       </div>
+      <GelSwatches fixture={fixture} onPick={hex => update({ color: hexToRgb(hex), gelEnabled: !isMeasured })} />
+      {profile.source === 'tungsten' && profile.kind !== 'FollowSpot' && <p className="mover-note">ハロゲンは、絞るほど電球の色が赤っぽくなります（いま {Math.round(dimmedKelvin(profile, fixture.intensity))}K）。</p>}
       {isLED && (
         <Slider label="白ミックス" value={fixture.whiteMix} min={0} max={1} step={0.01}
           onChange={v => update({ whiteMix: v })}
@@ -338,4 +341,18 @@ function FollowField({ fixture, onChange }: { fixture: Fixture; onChange: (patch
       ? `${followed.name}を追い続けます。通しで見るでは、歩く役者についていきます。役者が舞台外のシーンでは消えます。`
       : '追っていた役者が、このシーンにいません。いまは狙いの点を照らします。'}</p>}
   </>
+}
+
+/** ゲルの色見本。押すとその色にする（在来の照明ではゲルを付けた扱い、LED ではその色を出す） */
+function GelSwatches({ fixture, onPick }: { fixture: Fixture; onPick: (hex: string) => void }) {
+  const current = fixture.gelEnabled ? gelByHex(colorToHex(fixture.color)) : null
+  return <div className="gel-swatches">
+    <div className="gel-swatches-current">{current ? `${current.name}${current.note ? `（${current.note}）` : ''}` : '色見本から選ぶ'}</div>
+    {GEL_GROUPS.map(group => <div key={group} className="gel-swatch-group">
+      <span>{group}</span>
+      <div>{GELS.filter(gel => gel.group === group).map(gel => <button key={gel.id} type="button" title={gel.note ? `${gel.name}（${gel.note}）` : gel.name}
+        aria-label={gel.name} aria-pressed={current?.id === gel.id} className={current?.id === gel.id ? 'active' : ''}
+        style={{ background: gel.hex }} onClick={() => onPick(gel.hex)} />)}</div>
+    </div>)}
+  </div>
 }
