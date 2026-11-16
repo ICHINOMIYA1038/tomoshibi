@@ -6,6 +6,7 @@ import { DEFAULT_VENUE_LAYOUT, pointInStage, STAGE_SIZE, stageFootprint, THEATRE
 import { StagePartsLayer } from './StagePartsEditor'
 import { Inspector } from './Inspector'
 import { ToolButtons } from './ToolButtons'
+import { useMapZoom } from './useMapZoom'
 
 const SVG_WIDTH = 860
 const SVG_HEIGHT = 660
@@ -16,9 +17,9 @@ const VIEWS = {
 }
 const clamp = (value: number, low: number, high: number) => Math.min(high, Math.max(low, value))
 
-function worldPoint(event: { clientX: number; clientY: number }, svg: SVGSVGElement, scale: number, centerZ: number): [number, number] {
+function worldPoint(event: { clientX: number; clientY: number }, svg: SVGSVGElement, scale: number, centerZ: number, centerX = 0): [number, number] {
   const bounds = svg.getBoundingClientRect()
-  const x = ((event.clientX - bounds.left) * SVG_WIDTH / bounds.width - SVG_WIDTH / 2) / scale
+  const x = ((event.clientX - bounds.left) * SVG_WIDTH / bounds.width - SVG_WIDTH / 2) / scale + centerX
   const z = ((event.clientY - bounds.top) * SVG_HEIGHT / bounds.height - SVG_HEIGHT / 2) / scale + centerZ
   return [x, z]
 }
@@ -76,10 +77,18 @@ export function AudienceLayoutEditor({ open, onClose }: { open: boolean; onClose
   // ドラッグの間は縮尺を変えない（大きさを変えるたびに縮尺が変わると、取っ手が指から逃げる）
   const [frozenView, setFrozenView] = useState<{ scale: number; centerZ: number } | null>(null)
   const computedView = wideView ? (fits(VIEWS.wide) ? VIEWS.wide : fitAll()) : autoView
-  const { scale, centerZ } = frozenView ?? computedView
+  const baseView = frozenView ?? computedView
+  // 拡大・縮小と、図を動かした分（大きな床で、客席や舞台が 1 か所に固まって操作できないため。オーナー指摘、2026-11-16）
+  const venueZoom = useMapZoom(svgRef, () => ({
+    center: [centerX, centerZ],
+    toWorld: (clientX, clientY) => worldPoint({ clientX, clientY }, svgRef.current!, scale, centerZ, centerX),
+  }))
+  const scale = baseView.scale * venueZoom.zoom
+  const centerX = venueZoom.pan[0]
+  const centerZ = baseView.centerZ + venueZoom.pan[1]
   /** 目盛りの間隔（m）。縮めて表示するほど広くする */
   const gridStep = scale >= 10 ? 5 : scale >= 4 ? 10 : scale >= 2 ? 25 : 50
-  const mapX = (x: number) => SVG_WIDTH / 2 + x * scale
+  const mapX = (x: number) => SVG_WIDTH / 2 + (x - centerX) * scale
   const mapY = (z: number) => SVG_HEIGHT / 2 + (z - centerZ) * scale
   const outline = stageFootprint(venue)
   const stagePoints = outline.map(([x, z]) => `${mapX(x)},${mapY(z)}`).join(' ')
@@ -106,8 +115,8 @@ export function AudienceLayoutEditor({ open, onClose }: { open: boolean; onClose
     event.stopPropagation()
     setSelectedId(block.id)
     if (!moving || !svgRef.current) return
-    const at = worldPoint(event, svgRef.current, scale, centerZ)
-    setFrozenView({ scale, centerZ })
+    const at = worldPoint(event, svgRef.current, scale, centerZ, centerX)
+    setFrozenView(baseView)
     dragging.current = { kind: 'block', id: block.id, pointerId: event.pointerId, at, from: [...block.position] }
     svgRef.current?.setPointerCapture(event.pointerId)
   }
@@ -115,19 +124,20 @@ export function AudienceLayoutEditor({ open, onClose }: { open: boolean; onClose
     event.preventDefault()
     event.stopPropagation()
     if (!svgRef.current) return
-    setFrozenView({ scale, centerZ })
+    setFrozenView(baseView)
     dragging.current = { kind: 'vertex', id: String(index), pointerId: event.pointerId,
-      at: worldPoint(event, svgRef.current, scale, centerZ), from: [...outline[index]] }
+      at: worldPoint(event, svgRef.current, scale, centerZ, centerX), from: [...outline[index]] }
     svgRef.current.setPointerCapture(event.pointerId)
   }
   const beginStageDrag = (event: PointerEvent<SVGPolygonElement>) => {
     event.preventDefault()
     event.stopPropagation()
     select('stage', 'stage')
-    if (!moving || !svgRef.current) return
-    setFrozenView({ scale, centerZ })
+    // 移動の道具でなければ、舞台の上のドラッグは図を動かす（大きな床では、図のほとんどが舞台になる）
+    if (!moving || !svgRef.current) { if (event.button === 0) venueZoom.beginPan(event); return }
+    setFrozenView(baseView)
     dragging.current = { kind: 'stage', id: '', pointerId: event.pointerId,
-      at: worldPoint(event, svgRef.current, scale, centerZ), from: [...stageOffset] }
+      at: worldPoint(event, svgRef.current, scale, centerZ, centerX), from: [...stageOffset] }
     svgRef.current.setPointerCapture(event.pointerId)
   }
   /** 舞台の中心（舞台の座標で z = -3）。大きさの取っ手は、この中心から左右・前後に同じだけ広げる */
@@ -136,9 +146,9 @@ export function AudienceLayoutEditor({ open, onClose }: { open: boolean; onClose
     event.preventDefault()
     event.stopPropagation()
     if (!svgRef.current) return
-    setFrozenView({ scale, centerZ })
+    setFrozenView(baseView)
     dragging.current = { kind: 'size', id: axis, pointerId: event.pointerId,
-      at: worldPoint(event, svgRef.current, scale, centerZ), from: [venue.stageWidth, venue.stageDepth] }
+      at: worldPoint(event, svgRef.current, scale, centerZ, centerX), from: [venue.stageWidth, venue.stageDepth] }
     svgRef.current.setPointerCapture(event.pointerId)
   }
   const resizeStage = (axis: 'width' | 'depth', value: number) => {
@@ -148,7 +158,7 @@ export function AudienceLayoutEditor({ open, onClose }: { open: boolean; onClose
   const moveDrag = (event: PointerEvent<SVGSVGElement>) => {
     const drag = dragging.current
     if (!drag || drag.pointerId !== event.pointerId) return
-    const [x, z] = worldPoint(event, event.currentTarget, scale, centerZ)
+    const [x, z] = worldPoint(event, event.currentTarget, scale, centerZ, centerX)
     if (drag.kind === 'size') {
       // 押した点からの動きの 2 倍だけ広げる（中心を挟んで両側に広がるため）
       if (drag.id === 'width') resizeStage('width', drag.from[0] + 2 * Math.sign(drag.at[0] - stageCenter[0] || 1) * (x - drag.at[0]))
@@ -196,7 +206,12 @@ export function AudienceLayoutEditor({ open, onClose }: { open: boolean; onClose
         <div><strong>会場の配置</strong><span>配置済み {seatCount} 席{venue.targetCapacity > 0 ? ` ／ 目標 ${venue.targetCapacity} 席` : ''}・全シーン共通</span></div>
         <div className="audience-editor-header-actions">
           <ToolButtons compact />
-          <button type="button" onClick={() => setWideView(value => !value)}>{wideView ? '舞台付近' : '全体を表示'}</button>
+          <div className="audience-editor-zoom" role="group" aria-label="図の縮尺">
+            <button type="button" aria-label="縮小" title="縮小（ホイールでも変えられます）" onClick={() => venueZoom.zoomBy(1 / 1.5)}>−</button>
+            <button type="button" aria-label="拡大" title="拡大（ホイールでも変えられます）" onClick={() => venueZoom.zoomBy(1.5)}>＋</button>
+          </div>
+          <button type="button" title="何も無い所をドラッグすると、図を動かせます" onClick={() => { venueZoom.reset(); setWideView(value => venueZoom.zoom === 1 && venueZoom.pan[0] === 0 && venueZoom.pan[1] === 0 ? !value : value) }}>
+            {venueZoom.zoom !== 1 || venueZoom.pan[0] !== 0 || venueZoom.pan[1] !== 0 ? '元の縮尺' : wideView ? '舞台付近' : '全体を表示'}</button>
           <button type="button" onClick={createBlock} disabled={blocks.length >= 16}>＋ 客席</button>
           <button type="button" onClick={() => { updateSettings({ cameraView: 'house' }); onClose() }} disabled={!blocks.length}>3Dで見る</button>
           <button type="button" className="audience-editor-close" onClick={onClose} aria-label="会場の配置を閉じる">×</button>
@@ -206,13 +221,26 @@ export function AudienceLayoutEditor({ open, onClose }: { open: boolean; onClose
         <div className="audience-editor-map">
           <svg ref={svgRef} viewBox={`0 0 ${SVG_WIDTH} ${SVG_HEIGHT}`}
             aria-label="舞台と客席の平面図。舞台、客席と自由形状の頂点をドラッグして配置できます"
+            style={{ touchAction: 'none' }}
+            onPointerDownCapture={event => {
+              // ホイールを押してのドラッグは、どこでも図を動かす
+              if (event.button !== 1) return
+              event.preventDefault()
+              event.stopPropagation()
+              venueZoom.beginPan(event)
+            }}
+            onPointerDown={event => {
+              // 何も無い所のドラッグは図を動かす。舞台や客席の上は、それぞれの側で止めている
+              if (event.button !== 0) return
+              venueZoom.beginPan(event)
+            }}
             onPointerMove={moveDrag} onPointerUp={endDrag} onPointerCancel={endDrag}
             onContextMenu={event => {
               // 右クリック: 舞台・客席・部品の上ならその物の、何も無い所なら「ここに足す」のメニュー（ObjectContextMenu.tsx）
               event.preventDefault()
               const item = (event.target as Element).closest<SVGElement>('[data-menu-kind]')
               const kind = item?.dataset.menuKind as 'audience' | 'stage' | 'stagepart' | undefined
-              const [x, z] = worldPoint(event, event.currentTarget, scale, centerZ)
+              const [x, z] = worldPoint(event, event.currentTarget, scale, centerZ, centerX)
               useObjectMenu.getState().open({ x: event.clientX, y: event.clientY,
                 target: kind && item?.dataset.menuId ? { kind, id: item.dataset.menuId } : null,
                 point: !kind || kind === 'stage' ? [Math.round(x * 10) / 10, 0, Math.round(z * 10) / 10] : undefined })
@@ -272,8 +300,8 @@ export function AudienceLayoutEditor({ open, onClose }: { open: boolean; onClose
               <circle cx={mapX(fixture.position[0])} cy={mapY(fixture.position[2])} r="9" fill="#d59a45" stroke="#4c3321" strokeWidth="2" />
               <title>{fixture.name}</title>
             </g>)}
-            {<StagePartsLayer selectedId={partId} onSelect={setPartId} tool={tool}
-              toWorld={event => worldPoint(event, svgRef.current!, scale, centerZ)} mapX={mapX} mapY={mapY}
+            {<StagePartsLayer selectedId={partId} onSelect={setPartId} tool={tool} onPan={venueZoom.beginPan}
+              toWorld={event => worldPoint(event, svgRef.current!, scale, centerZ, centerX)} mapX={mapX} mapY={mapY}
               unitsPerPx={SVG_WIDTH / (svgRef.current?.clientWidth || SVG_WIDTH)} />}
             {resizing && selection.kind === 'stage' && venue.stageShape !== 'custom' && ([
               { axis: 'width' as const, at: [stageCenter[0] + venue.stageWidth / 2, stageCenter[1]] as [number, number], label: venue.stageShape === 'round' ? '直径' : '幅', cursor: 'ew-resize' },
@@ -312,6 +340,7 @@ export function AudienceLayoutEditor({ open, onClose }: { open: boolean; onClose
               : tool === 'translate' ? '舞台・客席・部品をドラッグして移動'
                 : tool === 'scale' ? '選んだ舞台・部品に出る金色の点をドラッグして大きさを変える（自由形状の舞台は角が出ます）'
                   : '回転は 3D の画面か、右の数字で変えます'}</span>
+            <span>ホイールで拡大・縮小。何も無い所のドラッグで図を動かす（「選択」の道具なら舞台の上でも）</span>
             {!blocks.length && <span>客席はまだありません（なくても使えます）</span>}
           </div>
         </div>

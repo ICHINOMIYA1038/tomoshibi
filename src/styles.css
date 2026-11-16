@@ -3251,6 +3251,13 @@ body.embed .workspace-switch { display: none; }
 .unified-shell .plan-map-layerbar button.active { border-color: rgba(212,175,111,.6); background: rgba(212,175,111,.14); color: var(--ink-primary); }
 .unified-shell .plan-map-layerbar button.active::before { border-color: var(--kin); background: var(--kin); }
 .unified-shell .plan-map-layerbar small { display: none; margin-left: auto; color: var(--ink-muted); font-size: 10px; }
+/* 平面図の縮尺（拡大・縮小と、合わせ直し）。表示の切り替えと区別するため、四角の印は付けない */
+/* 会場の配置の縮尺 */
+.audience-editor-zoom { display: inline-flex; gap: 4px; }
+.audience-editor-zoom button { min-width: 32px; justify-content: center; }
+.unified-shell .plan-map-zoom { display: inline-flex; flex: none; align-items: center; gap: 4px; margin-left: 6px; padding-left: 8px; border-left: 1px solid var(--panel-edge); }
+.unified-shell .plan-map-layerbar .plan-map-zoom button::before { content: none; }
+.unified-shell .plan-map-layerbar .plan-map-zoom button[aria-label] { justify-content: center; min-width: 27px; padding: 3px 0; font-size: 14px; }
 .unified-shell .plan-map-scroll { flex: 1; min-height: 0; overflow: auto; display: flex; align-items: flex-start; justify-content: flex-start; padding: 5px; }
 .unified-shell .plan-map-scroll svg { display: block; flex: none; height: 100%; width: auto; min-width: 0; margin: auto; border-radius: 4px; user-select: none; }
 .unified-shell .plan-map-footer { flex: none; display: flex; align-items: center; gap: 8px; min-height: 39px; padding: 5px 10px; border-top: 1px solid var(--panel-edge); }

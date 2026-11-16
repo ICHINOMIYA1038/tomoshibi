@@ -29,6 +29,10 @@ export function clampAudiencePosition(block: AudienceBlock, x: number, z: number
   return [clamp(x, THEATRE.minX + extentX, THEATRE.maxX - extentX), clamp(z, THEATRE.minZ + extentZ, THEATRE.maxZ - extentZ)]
 }
 
+/** 客席を上げられる高さの上限（m） */
+export const AUDIENCE_MAX_ELEVATION = 20
+export const clampAudienceElevation = (value: number) => Math.min(AUDIENCE_MAX_ELEVATION, Math.max(0, Math.round(value * 100) / 100))
+
 export function demoAudienceBlocks(): AudienceBlock[] {
   return [-3, 3].map((x, index) => ({
     id: `audience-demo-${index + 1}`,

@@ -9,6 +9,7 @@ import { AudienceLayoutEditor } from './AudienceLayoutEditor'
 import { ToolButtons } from './ToolButtons'
 import { toolFor } from '../tools'
 import { DEFAULT_VENUE_LAYOUT, stageFootprint, THEATRE } from '../venueLayout'
+import { useMapZoom } from './useMapZoom'
 
 const MAP = { left: 100, top: 70, width: 760, height: 480, svgWidth: 960, svgHeight: 630 }
 const pathColors: Record<DirectionKind, string> = {
@@ -37,6 +38,27 @@ function equalScaleBounds(bounds: MapBounds): MapBounds {
   }
   const extra = (width / ratio - depth) / 2
   return { ...bounds, rear: bounds.rear - extra, front: bounds.front + extra }
+}
+/** 舞台の床がこれより大きい（m）ときは、最初は床の全体でなく、置いた物が収まる縮尺にする */
+const LARGE_STAGE = 40
+/** 置いた物が収まる範囲。物が無ければ舞台の中心のまわり。狭すぎないよう 20m × 12m は取る */
+function objectBounds(points: StagePoint[], stage: StagePoint[]): MapBounds {
+  const source = points.length ? points : stage
+  const xs = source.map(point => point[0])
+  const zs = source.map(point => point[1])
+  const cx = points.length ? (Math.min(...xs) + Math.max(...xs)) / 2 : xs.reduce((sum, x) => sum + x, 0) / xs.length
+  const cz = points.length ? (Math.min(...zs) + Math.max(...zs)) / 2 : zs.reduce((sum, z) => sum + z, 0) / zs.length
+  const halfX = points.length ? Math.max(10, (Math.max(...xs) - Math.min(...xs)) / 2 + 3) : 10
+  const halfZ = points.length ? Math.max(6, (Math.max(...zs) - Math.min(...zs)) / 2 + 3) : 6
+  return { left: cx - halfX, right: cx + halfX, rear: cz - halfZ, front: cz + halfZ }
+}
+/** 拡大と、図を動かした分を当てる */
+function zoomBounds(bounds: MapBounds, zoom: number, pan: StagePoint): MapBounds {
+  const cx = (bounds.left + bounds.right) / 2 + pan[0]
+  const cz = (bounds.rear + bounds.front) / 2 + pan[1]
+  const halfX = (bounds.right - bounds.left) / 2 / zoom
+  const halfZ = (bounds.front - bounds.rear) / 2 / zoom
+  return { left: cx - halfX, right: cx + halfX, rear: cz - halfZ, front: cz + halfZ }
 }
 function colorToHex(rgb: [number, number, number]) {
   return '#' + rgb.map(value => Math.round(clamp(value, 0, 1) * 255).toString(16).padStart(2, '0')).join('')
@@ -100,10 +122,12 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
   const fixtures = useStore(s => s.fixtures)
   const setPieces = useStore(s => s.setPieces)
   const stageOutline = stageFootprint(plan.venueLayout ?? DEFAULT_VENUE_LAYOUT)
-  const contentPoints: StagePoint[] = [...stageOutline]
+  // 舞台に置いた物（役者・セット・照明の狙い）。床がとても大きいときは、最初はこれが収まる縮尺にする
+  const contentPoints: StagePoint[] = []
   for (const performer of performers) {
     if (performer.onStage !== false) contentPoints.push([performer.position[0], performer.position[2]])
   }
+  for (const fixture of fixtures) contentPoints.push([fixture.target[0], fixture.target[2]])
   for (const piece of setPieces) {
     const halfWidth = Math.max(.5, (piece.size?.[0] ?? 1) * Math.abs(piece.scale) / 2)
     const halfDepth = Math.max(.5, (piece.size?.[2] ?? 1) * Math.abs(piece.scale) / 2)
@@ -113,12 +137,35 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
     contentPoints.push([piece.position[0] - dx, piece.position[2] - dz],
       [piece.position[0] + dx, piece.position[2] + dz])
   }
-  const mapBounds = equalScaleBounds(plan.venueLayout ? {
-    left: Math.min(-8, ...contentPoints.map(point => point[0] - 2)),
-    right: Math.max(8, ...contentPoints.map(point => point[0] + 2)),
-    rear: Math.min(-8, ...contentPoints.map(point => point[1] - 2)),
-    front: Math.max(2, ...contentPoints.map(point => point[1] + 2)),
-  } : { left: -8, right: 8, rear: -8, front: 2 })
+  const stageXs = stageOutline.map(point => point[0])
+  const stageZs = stageOutline.map(point => point[1])
+  const stageLarge = Math.max(Math.max(...stageXs) - Math.min(...stageXs), Math.max(...stageZs) - Math.min(...stageZs)) > LARGE_STAGE
+  // 「舞台全体」: 大きな床でも、床の全体が収まる縮尺にする
+  const [showWholeStage, setShowWholeStage] = useState(false)
+  const svgRef = useRef<SVGSVGElement>(null)
+  const fitBounds = equalScaleBounds(!plan.venueLayout ? { left: -8, right: 8, rear: -8, front: 2 }
+    : stageLarge && !showWholeStage ? objectBounds(contentPoints, stageOutline)
+      : {
+        left: Math.min(-8, ...[...stageOutline, ...contentPoints].map(point => point[0] - 2)),
+        right: Math.max(8, ...[...stageOutline, ...contentPoints].map(point => point[0] + 2)),
+        rear: Math.min(-8, ...[...stageOutline, ...contentPoints].map(point => point[1] - 2)),
+        front: Math.max(2, ...[...stageOutline, ...contentPoints].map(point => point[1] + 2)),
+      })
+  // ドラッグの間は縮尺を変えない。物を動かすと収める範囲も変わり、つかんだ物が指から逃げる
+  const [frozenBounds, setFrozenBounds] = useState<MapBounds | null>(null)
+  const mapZoom = useMapZoom(svgRef, () => ({
+    center: [(mapBounds.left + mapBounds.right) / 2, (mapBounds.rear + mapBounds.front) / 2],
+    toWorld: (clientX, clientY) => {
+      const rect = svgRef.current!.getBoundingClientRect()
+      const px = (clientX - rect.left) * MAP.svgWidth / rect.width
+      const py = (clientY - rect.top) * MAP.svgHeight / rect.height
+      return [(px - MAP.left) * (mapBounds.right - mapBounds.left) / MAP.width + mapBounds.left,
+        (py - MAP.top) * (mapBounds.front - mapBounds.rear) / MAP.height + mapBounds.rear]
+    },
+  }))
+  const mapBounds = zoomBounds(frozenBounds ?? fitBounds, mapZoom.zoom, mapZoom.pan)
+  // 指で図を動かせるのは、拡大したときと大きな床のときだけ。それ以外は、これまでどおり指で図を横にスクロールする
+  const canPanByTouch = stageLarge || mapZoom.zoom !== 1 || mapZoom.pan[0] !== 0 || mapZoom.pan[1] !== 0
   const mapX = (x: number) => MAP.left + (x - mapBounds.left) * MAP.width / (mapBounds.right - mapBounds.left)
   const stageMapY = (z: number) => MAP.top + (z - mapBounds.rear) * MAP.height / (mapBounds.front - mapBounds.rear)
   const mapY = (z: number) => z <= mapBounds.front ? stageMapY(z) : 550 + (z - mapBounds.front) * 2.5
@@ -177,7 +224,6 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
   const outlineFrame = useRef(0)
   useEffect(() => () => cancelAnimationFrame(outlineFrame.current), [])
   const dragStart = useRef<DragStart | null>(null)
-  const svgRef = useRef<SVGSVGElement>(null)
   useEffect(() => {
     const svg = svgRef.current
     if (!svg || typeof ResizeObserver === 'undefined') return
@@ -274,6 +320,7 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
       grab: svg && (kind === 'fixture' || kind === 'target') ? rawMapPoint(event, svg, kind === 'fixture', mapBounds) : undefined,
       client: [event.clientX, event.clientY] }
     svg?.setPointerCapture(event.pointerId)
+    setFrozenBounds(frozenBounds ?? fitBounds)
     if (kind === 'fixture' || kind === 'target') setActiveDrag({ kind, id })
     if (kind === 'performer') selectActor(id)
     else if (kind === 'target' || kind === 'fixture') selectFixture(id, kind === 'target' ? 'target' : 'position')
@@ -335,6 +382,7 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
     const start = dragStart.current
     dragStart.current = null
     setActiveDrag(null)
+    setFrozenBounds(null)
     if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId)
     if (!start) return
     const point = start.kind === 'target'
@@ -990,11 +1038,26 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
             onClick={() => setShowFixtures(value => !value)}>照明：{showFixtures ? '表示中' : '非表示'}</button>
           {persistent && <button type="button" className={showDirections ? 'active' : ''} aria-pressed={showDirections}
             onClick={onToggleDirections}>役者の動き：{showDirections ? '表示中' : '非表示'}</button>}
+          <div className="plan-map-zoom" role="group" aria-label="平面図の縮尺">
+            <button type="button" aria-label="縮小" title="縮小（ホイールでも変えられます）" onClick={() => mapZoom.zoomBy(1 / 1.5)}>−</button>
+            <button type="button" aria-label="拡大" title="拡大（ホイールでも変えられます）" onClick={() => mapZoom.zoomBy(1.5)}>＋</button>
+            <button type="button" title="何も無い所をドラッグすると、図を動かせます" onClick={() => { setShowWholeStage(false); mapZoom.reset() }}>
+              {stageLarge ? '置いた物に合わせる' : '元の縮尺'}</button>
+            {stageLarge && <button type="button" className={showWholeStage ? 'active' : ''} aria-pressed={showWholeStage}
+              onClick={() => { setShowWholeStage(true); mapZoom.reset() }}>舞台全体</button>}
+          </div>
           <small>図を左右にスワイプ</small>
         </div>
         <div className="plan-map-scroll">
           <svg ref={svgRef} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 630"
             aria-label="舞台の平面図。役者の立ち位置と器具の狙う位置を変更できます"
+            style={canPanByTouch ? { touchAction: 'none' } : undefined}
+            onPointerDown={event => {
+              // 何も無い所をドラッグすると、図を動かす（物の上を押したときは、物の側で止めている）
+              if (event.button !== 0 || (event.pointerType === 'touch' && !canPanByTouch)) return
+              if ((event.target as Element).closest('[role="button"], [data-menu-kind]')) return
+              mapZoom.beginPan(event)
+            }}
             onPointerMove={moveDrag} onPointerUp={endDrag} onPointerCancel={endDrag}
             onContextMenu={event => {
               // 右クリック: 物の上ならその物の、何も無い所なら「ここに足す」のメニュー（ObjectContextMenu.tsx）
@@ -1028,6 +1091,8 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
             <rect x="100" y="558" width="760" height="60" fill="#ece6da" stroke="#a99a83" strokeDasharray="8 6" />
             <text x="112" y="577" fill="#716758" fontSize="14">客席側の吊り位置</text>
             <text x="848" y="577" textAnchor="end" fill="#777066" fontSize="13">距離を縮めて表示</text>
+            <clipPath id="plan-map-clip"><rect x="8" y="70" width="944" height="548" /></clipPath>
+            <g clipPath="url(#plan-map-clip)">
             <polygon points={stageOutline.map(([x, z]) => `${mapX(x)},${stageMapY(z)}`).join(' ')}
               fill="#fffdf8" stroke="#967447" strokeWidth="5" />
             {showSetPieces && setPieces.map((piece, index) => {
@@ -1238,6 +1303,7 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
                 </g>
               </g>
             })()}
+            </g>
           </svg>
         </div>
         <div className="plan-map-footer">

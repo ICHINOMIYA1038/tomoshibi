@@ -14,27 +14,29 @@ function SeatingBlock({ block }: { block: AudienceBlock }) {
   useLayoutEffect(() => {
     const object = new THREE.Object3D()
     const angle = block.rotationDeg * Math.PI / 180
+    const base = block.elevation ?? 0
     object.rotation.y = angle
     for (let index = 0; index < seats.length; index++) {
       const [x, z] = seats[index]
-      object.position.set(x, .43, z)
+      object.position.set(x, base + .43, z)
       object.updateMatrix()
       cushionRef.current?.setMatrixAt(index, object.matrix)
-      object.position.set(x, .19, z)
+      object.position.set(x, base + .19, z)
       object.updateMatrix()
       legRef.current?.setMatrixAt(index, object.matrix)
-      object.position.set(x + Math.sin(angle) * .23, .7, z + Math.cos(angle) * .23)
+      object.position.set(x + Math.sin(angle) * .23, base + .7, z + Math.cos(angle) * .23)
       object.updateMatrix()
       backRef.current?.setMatrixAt(index, object.matrix)
     }
     if (cushionRef.current) cushionRef.current.instanceMatrix.needsUpdate = true
     if (backRef.current) backRef.current.instanceMatrix.needsUpdate = true
     if (legRef.current) legRef.current.instanceMatrix.needsUpdate = true
-  }, [seats, block.rotationDeg])
+  }, [seats, block.rotationDeg, block.elevation])
   const selected = useStore(state => state.selection.kind === 'audience' && state.selection.id === block.id)
   const select = useStore(state => state.select)
   const halfWidth = ((block.seatsPerRow - 1) * block.seatSpacing + .54) / 2
   const halfDepth = ((block.rows - 1) * block.rowSpacing + .5) / 2
+  const elevation = block.elevation ?? 0
   // 3D の画面でクリックすると客席を選ぶ（照度計測中は計測を優先する）
   const pick = (event: ThreeEvent<MouseEvent>) => {
     // 矢印をドラッグして離したときも、下にある床や壁に click が届く。動かした後の click では選び直さない
@@ -43,7 +45,12 @@ function SeatingBlock({ block }: { block: AudienceBlock }) {
     select('audience', block.id)
   }
   return <group onClick={pick} onContextMenu={event => { event.stopPropagation(); recordHit({ kind: 'audience', id: block.id }) }}>
-    {selected && <mesh position={[block.position[0], .45, block.position[1]]} rotation={[0, block.rotationDeg * Math.PI / 180, 0]} raycast={() => null}>
+    {/* 上げた客席の下の台。これが無いと客席が宙に浮いて見える */}
+    {elevation > 0 && <mesh position={[block.position[0], elevation / 2, block.position[1]]} rotation={[0, block.rotationDeg * Math.PI / 180, 0]} receiveShadow>
+      <boxGeometry args={[halfWidth * 2 + .3, elevation, halfDepth * 2 + .3]} />
+      <meshStandardMaterial color="#3a3034" roughness={.9} />
+    </mesh>}
+    {selected && <mesh position={[block.position[0], elevation + .45, block.position[1]]} rotation={[0, block.rotationDeg * Math.PI / 180, 0]} raycast={() => null}>
       <boxGeometry args={[halfWidth * 2 + .2, .9, halfDepth * 2 + .2]} />
       <meshBasicMaterial color="#6cf" wireframe transparent opacity={0.6} depthTest={false} />
     </mesh>}
@@ -67,10 +74,10 @@ export function AudienceSeating() {
   if (!blocks.length) return null
   return <group>
     {/* 客席の床。端が見えると、床の板を置いたように見えるので、果てまで続いて見える大きさにする
-        （カメラの描く距離は 100m、視点は劇場の中なので、1km 四方なら端は描かれない。オーナー指示、2026-11-15） */}
+        （カメラの描く距離は 600m、視点は ±150m の劇場の中なので、2km 四方なら端は描かれない。オーナー指示、2026-11-15） */}
     <mesh position={[0, -.06, 7]} rotation={[-Math.PI / 2, 0, 0]}
       onContextMenu={event => { event.stopPropagation(); recordHit(null, [event.point.x, 0, event.point.z]) }}>
-      <planeGeometry args={[1000, 1000]} />
+      <planeGeometry args={[2000, 2000]} />
       <meshBasicMaterial color="#211d24" toneMapped={false} />
     </mesh>
     {blocks.map(block => <SeatingBlock key={block.id} block={block} />)}
