@@ -1,3 +1,4 @@
+import { unifyRig } from '../rig'
 import { STAGE_SIZE, THEATRE } from '../venueLayout'
 import { AUDIENCE_MAX_ELEVATION } from '../audienceLayout'
 import { getEditableState } from '../playback/editorState'
@@ -61,7 +62,9 @@ export function importScene(scene: SerializedScene) {
   if (scene.version !== 1 && scene.version !== 2) {
     console.warn('Unsupported scene version', scene.version)
   }
-  const plan = normalizeProductionPlan(scene.productionPlan, scene.fixtures, scene.performers, scene.setPieces ?? [])
+  const normalized = normalizeProductionPlan(scene.productionPlan, scene.fixtures, scene.performers, scene.setPieces ?? [])
+  // 古いプランは、シーンごとに照明の位置や機種が違うことがある。違う分を別の照明に分けて、仕込みを 1 つにする（rig.ts）
+  const plan = { ...normalized, scenes: unifyRig(normalized.scenes) }
   const active = plan.scenes.find(item => item.id === plan.activeSceneId)
   const stage = active ? sceneStage(active) : {
     fixtures: scene.fixtures,

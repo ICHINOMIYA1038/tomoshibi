@@ -99,16 +99,27 @@ function FixtureInspector({ fixture }: { fixture: Fixture }) {
     target[axis] = value
     update({ target })
   }
+  // 別の位置から当てたいシーンのために、2 台目を吊る（本物と同じく、仕込みに 1 台足す）
+  const addForScene = () => {
+    const s = useStore.getState()
+    s.duplicateFixture(fixture.id)
+    s.updateFixture(fixture.id, { enabled: false })
+  }
   return <>
+    <div className="scope-heading shared">全シーン共通（仕込み）</div>
+    <p className="scope-note">名前・親・吊る位置を変えると、すべてのシーンで変わります。</p>
     <InspectorSection title="名前と親">
       <NameField value={fixture.name} onChange={name => update({ name })} />
       <ParentField kind="fixture" id={fixture.id} item={fixture} />
     </InspectorSection>
-    <InspectorSection title="位置">
+    <InspectorSection title="吊る位置">
       <NumberField label="X" value={fixture.position[0]} onChange={value => move(0, value)} />
       <NumberField label="Y" value={fixture.position[1]} min={0.3} max={20} onChange={value => move(1, value)} />
       <NumberField label="Z" value={fixture.position[2]} onChange={value => move(2, value)} />
     </InspectorSection>
+    <button type="button" className="inspector-wide-button" onClick={addForScene}>このシーン用に別の照明を吊る</button>
+    <p className="scope-note">このシーンだけ別の位置から当てたいときに使います。複製した照明をこのシーンで点け、元の照明はこのシーンで消します。</p>
+    <div className="scope-heading scene">このシーンだけ（キュー）</div>
     <InspectorSection title="狙い">
       <NumberField label="X" value={fixture.target[0]} onChange={value => aim(0, value)} />
       <NumberField label="Y" value={fixture.target[1]} min={0} max={20} onChange={value => aim(1, value)} />
