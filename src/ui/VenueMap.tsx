@@ -39,6 +39,7 @@ export function VenueMap() {
   const updateVenue = useStore(state => state.updateVenueLayout)
   const moveStageTo = useStore(state => state.moveStageTo)
   const updateSettings = useStore(state => state.updateSettings)
+  const updateFixture = useStore(state => state.updateFixture)
   const [wideView, setWideView] = useState(false)
   // 選んでいる物と道具は、3D の画面・右パネルと共通（Unity と同じく、移動の道具でだけドラッグで動かす）
   const selection = useStore(state => state.selection)
@@ -52,7 +53,7 @@ export function VenueMap() {
   const resizing = tool === 'scale'
   const svgRef = useRef<SVGSVGElement>(null)
   const dragging = useRef<{
-    kind: 'block' | 'vertex' | 'stage' | 'size'; id: string; pointerId: number; at: [number, number]; from: [number, number]
+    kind: 'block' | 'vertex' | 'stage' | 'size' | 'fixture'; id: string; pointerId: number; at: [number, number]; from: [number, number]; fromTarget?: [number, number]
   } | null>(null)
   const stageOffset = venue.stageOffset ?? [0, 0]
   const hasRearSeating = blocks.some(block => block.position[1] < -11)
@@ -147,10 +148,33 @@ export function VenueMap() {
     const size = Math.round(clamp(value, STAGE_SIZE.min, axis === 'width' ? STAGE_SIZE.maxWidth : STAGE_SIZE.maxDepth) * 2) / 2
     updateVenue(venue.stageShape === 'round' ? { stageWidth: size, stageDepth: size } : axis === 'width' ? { stageWidth: size } : { stageDepth: size })
   }
+  // 照明の吊る位置（全シーン共通）。狙いも同じだけ動かして、向きを保つ
+  const beginFixtureDrag = (event: PointerEvent<SVGGElement>, id: string) => {
+    event.preventDefault()
+    event.stopPropagation()
+    select('fixture', id)
+    const fixture = useStore.getState().fixtures.find(item => item.id === id)
+    if (!moving || !svgRef.current || !fixture) return
+    setFrozenView(baseView)
+    dragging.current = { kind: 'fixture', id, pointerId: event.pointerId,
+      at: worldPoint(event, svgRef.current, scale, centerZ, centerX),
+      from: [fixture.position[0], fixture.position[2]], fromTarget: [fixture.target[0], fixture.target[2]] }
+    svgRef.current.setPointerCapture(event.pointerId)
+  }
   const moveDrag = (event: PointerEvent<SVGSVGElement>) => {
     const drag = dragging.current
     if (!drag || drag.pointerId !== event.pointerId) return
     const [x, z] = worldPoint(event, event.currentTarget, scale, centerZ, centerX)
+    if (drag.kind === 'fixture') {
+      const fixture = useStore.getState().fixtures.find(item => item.id === drag.id)
+      if (!fixture || !drag.fromTarget) return
+      const dx = Math.round((x - drag.at[0]) * 10) / 10, dz = Math.round((z - drag.at[1]) * 10) / 10
+      updateFixture(fixture.id, {
+        position: [clamp(drag.from[0] + dx, THEATRE.minX, THEATRE.maxX), fixture.position[1], clamp(drag.from[1] + dz, THEATRE.minZ, THEATRE.maxZ)],
+        target: [clamp(drag.fromTarget[0] + dx, THEATRE.minX, THEATRE.maxX), fixture.target[1], clamp(drag.fromTarget[1] + dz, THEATRE.minZ, THEATRE.maxZ)],
+      })
+      return
+    }
     if (drag.kind === 'size') {
       // 押した点からの動きの 2 倍だけ広げる（中心を挟んで両側に広がるため）
       if (drag.id === 'width') resizeStage('width', drag.from[0] + 2 * Math.sign(drag.at[0] - stageCenter[0] || 1) * (x - drag.at[0]))
@@ -284,10 +308,20 @@ export function VenueMap() {
                 </>
               })()}
             </g>)}
-            {fixtures.filter(fixture => fixture.position[2] > 2).map(fixture => <g key={fixture.id} pointerEvents="none">
-              <circle cx={mapX(fixture.position[0])} cy={mapY(fixture.position[2])} r="9" fill="#d59a45" stroke="#4c3321" strokeWidth="2" />
-              <title>{fixture.name}</title>
-            </g>)}
+            {fixtures.map((fixture, index) => {
+              const active = selection.kind === 'fixture' && selection.id === fixture.id
+              return <g key={fixture.id} role="button" tabIndex={0} data-menu-kind="fixture" data-menu-id={fixture.id}
+                aria-label={`${fixture.name}の吊る位置を動かす（全シーン共通）`}
+                style={{ cursor: moving ? 'grab' : 'pointer', touchAction: 'none' }}
+                onPointerDown={event => beginFixtureDrag(event, fixture.id)}>
+                <title>{fixture.name}</title>
+                <circle cx={mapX(fixture.position[0])} cy={mapY(fixture.position[2])} r="18" fill="transparent" />
+                <circle cx={mapX(fixture.position[0])} cy={mapY(fixture.position[2])} r="11"
+                  fill={active ? '#c8482d' : '#d59a45'} stroke={active ? '#fff4e5' : '#4c3321'} strokeWidth="2" />
+                <text x={mapX(fixture.position[0])} y={mapY(fixture.position[2]) + 4} textAnchor="middle" fill="#1f160e"
+                  fontSize="11" fontWeight="700" pointerEvents="none">{index + 1}</text>
+              </g>
+            })}
             {<StagePartsLayer selectedId={partId} onSelect={setPartId} tool={tool} onPan={venueZoom.beginPan}
               toWorld={event => worldPoint(event, svgRef.current!, scale, centerZ, centerX)} mapX={mapX} mapY={mapY}
               unitsPerPx={SVG_WIDTH / (svgRef.current?.clientWidth || SVG_WIDTH)} />}
@@ -324,9 +358,9 @@ export function VenueMap() {
           </svg>
     </div>
     <div className="audience-editor-legend venue-map-legend">
-      <span>■ 客席</span><span>━ 壁</span><span>╍ バトン</span><span>● 客席側の照明</span>
+      <span>■ 客席</span><span>━ 壁</span><span>╍ バトン</span><span>● 照明の吊る位置</span>
       <span>{tool === 'select' ? '選ぶだけの道具です。動かすときは上の「移動」、大きさは「拡大」'
-        : tool === 'translate' ? '舞台・客席・部品をドラッグして移動'
+        : tool === 'translate' ? '舞台・客席・部品・照明をドラッグして移動。どれも全シーンで変わります'
           : tool === 'scale' ? '選んだ舞台・部品に出る金色の点をドラッグして大きさを変える（自由形状の舞台は角が出ます）'
             : '回転は 3D の画面か、右の数字で変えます'}</span>
       <span>ホイールで拡大・縮小。何も無い所のドラッグで図を動かす（「選択」の道具なら舞台の上でも）</span>

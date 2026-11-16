@@ -5092,3 +5092,22 @@ body.embed .workspace-switch { display: none; }
 @media (min-width: 601px) {
   .phone-top, .phone-view-switch, .phone-bottom, .phone-card, .phone-sheet, .phone-sheet-backdrop { display: none; }
 }
+
+/* 全シーン共通／このシーンだけ（scope.ts）。共通は灰色、このシーンだけは朱、両方を持つ物は金 */
+.scope-chip { margin: 0 0 12px; padding: 6px 10px; border-left: 3px solid #8d847b; background: rgba(141,132,123,.12); color: var(--ink-secondary); font-size: 12px; line-height: 1.6; }
+.scope-chip.scene { border-left-color: var(--shu); background: rgba(200,72,45,.10); }
+.scope-chip.mixed { border-left-color: var(--kin); background: rgba(212,175,111,.10); }
+.scope-tag { flex: none; margin-left: 6px; padding: 0 5px; border: 1px solid #8d847b; color: #c9bfb4; font-size: 10px; font-style: normal; font-weight: 700; line-height: 16px; }
+.scope-tag.scene { border-color: var(--shu); color: #f0a08c; }
+.scope-tag.mixed { border-color: var(--kin); color: var(--kin); }
+.plan-rig-toggle { min-height: 34px; padding: 0 12px; border: 1px solid #8d847b; border-radius: 0; background: transparent; color: #e5dccf; font: 700 13px var(--font-sans); }
+.plan-rig-toggle.active { border-color: var(--kin); background: var(--kin); color: #14110d; }
+.plan-scope-legend { display: flex; flex-wrap: wrap; gap: 4px 16px; padding: 6px 12px; color: var(--ink-secondary); font-size: 12px; }
+.plan-scope-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.plan-scope-legend i { width: 12px; height: 12px; border-radius: 50%; }
+.plan-scope-legend i.shared { background: #8d847b; }
+.plan-scope-legend i.scene { background: #c8482d; }
+@media (max-width: 600px) {
+  .unified-shell.phone-layout .plan-scope-legend { position: absolute; z-index: 3; left: 8px; right: 8px; top: 8px; padding: 6px 8px; background: rgba(25,22,25,.9); }
+  .unified-shell.phone-layout .plan-rig-toggle { min-height: 44px; }
+}

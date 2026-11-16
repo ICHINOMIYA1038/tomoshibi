@@ -203,6 +203,7 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
   const updateSetPiece = useStore(s => s.updateSetPiece)
   const [showFixtures, setShowFixtures] = useState(true)
   const [showSetPieces, setShowSetPieces] = useState(true)
+  const [showShared, setShowShared] = useState(true)
   /** 図に出すもの。シーン = このシーンの役者・セット・照明、会場 = 全シーン共通の舞台・部品・客席（オーナー指摘で 1 つにまとめた、2026-11-16） */
   const [mapMode, setMapMode] = useState<'scene' | 'venue'>('scene')
   const venue = plan.venueLayout ?? DEFAULT_VENUE_LAYOUT
@@ -317,24 +318,28 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
     event.stopPropagation()
     // 平面図でも道具に従う。「移動」のときだけドラッグで動かし、ほかの道具では選ぶだけ
     const selectKind = kind === 'target' ? 'fixture' : kind
+    // 照明の吊る位置は全シーン共通。この図では選ぶだけにし、「舞台・仕込みを動かす」で動かす（2026-11-17 オーナーと決めた案 1）
+    if (kind === 'fixture') {
+      selectFixture(id, 'position')
+      setFeedback('照明の吊る位置は全シーン共通です。動かすときは「舞台・仕込みを動かす」を押します')
+      return
+    }
     const tool = useStore.getState().settings.transformMode
     if (tool === 'select' || toolFor(tool, selectKind, kind === 'target' ? 'target' : 'position') !== 'translate') {
       if (kind === 'performer') selectActor(id)
-      else if (kind === 'target' || kind === 'fixture') selectFixture(id, kind === 'target' ? 'target' : 'position')
+      else if (kind === 'target') selectFixture(id, 'target')
       else selectSetPiece(id)
       return
     }
-    const fixture = kind === 'fixture' ? useStore.getState().fixtures.find(item => item.id === id) : undefined
     const svg = svgRef.current
     dragStart.current = { kind, id, sceneId: scene.id, from,
-      fromTarget: fixture ? [fixture.target[0], fixture.target[2]] : undefined,
-      grab: svg && (kind === 'fixture' || kind === 'target') ? rawMapPoint(event, svg, kind === 'fixture', mapBounds) : undefined,
+      grab: svg && kind === 'target' ? rawMapPoint(event, svg, false, mapBounds) : undefined,
       client: [event.clientX, event.clientY] }
     svg?.setPointerCapture(event.pointerId)
     setFrozenBounds(frozenBounds ?? fitBounds)
-    if (kind === 'fixture' || kind === 'target') setActiveDrag({ kind, id })
+    if (kind === 'target') setActiveDrag({ kind, id })
     if (kind === 'performer') selectActor(id)
-    else if (kind === 'target' || kind === 'fixture') selectFixture(id, kind === 'target' ? 'target' : 'position')
+    else if (kind === 'target') selectFixture(id, 'target')
     else selectSetPiece(id)
   }
   const moveDrag = (event: PointerEvent<SVGSVGElement>) => {
@@ -1025,13 +1030,11 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
     <div className="plan-board-content">
       <div className="plan-map-pane">
         <div className="plan-map-caption"><strong>平面図</strong>
-          {persistent && <div className="plan-map-mode" role="group" aria-label="図に出すもの">
-            <button type="button" className={mapMode === 'scene' ? 'active' : ''} aria-pressed={mapMode === 'scene'}
-              title="このシーンの役者・舞台セット・照明を置く" onClick={() => setMapMode('scene')}>シーン</button>
-            <button type="button" className={mapMode === 'venue' ? 'active' : ''} aria-pressed={mapMode === 'venue'}
-              title="全シーン共通の舞台の形・壁やバトン・客席を置く" onClick={() => setMapMode('venue')}>会場</button>
-          </div>}
-          <span>{mapMode === 'venue' ? '舞台・壁やバトン・客席を置きます（全シーン共通）' : stageIsEmpty
+          {/* 全シーン共通の物（舞台・壁・バトン・客席・照明の吊る位置）は、ふだんは灰色で動かせない。押したときだけ動かす */}
+          {persistent && <button type="button" className={'plan-rig-toggle' + (mapMode === 'venue' ? ' active' : '')} aria-pressed={mapMode === 'venue'}
+            title="舞台・壁・バトン・客席・照明の吊る位置を動かします。動かすと、すべてのシーンで変わります"
+            onClick={() => setMapMode(mapMode === 'venue' ? 'scene' : 'venue')}>{mapMode === 'venue' ? '✓ 動かし終わる' : '舞台・仕込みを動かす'}</button>}
+          <span>{mapMode === 'venue' ? '全シーン共通の物を動かしています。動かすと、すべてのシーンで変わります' : stageIsEmpty
           ? 'まず舞台に置くものを選んでください'
           : tool === 'select' ? '選ぶだけの道具です。動かすときは「移動」を選びます'
             : selectedPerformer ? `${selectedPerformer.name}を選択中 · 丸をドラッグして立ち位置を変更`
@@ -1048,6 +1051,9 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
         {mapMode === 'venue' ? <VenueMap /> : <>
         <div className="plan-map-layerbar" role="group" aria-label="平面図の表示">
           <span>図に表示</span>
+          <button type="button" className={showShared ? 'active' : ''} aria-pressed={showShared}
+            title="全シーン共通の壁・バトン・客席を、灰色で下に描きます"
+            onClick={() => setShowShared(value => !value)}>壁・客席：{showShared ? '表示中' : '非表示'}</button>
           <button type="button" className={showSetPieces ? 'active' : ''} aria-pressed={showSetPieces}
             onClick={() => setShowSetPieces(value => !value)}>舞台セット：{showSetPieces ? '表示中' : '非表示'}</button>
           <button type="button" className={showFixtures ? 'active' : ''} aria-pressed={showFixtures}
@@ -1105,7 +1111,7 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
             </text>
             <clipPath id="plan-map-clip"><rect x="8" y="70" width="944" height="552" /></clipPath>
             <g clipPath="url(#plan-map-clip)">
-            {/* 会場の図と同じ見た目: 奥行の目盛り、濃い色の舞台、壁・バトン、客席。どれも触れない（「会場」で動かす） */}
+            {/* 全シーン共通の物（奥行の目盛り、舞台、壁・バトン、客席）は下絵として描き、触れない（「舞台・仕込みを動かす」で動かす） */}
             {(() => {
               const step = gridStep(MAP.height / (mapBounds.front - mapBounds.rear))
               const first = Math.ceil(mapBounds.rear / step)
@@ -1117,20 +1123,20 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
             })()}
             <polygon points={stageOutline.map(([x, z]) => `${mapX(x)},${stageMapY(z)}`).join(' ')}
               fill="#423d3a" stroke="#a57545" strokeWidth="4" pointerEvents="none" />
-            {stageParts.map(part => {
+            {showShared && stageParts.map(part => {
               const corners = partCorners(part).map(([x, z]): StagePoint => [x + (venue.stageOffset?.[0] ?? 0), z + (venue.stageOffset?.[1] ?? 0)])
               const color = part.color ?? PART_COLORS[part.kind]
               return isFlat(part.kind)
                 ? <polygon key={part.id} points={corners.map(([x, z]) => `${mapX(x)},${mapY(z)}`).join(' ')} fill={color}
-                  fillOpacity={part.kind === 'floor' ? .55 : .85} stroke="#c9b9a3" strokeWidth="1.5"
+                  fillOpacity={part.kind === 'floor' ? .4 : .5} stroke="#c9b9a3" strokeWidth="1.5"
                   strokeDasharray={part.kind === 'floor' ? '6 4' : undefined} pointerEvents="none" />
                 : <line key={part.id} x1={mapX(corners[0][0])} y1={mapY(corners[0][1])} x2={mapX(corners[1][0])} y2={mapY(corners[1][1])}
                   stroke={color} strokeWidth={part.kind === 'batten' ? 4 : 7} strokeDasharray={part.kind === 'batten' ? '10 5' : undefined}
-                  strokeLinecap="round" opacity=".8" pointerEvents="none" />
+                  strokeLinecap="round" opacity=".45" pointerEvents="none" />
             })}
-            {audienceBlocks.map(block => {
+            {showShared && audienceBlocks.map(block => {
               const seat = Math.max(3, MAP.width / (mapBounds.right - mapBounds.left) * .5)
-              return <g key={block.id} pointerEvents="none" opacity=".7">
+              return <g key={block.id} pointerEvents="none" opacity=".4">
                 {audienceSeatPositions(block).map(([x, z], index) => <rect key={index}
                   x={mapX(x) - seat / 2} y={mapY(z) - seat * .45} width={seat} height={seat * .9} rx="2"
                   transform={`rotate(${-block.rotationDeg} ${mapX(x)} ${mapY(z)})`} fill="#71565c" stroke="#f6ede4" strokeWidth=".8" />)}
@@ -1231,8 +1237,8 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
                 <circle cx={tx} cy={ty} r={active ? 19 : 13}
                   fill={colorToHex(fixture.color)} fillOpacity=".3" stroke={active ? '#c8482d' : '#7b6b5a'}
                   strokeWidth={active ? 5 : 2} pointerEvents="none" />
-                <g role="button" tabIndex={0} aria-label={fixture.name + 'の位置を動かす（向きはそのまま）'} data-menu-kind="fixture" data-menu-id={fixture.id}
-                  style={{ cursor: 'grab', touchAction: 'none' }}
+                <g role="button" tabIndex={0} aria-label={fixture.name + '（吊る位置は全シーン共通。ここでは選ぶだけ）'} data-menu-kind="fixture" data-menu-id={fixture.id}
+                  style={{ cursor: 'pointer', touchAction: 'none' }}
                   onPointerDown={event => beginDrag(event, 'fixture', fixture.id, [fixture.position[0], fixture.position[2]])}
                   onKeyDown={event => {
                     const delta = arrowDelta(event.key)
@@ -1242,26 +1248,14 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
                       return
                     }
                     if (!delta) return
+                    // 吊る位置は全シーン共通なので、この図では動かさない
                     event.preventDefault()
                     selectFixture(fixture.id)
-                    setLastMove({ kind: 'fixture', id: fixture.id, sceneId: scene.id,
-                      from: [fixture.position[0], fixture.position[2]], fromTarget: [fixture.target[0], fixture.target[2]] })
-                    // 位置だけ動かす。狙いも同じだけ動かして向きを保つ
-                    updateFixture(fixture.id, {
-                      position: [
-                        clamp(fixture.position[0] + delta[0], mapBounds.left + .5, mapBounds.right - .5), fixture.position[1],
-                        clamp(fixture.position[2] + delta[1], mapBounds.rear + .5, THEATRE.maxZ),
-                      ],
-                      target: [
-                        clamp(fixture.target[0] + delta[0], mapBounds.left + .2, mapBounds.right - .2), fixture.target[1],
-                        clamp(fixture.target[2] + delta[1], mapBounds.rear + .2, mapBounds.front - .2),
-                      ],
-                    })
                   }}>
                   <title>{fixture.name}{fixture.position[2] > 2 ? `・舞台前から ${(fixture.position[2] - 2).toFixed(1)}m` : ''}</title>
                   <circle cx={px} cy={py} r={Math.max(21, touchRadius)} fill="transparent" />
                   <circle cx={px} cy={py} r="21"
-                    fill={active ? '#c8482d' : '#322c29'} stroke={dragging === 'fixture' ? '#2f6f8f' : '#fffdf8'}
+                    fill={active ? '#c8482d' : '#8d847b'} stroke={dragging === 'fixture' ? '#2f6f8f' : '#fffdf8'}
                     strokeWidth={dragging === 'fixture' ? Math.max(6, 3 * unitsPerPx) : 3} />
                   <text x={px} y={py + 6}
                     textAnchor="middle" fill="#fffdf8" fontSize="17" fontWeight="700"
@@ -1348,6 +1342,10 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
           </svg>
         </div>
         </>}
+        {mapMode === 'scene' && <div className="plan-scope-legend" aria-label="図の見方">
+          <span><i className="shared" aria-hidden="true" />灰色＝全シーン共通（舞台・壁・バトン・客席・照明の吊る位置）</span>
+          <span><i className="scene" aria-hidden="true" />色付き＝このシーンだけ（役者・セット・照明の狙い）</span>
+        </div>}
         {mapMode === 'scene' && <div className="plan-map-footer">
           <div className="plan-actor-key">{performers.map((actor, index) => <div className="plan-actor-entry" key={actor.id}>
             <button className={'plan-actor-select' + (actor.id === selectedPerformer?.id ? ' active' : '')}
