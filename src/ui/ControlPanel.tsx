@@ -1,3 +1,4 @@
+import { aimFrom, canUseGobo, GOBO_LABELS, goboOf, isMover, MOVEMENT_LABELS, MOVEMENT_LIMITS, movementOf, panTiltOf, type FixtureMovement, type GoboPattern, type MovementPattern } from '../lighting/movingHead'
 import { useEffect, useRef } from 'react'
 import { useStore, type Fixture } from '../store'
 import { FIXTURE_PROFILES, KIND_LABELS } from '../lighting/fixtureTypes'
@@ -243,6 +244,16 @@ export function FixtureEditor({ fixture }: { fixture: Fixture }) {
 
       {isMeasured && <BarnDoorEditor fixture={fixture} onChange={update} />}
 
+      {isMover(fixture) && <MoverControls fixture={fixture} onChange={update} />}
+
+      {canUseGobo(fixture) && <div className="row">
+        <label>ゴボ</label>
+        <select value={goboOf(fixture) ?? ''} onChange={e => update({ gobo: (e.target.value || undefined) as GoboPattern | undefined })}>
+          <option value="">なし</option>
+          {GOBO_LABELS.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+        </select>
+      </div>}
+
       {profile.kind === 'PAR' && (
         <Slider label="器具回転" value={fixture.rotationZDeg} min={-180} max={180}
           onChange={v => update({ rotationZDeg: v })} unit="°" fmt={v => v.toFixed(0)} />
@@ -274,3 +285,32 @@ export function FixtureEditor({ fixture }: { fixture: Fixture }) {
   )
 }
 
+
+/** ムービングライトの向き（パン・チルト）と、シーンの中で動き続ける「動き」 */
+function MoverControls({ fixture, onChange }: { fixture: Fixture; onChange: (patch: Partial<Fixture>) => void }) {
+  const { pan, tilt, distance } = panTiltOf(fixture.position, fixture.target)
+  const movement = movementOf(fixture)
+  const aim = (nextPan: number, nextTilt: number) => onChange({ target: aimFrom(fixture.position, nextPan, nextTilt, distance || 6) })
+  const setMovement = (patch: Partial<FixtureMovement> | null) => onChange({
+    movement: patch === null ? undefined : { ...(movement ?? { pattern: 'circle', sizeM: 1.5, periodS: 6 }), ...patch },
+  })
+  return <>
+    <h3>ムービング</h3>
+    <Slider label="パン（横）" value={pan} min={-180} max={180} step={1} onChange={v => aim(v, tilt)} unit="°" fmt={v => v.toFixed(0)} />
+    <Slider label="チルト（縦）" value={tilt} min={0} max={135} step={1} onChange={v => aim(pan, v)} unit="°" fmt={v => v.toFixed(0)} />
+    <div className="row">
+      <label>動き</label>
+      <select value={movement?.pattern ?? ''} onChange={e => setMovement(e.target.value ? { pattern: e.target.value as MovementPattern } : null)}>
+        <option value="">止める</option>
+        {MOVEMENT_LABELS.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+      </select>
+    </div>
+    {movement && <>
+      <Slider label="動きの大きさ" value={movement.sizeM} min={MOVEMENT_LIMITS.size[0]} max={MOVEMENT_LIMITS.size[1]} step={0.1}
+        onChange={v => setMovement({ sizeM: v })} unit="m" fmt={v => v.toFixed(1)} />
+      <Slider label="1 周の秒数" value={movement.periodS} min={MOVEMENT_LIMITS.period[0]} max={MOVEMENT_LIMITS.period[1]} step={0.5}
+        onChange={v => setMovement({ periodS: v })} unit="秒" fmt={v => v.toFixed(1)} />
+    </>}
+    <p className="mover-note">パン・チルトは狙いの点と同じものです。3D や平面図で狙いを動かしても変わります。動きは、狙いの点のまわりを回ります。シーンが切り替わるときは、角度を回して次の狙いへ動きます。</p>
+  </>
+}

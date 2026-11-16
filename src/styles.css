@@ -4879,3 +4879,6 @@ body.embed .workspace-switch { display: none; }
 /* 「ログインしていません」の窓: ログインを主に、プロジェクト一覧へは控えめに */
 .workspace-connection-dialog .workspace-editor-actions a { text-decoration: none; font-weight: 600; }
 .workspace-connection-dialog .workspace-editor-actions a + button { background: transparent; border: 1px solid rgba(208, 161, 95, .6); color: #f2e6cf; }
+
+/* ムービングライトの説明（ControlPanel.tsx の MoverControls） */
+.mover-note { margin: 4px 0 10px; font-size: 11px; line-height: 1.55; color: var(--ink-muted); }
