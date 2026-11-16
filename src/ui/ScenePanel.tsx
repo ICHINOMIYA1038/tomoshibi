@@ -372,7 +372,7 @@ function CloudScenes() {
         <header className="scene-section-h">
           <span>保存済み</span>
           <span className="scene-count">
-            {scenes.length} / {isPro ? '∞' : maxScenes}
+            {scenes.length} / {maxScenes}
             {isPro && <span className="pro-badge" title="Pro プラン">Pro</span>}
           </span>
         </header>
@@ -410,7 +410,7 @@ function CloudScenes() {
             <span className="pro-upsell-icon">✦</span>
             <span className="pro-upsell-body">
               <strong>Pro プラン</strong>
-              <span>月額300円で保存無制限</span>
+              <span>月額300円で、10件まで保存</span>
             </span>
             <span className="pro-upsell-arrow">→</span>
           </a>
@@ -451,7 +451,7 @@ function UpgradeModal({ scenesCount, limit, onClose }: { scenesCount: number; li
           <span className="upgrade-price-per">/月</span>
         </div>
         <ul className="upgrade-bullets">
-          <li>クラウド保存<strong>無制限</strong></li>
+          <li>クラウドに<strong>10件まで</strong>保存</li>
           <li>いつでも解約可能・違約金なし</li>
           <li>シミュレーター本体は Free と同じ全機能</li>
         </ul>
