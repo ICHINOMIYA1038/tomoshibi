@@ -10,6 +10,7 @@ import { canBeParent, hierarchyContext, parentOf, STAGE_ID, type ChildKind } fro
 import { PERFORMER_POSES } from '../performerPoses'
 import { canDelete, deleteSelection, duplicateSelection } from '../objectActions'
 import { useStageParts } from './StagePartsEditor'
+import { smokeAmountOf } from '../scene/SmokeCloud'
 import { InspectorSection, NumberField } from './fields'
 import { partName } from './HierarchyPanel'
 import { FixtureEditor } from './ControlPanel'
@@ -159,7 +160,23 @@ function PerformerInspector({ performer }: { performer: Performer }) {
 
 const APPEARANCE_LABELS: Array<[SetPieceAppearance, string]> = [
   ['basic', '基本形'], ['bench', 'ベンチ'], ['door', '扉'], ['suitcase', '鞄'], ['table', '机'], ['bookshelf', '書架'], ['window', '窓'],
+  ['smoke', 'スモークマシン'], ['dryice', 'ドライアイス'],
 ]
+
+/** スモークマシン・ドライアイスの量と、このシーンの会場全体のヘイズ */
+function SmokeSection({ piece, onChange }: { piece: SetPiece; onChange: (patch: Partial<SetPiece>) => void }) {
+  const haze = useStore(s => s.settings.hazeDensity)
+  const updateSettings = useStore(s => s.updateSettings)
+  return <InspectorSection title={piece.appearance === 'smoke' ? 'スモーク' : 'ドライアイス'}>
+    <NumberField label="量" value={Math.round(smokeAmountOf(piece) * 100)} min={0} max={100} step={5} unit="%"
+      onChange={value => onChange({ smokeAmount: Math.min(1, Math.max(0, value / 100)) })} />
+    <NumberField label="会場のヘイズ" value={Math.round(haze * 100)} min={0} max={100} step={5} unit="%"
+      onChange={value => updateSettings({ hazeDensity: Math.min(1, Math.max(0, value / 100)) })} />
+    <p className="inspector-note">{piece.appearance === 'smoke'
+      ? '煙は前（青い矢印の向き）へ出て、上へ広がります。量が多いほど、光の筋が濃く見えます。'
+      : '冷たい煙が前へ出て、床を這うように広がります。'}「会場のヘイズ」は、このシーンの会場全体の薄いもやです（設定の「ヘイズ濃度」と同じ）。</p>
+  </InspectorSection>
+}
 
 function SetPieceInspector({ piece }: { piece: SetPiece }) {
   const update = (patch: Partial<SetPiece>) => useStore.getState().updateSetPiece(piece.id, patch)
@@ -193,6 +210,7 @@ function SetPieceInspector({ piece }: { piece: SetPiece }) {
         <NumberField label="奥行" value={piece.size[2]} min={.05} max={30} step={.05} onChange={value => resize(2, value)} />
       </> : <NumberField label="大きさ" value={piece.scale} min={.05} max={20} step={.05} unit="倍" onChange={value => update({ scale: value })} />}
     </InspectorSection>
+    {(piece.appearance === 'smoke' || piece.appearance === 'dryice') && <SmokeSection piece={piece} onChange={update} />}
     {piece.kind !== 'gltf' && <InspectorSection title="見た目">
       <label className="inspector-text"><span>形</span>
         <select value={piece.appearance ?? 'basic'} onChange={event => update({ appearance: event.target.value as SetPieceAppearance })}>

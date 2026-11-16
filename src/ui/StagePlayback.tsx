@@ -6,6 +6,17 @@ import { interpolateStage } from '../playback/interpolateStage'
 
 const TRANSITION_MS = 1200
 
+type LookSettings = ReturnType<typeof useStore.getState>['settings']
+/** シーンの切り替わりで、ヘイズ・環境光・露出をなめらかに移す。シーンに値が無ければいまの値のまま */
+function interpolateLook(from: PlanScene, to: PlanScene, current: LookSettings, t: number) {
+  const pick = (key: 'hazeDensity' | 'ambient' | 'exposure' | 'bloom') => {
+    const a = from.look?.[key] ?? current[key]
+    const b = to.look?.[key] ?? current[key]
+    return typeof a === 'number' && typeof b === 'number' ? a + (b - a) * t : current[key]
+  }
+  return { hazeDensity: pick('hazeDensity'), ambient: pick('ambient'), exposure: pick('exposure'), bloom: pick('bloom') }
+}
+
 export function StagePlayback({ onClose, simplified = false }: { onClose: () => void; simplified?: boolean }) {
   const cameraView = useStore(state => state.settings.cameraView)
   const [scenes, setScenes] = useState<PlanScene[]>([])
@@ -26,11 +37,13 @@ export function StagePlayback({ onClose, simplified = false }: { onClose: () => 
     cancelAnimationFrame(frameRef.current)
     movingRef.current = false
     indexRef.current = nextIndex
-    useStore.setState({
+    useStore.setState(state => ({
       productionPlan: { ...plan, activeSceneId: scene.id },
       ...sceneStage(scene),
+      // シーンごとのヘイズ・明るさも切り替える（終わったら endPreview が元に戻す）
+      settings: scene.look ? { ...state.settings, ...scene.look } : state.settings,
       selection: { kind: null, id: null },
-    })
+    }))
     setIndex(nextIndex)
     setTransitioning(false)
   }, [])
@@ -54,10 +67,11 @@ export function StagePlayback({ onClose, simplified = false }: { onClose: () => 
       }
       if (now - lastDraw >= 30) {
         const eased = progress * progress * (3 - 2 * progress)
-        useStore.setState({
+        useStore.setState(state => ({
           productionPlan: { ...plan, activeSceneId: from.id },
           ...interpolateStage(from, to, eased),
-        })
+          settings: { ...state.settings, ...interpolateLook(from, to, state.settings, eased) },
+        }))
         lastDraw = now
       }
       frameRef.current = requestAnimationFrame(tick)

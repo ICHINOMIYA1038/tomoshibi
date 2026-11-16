@@ -57,6 +57,7 @@ export const SET_PIECE_TYPES = [
   { id: 'box', label: '箱馬' }, { id: 'platform', label: '平台' }, { id: 'riser', label: '高台' },
   { id: 'bench', label: 'ベンチ' }, { id: 'door', label: '扉' }, { id: 'suitcase', label: '鞄' },
   { id: 'table', label: '机' }, { id: 'bookshelf', label: '書架' }, { id: 'window', label: '窓' },
+  { id: 'smoke', label: 'スモーク' }, { id: 'dryice', label: 'ドライアイス' },
 ] as const
 export type SetPieceType = typeof SET_PIECE_TYPES[number]['id']
 
@@ -67,6 +68,8 @@ const APPEARANCES: Record<string, { name: string; size: [number, number, number]
   table: { name: '机', size: [2.2, 0.8, 1.1], color: '#75523c' },
   bookshelf: { name: '書架', size: [2.3, 2.7, 0.5], color: '#4c3a35' },
   window: { name: '窓', size: [2.5, 2.8, 0.16], color: '#5c6774' },
+  smoke: { name: 'スモークマシン', size: [0.5, 0.3, 0.35], color: '#2a2a2e' },
+  dryice: { name: 'ドライアイス', size: [0.6, 0.5, 0.5], color: '#3a3d44' },
 }
 
 /** at は床の上の位置（世界の x, z）。無ければ舞台の中央付近に、重ならないようずらして置く */

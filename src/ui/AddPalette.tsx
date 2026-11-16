@@ -43,6 +43,8 @@ function Glyph({ name }: { name: string }) {
     cyc: <path {...line} d="M4 20V9c0-3 3-5 8-5s8 2 8 5v11" />,
     batten: <path {...line} d="M3 6h18M6 6v2m6-2v2m6-2v2M6 10l-1 3m7-3v3m6-3 1 3" />,
     wing: <path {...line} d="M6 3v18m0-18c2 3 0 6 2 9s0 6-2 9m12-18v18m0-18c-2 3 0 6-2 9s0 6 2 9" />,
+    smoke: <><rect {...line} x="3" y="14" width="8" height="5" rx="1" /><path {...line} d="M11 16h2m1-2a2.5 2.5 0 0 1 3-3 3 3 0 0 1 5 2 2.5 2.5 0 0 1-2 4h-5" /></>,
+    dryice: <path {...line} d="M3 18c2-2 4-2 6 0s4 2 6 0 4-2 6 0M5 14c1.5-1.5 3-1.5 4.5 0s3 1.5 4.5 0 3-1.5 4.5 0M9 9h6v3H9Z" />,
     audience: <path d="M4 6h4v4H4Zm6 0h4v4h-4Zm6 0h4v4h-4ZM4 13h4v4H4Zm6 0h4v4h-4Zm6 0h4v4h-4Z" fill="currentColor" />,
   }
   return <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">{shapes[name]}</svg>
@@ -62,9 +64,12 @@ function Tile({ item, glyph, label, title }: { item: AddItem; glyph: string; lab
   </button>
 }
 
+/** 舞台セットの一覧とは分けて「効果」に並べるもの */
+const EFFECT_TYPES = new Set<SetPieceType>(['smoke', 'dryice'])
+
 const SET_PIECE_GLYPH: Record<SetPieceType, string> = {
   box: 'box', platform: 'platform', riser: 'riser', bench: 'bench', door: 'door',
-  suitcase: 'suitcase', table: 'table', bookshelf: 'bookshelf', window: 'window',
+  suitcase: 'suitcase', table: 'table', bookshelf: 'bookshelf', window: 'window', smoke: 'smoke', dryice: 'dryice',
 }
 
 export function AddPalette() {
@@ -101,7 +106,13 @@ export function AddPalette() {
     <section aria-label="舞台セット">
       <h3>舞台セット</h3>
       <div className="add-tiles">
-        {SET_PIECE_TYPES.map(item => <Tile key={item.id} item={{ kind: 'setpiece', type: item.id }} glyph={SET_PIECE_GLYPH[item.id]} label={item.label} />)}
+        {SET_PIECE_TYPES.filter(item => !EFFECT_TYPES.has(item.id)).map(item => <Tile key={item.id} item={{ kind: 'setpiece', type: item.id }} glyph={SET_PIECE_GLYPH[item.id]} label={item.label} />)}
+      </div>
+    </section>
+    <section aria-label="効果">
+      <h3>効果</h3>
+      <div className="add-tiles">
+        {SET_PIECE_TYPES.filter(item => EFFECT_TYPES.has(item.id)).map(item => <Tile key={item.id} item={{ kind: 'setpiece', type: item.id }} glyph={SET_PIECE_GLYPH[item.id]} label={item.label} />)}
       </div>
     </section>
     <section aria-label="舞台の部品">
