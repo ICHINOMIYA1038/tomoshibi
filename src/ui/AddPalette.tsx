@@ -6,7 +6,7 @@ import { PART_LABELS, type StagePartKind } from '../stageParts'
 // ヒエラルキーの「＋ 追加」で開く一覧。絵の付いた札を押すと既定の位置に、3D の画面へドラッグすると落とした所に置く
 
 // 札は種類ごとに 1 つ。押すと、その種類でいちばんよく使う器具（多くは 1kW）を置く
-const FIXTURE_TILES: Array<{ kind: FixtureKind; label: string; preset?: string }> = [
+export const FIXTURE_TILES: Array<{ kind: FixtureKind; label: string; preset?: string }> = [
   { kind: 'PC', label: '平凸', preset: 'PC8' },
   { kind: 'Fresnel', label: 'フレネル', preset: 'Fresnel8' },
   { kind: 'Profile', label: 'エリスポ', preset: 'Source4_26' },
@@ -21,14 +21,14 @@ const FIXTURE_TILES: Array<{ kind: FixtureKind; label: string; preset?: string }
   { kind: 'LED_Bar', label: 'LED バー' },
   { kind: 'MovingHead', label: 'ムービング' },
 ]
-const FIXTURE_GLYPH: Partial<Record<FixtureKind, string>> = {
+export const FIXTURE_GLYPH: Partial<Record<FixtureKind, string>> = {
   LED_Bar: 'bar', Border: 'bar', Footlight: 'bar', Cyc: 'cyc', MovingHead: 'moving', FollowSpot: 'pin',
 }
 // 舞台の平台は、舞台セットの「平台」と紛らわしいので出さない（以前の追加の一覧と同じ）
-const STAGE_PART_KINDS: StagePartKind[] = ['floor', 'wall', 'cyc', 'batten', 'wing']
+export const STAGE_PART_KINDS: StagePartKind[] = ['floor', 'wall', 'cyc', 'batten', 'wing']
 
 /** 札の絵。24×24 の線画 */
-function Glyph({ name }: { name: string }) {
+export function Glyph({ name }: { name: string }) {
   const line = { fill: 'none', stroke: 'currentColor', strokeWidth: 1.6, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const }
   const shapes: Record<string, ReactNode> = {
     lamp: <><path {...line} d="M6 5h7l3 5-3 5H6Z" /><path {...line} d="M16 10h1m2-4 2-1m-2 9 2 1M9 15v4m-3 0h6" /></>,
@@ -72,9 +72,9 @@ function Tile({ item, glyph, label, title }: { item: AddItem; glyph: string; lab
 }
 
 /** 舞台セットの一覧とは分けて「効果」に並べるもの */
-const EFFECT_TYPES = new Set<SetPieceType>(['smoke', 'dryice'])
+export const EFFECT_TYPES = new Set<SetPieceType>(['smoke', 'dryice'])
 
-const SET_PIECE_GLYPH: Record<SetPieceType, string> = {
+export const SET_PIECE_GLYPH: Record<SetPieceType, string> = {
   box: 'box', platform: 'platform', riser: 'riser', bench: 'bench', door: 'door',
   suitcase: 'suitcase', table: 'table', bookshelf: 'bookshelf', window: 'window', smoke: 'smoke', dryice: 'dryice',
 }

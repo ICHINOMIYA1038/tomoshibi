@@ -22,6 +22,7 @@ import { AdSlot, useShowAds } from './ui/Ads'
 import { FloorPicker, pickDropPoint } from './scene/FloorPicker'
 import { ADD_DRAG_TYPE, addItem, parseAddItem } from './objectActions'
 import { XRButton, XRGLBinder } from './scene/XRSupport'
+import { PhoneChrome } from './ui/PhoneChrome'
 import { ControlPanel } from './ui/ControlPanel'
 import { HelpOverlay } from './ui/HelpOverlay'
 import { SettingsModal } from './ui/SettingsModal'
@@ -150,6 +151,8 @@ export default function App() {
   // 無料プランの広告の帯（編集画面の下）。画面に固定する広告は PC だけ（AdSense の決まり）。通しで見るのあいだは隠す
   const showAds = useShowAds()
   const wideScreen = useWideScreen()
+  const phone = usePhone()
+  const phoneLayout = phone && isMockPreview && !isEmbed
   const adFooter = showAds && wideScreen && isMockPreview && mockPage !== 'projects' && !playbackOpen && !isEmbed
   useEffect(() => {
     const close = () => setPlaybackOpen(false)
@@ -357,7 +360,7 @@ export default function App() {
       {isMockPreview && <><WorkspaceNotices /><UpdateNotice /><CloudProjectAutosave /></>}
       {isMockPreview && mockPage === 'projects'
         ? <ProjectLibrary onOpenEditor={() => navigateMock('editor')} />
-        : <div className={'unified-shell' + (planOpen ? ' plan-open' : '') + (settings.panelOpen ? ' panel-open' : '') + (playbackOpen ? ' playback-open' : '') + (isMockPreview ? ' workspace-layout mobile-view-' + mobileView : '') + (mapVisible ? '' : ' map-hidden') + (outlineVisible ? ' outline-visible' : '') + (adFooter ? ' has-ad-footer' : '')}>
+        : <div className={'unified-shell' + (planOpen ? ' plan-open' : '') + (settings.panelOpen ? ' panel-open' : '') + (playbackOpen ? ' playback-open' : '') + (isMockPreview ? ' workspace-layout mobile-view-' + mobileView : '') + (mapVisible ? '' : ' map-hidden') + (outlineVisible ? ' outline-visible' : '') + (adFooter ? ' has-ad-footer' : '') + (phoneLayout ? ' phone-layout' : '')}>
       {/* 右ボタンを押して離しただけのときに、右クリックのメニューを出す（ドラッグは視点の移動。objectMenu.ts） */}
       <div className={'canvas-wrap' + (addDropActive ? ' add-drop-active' : '')} onContextMenu={event => event.preventDefault()}
         onPointerDownCapture={canvasPointerDown} onPointerUpCapture={canvasPointerUp}
@@ -517,6 +520,9 @@ export default function App() {
           <span aria-hidden="true">{showSceneDirections ? '✓' : ''}</span>役者の動きの矢印</button>
       </div>}
 
+      {phoneLayout && !playbackOpen && <PhoneChrome title={projectTitle ?? ''} view={mobileView}
+        onView={next => { setMobileView(next); if (next === 'plan') setMapVisible(true) }}
+        onBack={() => navigateMock('projects')} onPlay={startPlayback} />}
       {!playbackOpen && <ControlPanel planOpen={planOpen} />}
       {!playbackOpen && <ScenePanel />}
       {!playbackOpen && <ObjectContextMenu />}
@@ -827,6 +833,19 @@ function SelectionStatusHint() {
 }
 
 /** PC の幅か（画面に固定する広告は PC だけに出す） */
+/** スマホの幅（600px 以下）。編集画面を PC とは別の作り（PhoneChrome）にする */
+function usePhone() {
+  const query = '(max-width: 600px)'
+  const [phone, setPhone] = useState(() => window.matchMedia(query).matches)
+  useEffect(() => {
+    const list = window.matchMedia(query)
+    const change = () => setPhone(list.matches)
+    list.addEventListener('change', change)
+    return () => list.removeEventListener('change', change)
+  }, [])
+  return phone
+}
+
 function useWideScreen() {
   const query = '(min-width: 961px)'
   const [wide, setWide] = useState(() => typeof window !== 'undefined' && window.matchMedia(query).matches)
