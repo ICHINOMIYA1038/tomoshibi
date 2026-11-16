@@ -1,13 +1,14 @@
 import * as THREE from 'three'
 import type { Fixture } from '../store'
-import { candelaAt, parseIES } from '../lighting-lab/photometry'
-import midIES from './data/etc-fos4-fresnel10-daylight-mid.ies?raw'
+import { candelaAt } from '../lighting-lab/photometry'
+import { syntheticFresnelProfile } from './syntheticProfiles'
 
+// フレネルの配光表（公称値から作った近似）。キーの文字列は、保存済みのプランが読めるよう前のまま
 export const MEASURED_FRESNEL_KEY = 'etc-fos4-fresnel10-mid'
 export const MEASURED_FRESNEL_REFERENCE_BEAM_DEG = 28
-export const MEASURED_FRESNEL_DISPLAY_GAIN = 0.08
+export const MEASURED_FRESNEL_DISPLAY_GAIN = 0.14
 
-const midProfile = parseIES(midIES)
+const midProfile = syntheticFresnelProfile(MEASURED_FRESNEL_REFERENCE_BEAM_DEG)
 const cookieCache = new Map<string, THREE.DataTexture>()
 
 type BarnDoorSide = 'top' | 'right' | 'bottom' | 'left'

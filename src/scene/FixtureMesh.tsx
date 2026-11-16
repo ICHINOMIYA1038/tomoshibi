@@ -24,8 +24,9 @@ function FixtureBody({ kind, length, diameter, color }: {
 }) {
   const r = diameter / 2
 
-  if (kind === 'PAR' || kind === 'LED_PAR' || kind === 'LED_Bar') {
-    const isBar = kind === 'LED_Bar'
+  // ボーダー・ホリゾント・フットも、横に長い箱に光の粒が並ぶ形で描く
+  if (kind === 'PAR' || kind === 'LED_PAR' || kind === 'LED_Bar' || kind === 'Border' || kind === 'Cyc' || kind === 'Footlight') {
+    const isBar = kind === 'LED_Bar' || kind === 'Border' || kind === 'Cyc' || kind === 'Footlight'
     if (isBar) {
       return (
         <group>

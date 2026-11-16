@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import { FIXTURE_PROFILES } from '../lighting/fixtureTypes'
-import { illuminanceAt, parseIES, prepareFixture, type LabFixture, type MeasuredFixture, type Vector3Tuple } from './photometry'
+import { illuminanceAt, prepareFixture, type LabFixture, type MeasuredFixture, type Vector3Tuple } from './photometry'
+import { syntheticCycProfile, syntheticFresnelProfile } from '../photometric/syntheticProfiles'
 import './style.css'
 
 type Cue = 'blackout' | 'single' | 'singleVertical' | 'wash' | 'cyc' | 'combined' | 'combined6'
@@ -17,7 +18,7 @@ app.innerHTML = `
       <div class="eyebrow">TOMOSHIBI 小屋 / LIGHTING LAB</div>
       <h1>同じ舞台で、光の広がりを比べる</h1>
       <p>「花のしるし」の舞台で、複数の光を重ねた地明かりと背景の見え方を比べます。下には実際の舞台写真も用意しました。</p>
-      <span class="status" id="status">測光データを読み込み中</span>
+      <span class="status" id="status">デモを読み込み中</span>
     </div>
     <nav class="links"><a href="/mock/?demo=akaoni-study">元の演出を開く</a><a href="/mock/projects/">プロジェクト一覧</a></nav>
   </header>
@@ -41,8 +42,8 @@ app.innerHTML = `
     <button data-cue="cyc" aria-pressed="false">背景 3 灯のみ</button>
   </div><p>垂直テストは灯具を床の真上に仮置きします。「真上」視点では配光の輪郭を確認できます。</p></details>
   <div class="compare">
-    <section class="pane"><div class="pane-head"><h2>円錐近似</h2><small>現在の SpotLight 方式を単純化</small></div><div class="viewport" id="cone-view"></div><div class="pane-foot">ビーム角から作った円形の光。計算にはメーカーの配光表を使いません。表示の明るさは校正前です。</div></section>
-    <section class="pane"><div class="pane-head"><h2>実機の測光配光</h2><small>ETC Fresnel 10 Mid / 直接光</small></div><div class="viewport" id="measured-view"></div><div class="pane-foot">地明かりにはデモのビーム角 28°に合う Mid 配光を使用。床・背景・人物を同じ配光表から計算しています。</div></section>
+    <section class="pane"><div class="pane-head"><h2>円錐近似</h2><small>現在の SpotLight 方式を単純化</small></div><div class="viewport" id="cone-view"></div><div class="pane-foot">ビーム角から作った円形の光。計算に配光表を使いません。表示の明るさは校正前です。</div></section>
+    <section class="pane"><div class="pane-head"><h2>配光表で計算</h2><small>公称値から作った近似 / 直接光</small></div><div class="viewport" id="measured-view"></div><div class="pane-foot">地明かりにはデモのビーム角 28°のフレネルの配光表を使用。床・背景・人物を同じ配光表から計算しています。</div></section>
   </div>
   <div class="lower">
     <section class="card"><h2>測光モデルの照度</h2><p>同じ計算を画面の光と測定点に使っています。単位は lux。実測値ではありません。</p><div class="meter" id="meter"></div></section>
@@ -52,8 +53,7 @@ app.innerHTML = `
       <label class="upload">別の写真を表示<input id="reference-file" type="file" accept="image/*" /></label><span class="upload-note">選んだ写真はこの端末内だけで表示します。</span>
     </div></section>
   </div>
-  <p class="notes">測光データは ETC fos/4 Fresnel 10 Daylight Mid と Source Four LED CYC Daylight HD Series 2。デモの灯具位置と調光率を利用しています。「背景 6 灯の配置案」は 3 灯の合計出力を 6 灯へ分けた仮案です。器具の交換、色、ホリゾント灯の取付角度、材質は現場と照合していません。CYC の最大光度方向をデモの狙いへ合わせた試験表示です。舞台写真は別作品のため、画像の明るさや色を画面と直接照合できません。</p>
-  <p class="source">測光データ: <a href="https://www.etcconnect.com/products/entertainment-fixtures/fos/4-fresnel/documentation.aspx" target="_blank" rel="noreferrer">ETC fos/4 Fresnel</a> / <a href="https://www.etcconnect.com/Products/Entertainment-Fixtures/Source-Four-LED-Adapters/Documentation.aspx" target="_blank" rel="noreferrer">ETC Source Four LED CYC</a></p>
+  <p class="notes">配光表は、メーカーの測光データではなく、公称のビーム角と光束から作った近似です（フレネル 28°・10,000 lm、ホリゾント用 5,000 lm）。実機とは異なります。デモの灯具位置と調光率を利用しています。「背景 6 灯の配置案」は 3 灯の合計出力を 6 灯へ分けた仮案です。器具の交換、色、ホリゾント灯の取付角度、材質は現場と照合していません。ホリゾント用の配光の最大の向きを、デモの狙いへ合わせた試験表示です。舞台写真は別作品のため、画像の明るさや色を画面と直接照合できません。</p>
 `
 
 const cueButtons = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-cue]'))
@@ -281,19 +281,14 @@ const probes = [
 ]
 
 async function start(): Promise<void> {
-  const [demoResponse, fresnelResponse, cycResponse] = await Promise.all([
-    fetch('/lighting-lab/data/akaoni-study-baseline.json'),
-    fetch('/lighting-lab/data/etc-fos4-fresnel10-daylight-mid.ies'),
-    fetch('/lighting-lab/data/etc-s4-led-cyc-daylight-hd.ies'),
-  ])
-  if (![demoResponse, fresnelResponse, cycResponse].every(response => response.ok)) throw new Error('デモまたは測光ファイルを読み込めませんでした')
+  const demoResponse = await fetch('/lighting-lab/data/akaoni-study-baseline.json')
+  if (!demoResponse.ok) throw new Error('デモを読み込めませんでした')
   const demoData = await demoResponse.json() as DemoData
   const selectedDemo = demoData.productionPlan.scenes.find(scene => scene.title === '花のしるし')
   if (!selectedDemo) throw new Error('「花のしるし」の舞台データが見つかりません')
   const demo: DemoScene = selectedDemo
-  const fresnel = parseIES(await fresnelResponse.text())
-  const cyc = parseIES(await cycResponse.text())
-  if (fresnel.type !== 1 || cyc.type !== 2) throw new Error('測光ファイルの形式が想定と異なります')
+  const fresnel = syntheticFresnelProfile(28)
+  const cyc = syntheticCycProfile()
   const originals = demo.fixtures.filter(fixture => selected(fixture, 'combined'))
   if (originals.length !== 7) throw new Error('比較対象の灯具配置が変わりました')
   const coneView = createView('#cone-view')
@@ -316,7 +311,7 @@ async function start(): Promise<void> {
         target: [0, 0.08, -2.9],
       } : fixture,
       fixture.presetKey === 'CycWashStudy' ? cyc : fresnel,
-      fixture.presetKey === 'CycWashStudy' ? 'ETC Source Four LED CYC' : 'ETC fos/4 Fresnel 10 Mid',
+      fixture.presetKey === 'CycWashStudy' ? 'ホリゾント用（近似）' : 'フレネル 28°（近似）',
     ))
     const scenes = [buildScene('cone', demo, fixtures), buildScene('measured', demo, fixtures)]
     pair.forEach((item, index) => {
@@ -337,8 +332,8 @@ async function start(): Promise<void> {
       return `<div class="meter-cell"><b>${probe.label}</b><span>${result.lux.toFixed(1)}</span><em>lux</em></div>`
     }).join('')
     status.textContent = cue === 'singleVertical'
-      ? '検証用: 1 灯を床の真上に仮置き · 実機配光は ETC の測光値'
-      : `${fixtures.length} 灯を表示中 · 実機配光は ETC の測光値`
+      ? '検証用: 1 灯を床の真上に仮置き · 配光表は公称値からの近似'
+      : `${fixtures.length} 灯を表示中 · 配光表は公称値からの近似`
   }
 
   for (const button of cueButtons) button.addEventListener('click', () => {

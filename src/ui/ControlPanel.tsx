@@ -184,8 +184,8 @@ export function FixtureEditor({ fixture }: { fixture: Fixture }) {
     <>
       <div className="callout">
         <div style={{ fontSize: 10, color: '#998468', marginTop: 2, fontFamily: 'var(--font-sans)' }}>
-          {isMeasured ? 'ETC fos/4 Fresnel 10 Mid の配光を使用中（光の色は試作値）'
-            : isMeasuredCyc ? 'ETC Source Four LED CYC の配光を使用中（取付角度は試作値）'
+          {isMeasured ? 'フレネルの配光表で計算中（公称値をもとにした近似）'
+            : isMeasuredCyc ? 'ホリゾントの配光表で計算中（公称値をもとにした近似）'
             : `${KIND_LABELS[profile.kind]} / ${profile.fluxLumens.toLocaleString()} lm`}
         </div>
         {fixture.position[2] > 2 && <div style={{ fontSize: 11, color: 'var(--kin)', marginTop: 5 }}>
@@ -205,7 +205,7 @@ export function FixtureEditor({ fixture }: { fixture: Fixture }) {
             onChange={e => update({ photometricProfile: e.target.value === MEASURED_FRESNEL_KEY ? MEASURED_FRESNEL_KEY : undefined })}
           >
             <option value="">標準の近似</option>
-            <option value={MEASURED_FRESNEL_KEY}>ETC Fresnel 10 Mid の配光</option>
+            <option value={MEASURED_FRESNEL_KEY}>配光表で計算（近似）</option>
           </select>
         </div>
       )}
@@ -218,7 +218,7 @@ export function FixtureEditor({ fixture }: { fixture: Fixture }) {
             onChange={e => update({ photometricProfile: e.target.value === MEASURED_CYC_KEY ? MEASURED_CYC_KEY : undefined })}
           >
             <option value="">標準の近似</option>
-            <option value={MEASURED_CYC_KEY}>ETC LED CYC の配光</option>
+            <option value={MEASURED_CYC_KEY}>配光表で計算（近似）</option>
           </select>
         </div>
       )}
@@ -238,7 +238,7 @@ export function FixtureEditor({ fixture }: { fixture: Fixture }) {
         <div className="row">
           <label>ビーム角</label>
           <span className="numval" style={{ flex: 1, textAlign: 'left', color: '#998468' }}>
-            {isMeasuredCyc ? 'IES 配光データに従う' : `${profile.beamAngleDeg}° (固定)`}
+            {isMeasuredCyc ? '配光表に従う' : `${profile.beamAngleDeg}° (固定)`}
           </span>
         </div>
       )}
@@ -257,7 +257,7 @@ export function FixtureEditor({ fixture }: { fixture: Fixture }) {
         </select>
       </div>}
 
-      {profile.kind === 'PAR' && (
+      {(profile.kind === 'PAR' || profile.kind === 'Border' || profile.kind === 'Footlight') && (
         <Slider label="器具回転" value={fixture.rotationZDeg} min={-180} max={180}
           onChange={v => update({ rotationZDeg: v })} unit="°" fmt={v => v.toFixed(0)} />
       )}
