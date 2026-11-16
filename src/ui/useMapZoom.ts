@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState, type RefObject } from 'react'
 import type { StagePoint } from '../store'
 
-/** 図（平面図・会場の配置）の拡大と、図を動かす量。どちらも「最初の縮尺」からの差で持つ */
+/** 図（平面図の「シーン」と「会場」）の拡大と、図を動かす量。どちらも「最初の縮尺」からの差で持つ */
 export type MapZoom = { zoom: number; pan: StagePoint }
 
 const MIN_ZOOM = .25

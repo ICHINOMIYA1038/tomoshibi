@@ -245,7 +245,7 @@ export function sanitizeStageParts(raw: unknown): StagePart[] | undefined {
 /**
  * 照明がこのバトンに吊ってあるか。照明の battenId がこのバトンの id のときだけ吊ってあるとみなす。
  * 位置からの推測はしない（ドラッグ中に通りがかった照明や、たまたま近い照明まで動いてしまうため）。
- * 吊る照明は、会場の配置でバトンを選んだときの「吊っている照明」で決める。
+ * 吊る照明は、平面図の「会場」でバトンを選んだときの「吊っている照明」で決める。
  */
 export function isHungOn(fixture: { battenId?: string }, batten: StagePart) {
   return batten.kind === 'batten' && !!fixture.battenId && fixture.battenId === batten.id

@@ -306,7 +306,7 @@ function StageInspector() {
           aria-pressed={layout.stageShape === shape} onClick={() => chooseShape(shape)}>{label}</button>)}
       </div>
       {layout.stageShape === 'custom' && <>
-        <p className="inspector-note">平面図の「会場の配置」で、道具を「拡大」にして金色の点をドラッグすると、輪郭を変えられます。</p>
+        <p className="inspector-note">平面図を「会場」に切り替え、道具を「拡大」にして金色の点をドラッグすると、輪郭を変えられます。</p>
         <div className="inspector-choice">
           <button type="button" onClick={addVertex} disabled={stageFootprint(layout).length >= 8}>＋ 角を足す</button>
           <button type="button" disabled={stageFootprint(layout).length <= 3} onClick={() => updateVenue({
