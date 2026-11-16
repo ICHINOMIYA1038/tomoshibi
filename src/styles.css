@@ -3464,8 +3464,9 @@ body.embed .workspace-switch { display: none; }
   left: 50%;
   bottom: 16px;
   width: min(780px, calc(100vw - 28px));
-  max-height: min(48vh, 350px);
+  max-height: min(60vh, 420px);
   overflow-y: auto;
+  overscroll-behavior: contain;
   transform: translateX(-50%);
   padding: 12px;
   border: 1px solid rgba(212,175,111,.38);
@@ -3518,21 +3519,46 @@ body.embed .workspace-switch { display: none; }
 .unified-shell .stage-playback-compact .stage-playback-controls { flex-wrap: nowrap; flex: none; }
 .unified-shell .stage-playback-compact .stage-playback-close { margin-left: 0; }
 .unified-shell .stage-playback-restore {
+  /* 隠したあとに戻すボタン。ヘッダーの裏に隠れないよう、画面の下の真ん中に出す */
   position: fixed;
   z-index: 70;
-  top: 14px;
-  right: 14px;
-  min-height: 38px;
-  padding: 7px 12px;
+  left: 50%;
+  bottom: 16px;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: calc(100vw - 28px);
+  min-height: 44px;
+  padding: 6px 8px 6px 16px;
   border: 1px solid rgba(212,175,111,.65);
-  border-radius: 8px;
-  background: rgba(23,20,24,.9);
+  border-radius: 999px;
+  background: rgba(23,20,24,.92);
   color: var(--ink-primary);
-  font: 12px var(--font-sans);
+  font: 13px var(--font-sans);
   cursor: pointer;
   box-shadow: 0 8px 25px rgba(0,0,0,.4);
 }
-.unified-shell .stage-playback-restore span { color: var(--kin); margin-left: 6px; }
+.unified-shell .stage-playback-restore-scene { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; color: var(--ink-secondary); }
+.unified-shell .stage-playback-restore span:last-child { flex: none; padding: 6px 12px; border-radius: 999px; background: rgba(212,175,111,.22); color: var(--kin); font-weight: 700; }
+/* 詳細表示のタイムライン。横にスクロールし、いまのシーンを真ん中に寄せる */
+.unified-shell .stage-playback-timeline { margin: 10px -12px 12px; }
+.unified-shell .stage-playback-timeline ol { display: flex; gap: 0; margin: 0; padding: 22px 12px 6px; list-style: none; overflow-x: auto; scroll-snap-type: x proximity; scrollbar-width: thin; }
+.unified-shell .stage-playback-timeline li { position: relative; flex: none; width: 168px; scroll-snap-align: center; }
+/* シーンをつなぐ線 */
+.unified-shell .stage-playback-timeline li::before { content: ""; position: absolute; left: 0; right: 0; top: 13px; height: 2px; background: rgba(255,255,255,.12); }
+.unified-shell .stage-playback-timeline li.timeline-done::before, .unified-shell .stage-playback-timeline li.timeline-current::before { background: rgba(212,175,111,.6); }
+.unified-shell .stage-playback-timeline li.timeline-group-start::after { content: attr(data-group); position: absolute; left: 6px; top: -18px; max-width: 300px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; color: var(--ink-secondary); font-size: 11px; }
+.unified-shell .stage-playback-timeline li.timeline-group-start { padding-left: 10px; margin-left: 10px; border-left: 1px dashed rgba(255,255,255,.18); }
+.unified-shell .stage-playback .stage-playback-timeline button { position: relative; display: grid; justify-items: start; gap: 3px; width: calc(100% - 8px); margin-right: 8px; padding: 0 8px 8px; border: 0; background: transparent; text-align: left; overflow: hidden; }
+.unified-shell .stage-playback-timeline .timeline-number { position: relative; z-index: 1; display: grid; place-items: center; width: 28px; height: 28px; border: 2px solid rgba(255,255,255,.25); border-radius: 50%; background: #1b1719; color: var(--ink-secondary); font-size: 12px; font-variant-numeric: tabular-nums; }
+.unified-shell .stage-playback-timeline .timeline-done .timeline-number { border-color: rgba(212,175,111,.6); color: var(--kin); }
+.unified-shell .stage-playback-timeline .timeline-current .timeline-number { border-color: var(--kin); background: var(--kin); color: #1b1719; font-weight: 700; }
+.unified-shell .stage-playback-timeline strong { max-width: 100%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: 13px; color: var(--ink-secondary); }
+.unified-shell .stage-playback-timeline .timeline-current strong { color: var(--ink-primary); }
+.unified-shell .stage-playback-timeline small { max-width: 100%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; color: var(--ink-muted); font-size: 11px; }
+.unified-shell .stage-playback-timeline .timeline-progress { position: absolute; left: 8px; right: 8px; bottom: 2px; height: 3px; background: var(--kin); transform-origin: left; animation: timeline-hold linear both; }
+@keyframes timeline-hold { from { transform: scaleX(0); } to { transform: scaleX(1); } }
 .unified-shell .stage-playback-restore:focus-visible { outline: 2px solid var(--kin); outline-offset: 2px; }
 @media (max-width: 960px) {
   .unified-shell .plan-board-head .plan-play-button { padding: 4px 7px; }
@@ -3543,7 +3569,11 @@ body.embed .workspace-switch { display: none; }
   .unified-shell .stage-playback-compact .stage-playback-summary { margin-bottom: 6px; }
   .unified-shell .stage-playback-compact .stage-playback-controls { flex-wrap: wrap; }
   .unified-shell .stage-playback-compact .stage-playback-controls button { flex: 1 1 auto; }
-  .unified-shell .stage-playback-restore { top: 8px; right: 8px; }
+  .unified-shell .stage-playback-restore { bottom: 8px; }
+  .unified-shell .stage-playback-timeline li { width: 140px; }
+  .unified-shell .stage-playback-controls button { white-space: nowrap; flex: 1 1 30%; }
+  .unified-shell .stage-playback-controls label { flex: 1 1 45%; }
+  .unified-shell .stage-playback-controls label select { flex: 1; }
 }
 @media (max-width: 400px) {
   .unified-shell .brand-strip .brand-mark { display: none; }
@@ -4912,3 +4942,10 @@ body.embed .workspace-switch { display: none; }
 .scope-heading.shared { border-color: #8fb3d9; background: rgba(143, 179, 217, .1); color: #b9d1ea; }
 .scope-heading.scene { border-color: #e8b262; background: rgba(232, 178, 98, .1); color: #f2d3a2; }
 .scope-note { margin: 2px 0 8px; font-size: 11px; line-height: 1.5; color: var(--ink-muted); }
+
+/* 新しいプロジェクトの画面の誤り（上限に達したときなど） */
+.project-create-error { margin: 16px 0 0; padding: 12px 14px; border-left: 4px solid #e0674c; background: rgba(224, 103, 76, .14); color: #ffd9cf; }
+.project-create-error strong { display: block; font-size: 14px; line-height: 1.6; }
+.project-create-error p { margin: 4px 0 0; font-size: 13px; line-height: 1.7; color: #f3d2c8; }
+.project-create-error a { margin-left: 6px; color: #ffd9cf; text-decoration: underline; }
+.project-create-actions button:disabled { opacity: .45; cursor: not-allowed; filter: none; }
