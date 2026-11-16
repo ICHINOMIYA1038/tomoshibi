@@ -14,6 +14,7 @@ import { smokeAmountOf } from '../scene/SmokeCloud'
 import { InspectorSection, NumberField } from './fields'
 import { partName } from './HierarchyPanel'
 import { FixtureEditor } from './ControlPanel'
+import { scopeOf } from '../scope'
 import * as THREE from 'three'
 
 // 右パネルの下: 選んだ物の設定（Unity のインスペクター）。
@@ -48,6 +49,7 @@ export function Inspector() {
         {canDelete(selection.kind) && <button type="button" className="danger" onClick={deleteSelection} title="削除（Delete）。⌘Z で戻せます">削除</button>}
       </div>
     </header>
+    {scopeOf(selection.kind) && <p className={'scope-chip ' + scopeOf(selection.kind)!.kind}>{scopeOf(selection.kind)!.detail}</p>}
     {fixture && <FixtureInspector fixture={fixture} />}
     {performer && <PerformerInspector performer={performer} />}
     {setPiece && <SetPieceInspector piece={setPiece} />}

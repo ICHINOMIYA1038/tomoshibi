@@ -153,6 +153,7 @@ export function HierarchyPanel() {
         <button type="button" className="hierarchy-name" onClick={() => select(node.kind, node.id, node.kind === 'fixture' ? 'position' : undefined)}>
           <KindIcon node={node} />
           <strong>{node.label}</strong>
+          {node.kind === 'setpiece' && <em className="scope-tag scene" title="このシーンだけにある物">このシーン</em>}
           {node.detail && <small>{node.detail}</small>}
         </button>
         {node.kind === 'fixture' && <button type="button" className={'hierarchy-lamp' + (node.enabled ? ' on' : '')}

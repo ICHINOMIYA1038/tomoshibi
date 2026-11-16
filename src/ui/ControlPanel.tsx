@@ -164,7 +164,7 @@ export function ControlPanel({ planOpen = false }: { planOpen?: boolean }) {
           <button type="button" onClick={() => update({ panelOpen: false })}>平面図に戻る</button>
         </div>}
         <div className="panel-body unity-panel">
-          {planOpen && <p className="fixture-scope-note">照明の吊る位置と、役者の名前・身長・服の色は全シーン共通です。明るさ・狙い・役者の立ち位置・セットは、いまのシーンに入ります。</p>}
+          {planOpen && <p className="fixture-scope-note">照明の吊る位置と役者の名前・身長・服の色は全シーン共通です。明るさ・狙い・役者の立ち位置と、「このシーン」の印の付いたセットは、いまのシーンだけです。</p>}
           <HierarchyPanel />
           <Inspector />
         </div>
