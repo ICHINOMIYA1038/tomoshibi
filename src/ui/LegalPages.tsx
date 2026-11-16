@@ -28,7 +28,7 @@ const SERVICE = {
   proPriceMonthly: 300,
 }
 
-const UPDATED = '2026年10月24日'
+const UPDATED = '2026年11月16日'
 
 function Layout({ title, children }: { title: string; children: ReactNode }) {
   return (
@@ -151,12 +151,14 @@ export function PrivacyPage() {
 
       <h2>4. Cookie 等の利用</h2>
       <p>本サービスでは、利便性向上のため Cookie を使用する場合があります。ブラウザの設定により Cookie を無効化することも可能ですが、その場合本サービスの一部機能が利用できなくなることがあります。</p>
+      <p>ウェブ版では、無料プランの利用者とログインしていない利用者に、第三者配信の広告サービス「Google AdSense」による広告を表示します。Google などの第三者配信事業者は、Cookie を使用して、利用者が本サービスやほかのウェブサイトに過去にアクセスした際の情報に基づいて広告を配信することがあります。利用者は、<a href="https://adssettings.google.com/" target="_blank" rel="noreferrer">Google の広告設定</a>でパーソナライズ広告を無効にできます。Google による情報の使い方は、<a href="https://policies.google.com/technologies/ads" target="_blank" rel="noreferrer">Google のポリシーと規約</a>をご覧ください。Pro プランの利用者と iOS アプリ版には、広告を表示しません。</p>
 
       <h2>5. 外部サービスの利用</h2>
       <ul>
         <li>認証: 姉妹サービス「戯曲図書館」および Google OAuth</li>
         <li>決済: Stripe 等の決済事業者</li>
-        <li>ホスティング: Vercel Inc.</li>
+        <li>ホスティング: Cloudflare, Inc.</li>
+        <li>広告配信(ウェブ版の無料プラン): Google AdSense</li>
         <li>アプリの利用状況の統計・クラッシュ情報の収集(iOS アプリ版): Google Firebase(Firebase Analytics・Firebase Crashlytics)</li>
       </ul>
       <p>これらのサービスにおける情報の取り扱いは、各サービスのプライバシーポリシーに従います。</p>

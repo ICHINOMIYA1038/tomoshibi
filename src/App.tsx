@@ -18,6 +18,7 @@ import { Beams } from './scene/Beams'
 import { SelectionGizmo } from './scene/SelectionGizmo'
 import { PhotometricProbe, useProbeClickHandler } from './scene/PhotometricProbe'
 import { SetPieces } from './scene/SetPieces'
+import { AdSlot, useShowAds } from './ui/Ads'
 import { FloorPicker, pickDropPoint } from './scene/FloorPicker'
 import { ADD_DRAG_TYPE, addItem, parseAddItem } from './objectActions'
 import { XRButton, XRGLBinder } from './scene/XRSupport'
@@ -146,6 +147,10 @@ export default function App() {
   const displayMenuPanelRef = useRef<HTMLDivElement>(null)
   const [workspaceFeedback, setWorkspaceFeedback] = useState('')
   const [playbackOpen, setPlaybackOpen] = useState(false)
+  // 無料プランの広告の帯（編集画面の下）。画面に固定する広告は PC だけ（AdSense の決まり）。通しで見るのあいだは隠す
+  const showAds = useShowAds()
+  const wideScreen = useWideScreen()
+  const adFooter = showAds && wideScreen && isMockPreview && mockPage !== 'projects' && !playbackOpen && !isEmbed
   useEffect(() => {
     const close = () => setPlaybackOpen(false)
     window.addEventListener('tomoshibi-end-preview', close)
@@ -352,7 +357,7 @@ export default function App() {
       {isMockPreview && <><WorkspaceNotices /><UpdateNotice /><CloudProjectAutosave /></>}
       {isMockPreview && mockPage === 'projects'
         ? <ProjectLibrary onOpenEditor={() => navigateMock('editor')} />
-        : <div className={'unified-shell' + (planOpen ? ' plan-open' : '') + (settings.panelOpen ? ' panel-open' : '') + (playbackOpen ? ' playback-open' : '') + (isMockPreview ? ' workspace-layout mobile-view-' + mobileView : '') + (mapVisible ? '' : ' map-hidden') + (outlineVisible ? ' outline-visible' : '')}>
+        : <div className={'unified-shell' + (planOpen ? ' plan-open' : '') + (settings.panelOpen ? ' panel-open' : '') + (playbackOpen ? ' playback-open' : '') + (isMockPreview ? ' workspace-layout mobile-view-' + mobileView : '') + (mapVisible ? '' : ' map-hidden') + (outlineVisible ? ' outline-visible' : '') + (adFooter ? ' has-ad-footer' : '')}>
       {/* 右ボタンを押して離しただけのときに、右クリックのメニューを出す（ドラッグは視点の移動。objectMenu.ts） */}
       <div className={'canvas-wrap' + (addDropActive ? ' add-drop-active' : '')} onContextMenu={event => event.preventDefault()}
         onPointerDownCapture={canvasPointerDown} onPointerUpCapture={canvasPointerUp}
@@ -529,6 +534,10 @@ export default function App() {
       {!playbackOpen && <SelectionStatusHint />}
       {!isEmbed && <KeyHint />}
     </div>}
+    {adFooter && <footer className="ad-footer" aria-label="広告">
+      <AdSlot width={300} height={50} />
+      <a href="/pro">Pro プランにすると、広告が出なくなります</a>
+    </footer>}
     </OnlineWorkspace>
   )
 }
@@ -815,4 +824,17 @@ function SelectionStatusHint() {
       右パネルから器具/役者を追加、または 3D シーン内をクリックして選択
     </div>
   )
+}
+
+/** PC の幅か（画面に固定する広告は PC だけに出す） */
+function useWideScreen() {
+  const query = '(min-width: 961px)'
+  const [wide, setWide] = useState(() => typeof window !== 'undefined' && window.matchMedia(query).matches)
+  useEffect(() => {
+    const media = window.matchMedia(query)
+    const change = () => setWide(media.matches)
+    media.addEventListener('change', change)
+    return () => media.removeEventListener('change', change)
+  }, [])
+  return wide
 }

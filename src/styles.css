@@ -4970,3 +4970,14 @@ body.embed .workspace-switch { display: none; }
   .library-guide h2 { font-size: 26px; }
   .library-guide-list li { grid-template-columns: 1fr; gap: 12px; }
 }
+
+/* 無料プランの広告（Ads.tsx）。編集画面の下の帯は作業の画面に重ねず、その分だけ画面を縮める */
+.ad-slot { display: grid; justify-items: center; gap: 2px; }
+.ad-slot-label { justify-self: start; color: #8a7d70; font-size: 10px; letter-spacing: .04em; }
+.ad-slot-library { margin-top: auto; padding-top: 16px; }
+.ad-slot-library ins { max-width: 100%; }
+.unified-shell.has-ad-footer { bottom: 64px; transform: translateZ(0); }
+.ad-footer { position: fixed; z-index: 90; left: 0; right: 0; bottom: 0; height: 64px; display: flex; align-items: center; justify-content: center; gap: 24px; padding: 4px max(16px, env(safe-area-inset-right, 0px)) 4px max(16px, env(safe-area-inset-left, 0px)); border-top: 1px solid #3a3133; background: #141113; }
+.ad-footer .ad-slot { grid-template-columns: auto auto; align-items: center; gap: 8px; }
+.ad-footer a { color: #b9ad9f; font-size: 12px; text-decoration: underline; text-underline-offset: 3px; }
+.ad-slot-preview { display: grid; place-items: center; max-width: 100%; border: 1px dashed #d9531e; color: #d9531e; font-size: 12px; }
