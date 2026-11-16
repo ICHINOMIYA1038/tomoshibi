@@ -1,6 +1,7 @@
 import { useMemo, useRef, useEffect } from 'react'
 import * as THREE from 'three'
 import { useFrame, useThree } from '@react-three/fiber'
+import { smokeHaze } from './SmokeCloud'
 import { goboOf, goboTexture, liveTarget, resolveFixture } from '../lighting/movingHead'
 import { useStore, type Fixture } from '../store'
 import { cycBeamAttenuation, fixtureSpotlightModel } from '../lighting/spotlightModel'
@@ -62,7 +63,10 @@ export function Beams() {
   const performers = useStore(s => s.performers)
   // 役者を追う照明は、狙いを役者に置き換えて描く（通しで見るでは、歩く役者についていく）
   const fixtures = useMemo(() => stored.map(f => resolveFixture(f, performers)), [stored, performers])
-  const hazeDensity = useStore(s => s.settings.hazeDensity)
+  const sceneHaze = useStore(s => s.settings.hazeDensity)
+  const setPieces = useStore(s => s.setPieces)
+  // 置いたスモークマシンの煙が、会場の空気を濃くする
+  const hazeDensity = Math.min(1, sceneHaze + smokeHaze(setPieces))
   const maxTextures = useThree(s => s.gl.capabilities.maxTextures)
   const active = fixtures.filter(f => f.enabled)
   // 投影画像と影は同じフラグメントシェーダーのテクスチャ枠を使うため、端末の上限に収める。

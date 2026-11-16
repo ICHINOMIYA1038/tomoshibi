@@ -2,6 +2,7 @@ import { useGLTF } from '@react-three/drei'
 import { recordHit } from '../objectMenu'
 import { useStore } from '../store'
 import type { SetPiece } from '../types'
+import { SmokeCloud } from './SmokeCloud'
 
 export function SetPieces() {
   const pieces = useStore(s => s.setPieces)
@@ -116,6 +117,17 @@ function SetPieceShape({ piece, size: [w, h, d] }: { piece: SetPiece; size: [num
           position={[(column - 2) * w * 0.17, h * (level + 0.12), d * 0.09]}
           color={bookColor} />)}
       </group>)}
+    </>
+  }
+  if (piece.appearance === 'smoke' || piece.appearance === 'dryice') {
+    return <>
+      <Solid size={[w, h, d]} color={color} />
+      {/* 煙の出口 */}
+      <mesh position={[0, piece.appearance === 'smoke' ? 0 : -h * .25, d / 2 + .01]}>
+        <boxGeometry args={[w * .4, h * .3, .02]} />
+        <meshStandardMaterial color="#111" />
+      </mesh>
+      <SmokeCloud piece={piece} size={[w, h, d]} />
     </>
   }
   if (piece.appearance === 'window') {

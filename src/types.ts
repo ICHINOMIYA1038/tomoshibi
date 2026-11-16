@@ -1,7 +1,7 @@
 // 共通型 (循環参照を避けるため別ファイル)
 
 export type SetPieceKind = 'box' | 'platform' | 'riser' | 'gltf'
-export type SetPieceAppearance = 'basic' | 'bench' | 'door' | 'suitcase' | 'table' | 'bookshelf' | 'window'
+export type SetPieceAppearance = 'basic' | 'bench' | 'door' | 'suitcase' | 'table' | 'bookshelf' | 'window' | 'smoke' | 'dryice'
 
 export interface SetPiece {
   id: string
@@ -16,4 +16,6 @@ export interface SetPiece {
   scale: number
   /** 親（hierarchy.ts）。'stage'・舞台の部品・舞台セットの id。null は親なし、無ければ舞台の床 */
   parentId?: string | null
+  /** スモークマシン・ドライアイスの量（0〜1）。無ければ 0.6 */
+  smokeAmount?: number
 }
