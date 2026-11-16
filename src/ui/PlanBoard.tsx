@@ -165,6 +165,7 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
   }))
   const mapBounds = zoomBounds(frozenBounds ?? fitBounds, mapZoom.zoom, mapZoom.pan)
   // 指で図を動かせるのは、拡大したときと大きな床のときだけ。それ以外は、これまでどおり指で図を横にスクロールする
+  const autoView = !showWholeStage && mapZoom.zoom === 1 && mapZoom.pan[0] === 0 && mapZoom.pan[1] === 0
   const canPanByTouch = stageLarge || mapZoom.zoom !== 1 || mapZoom.pan[0] !== 0 || mapZoom.pan[1] !== 0
   const mapX = (x: number) => MAP.left + (x - mapBounds.left) * MAP.width / (mapBounds.right - mapBounds.left)
   const stageMapY = (z: number) => MAP.top + (z - mapBounds.rear) * MAP.height / (mapBounds.front - mapBounds.rear)
@@ -1041,8 +1042,10 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
           <div className="plan-map-zoom" role="group" aria-label="平面図の縮尺">
             <button type="button" aria-label="縮小" title="縮小（ホイールでも変えられます）" onClick={() => mapZoom.zoomBy(1 / 1.5)}>−</button>
             <button type="button" aria-label="拡大" title="拡大（ホイールでも変えられます）" onClick={() => mapZoom.zoomBy(1.5)}>＋</button>
-            <button type="button" title="何も無い所をドラッグすると、図を動かせます" onClick={() => { setShowWholeStage(false); mapZoom.reset() }}>
-              {stageLarge ? '置いた物に合わせる' : '元の縮尺'}</button>
+            {/* 自動: 置いた物（大きな床のとき）か舞台の全体が収まる縮尺。拡大や移動をしていなければ押した状態で出す */}
+            <button type="button" className={autoView ? 'active' : ''} aria-pressed={autoView}
+              title="置いた物が収まるように、縮尺を自動で合わせます。何も無い所をドラッグすると、図を動かせます"
+              onClick={() => { setShowWholeStage(false); mapZoom.reset() }}>自動</button>
             {stageLarge && <button type="button" className={showWholeStage ? 'active' : ''} aria-pressed={showWholeStage}
               onClick={() => { setShowWholeStage(true); mapZoom.reset() }}>舞台全体</button>}
           </div>
@@ -1089,8 +1092,8 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
             <line x1="100" x2="860" y1="230" y2="230" stroke="#ded6c9" strokeDasharray="6 7" />
             <line x1="100" x2="860" y1="390" y2="390" stroke="#ded6c9" strokeDasharray="6 7" />
             <rect x="100" y="558" width="760" height="60" fill="#ece6da" stroke="#a99a83" strokeDasharray="8 6" />
-            <text x="112" y="577" fill="#716758" fontSize="14">客席側の吊り位置</text>
-            <text x="848" y="577" textAnchor="end" fill="#777066" fontSize="13">距離を縮めて表示</text>
+            <text x="112" y="577" fill="#716758" fontSize="14">客席の上の照明（前明かりなど）</text>
+            <text x="848" y="577" textAnchor="end" fill="#777066" fontSize="13">舞台からの距離は縮めて表示</text>
             <clipPath id="plan-map-clip"><rect x="8" y="70" width="944" height="548" /></clipPath>
             <g clipPath="url(#plan-map-clip)">
             <polygon points={stageOutline.map(([x, z]) => `${mapX(x)},${stageMapY(z)}`).join(' ')}
