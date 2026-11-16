@@ -575,7 +575,7 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
               {!selected.draft && <button className="project-library-delete" onClick={() => remove(selected.scene.name)}>このプロジェクトを削除</button>}
             </section>
           </div>
-        </> : <EmptyLibrary onStart={openCreate} />}
+        </> : <EmptyLibrary />}
       </section>
     </div>
     {transferOpen && user && <div className="project-create-backdrop">

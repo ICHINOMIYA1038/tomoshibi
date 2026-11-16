@@ -1,27 +1,52 @@
-// プロジェクトを選んでいない（または 1 件も無い）ときの右側。
-// 照明の進行表（キューシート）の形で、作り始めから通しで見るまでの流れを見せる。
+import { useState } from 'react'
 
-const CUES: Array<{ q: string; cue: string; action: string; where: string }> = [
-  { q: 'Q1', cue: '作り始める', action: '上演する小屋の形を選ぶ。額縁・円形・張り出し・自由な形から選べ、大きさはあとで変えられる', where: '「新しいプロジェクトを作る」' },
-  { q: 'Q2', cue: '舞台が開いたら', action: '照明を吊る。照明の札を 3D の画面へドラッグし、バトンに重ねて落とすと吊れる', where: '一覧の「＋ 追加」' },
-  { q: 'Q3', cue: '吊り終えたら', action: '役者と舞台セットを置く。平面図でドラッグして動かす', where: '平面図' },
-  { q: 'Q4', cue: '場面が変わるところで', action: 'シーンを足し、明るさ・色・狙いと、役者の位置を変える。照明の吊る位置は全シーン共通', where: '「公演の流れ」' },
-  { q: 'Q5', cue: '仕上げに', action: '通しで見る。シーンの間がなめらかにつながる', where: '「▶ 通しで見る」' },
+// プロジェクト一覧の右側。主な使い方 3 つを、実際の画面の写真で見せる。
+// 左の番号を押すと、右の写真が切り替わる（同じ大きさの箱を 3 つ並べない）。
+
+const GUIDES = [
+  {
+    title: '照明を吊って、3D で光を見る',
+    text: '照明をバトンに吊り、明るさ・色・狙いを決めると、客席からの見え方がすぐ 3D に出ます。ゲルの色やスモークも試せます。',
+    image: '/library-guide/guide-1.jpg',
+    alt: '3D の画面。本棚と窓のある舞台に、暖かい色の明かりが当たっている',
+  },
+  {
+    title: '平面図で、役者とセットを置く',
+    text: '上から見た図で、役者や舞台セットをドラッグして動かします。「会場」に切り替えると、舞台の形や客席も変えられます。',
+    image: '/library-guide/guide-2.jpg',
+    alt: '平面図。舞台の上に役者の丸と照明の番号が並んでいる',
+  },
+  {
+    title: 'シーンを重ねて、通しで見る',
+    text: '場面ごとにシーンを足して、明かりと立ち位置を変えます。「通しで見る」で、最初から最後までつなげて確かめます。',
+    image: '/library-guide/guide-3.jpg',
+    alt: '通しで見るの画面。シーンの番号が線でつながったタイムラインが出ている',
+  },
 ]
 
-export function EmptyLibrary({ onStart }: { onStart: () => void }) {
-  return <div className="empty-library">
-    <h2>はじめての仕込み</h2>
-    <p>舞台ができるまでの流れを、照明の進行表（キューシート）にしました。上から順に進めます。</p>
-    <table className="cue-sheet">
-      <thead><tr><th scope="col">Q</th><th scope="col">きっかけ</th><th scope="col">やること</th><th scope="col">どこで</th></tr></thead>
-      <tbody>{CUES.map(item => <tr key={item.q}>
-        <th scope="row">{item.q}</th><td>{item.cue}</td><td>{item.action}</td><td>{item.where}</td>
-      </tr>)}</tbody>
-    </table>
-    <div className="empty-library-actions">
-      <button type="button" className="empty-library-start" onClick={onStart}>Q1 小屋を選んで始める</button>
-      <a href="/studio/?demo=1">見本の公演を開いて触ってみる</a>
+export function EmptyLibrary() {
+  const [active, setActive] = useState(0)
+  const guide = GUIDES[active]
+  return <div className="library-guide">
+    <h2>舞台の明かりを、ブラウザで仕込む</h2>
+    <p className="library-guide-lead">主な使い方は 3 つです。番号を押すと、その画面の写真に切り替わります。</p>
+    <div className="library-guide-body">
+      <ol className="library-guide-steps" role="tablist" aria-label="主な使い方">
+        {GUIDES.map((item, index) => <li key={item.title}>
+          <button type="button" role="tab" id={`library-guide-tab-${index}`} aria-selected={index === active}
+            aria-controls="library-guide-panel" className={index === active ? 'active' : ''} onClick={() => setActive(index)}>
+            <span className="library-guide-number">{index + 1}</span>
+            <strong>{item.title}</strong>
+            <small>{item.text}</small>
+          </button>
+        </li>)}
+      </ol>
+      <figure className="library-guide-shot" id="library-guide-panel" role="tabpanel" aria-labelledby={`library-guide-tab-${active}`}>
+        <img src={guide.image} alt={guide.alt} key={guide.image} />
+      </figure>
+    </div>
+    <div className="library-guide-actions">
+      <a className="library-guide-demo" href="/studio/?demo=2">見本の公演を開いて触ってみる</a>
       <a href="/help">操作の説明を読む</a>
     </div>
   </div>
