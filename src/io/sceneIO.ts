@@ -1,4 +1,5 @@
 import { STAGE_SIZE, THEATRE } from '../venueLayout'
+import { AUDIENCE_MAX_ELEVATION } from '../audienceLayout'
 import { getEditableState } from '../playback/editorState'
 import { FLOOR_FINISHES, HEX_COLOR, sanitizeStageParts } from '../stageParts'
 import { workspaceStorage } from './workspaceStorage'
@@ -110,6 +111,7 @@ function normalizeProductionPlan(raw: unknown, fixtures: Fixture[], performers: 
         rows: Math.round(numeric(value.rows, 6, 1, 20)), seatsPerRow: Math.round(numeric(value.seatsPerRow, 7, 1, 20)),
         rowSpacing: numeric(value.rowSpacing, .9, .6, 1.4), seatSpacing: numeric(value.seatSpacing, .62, .5, 1.2),
         rotationDeg: numeric(value.rotationDeg, 0, -180, 180),
+        ...(typeof value.elevation === 'number' && value.elevation > 0 ? { elevation: numeric(value.elevation, 0, 0, AUDIENCE_MAX_ELEVATION) } : {}),
       }]
     }) : []
   const venueRaw = data.venueLayout

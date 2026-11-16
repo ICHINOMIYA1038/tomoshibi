@@ -6,7 +6,7 @@ import { useThree } from '@react-three/fiber'
 import { useStore } from '../store'
 import { useStageParts } from '../ui/StagePartsEditor'
 import { isFlat, snapValue, type StagePart } from '../stageParts'
-import { clampAudiencePosition } from '../audienceLayout'
+import { clampAudienceElevation, clampAudiencePosition } from '../audienceLayout'
 import { toolFor } from '../tools'
 
 function isTouchDevice() {
@@ -126,7 +126,7 @@ export function SelectionGizmo() {
       dragRef.current.position.set(stageParts.offset[0], 0.05, stageParts.offset[1] - 3)
       dragRef.current.rotation.set(0, 0, 0)
     } else if (audience) {
-      dragRef.current.position.set(audience.position[0], 0.9, audience.position[1])
+      dragRef.current.position.set(audience.position[0], (audience.elevation ?? 0) + 0.9, audience.position[1])
       dragRef.current.rotation.set(0, audience.rotationDeg * Math.PI / 180, 0)
     } else if (part) {
       dragRef.current.position.set(part.x + stageParts.offset[0], partHandleY(part), part.z + stageParts.offset[1])
@@ -140,7 +140,7 @@ export function SelectionGizmo() {
     performer?.position.join(','),
     setPiece?.position.join(','), setPiece?.rotation.join(','),
     part?.x, part?.z, part?.elevation, part?.height, part?.rotationDeg, stageParts.offset.join(','),
-    audience?.position.join(','), audience?.rotationDeg,
+    audience?.position.join(','), audience?.rotationDeg, audience?.elevation,
   ])
 
   if (!showGizmos || transformMode === 'select') return null
@@ -333,7 +333,7 @@ export function SelectionGizmo() {
       <group>
         <primitive object={dragRef.current} />
         <TransformControls ref={tcRef as any} object={dragRef.current} mode={venueMode(['translate', 'rotate'])}
-          size={gizmoSize} showX={venueMode(['translate', 'rotate']) === 'translate'} showY={venueMode(['translate', 'rotate']) === 'rotate'}
+          size={gizmoSize} showX={venueMode(['translate', 'rotate']) === 'translate'} showY
           showZ={venueMode(['translate', 'rotate']) === 'translate'} rotationSnap={Math.PI / 12}
           onObjectChange={() => {
             const o = dragRef.current
@@ -343,7 +343,9 @@ export function SelectionGizmo() {
               updateAudienceBlock(audience.id, { rotationDeg, position: clampAudiencePosition({ ...audience, rotationDeg }, ...audience.position) })
               return
             }
-            updateAudienceBlock(audience.id, { position: clampAudiencePosition(audience, snapValue(o.position.x), snapValue(o.position.z)) })
+            // 上下の矢印で客席の高さを変える（平台や段の上の客席。オーナー指摘、2026-11-16）
+            updateAudienceBlock(audience.id, { position: clampAudiencePosition(audience, snapValue(o.position.x), snapValue(o.position.z)),
+              elevation: clampAudienceElevation(snapValue(o.position.y - 0.9)) })
           }} />
       </group>
     )

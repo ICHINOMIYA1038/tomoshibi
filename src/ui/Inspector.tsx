@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { useStore, type AudienceBlock, type Fixture, type Performer, type StageShape } from '../store'
 import type { SetPiece, SetPieceAppearance } from '../types'
 import { DEFAULT_VENUE_LAYOUT, STAGE_SIZE, stageFootprint, THEATRE } from '../venueLayout'
-import { clampAudiencePosition } from '../audienceLayout'
+import { AUDIENCE_MAX_ELEVATION, clampAudienceElevation, clampAudiencePosition } from '../audienceLayout'
 import {
   DEFAULT_CYC_COLOR, DEFAULT_WALL_COLOR, FLOOR_FINISHES, isFlat, stageTemplateOf, TEMPLATE_LABELS, type StagePart, type StageTemplate,
 } from '../stageParts'
@@ -346,6 +346,7 @@ function AudienceInspector({ block }: { block: AudienceBlock }) {
     <InspectorSection title="位置・回転">
       <NumberField label="X" value={block.position[0]} min={THEATRE.minX} max={THEATRE.maxX} onChange={value => change({ position: [value, block.position[1]] })} />
       <NumberField label="Z" value={block.position[1]} min={THEATRE.minZ} max={THEATRE.maxZ} onChange={value => change({ position: [block.position[0], value] })} />
+      <NumberField label="高さ" value={block.elevation ?? 0} min={0} max={AUDIENCE_MAX_ELEVATION} step={.1} onChange={value => change({ elevation: clampAudienceElevation(value) })} />
       <NumberField label="回転" value={block.rotationDeg} min={-180} max={180} step={5} unit="°" onChange={value => change({ rotationDeg: value })} />
       <button type="button" className="inspector-wide-button" onClick={() => change({
         rotationDeg: Math.round(Math.atan2(block.position[0] - offset[0], block.position[1] + 3 - offset[1]) * 180 / Math.PI),

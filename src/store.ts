@@ -110,6 +110,8 @@ export interface AudienceBlock {
   rowSpacing: number
   seatSpacing: number
   rotationDeg: number
+  /** 客席の床の高さ（m）。平台や段の上に客席を置くとき。無ければ 0（床の上） */
+  elevation?: number
 }
 
 export interface PlanChapter { id: string; title: string }

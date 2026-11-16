@@ -31,8 +31,10 @@ export function useStageParts() {
 type Drag = { id: string; handle: 'body' | 'end-a' | 'end-b' | 'left' | 'right' | 'rear' | 'front'; pointerId: number; at: StagePoint; from: StagePart; moved: boolean; fixtureIds: string[] }
 
 /** 平面図の上に部品を描き、選んだ部品には取っ手を出す。座標は世界の座標（舞台の移動を含む） */
-export function StagePartsLayer({ selectedId, onSelect, tool = 'translate', toWorld, mapX, mapY, unitsPerPx }: {
+export function StagePartsLayer({ selectedId, onSelect, tool = 'translate', toWorld, mapX, mapY, unitsPerPx, onPan }: {
   selectedId: string | null
+  /** 部品を動かさない道具のとき、本体のドラッグで図を動かす（大きな床では、図のほとんどが床になる） */
+  onPan?: (event: { pointerId: number; clientX: number; clientY: number }) => void
   onSelect: (id: string | null) => void
   /** 道具（tools.ts）。移動のときだけ本体をドラッグで動かし、拡大のときだけ取っ手を出す */
   tool?: 'select' | 'translate' | 'rotate' | 'scale'
@@ -53,7 +55,7 @@ export function StagePartsLayer({ selectedId, onSelect, tool = 'translate', toWo
     event.preventDefault()
     event.stopPropagation()
     onSelect(item.id)
-    if (handle === 'body' ? tool !== 'translate' : tool !== 'scale') return
+    if (handle === 'body' ? tool !== 'translate' : tool !== 'scale') { if (handle === 'body' && event.button === 0) onPan?.(event); return }
     drag.current = { id: item.id, handle, pointerId: event.pointerId, at: toLocal(event), from: item, moved: false, fixtureIds: hungIds(item) }
     // 動きは window で受ける。押した要素で受けると、選んだときの再描画で要素が入れ替わり、ドラッグが途切れることがある
     // （2026-11-15 の「動かせない」の原因）
