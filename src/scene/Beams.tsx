@@ -1,6 +1,7 @@
 import { useMemo, useRef, useEffect } from 'react'
 import * as THREE from 'three'
-import { useThree } from '@react-three/fiber'
+import { useFrame, useThree } from '@react-three/fiber'
+import { goboOf, goboTexture, liveTarget } from '../lighting/movingHead'
 import { useStore, type Fixture } from '../store'
 import { cycBeamAttenuation, fixtureSpotlightModel } from '../lighting/spotlightModel'
 import { FIXTURE_PROFILES } from '../lighting/fixtureTypes'
@@ -64,7 +65,7 @@ export function Beams() {
   // 投影画像と影は同じフラグメントシェーダーのテクスチャ枠を使うため、端末の上限に収める。
   const textureBudget = Math.max(0, maxTextures - 4)
   const mapped = new Set(active
-    .filter(f => hasMeasuredFresnel(f) || hasMeasuredCyc(f) || FIXTURE_PROFILES[f.presetKey]?.beamShape === 'cyc')
+    .filter(f => hasMeasuredFresnel(f) || hasMeasuredCyc(f) || FIXTURE_PROFILES[f.presetKey]?.beamShape === 'cyc' || goboOf(f))
     .slice(0, textureBudget)
     .map(f => f.id))
   const shadowLimit = Math.max(0, textureBudget - mapped.size)
@@ -104,9 +105,9 @@ function Beam({ fixture, hazeDensity, allowMap, castShadow }: { fixture: Fixture
   }, [fixture.target])
 
   // コーン姿勢: tip を fixture.position、base を target 方向へ
-  const coneTransform = useMemo(() => {
+  const coneOf = (target: [number, number, number]) => {
     const from = new THREE.Vector3(...fixture.position)
-    const to = new THREE.Vector3(...fixture.target)
+    const to = new THREE.Vector3(...target)
     const dir = new THREE.Vector3().subVectors(to, from).normalize()
     // ConeGeometry は +Y に伸び、tip が +y/2、base が -y/2
     // 中央 (y=0) を 'beamLength/2' の位置に持ってくる、tip を fixture.position に
@@ -115,7 +116,20 @@ function Beam({ fixture, hazeDensity, allowMap, castShadow }: { fixture: Fixture
     // tip = +y、base = -y。 dir 方向に base を向けたいので、-Y を dir に合わせる
     q.setFromUnitVectors(new THREE.Vector3(0, -1, 0), dir)
     return { position: mid.toArray() as [number, number, number], quaternion: q }
-  }, [fixture.position, fixture.target])
+  }
+  const coneTransform = useMemo(() => coneOf(fixture.target), [fixture.position, fixture.target, beamLength])
+
+  // ムービングライトの「動き」: 毎フレーム、狙いと光の筋を動かす（store は書き換えない）
+  useFrame(({ clock }) => {
+    if (!fixture.movement) return
+    const target = liveTarget(fixture, clock.elapsedTime)
+    targetRef.current.position.set(...target)
+    targetRef.current.updateMatrixWorld()
+    const cone = coneOf(target)
+    coneRef.current?.position.set(...cone.position)
+    coneRef.current?.quaternion.copy(cone.quaternion)
+  })
+  const gobo = goboOf(fixture)
 
   return (
     <group>
@@ -127,7 +141,7 @@ function Beam({ fixture, hazeDensity, allowMap, castShadow }: { fixture: Fixture
         intensity={spotlight.intensityCandela}
         angle={halfAngle}
         penumbra={spotlight.penumbra}
-        map={allowMap ? spotlight.map ?? (spotlight.beamShape === 'cyc' ? cycMap : null) : null}
+        map={allowMap ? (gobo ? goboTexture(gobo) : null) ?? spotlight.map ?? (spotlight.beamShape === 'cyc' ? cycMap : null) : null}
         distance={0}
         decay={spotlight.decay}
         castShadow={castShadow}

@@ -265,6 +265,25 @@ export const FIXTURE_PROFILES: Record<string, FixtureProfile> = {
   },
 
   // ============ Moving Beam ============
+  // ============ ムービング（汎用。メーカーの製品ではなく、よくある大きさと明るさの目安）============
+  MovingSpotGeneric: {
+    kind: 'MovingHead', source: 'led-rgbw',
+    model: 'ムービング スポット（汎用）',
+    beamAngleDeg: 18, fieldAngleDeg: 24,
+    flatness: 1.3, peak: 0.5, ellipticity: 1.0,
+    fluxLumens: 9000, beamAdjustable: true, beamAngleMinDeg: 10, beamAngleMaxDeg: 36,
+    colorTemperatureK: 7000,
+    bodyLengthM: 0.42, bodyDiameterM: 0.26,
+  },
+  MovingWashGeneric: {
+    kind: 'MovingHead', source: 'led-rgbw',
+    model: 'ムービング ウォッシュ（汎用）',
+    beamAngleDeg: 24, fieldAngleDeg: 40,
+    flatness: 0.8, peak: 0.2, ellipticity: 1.0,
+    fluxLumens: 8000, beamAdjustable: true, beamAngleMinDeg: 10, beamAngleMaxDeg: 50,
+    colorTemperatureK: 6500,
+    bodyLengthM: 0.36, bodyDiameterM: 0.32,
+  },
   Robe_LEDBeam150: {
     kind: 'MovingHead', source: 'led-rgbw',
     brand: 'Robe', model: 'Robin LEDBeam 150',
@@ -285,7 +304,7 @@ export const FIXTURE_PRESETS_BY_KIND: Record<FixtureKind, string[]> = {
   LED_Wash: ['Chauvet_COLORado2Solo', 'Stairville_BMV415', 'CycWashStudy'],
   LED_Profile: ['ETC_S4LED_Lustr_26', 'ETC_S4LED_Lustr_36'],
   LED_Bar: ['Stairville_ShowBar_TriLED'],
-  MovingHead: ['Robe_LEDBeam150'],
+  MovingHead: ['MovingSpotGeneric', 'MovingWashGeneric', 'Robe_LEDBeam150'],
 }
 
 // 種別の表示ラベル

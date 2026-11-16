@@ -1,9 +1,12 @@
-import { useMemo } from 'react'
+import { useMemo, useRef } from 'react'
+import { useFrame } from '@react-three/fiber'
 import { recordHit } from '../objectMenu'
 import * as THREE from 'three'
 import { useStore } from '../store'
 import { FIXTURE_PROFILES, type FixtureKind } from '../lighting/fixtureTypes'
 import { measureIlluminanceAtHit } from '../photometric/illuminance'
+import { isHanging, liveTarget, panTiltOf } from '../lighting/movingHead'
+import type { Fixture } from '../store'
 
 // フィクスチャ本体の3Dモデル
 // 種別ごとに見た目を変える + 見えない大きなクリック判定球
@@ -182,20 +185,22 @@ function FixtureMeshSingle({ id }: { id: string }) {
         }
       }}
     >
-      {/* ヨーク */}
-      <mesh material={yokeMat}>
-        <torusGeometry args={[profile.bodyDiameterM * 0.7, 0.012, 8, 16, Math.PI]} />
-      </mesh>
-      <group quaternion={q.toArray() as [number, number, number, number]}>
-        <group position={[0, -profile.bodyLengthM / 2, 0]}>
-          <FixtureBody
-            kind={profile.kind}
-            length={profile.bodyLengthM}
-            diameter={profile.bodyDiameterM}
-            color={colorRGB}
-          />
+      {profile.kind === 'MovingHead' ? <MoverBody fixture={f} color={colorRGB} /> : <>
+        {/* ヨーク */}
+        <mesh material={yokeMat}>
+          <torusGeometry args={[profile.bodyDiameterM * 0.7, 0.012, 8, 16, Math.PI]} />
+        </mesh>
+        <group quaternion={q.toArray() as [number, number, number, number]}>
+          <group position={[0, -profile.bodyLengthM / 2, 0]}>
+            <FixtureBody
+              kind={profile.kind}
+              length={profile.bodyLengthM}
+              diameter={profile.bodyDiameterM}
+              color={colorRGB}
+            />
+          </group>
         </group>
-      </group>
+      </>}
 
       {/* 大きな見えないクリック判定球 */}
       <mesh visible={false}>
@@ -206,4 +211,61 @@ function FixtureMeshSingle({ id }: { id: string }) {
       {/* 選択/ホバー インジケータ: 不要 (ハンドル球で表現する) */}
     </group>
   )
+}
+
+/**
+ * ムービングライトの体。台座は動かず、腕（ヨーク）が縦の軸で回り（パン）、頭が腕の間で振れる（チルト）。
+ * 「動き」があるときは、毎フレームいまの狙いから角度を求め直す（store は書き換えない）
+ */
+function MoverBody({ fixture, color }: { fixture: Fixture; color: THREE.Color }) {
+  const profile = FIXTURE_PROFILES[fixture.presetKey]
+  const yokeRef = useRef<THREE.Group>(null)
+  const headRef = useRef<THREE.Group>(null)
+  const hanging = isHanging(fixture.position)
+  const r = profile.bodyDiameterM / 2
+  const length = profile.bodyLengthM
+  const armHeight = r * 2.4
+  const angles = (target: [number, number, number]) => {
+    const { pan, tilt } = panTiltOf(fixture.position, target)
+    // 頭の +Y（光の出る向き）を、吊りなら真下から、床置きなら真上から tilt だけ倒す
+    return { pan: THREE.MathUtils.degToRad(pan), tilt: hanging ? Math.PI - THREE.MathUtils.degToRad(tilt) : THREE.MathUtils.degToRad(tilt) }
+  }
+  const still = angles(fixture.target)
+  useFrame(({ clock }) => {
+    if (!fixture.movement) return
+    const live = angles(liveTarget(fixture, clock.elapsedTime))
+    if (yokeRef.current) yokeRef.current.rotation.y = live.pan
+    if (headRef.current) headRef.current.rotation.x = live.tilt
+  })
+  // 頭の回転軸を照明の位置に置く。台座は、吊りなら上、床置きなら下
+  const side = hanging ? 1 : -1
+  return <group>
+    {/* 台座 */}
+    <mesh material={bodyMat} position={[0, side * (armHeight + r * 0.3), 0]}>
+      <boxGeometry args={[r * 2.6, r * 0.6, r * 2]} />
+    </mesh>
+    <group ref={yokeRef} rotation={[0, still.pan, 0]}>
+      {/* 腕 */}
+      {[-1, 1].map(arm => <mesh key={arm} material={yokeMat} position={[arm * (r * 1.25), side * armHeight / 2, 0]}>
+        <boxGeometry args={[r * 0.22, armHeight, r * 0.7]} />
+      </mesh>)}
+      <mesh material={yokeMat} position={[0, side * armHeight, 0]}>
+        <boxGeometry args={[r * 2.7, r * 0.2, r * 0.7]} />
+      </mesh>
+      <group ref={headRef} rotation={[still.tilt, 0, 0]}>
+        <group position={[0, -length * 0.35, 0]}>
+          <mesh material={bodyMat} position={[0, length / 2, 0]}>
+            <cylinderGeometry args={[r * 1.05, r * 0.85, length, 20]} />
+          </mesh>
+          <mesh position={[0, length + 0.005, 0]} material={lensMat}>
+            <cylinderGeometry args={[r * 0.9, r * 0.9, 0.02, 24]} />
+          </mesh>
+          <mesh position={[0, length - 0.03, 0]}>
+            <sphereGeometry args={[r * 0.45, 12, 8]} />
+            <meshBasicMaterial color={color} />
+          </mesh>
+        </group>
+      </group>
+    </group>
+  </group>
 }
