@@ -4,8 +4,8 @@ import { useStore, type SelectionKind } from '../store'
 import { DEFAULT_VENUE_LAYOUT } from '../venueLayout'
 import { PART_LABELS, resolveStageParts, type StagePart, type StagePartKind } from '../stageParts'
 import { canBeParent, hierarchyContext, parentOf, STAGE_ID, type ChildKind } from '../hierarchy'
-import { FIXTURE_PRESETS_BY_KIND, FIXTURE_PROFILES, KIND_LABELS, type FixtureKind } from '../lighting/fixtureTypes'
-import { addSetPiece, addStagePart, SET_PIECE_TYPES } from '../objectActions'
+import { FIXTURE_PROFILES, KIND_LABELS } from '../lighting/fixtureTypes'
+import { AddPalette } from './AddPalette'
 
 // 右パネルの上: 舞台にある物をすべて 1 つの一覧（Unity のヒエラルキー）で見せる。
 // 親子は字下げで見せ、行をドラッグして別の行に落とすと親を変えられる。
@@ -42,8 +42,6 @@ function KindIcon({ node }: { node: Node }) {
   })()
   return <svg className="hierarchy-icon" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">{shape}</svg>
 }
-
-const STAGE_PART_KINDS: StagePartKind[] = ['floor', 'wall', 'cyc', 'batten', 'wing']
 
 export function partName(parts: StagePart[], part: StagePart) {
   return `${PART_LABELS[part.kind]} ${parts.filter(other => other.kind === part.kind).indexOf(part) + 1}`
@@ -171,7 +169,7 @@ export function HierarchyPanel() {
       <button type="button" className={'hierarchy-add-button' + (adding ? ' active' : '')} aria-expanded={adding}
         onClick={() => setAdding(value => !value)}>＋ 追加</button>
     </div>
-    {adding && <AddMenu onDone={() => setAdding(false)} />}
+    {adding && <AddPalette />}
     <ul className="hierarchy-tree" role="tree" onContextMenu={event => {
       // 行の外（何も無い所）は、足すためのメニュー
       if (event.defaultPrevented) return
@@ -185,38 +183,4 @@ export function HierarchyPanel() {
       ここに落とすと親なしにする
     </div> : <p className="hierarchy-hint">行を別の行に重ねると、その子になります（親と一緒に動きます）</p>}
   </section>
-}
-
-function AddMenu({ onDone }: { onDone: () => void }) {
-  const addFixture = useStore(s => s.addFixture)
-  const addPerformer = useStore(s => s.addPerformer)
-  const addAudienceBlock = useStore(s => s.addAudienceBlock)
-  const select = useStore(s => s.select)
-  const [preset, setPreset] = useState('Fresnel8')
-  const done = () => onDone()
-  return <div className="hierarchy-add-menu">
-    <div><strong>照明</strong>
-      <select value={preset} onChange={event => setPreset(event.target.value)} aria-label="照明の種類">
-        {(Object.keys(KIND_LABELS) as FixtureKind[]).map(kind => <optgroup key={kind} label={KIND_LABELS[kind]}>
-          {FIXTURE_PRESETS_BY_KIND[kind].map(key => {
-            const profile = FIXTURE_PROFILES[key]
-            return <option key={key} value={key}>{profile.brand ? `${profile.brand} — ${profile.model || key}` : (profile.model || key)}</option>
-          })}
-        </optgroup>)}
-      </select>
-      <button type="button" onClick={() => { addFixture(preset); done() }}>＋ 照明</button>
-    </div>
-    <div><strong>役者</strong><button type="button" onClick={() => { addPerformer(); done() }}>＋ 役者</button></div>
-    <div><strong>舞台セット</strong>
-      {SET_PIECE_TYPES.map(item => <button key={item.id} type="button" onClick={() => { addSetPiece(item.id); done() }}>{item.label}</button>)}
-    </div>
-    <div><strong>舞台</strong>
-      {STAGE_PART_KINDS.map(kind => <button key={kind} type="button" onClick={() => { addStagePart(kind); done() }}>{PART_LABELS[kind]}</button>)}
-    </div>
-    <div><strong>客席</strong><button type="button" onClick={() => {
-      const id = addAudienceBlock()
-      if (id) select('audience', id)
-      done()
-    }}>＋ 客席</button></div>
-  </div>
 }

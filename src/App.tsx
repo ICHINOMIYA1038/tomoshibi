@@ -18,6 +18,8 @@ import { Beams } from './scene/Beams'
 import { SelectionGizmo } from './scene/SelectionGizmo'
 import { PhotometricProbe, useProbeClickHandler } from './scene/PhotometricProbe'
 import { SetPieces } from './scene/SetPieces'
+import { FloorPicker, pickDropPoint } from './scene/FloorPicker'
+import { ADD_DRAG_TYPE, addItem, parseAddItem } from './objectActions'
 import { XRButton, XRGLBinder } from './scene/XRSupport'
 import { ControlPanel } from './ui/ControlPanel'
 import { HelpOverlay } from './ui/HelpOverlay'
@@ -134,6 +136,8 @@ export default function App() {
   const [mapVisible, setMapVisible] = useState(true)
   const [mobileView, setMobileView] = useState<'stage' | 'plan'>('stage')
   const [outlineVisible, setOutlineVisible] = useState(window.innerWidth > 960)
+  /** 追加の一覧から物をドラッグして、3D の画面の上にいる間 */
+  const [addDropActive, setAddDropActive] = useState(false)
   const [showSceneDirections, setShowSceneDirections] = useState(!isMockPreview)
   const [displayMenuOpen, setDisplayMenuOpen] = useState(false)
   const [displayMenuPosition, setDisplayMenuPosition] = useState({ left: 14, top: 104 })
@@ -350,8 +354,24 @@ export default function App() {
         ? <ProjectLibrary onOpenEditor={() => navigateMock('editor')} />
         : <div className={'unified-shell' + (planOpen ? ' plan-open' : '') + (settings.panelOpen ? ' panel-open' : '') + (playbackOpen ? ' playback-open' : '') + (isMockPreview ? ' workspace-layout mobile-view-' + mobileView : '') + (mapVisible ? '' : ' map-hidden') + (outlineVisible ? ' outline-visible' : '')}>
       {/* 右ボタンを押して離しただけのときに、右クリックのメニューを出す（ドラッグは視点の移動。objectMenu.ts） */}
-      <div className="canvas-wrap" onContextMenu={event => event.preventDefault()}
-        onPointerDownCapture={canvasPointerDown} onPointerUpCapture={canvasPointerUp}>
+      <div className={'canvas-wrap' + (addDropActive ? ' add-drop-active' : '')} onContextMenu={event => event.preventDefault()}
+        onPointerDownCapture={canvasPointerDown} onPointerUpCapture={canvasPointerUp}
+        // 追加の一覧からドラッグしてきた物を、落とした所の床に置く
+        onDragOver={event => {
+          if (!event.dataTransfer.types.includes(ADD_DRAG_TYPE)) return
+          event.preventDefault()
+          event.dataTransfer.dropEffect = 'copy'
+          if (!addDropActive) setAddDropActive(true)
+        }}
+        onDragLeave={event => { if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setAddDropActive(false) }}
+        onDrop={event => {
+          setAddDropActive(false)
+          const item = parseAddItem(event.dataTransfer.getData(ADD_DRAG_TYPE))
+          if (!item) return
+          event.preventDefault()
+          const hit = pickDropPoint(event.clientX, event.clientY)
+          addItem(item, hit?.floor ?? undefined, hit?.ray)
+        }}>
        <WebGLErrorBoundary>
         <Canvas
           gl={{
@@ -405,10 +425,12 @@ export default function App() {
           <DirectionPaths visible={planOpen && !playbackOpen && showSceneDirections} />
           <PhotometricProbe />
           <ProbeClickCatcher />
+          <FloorPicker />
 
           <XRGLBinder />
         </Canvas>
        </WebGLErrorBoundary>
+        {addDropActive && <div className="canvas-drop-hint" aria-hidden="true">ここで離すと、指した床の位置に置きます</div>}
         {isMockPreview && !playbackOpen && <MockSceneIndicator outlineVisible={outlineVisible}
           onToggleOutline={() => {
             setOutlineVisible(value => !value)

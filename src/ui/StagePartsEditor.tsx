@@ -151,13 +151,13 @@ export function StagePartsLayer({ selectedId, onSelect, tool = 'translate', toWo
       return <g key={item.id}>
         {isFlat(item.kind)
           ? <polygon {...common} points={corners.map(([x, z]) => `${px(x)},${py(z)}`).join(' ')}
-            fill={PART_COLORS[item.kind]} fillOpacity={item.kind === 'floor' ? .55 : .85}
+            fill={item.color ?? PART_COLORS[item.kind]} fillOpacity={item.kind === 'floor' ? .55 : .85}
             stroke={selected ? '#f2c27b' : '#c9b9a3'} strokeWidth={selected ? 4 : 1.5} strokeDasharray={item.kind === 'floor' ? '6 4' : undefined} />
           : <g {...common}>
             <line x1={px(corners[0][0])} y1={py(corners[0][1])} x2={px(corners[1][0])} y2={py(corners[1][1])}
               stroke="transparent" strokeWidth={hitRadius * 1.4} strokeLinecap="round" />
             <line x1={px(corners[0][0])} y1={py(corners[0][1])} x2={px(corners[1][0])} y2={py(corners[1][1])}
-              stroke={selected ? '#f2c27b' : PART_COLORS[item.kind]} strokeWidth={item.kind === 'batten' ? 4 : 7}
+              stroke={selected ? '#f2c27b' : item.color ?? PART_COLORS[item.kind]} strokeWidth={item.kind === 'batten' ? 4 : 7}
               strokeDasharray={item.kind === 'batten' ? '10 5' : undefined} strokeLinecap="round" />
           </g>}
       </g>

@@ -4769,6 +4769,20 @@ body.embed .workspace-switch { display: none; }
 .unity-panel .hierarchy-add-menu select { flex: 1 1 140px; min-width: 0; padding: 4px 6px; border-radius: 5px; border: 1px solid var(--panel-edge); background: rgba(0, 0, 0, .25); color: var(--ink-primary); font: 12px var(--font-sans); }
 .unified-shell .unity-panel .hierarchy-add-menu button { min-height: 0; padding: 3px 9px; border-radius: 5px; border: 1px solid var(--panel-edge); background: rgba(255, 255, 255, .05); color: var(--ink-primary); font: 12px var(--font-sans); cursor: pointer; }
 .unified-shell .unity-panel .hierarchy-add-menu button:hover { border-color: rgba(232, 178, 98, .55); }
+/* 追加の一覧（AddPalette.tsx）: 絵の付いた札を並べる。押すと足し、3D の画面へドラッグすると落とした所に置く */
+.unity-panel .add-palette { display: grid; gap: 10px; padding: 10px; border-bottom: 1px solid var(--panel-edge); background: rgba(0, 0, 0, .22); }
+.unity-panel .add-palette h3 { margin: 0 0 6px; font-size: 10px; font-weight: 600; letter-spacing: .06em; color: var(--ink-muted); }
+.unity-panel .add-palette-hint { margin: 0; font-size: 11px; line-height: 1.5; color: var(--ink-muted); }
+.unity-panel .add-tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(56px, 1fr)); gap: 4px; }
+.unified-shell .unity-panel .add-palette .add-tile { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; min-height: 50px; padding: 5px 2px; border: 1px solid var(--panel-edge); border-radius: 6px; background: rgba(255, 255, 255, .04); color: var(--ink-secondary); font: 11px/1.2 var(--font-sans); text-align: center; cursor: grab; touch-action: manipulation; }
+.unified-shell .unity-panel .add-palette .add-tile:hover { border-color: rgba(232, 178, 98, .55); background: rgba(232, 178, 98, .08); color: var(--ink-primary); }
+.unified-shell .unity-panel .add-palette .add-tile:active { cursor: grabbing; }
+.unified-shell .unity-panel .add-palette .add-tile.dragging { opacity: .45; }
+.unified-shell .unity-panel .add-palette .add-tile svg { color: #e8b262; }
+.unity-panel .add-palette-model { display: grid; grid-template-columns: minmax(0, 1fr) 56px; gap: 4px; margin-top: 4px; }
+.unity-panel .add-palette-model select { min-width: 0; padding: 4px 6px; border-radius: 5px; border: 1px solid var(--panel-edge); background: rgba(0, 0, 0, .25); color: var(--ink-primary); font: 12px var(--font-sans); }
+.canvas-wrap.add-drop-active { outline: 2px dashed rgba(232, 178, 98, .8); outline-offset: -6px; }
+.canvas-drop-hint { position: absolute; left: 50%; top: 16px; transform: translateX(-50%); z-index: 5; padding: 6px 12px; border-radius: 999px; background: rgba(20, 16, 18, .85); color: #f2d3a2; font-size: 12px; pointer-events: none; }
 .unity-panel .hierarchy-tree, .unity-panel .hierarchy-tree ul { list-style: none; margin: 0; padding: 0; }
 .unity-panel .hierarchy-tree { max-height: 42vh; overflow-y: auto; padding: 4px 0; }
 .unity-panel .hierarchy-children { position: relative; }
