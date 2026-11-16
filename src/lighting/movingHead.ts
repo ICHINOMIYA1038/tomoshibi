@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import type { Fixture } from '../store'
+import type { Fixture, Performer } from '../store'
 import { FIXTURE_PROFILES } from './fixtureTypes'
 
 // ムービングライトの向き（パン・チルト）と、シーンの中で動き続ける「動き」。
@@ -81,6 +81,34 @@ function movementOffset(movement: FixtureMovement, timeS: number): [number, numb
     case 'sweep-x': return [Math.sin(angle) * r, 0]
     case 'sweep-z': return [0, Math.sin(angle) * r]
   }
+}
+
+// ---- 役者を追う（ピンスポット・ムービング）----
+
+/** 役者を追える照明 */
+export function canFollow(fixture: Pick<Fixture, 'presetKey'>) {
+  const kind = FIXTURE_PROFILES[fixture.presetKey]?.kind
+  return kind === 'FollowSpot' || kind === 'MovingHead'
+}
+
+/** 追っている役者の胸のあたり。追っていない・役者が見つからないときは null */
+export function followPoint(fixture: Fixture, performers: Performer[]): [number, number, number] | null {
+  if (!fixture.followPerformerId || !canFollow(fixture)) return null
+  const performer = performers.find(item => item.id === fixture.followPerformerId)
+  if (!performer) return null
+  const scale = Number.isFinite(performer.scale) ? performer.scale : 1
+  return [performer.position[0], performer.position[1] + 1.1 * scale, performer.position[2]]
+}
+
+/**
+ * 3D の画面で描く照明。役者を追っているときは、狙いを役者に置き換える。
+ * 役者が舞台外のときは消す（ピンを落とす）。追うあいだは「動き」を使わない
+ */
+export function resolveFixture(fixture: Fixture, performers: Performer[]): Fixture {
+  const point = followPoint(fixture, performers)
+  if (!point) return fixture
+  const performer = performers.find(item => item.id === fixture.followPerformerId)
+  return { ...fixture, target: point, movement: undefined, intensity: performer?.onStage === false ? 0 : fixture.intensity }
 }
 
 /** 3D の画面で使う、いまの狙いの点。動きが無ければ target のまま */

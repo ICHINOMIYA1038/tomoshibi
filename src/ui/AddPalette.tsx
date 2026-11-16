@@ -15,6 +15,7 @@ const FIXTURE_TILES: Array<{ kind: FixtureKind; label: string; preset?: string }
   { kind: 'LED_Profile', label: 'LED エリスポ' },
   { kind: 'LED_Bar', label: 'LED バー' },
   { kind: 'MovingHead', label: 'ムービング' },
+  { kind: 'FollowSpot', label: 'ピンスポット' },
 ]
 // 舞台の平台は、舞台セットの「平台」と紛らわしいので出さない（以前の追加の一覧と同じ）
 const STAGE_PART_KINDS: StagePartKind[] = ['floor', 'wall', 'cyc', 'batten', 'wing']
@@ -24,6 +25,7 @@ function Glyph({ name }: { name: string }) {
   const line = { fill: 'none', stroke: 'currentColor', strokeWidth: 1.6, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const }
   const shapes: Record<string, ReactNode> = {
     lamp: <><path {...line} d="M6 5h7l3 5-3 5H6Z" /><path {...line} d="M16 10h1m2-4 2-1m-2 9 2 1M9 15v4m-3 0h6" /></>,
+    pin: <><path {...line} d="M3 9l11-3v8L3 11Z" /><path {...line} d="M14 8l7-2m-7 6 7 2M8 12v7m-3 0h6" /></>,
     bar: <><rect {...line} x="3" y="9" width="18" height="5" rx="1" /><circle cx="7" cy="11.5" r="1" fill="currentColor" /><circle cx="12" cy="11.5" r="1" fill="currentColor" /><circle cx="17" cy="11.5" r="1" fill="currentColor" /></>,
     moving: <><path {...line} d="M6 20h12M9 20l1-5h4l1 5" /><path {...line} d="M7 6a5 5 0 0 1 10 0v4a5 5 0 0 1-10 0Z" /><circle {...line} cx="12" cy="8" r="2" /></>,
     performer: <><circle cx="12" cy="6.5" r="3" fill="currentColor" /><path d="M5.5 21c.6-5 3-7.5 6.5-7.5s5.9 2.5 6.5 7.5Z" fill="currentColor" /></>,
@@ -75,7 +77,7 @@ export function AddPalette() {
       <div className="add-tiles">
         {FIXTURE_TILES.filter(tile => FIXTURE_PRESETS_BY_KIND[tile.kind]?.length).map(tile => <Tile key={tile.kind}
           item={{ kind: 'fixture', preset: presetOf(tile) }} label={tile.label}
-          glyph={tile.kind === 'LED_Bar' ? 'bar' : tile.kind === 'MovingHead' ? 'moving' : 'lamp'} />)}
+          glyph={tile.kind === 'LED_Bar' ? 'bar' : tile.kind === 'MovingHead' ? 'moving' : tile.kind === 'FollowSpot' ? 'pin' : 'lamp'} />)}
       </div>
       <div className="add-palette-model">
         <select value={preset} onChange={event => setPreset(event.target.value)} aria-label="照明の機種">

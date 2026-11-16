@@ -5,7 +5,7 @@ import * as THREE from 'three'
 import { useStore } from '../store'
 import { FIXTURE_PROFILES, type FixtureKind } from '../lighting/fixtureTypes'
 import { measureIlluminanceAtHit } from '../photometric/illuminance'
-import { isHanging, liveTarget, panTiltOf } from '../lighting/movingHead'
+import { isHanging, liveTarget, panTiltOf, resolveFixture } from '../lighting/movingHead'
 import type { Fixture } from '../store'
 
 // フィクスチャ本体の3Dモデル
@@ -144,7 +144,10 @@ export function FixtureMeshes() {
 }
 
 function FixtureMeshSingle({ id }: { id: string }) {
-  const f = useStore(s => s.fixtures.find(x => x.id === id))
+  const stored = useStore(s => s.fixtures.find(x => x.id === id))
+  const performers = useStore(s => s.performers)
+  // 役者を追う照明は、体も役者のほうへ向ける
+  const f = stored && resolveFixture(stored, performers)
   const selection = useStore(s => s.selection)
   const hovered = useStore(s => s.hovered)
   const select = useStore(s => s.select)

@@ -42,6 +42,8 @@ export interface Fixture {
   movement?: import('./lighting/movingHead').FixtureMovement
   /** ゴボ（光に付ける模様）。エリスポとムービングだけ */
   gobo?: import('./lighting/movingHead').GoboPattern
+  /** この役者を追い続ける（ピンスポット・ムービング）。役者が舞台外のシーンでは消える */
+  followPerformerId?: string
   /** 古いプランの「吊っているバトン」。いまは parentId で決める（hierarchy.ts）。読み込みのためだけに残す */
   battenId?: string
   /** 親（hierarchy.ts）。'stage'・舞台の部品・舞台セットの id。null は親なし、無ければ位置から決める */
@@ -1221,7 +1223,7 @@ export function packFixture(f: Fixture): PackedFixture {
   const peakLuminance = (profile.fluxLumens / solidAngle) * 8e-4
   const kindMap: Record<string, number> = {
     PAR: 0, Fresnel: 1, PC: 2, Profile: 3,
-    LED_PAR: 0, LED_Wash: 1, LED_Profile: 3, LED_Bar: 0, MovingHead: 3,
+    LED_PAR: 0, LED_Wash: 1, LED_Profile: 3, LED_Bar: 0, MovingHead: 3, FollowSpot: 3,
   }
 
   return {

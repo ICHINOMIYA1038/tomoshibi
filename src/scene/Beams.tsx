@@ -1,7 +1,7 @@
 import { useMemo, useRef, useEffect } from 'react'
 import * as THREE from 'three'
 import { useFrame, useThree } from '@react-three/fiber'
-import { goboOf, goboTexture, liveTarget } from '../lighting/movingHead'
+import { goboOf, goboTexture, liveTarget, resolveFixture } from '../lighting/movingHead'
 import { useStore, type Fixture } from '../store'
 import { cycBeamAttenuation, fixtureSpotlightModel } from '../lighting/spotlightModel'
 import { FIXTURE_PROFILES } from '../lighting/fixtureTypes'
@@ -58,7 +58,10 @@ void main() {
 `
 
 export function Beams() {
-  const fixtures = useStore(s => s.fixtures)
+  const stored = useStore(s => s.fixtures)
+  const performers = useStore(s => s.performers)
+  // 役者を追う照明は、狙いを役者に置き換えて描く（通しで見るでは、歩く役者についていく）
+  const fixtures = useMemo(() => stored.map(f => resolveFixture(f, performers)), [stored, performers])
   const hazeDensity = useStore(s => s.settings.hazeDensity)
   const maxTextures = useThree(s => s.gl.capabilities.maxTextures)
   const active = fixtures.filter(f => f.enabled)

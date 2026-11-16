@@ -6,7 +6,7 @@
 // - peak は中心ホットスポット (PARの強烈な中心)
 // シェーダーと同じ式で UI プレビューにも使用
 
-export type FixtureKind = 'PAR' | 'Fresnel' | 'PC' | 'Profile' | 'LED_PAR' | 'LED_Wash' | 'LED_Profile' | 'LED_Bar' | 'MovingHead'
+export type FixtureKind = 'PAR' | 'Fresnel' | 'PC' | 'Profile' | 'LED_PAR' | 'LED_Wash' | 'LED_Profile' | 'LED_Bar' | 'MovingHead' | 'FollowSpot'
 
 // 光源タイプ
 // - tungsten: 白熱/ハロゲン (固定色温度、ゲル乗算)
@@ -265,6 +265,17 @@ export const FIXTURE_PROFILES: Record<string, FixtureProfile> = {
   },
 
   // ============ Moving Beam ============
+  // ============ ピンスポット（客席の後ろから、人が操作して役者を追う。クセノン 2kW 級の目安）============
+  FollowSpotXenon2k: {
+    kind: 'FollowSpot', source: 'tungsten',
+    model: 'ピンスポット 2kW（汎用）',
+    beamAngleDeg: 4, fieldAngleDeg: 5,
+    flatness: 1.6, peak: 0.3, ellipticity: 1.0,
+    fluxLumens: 40000, beamAdjustable: true, beamAngleMinDeg: 1.5, beamAngleMaxDeg: 10,
+    // クセノンは昼光に近い白。ゲルは在来器具と同じく掛け算で効かせる
+    colorTemperatureK: 6000,
+    bodyLengthM: 0.9, bodyDiameterM: 0.3,
+  },
   // ============ ムービング（汎用。メーカーの製品ではなく、よくある大きさと明るさの目安）============
   MovingSpotGeneric: {
     kind: 'MovingHead', source: 'led-rgbw',
@@ -305,6 +316,7 @@ export const FIXTURE_PRESETS_BY_KIND: Record<FixtureKind, string[]> = {
   LED_Profile: ['ETC_S4LED_Lustr_26', 'ETC_S4LED_Lustr_36'],
   LED_Bar: ['Stairville_ShowBar_TriLED'],
   MovingHead: ['MovingSpotGeneric', 'MovingWashGeneric', 'Robe_LEDBeam150'],
+  FollowSpot: ['FollowSpotXenon2k'],
 }
 
 // 種別の表示ラベル
@@ -318,6 +330,7 @@ export const KIND_LABELS: Record<FixtureKind, string> = {
   LED_Profile: 'LED Profile',
   LED_Bar: 'LED Bar',
   MovingHead: 'Moving Head',
+  FollowSpot: 'ピンスポット（フォロー）',
 }
 
 // 色温度 (K) → RGB近似 (sRGB, 線形でない簡易変換)
