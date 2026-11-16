@@ -3260,6 +3260,21 @@ body.embed .workspace-switch { display: none; }
 .unified-shell .plan-map-layerbar .plan-map-zoom button[aria-label] { justify-content: center; min-width: 27px; padding: 3px 0; font-size: 14px; }
 .unified-shell .plan-map-scroll { flex: 1; min-height: 0; overflow: auto; display: flex; align-items: flex-start; justify-content: flex-start; padding: 5px; }
 .unified-shell .plan-map-scroll svg { display: block; flex: none; height: 100%; width: auto; min-width: 0; margin: auto; border-radius: 4px; user-select: none; }
+/* 平面図の「シーン／会場」の切り替え（PlanBoard.tsx）と、会場の図（VenueMap.tsx） */
+.unified-shell .plan-map-mode { flex: none; display: inline-flex; padding: 2px; border: 1px solid var(--panel-edge-strong); border-radius: 7px; background: rgba(0,0,0,.25); }
+.unified-shell .plan-map-mode button { min-height: 28px; padding: 3px 12px; border: 0; border-radius: 5px; background: transparent; color: var(--ink-secondary); font: 600 12px var(--font-sans); cursor: pointer; }
+.unified-shell .plan-map-mode button.active { background: rgba(212,175,111,.25); color: var(--ink-primary); box-shadow: inset 0 0 0 1px rgba(212,175,111,.6); }
+.unified-shell .venue-map-bar > span { white-space: nowrap; }
+.unified-shell .plan-map-layerbar button.venue-map-action::before { content: none; }
+.unified-shell .plan-map-layerbar button.venue-map-action:disabled { opacity: .45; cursor: default; }
+.unified-shell .venue-map-scroll svg { touch-action: none; }
+.unified-shell .venue-map-legend { flex: none; gap: 10px; padding: 4px 12px 8px; }
+.unified-shell .venue-map-legend .venue-capacity-warning { color: #f0a77a; }
+.unified-shell .plan-map-caption > strong { flex: none; white-space: nowrap; }
+/* スマホでは図を広く取るため、凡例と操作の説明は出さない（注意だけ出す） */
+@media (max-width: 760px) {
+  .unified-shell .venue-map-legend > span:not(.venue-capacity-warning) { display: none; }
+}
 .unified-shell .plan-map-footer { flex: none; display: flex; align-items: center; gap: 8px; min-height: 39px; padding: 5px 10px; border-top: 1px solid var(--panel-edge); }
 .unified-shell .plan-actor-key { display: flex; flex: 1; min-width: 0; gap: 5px; overflow-x: auto; }
 .unified-shell .plan-actor-entry { flex: none; display: flex; align-items: center; gap: 2px; }

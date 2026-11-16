@@ -5,13 +5,17 @@ import { createPortal } from 'react-dom'
 import { Fragment, useEffect, useRef, useState, type MouseEvent, type PointerEvent } from 'react'
 import { activeSceneDirections, LIMITS, PLAN_LIMITS, SCENE_TRIGGER_LABELS, sceneDisplayTitle, useStore,
   type DirectionKind, type MoveSceneResult, type SceneTriggerType, type StagePoint } from '../store'
-import { AudienceLayoutEditor } from './AudienceLayoutEditor'
+import { VenueMap } from './VenueMap'
+import { PART_COLORS } from './StagePartsEditor'
+import { audienceSeatPositions } from '../audienceLayout'
+import { isFlat, partCorners, resolveStageParts } from '../stageParts'
 import { ToolButtons } from './ToolButtons'
 import { toolFor } from '../tools'
 import { DEFAULT_VENUE_LAYOUT, stageFootprint, THEATRE } from '../venueLayout'
 import { useMapZoom } from './useMapZoom'
 
-const MAP = { left: 100, top: 70, width: 760, height: 480, svgWidth: 960, svgHeight: 630 }
+// 図の枠。客席の上の照明（前明かりなど）も縮めずに本当の位置に描くので、枠の下端まで同じ縮尺にする
+const MAP = { left: 100, top: 70, width: 760, height: 548, svgWidth: 960, svgHeight: 630 }
 const pathColors: Record<DirectionKind, string> = {
   move: '#d4af6f', entrance: '#78bca0', exit: '#df8f7c',
 }
@@ -73,22 +77,23 @@ function mapPoint(event: PointerEvent<SVGSVGElement>, bounds: MapBounds, include
   return [
     Math.round(clamp((px - MAP.left) * (bounds.right - bounds.left) / MAP.width + bounds.left,
       bounds.left - 1, bounds.right + 1) * 10) / 10,
-    Math.round(clamp(includeHouse && py > 550 ? bounds.front + (py - 550) / 2.5
-      : (py - MAP.top) * (bounds.front - bounds.rear) / MAP.height + bounds.rear,
-      bounds.rear + .2, includeHouse ? 35 : bounds.front - .2) * 10) / 10,
+    Math.round(clamp((py - MAP.top) * (bounds.front - bounds.rear) / MAP.height + bounds.rear,
+      bounds.rear + .2, includeHouse ? THEATRE.maxZ : bounds.front - .2) * 10) / 10,
   ]
 }
 /** 押している点の舞台上の座標（丸めない）。ドラッグの移動量を出すのに使う */
-function rawMapPoint(event: PointerEvent<SVGSVGElement | SVGElement>, svg: SVGSVGElement, includeHouse: boolean, bounds: MapBounds): StagePoint {
+function rawMapPoint(event: PointerEvent<SVGSVGElement | SVGElement>, svg: SVGSVGElement, _includeHouse: boolean, bounds: MapBounds): StagePoint {
   const rect = svg.getBoundingClientRect()
   const px = (event.clientX - rect.left) * MAP.svgWidth / rect.width
   const py = (event.clientY - rect.top) * MAP.svgHeight / rect.height
   return [
     (px - MAP.left) * (bounds.right - bounds.left) / MAP.width + bounds.left,
-    includeHouse && py > 550 ? bounds.front + (py - 550) / 2.5 : (py - MAP.top) * (bounds.front - bounds.rear) / MAP.height + bounds.rear,
+    (py - MAP.top) * (bounds.front - bounds.rear) / MAP.height + bounds.rear,
   ]
 }
 const round1 = (value: number) => Math.round(value * 10) / 10
+/** 奥行の目盛りの間隔（m）。縮めて表示するほど広くする（会場の図と同じ） */
+const gridStep = (pxPerMeter: number) => pxPerMeter >= 10 ? 5 : pxPerMeter >= 4 ? 10 : pxPerMeter >= 2 ? 25 : 50
 /** 指で押さえやすい大きさ（画面上の半径 px）。平面図は縮んで表示されるので図の単位に直して使う */
 const TOUCH_RADIUS_PX = 22
 function placeName(point: StagePoint) {
@@ -127,7 +132,8 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
   for (const performer of performers) {
     if (performer.onStage !== false) contentPoints.push([performer.position[0], performer.position[2]])
   }
-  for (const fixture of fixtures) contentPoints.push([fixture.target[0], fixture.target[2]])
+  // 照明は狙いと本体の両方。客席の上の照明も、本当の位置で図に収める
+  for (const fixture of fixtures) contentPoints.push([fixture.target[0], fixture.target[2]], [fixture.position[0], fixture.position[2]])
   for (const piece of setPieces) {
     const halfWidth = Math.max(.5, (piece.size?.[0] ?? 1) * Math.abs(piece.scale) / 2)
     const halfDepth = Math.max(.5, (piece.size?.[2] ?? 1) * Math.abs(piece.scale) / 2)
@@ -169,7 +175,7 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
   const canPanByTouch = stageLarge || mapZoom.zoom !== 1 || mapZoom.pan[0] !== 0 || mapZoom.pan[1] !== 0
   const mapX = (x: number) => MAP.left + (x - mapBounds.left) * MAP.width / (mapBounds.right - mapBounds.left)
   const stageMapY = (z: number) => MAP.top + (z - mapBounds.rear) * MAP.height / (mapBounds.front - mapBounds.rear)
-  const mapY = (z: number) => z <= mapBounds.front ? stageMapY(z) : 550 + (z - mapBounds.front) * 2.5
+  const mapY = stageMapY
   const selection = useStore(s => s.selection)
   const select = useStore(s => s.select)
   const updateSettings = useStore(s => s.updateSettings)
@@ -197,7 +203,11 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
   const updateSetPiece = useStore(s => s.updateSetPiece)
   const [showFixtures, setShowFixtures] = useState(true)
   const [showSetPieces, setShowSetPieces] = useState(true)
-  const [audienceEditorOpen, setAudienceEditorOpen] = useState(false)
+  /** 図に出すもの。シーン = このシーンの役者・セット・照明、会場 = 全シーン共通の舞台・部品・客席（オーナー指摘で 1 つにまとめた、2026-11-16） */
+  const [mapMode, setMapMode] = useState<'scene' | 'venue'>('scene')
+  const venue = plan.venueLayout ?? DEFAULT_VENUE_LAYOUT
+  const stageParts = resolveStageParts(venue)
+  const audienceBlocks = plan.audienceBlocks ?? []
   const [lastMove, setLastMove] = useState<DragStart | null>(null)
   // いま動かしているもの（照明の「位置」か「向き」か）を図の上に出すため
   const [activeDrag, setActiveDrag] = useState<{ kind: 'fixture' | 'target'; id: string } | null>(null)
@@ -720,7 +730,7 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
   }
 
   return <section id="plan-board" className={'plan-board' + (contextMenu ? ' context-open' : '') +
-    (sceneEditorOpen ? ' scene-editor-open' : '') + (audienceEditorOpen ? ' audience-editor-open' : '')} aria-label="平面図・演出プラン">
+    (sceneEditorOpen ? ' scene-editor-open' : '') + (mapMode === 'venue' ? ' venue-mode' : '')} aria-label="平面図・演出プラン">
     <div className="plan-board-head">
       <strong>{plan.projectTitle?.trim() || '名称未設定のプロジェクト'}</strong>
       <span>演出プラン</span>
@@ -1014,7 +1024,14 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
       </div>}
     <div className="plan-board-content">
       <div className="plan-map-pane">
-        <div className="plan-map-caption"><strong>平面図</strong><span>{stageIsEmpty
+        <div className="plan-map-caption"><strong>平面図</strong>
+          {persistent && <div className="plan-map-mode" role="group" aria-label="図に出すもの">
+            <button type="button" className={mapMode === 'scene' ? 'active' : ''} aria-pressed={mapMode === 'scene'}
+              title="このシーンの役者・舞台セット・照明を置く" onClick={() => setMapMode('scene')}>シーン</button>
+            <button type="button" className={mapMode === 'venue' ? 'active' : ''} aria-pressed={mapMode === 'venue'}
+              title="全シーン共通の舞台の形・壁やバトン・客席を置く" onClick={() => setMapMode('venue')}>会場</button>
+          </div>}
+          <span>{mapMode === 'venue' ? '舞台・壁やバトン・客席を置きます（全シーン共通）' : stageIsEmpty
           ? 'まず舞台に置くものを選んでください'
           : tool === 'select' ? '選ぶだけの道具です。動かすときは「移動」を選びます'
             : selectedPerformer ? `${selectedPerformer.name}を選択中 · 丸をドラッグして立ち位置を変更`
@@ -1022,15 +1039,13 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
               : selectedSetPiece ? `${selectedSetPiece.name}を選択中 · 四角をドラッグして位置を変更`
                 : '丸や四角をドラッグして移動します'}</span>
           <ToolButtons compact />
-          {persistent && selectedName && <button className="plan-inspect-button" onClick={() =>
+          {persistent && mapMode === 'scene' && selectedName && <button className="plan-inspect-button" onClick={() =>
             updateSettings({ panelOpen: true })}>名前・設定を編集</button>}
-          {persistent && lastMove && <button type="button" className="plan-map-undo" onClick={undoMove}>↶ 移動を戻す</button>}
-          {persistent && <button type="button" className="plan-audience-button" onClick={() => setAudienceEditorOpen(true)}>
-            会場の配置
-          </button>}
+          {persistent && mapMode === 'scene' && lastMove && <button type="button" className="plan-map-undo" onClick={undoMove}>↶ 移動を戻す</button>}
           {persistent && <button type="button" className="plan-pane-close plan-map-close"
             aria-label="平面図を閉じる" title="平面図を閉じる" onClick={onCloseMap}>×</button>}
         </div>
+        {mapMode === 'venue' ? <VenueMap /> : <>
         <div className="plan-map-layerbar" role="group" aria-label="平面図の表示">
           <span>図に表示</span>
           <button type="button" className={showSetPieces ? 'active' : ''} aria-pressed={showSetPieces}
@@ -1083,21 +1098,44 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
                 <path d="M 1 1 L 9 5 L 1 9 z" fill="#5b88a0" />
               </marker>
             </defs>
-            <rect width="960" height="630" fill="#f8f4ec" />
+            <rect width="960" height="630" fill="#ede8df" />
             <text x="24" y="35" fill="#2e2925" fontSize="21" fontWeight="700" fontFamily="sans-serif">
               {persistent ? sceneDisplayTitle(plan, scene.id).slice(0, 40)
                 : `${sequenceSceneIndex + 1} / ${sequenceScenes.length}　${scene.title.slice(0, 32)}`}
             </text>
-            <rect x="8" y="70" width="944" height="480" fill="#e5ddd0" stroke="#8e8273" />
-            <line x1="100" x2="860" y1="230" y2="230" stroke="#ded6c9" strokeDasharray="6 7" />
-            <line x1="100" x2="860" y1="390" y2="390" stroke="#ded6c9" strokeDasharray="6 7" />
-            <rect x="100" y="558" width="760" height="60" fill="#ece6da" stroke="#a99a83" strokeDasharray="8 6" />
-            <text x="112" y="577" fill="#716758" fontSize="14">客席の上の照明（前明かりなど）</text>
-            <text x="848" y="577" textAnchor="end" fill="#777066" fontSize="13">舞台からの距離は縮めて表示</text>
-            <clipPath id="plan-map-clip"><rect x="8" y="70" width="944" height="548" /></clipPath>
+            <clipPath id="plan-map-clip"><rect x="8" y="70" width="944" height="552" /></clipPath>
             <g clipPath="url(#plan-map-clip)">
+            {/* 会場の図と同じ見た目: 奥行の目盛り、濃い色の舞台、壁・バトン、客席。どれも触れない（「会場」で動かす） */}
+            {(() => {
+              const step = gridStep(MAP.height / (mapBounds.front - mapBounds.rear))
+              const first = Math.ceil(mapBounds.rear / step)
+              return Array.from({ length: 60 }, (_, index) => (first + index) * step).filter(z => z <= mapBounds.front)
+                .map(z => <g key={'grid-' + z} pointerEvents="none">
+                  <line x1="12" x2="948" y1={mapY(z)} y2={mapY(z)} stroke="#d2c9bd" strokeDasharray="5 9" />
+                  <text x="15" y={mapY(z) - 5} fill="#73695e" fontSize="12">z {z}m</text>
+                </g>)
+            })()}
             <polygon points={stageOutline.map(([x, z]) => `${mapX(x)},${stageMapY(z)}`).join(' ')}
-              fill="#fffdf8" stroke="#967447" strokeWidth="5" />
+              fill="#423d3a" stroke="#a57545" strokeWidth="4" pointerEvents="none" />
+            {stageParts.map(part => {
+              const corners = partCorners(part).map(([x, z]): StagePoint => [x + (venue.stageOffset?.[0] ?? 0), z + (venue.stageOffset?.[1] ?? 0)])
+              const color = part.color ?? PART_COLORS[part.kind]
+              return isFlat(part.kind)
+                ? <polygon key={part.id} points={corners.map(([x, z]) => `${mapX(x)},${mapY(z)}`).join(' ')} fill={color}
+                  fillOpacity={part.kind === 'floor' ? .55 : .85} stroke="#c9b9a3" strokeWidth="1.5"
+                  strokeDasharray={part.kind === 'floor' ? '6 4' : undefined} pointerEvents="none" />
+                : <line key={part.id} x1={mapX(corners[0][0])} y1={mapY(corners[0][1])} x2={mapX(corners[1][0])} y2={mapY(corners[1][1])}
+                  stroke={color} strokeWidth={part.kind === 'batten' ? 4 : 7} strokeDasharray={part.kind === 'batten' ? '10 5' : undefined}
+                  strokeLinecap="round" opacity=".8" pointerEvents="none" />
+            })}
+            {audienceBlocks.map(block => {
+              const seat = Math.max(3, MAP.width / (mapBounds.right - mapBounds.left) * .5)
+              return <g key={block.id} pointerEvents="none" opacity=".7">
+                {audienceSeatPositions(block).map(([x, z], index) => <rect key={index}
+                  x={mapX(x) - seat / 2} y={mapY(z) - seat * .45} width={seat} height={seat * .9} rx="2"
+                  transform={`rotate(${-block.rotationDeg} ${mapX(x)} ${mapY(z)})`} fill="#71565c" stroke="#f6ede4" strokeWidth=".8" />)}
+              </g>
+            })}
             {showSetPieces && setPieces.map((piece, index) => {
               const active = selectedSetPiece?.id === piece.id
               const width = Math.max(28, (piece.size?.[0] ?? 1) * Math.abs(piece.scale) * MAP.width / (mapBounds.right - mapBounds.left))
@@ -1309,7 +1347,8 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
             </g>
           </svg>
         </div>
-        <div className="plan-map-footer">
+        </>}
+        {mapMode === 'scene' && <div className="plan-map-footer">
           <div className="plan-actor-key">{performers.map((actor, index) => <div className="plan-actor-entry" key={actor.id}>
             <button className={'plan-actor-select' + (actor.id === selectedPerformer?.id ? ' active' : '')}
               onClick={() => selectActor(actor.id)}>
@@ -1327,7 +1366,7 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
             </button>
           </div>)}</div>
           <button onClick={saveDiagram}>平面図をSVGで保存</button>
-        </div>
+        </div>}
       </div>
       {!persistent && <div className="plan-fields">
         {(selectedPerformer || selectedFixture || selectedSetPiece) && <div className="plan-selected-object">
@@ -1392,6 +1431,5 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
       </div>}
     </div>
     </div>
-    <AudienceLayoutEditor open={audienceEditorOpen} onClose={() => setAudienceEditorOpen(false)} />
   </section>
 }

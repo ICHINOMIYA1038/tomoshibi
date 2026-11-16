@@ -39,7 +39,7 @@ export function Stage({ onMaterialsReady }: { onMaterialsReady: (mats: THREE.Sha
   }
   const finish = FLOOR_FINISHES.find(item => item.id === layout.floorFinish) ?? FLOOR_FINISHES[0]
   const floorMat = useMemo(() => createStageMaterial({
-    // 舞台床: 既定は黒塗装の僅かに反射する木の感触。仕上げと色は会場の配置で変えられる
+    // 舞台床: 既定は黒塗装の僅かに反射する木の感触。仕上げと色は舞台のインスペクターで変えられる
     baseColor: layout.floorColor ? new THREE.Color(layout.floorColor) : new THREE.Color(...finish.color),
     roughness: finish.roughness,
   }), [finish, layout.floorColor])

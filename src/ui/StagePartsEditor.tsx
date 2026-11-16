@@ -4,7 +4,7 @@ import { DEFAULT_VENUE_LAYOUT } from '../venueLayout'
 import {
   clampPart, isHungOn, isFlat, PART_LABELS, partCorners, resolveStageParts, snapValue, type StagePart, type StagePartKind,
 } from '../stageParts'
-const PART_COLORS: Record<StagePartKind, string> = {
+export const PART_COLORS: Record<StagePartKind, string> = {
   floor: '#6d625a', platform: '#9b7650', wall: '#1d1a1d', cyc: '#d9dbe4', wing: '#3a2f37', batten: '#7f8fa3',
 }
 

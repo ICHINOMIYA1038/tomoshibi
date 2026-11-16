@@ -1,15 +1,14 @@
-import { useEffect, useRef, useState, type PointerEvent } from 'react'
+import { useRef, useState, type PointerEvent } from 'react'
 import { useObjectMenu } from '../objectMenu'
 import { audienceSeatPositions, clampAudiencePosition } from '../audienceLayout'
 import { useStore, type AudienceBlock } from '../store'
 import { DEFAULT_VENUE_LAYOUT, pointInStage, STAGE_SIZE, stageFootprint, THEATRE } from '../venueLayout'
 import { StagePartsLayer } from './StagePartsEditor'
-import { Inspector } from './Inspector'
-import { ToolButtons } from './ToolButtons'
 import { useMapZoom } from './useMapZoom'
 
-const SVG_WIDTH = 860
-const SVG_HEIGHT = 660
+// 平面図（PlanBoard.tsx）と同じ大きさ。「シーン／会場」を切り替えても、図の大きさが変わらないように
+const SVG_WIDTH = 960
+const SVG_HEIGHT = 630
 const VIEWS = {
   near: { scale: 24, centerZ: 2.5 },
   surround: { scale: 16, centerZ: -2 },
@@ -29,7 +28,8 @@ const blockLabel = (name: string) => { const chars = Array.from(name); return ch
 /** 名前札の幅。全角は 13px、半角は 7.5px として、左右に 12px ずつ余白をとる */
 const labelWidth = (text: string) => Array.from(text).reduce((sum, char) => sum + (/[\x20-\x7e]/.test(char) ? 7.5 : 13), 24)
 
-export function AudienceLayoutEditor({ open, onClose }: { open: boolean; onClose: () => void }) {
+/** 平面図の「会場」の図。舞台の形・舞台の部品・客席を置く（全シーン共通）。選んだ物の設定は右のパネルで変える */
+export function VenueMap() {
   const blocks = useStore(state => state.productionPlan.audienceBlocks ?? [])
   const fixtures = useStore(state => state.fixtures)
   const setPieces = useStore(state => state.setPieces)
@@ -101,14 +101,6 @@ export function AudienceLayoutEditor({ open, onClose }: { open: boolean; onClose
     return [[-halfWidth, -halfDepth], [halfWidth, -halfDepth], [halfWidth, halfDepth], [-halfWidth, halfDepth]]
       .some(([dx, dz]) => !pointInStage(piece.position[0] + dx, piece.position[2] + dz, outline))
   }).length
-
-  useEffect(() => {
-    if (!open) return
-    const onKeyDown = (event: KeyboardEvent) => { if (event.key === 'Escape') onClose() }
-    window.addEventListener('keydown', onKeyDown)
-    return () => window.removeEventListener('keydown', onKeyDown)
-  }, [open, onClose])
-  if (!open) return null
 
   const beginDrag = (event: PointerEvent<SVGGElement>, block: AudienceBlock) => {
     event.preventDefault()
@@ -198,28 +190,24 @@ export function AudienceLayoutEditor({ open, onClose }: { open: boolean; onClose
     if (id) setSelectedId(id)
   }
 
-  return <div className="audience-editor-backdrop" onPointerDown={event => {
-    if (event.target === event.currentTarget) onClose()
-  }}>
-    <section className="audience-editor" role="dialog" aria-modal="true" aria-label="会場の配置">
-      <header className="audience-editor-header">
-        <div><strong>会場の配置</strong><span>配置済み {seatCount} 席{venue.targetCapacity > 0 ? ` ／ 目標 ${venue.targetCapacity} 席` : ''}・全シーン共通</span></div>
-        <div className="audience-editor-header-actions">
-          <ToolButtons compact />
-          <div className="audience-editor-zoom" role="group" aria-label="図の縮尺">
-            <button type="button" aria-label="縮小" title="縮小（ホイールでも変えられます）" onClick={() => venueZoom.zoomBy(1 / 1.5)}>−</button>
-            <button type="button" aria-label="拡大" title="拡大（ホイールでも変えられます）" onClick={() => venueZoom.zoomBy(1.5)}>＋</button>
-          </div>
-          <button type="button" title="何も無い所をドラッグすると、図を動かせます" onClick={() => { venueZoom.reset(); setWideView(value => venueZoom.zoom === 1 && venueZoom.pan[0] === 0 && venueZoom.pan[1] === 0 ? !value : value) }}>
-            {venueZoom.zoom !== 1 || venueZoom.pan[0] !== 0 || venueZoom.pan[1] !== 0 ? '自動' : wideView ? '舞台付近' : '全体を表示'}</button>
-          <button type="button" onClick={createBlock} disabled={blocks.length >= 16}>＋ 客席</button>
-          <button type="button" onClick={() => { updateSettings({ cameraView: 'house' }); onClose() }} disabled={!blocks.length}>3Dで見る</button>
-          <button type="button" className="audience-editor-close" onClick={onClose} aria-label="会場の配置を閉じる">×</button>
-        </div>
-      </header>
-      <div className="audience-editor-body">
-        <div className="audience-editor-map">
-          <svg ref={svgRef} viewBox={`0 0 ${SVG_WIDTH} ${SVG_HEIGHT}`}
+  const viewChanged = venueZoom.zoom !== 1 || venueZoom.pan[0] !== 0 || venueZoom.pan[1] !== 0
+  return <>
+    <div className="plan-map-layerbar venue-map-bar" role="group" aria-label="会場の図の操作">
+      <span>配置済み {seatCount} 席{venue.targetCapacity > 0 ? ` ／ 目標 ${venue.targetCapacity} 席` : ''}・全シーン共通</span>
+      <button type="button" className="venue-map-action" onClick={createBlock} disabled={blocks.length >= 16}>＋ 客席</button>
+      <button type="button" className="venue-map-action" onClick={() => updateSettings({ cameraView: 'house' })} disabled={!blocks.length}>3Dで客席を見る</button>
+      <div className="plan-map-zoom" role="group" aria-label="会場の図の縮尺">
+        <button type="button" aria-label="縮小" title="縮小（ホイールでも変えられます）" onClick={() => venueZoom.zoomBy(1 / 1.5)}>−</button>
+        <button type="button" aria-label="拡大" title="拡大（ホイールでも変えられます）" onClick={() => venueZoom.zoomBy(1.5)}>＋</button>
+        <button type="button" className={!viewChanged && !wideView ? 'active' : ''} aria-pressed={!viewChanged && !wideView}
+          title="舞台と客席が収まるように、縮尺を自動で合わせます。何も無い所をドラッグすると、図を動かせます"
+          onClick={() => { venueZoom.reset(); setWideView(false) }}>自動</button>
+        <button type="button" className={!viewChanged && wideView ? 'active' : ''} aria-pressed={!viewChanged && wideView}
+          onClick={() => { venueZoom.reset(); setWideView(true) }}>劇場全体</button>
+      </div>
+    </div>
+    <div className="plan-map-scroll venue-map-scroll">
+          <svg ref={svgRef} xmlns="http://www.w3.org/2000/svg" viewBox={`0 0 ${SVG_WIDTH} ${SVG_HEIGHT}`}
             aria-label="舞台と客席の平面図。舞台、客席と自由形状の頂点をドラッグして配置できます"
             style={{ touchAction: 'none' }}
             onPointerDownCapture={event => {
@@ -246,9 +234,9 @@ export function AudienceLayoutEditor({ open, onClose }: { open: boolean; onClose
                 point: !kind || kind === 'stage' ? [Math.round(x * 10) / 10, 0, Math.round(z * 10) / 10] : undefined })
             }}>
             <rect width={SVG_WIDTH} height={SVG_HEIGHT} fill="#ede8df" />
-            {Array.from({ length: 80 }, (_, index) => (Math.ceil((centerZ - SVG_HEIGHT / 2 / scale) / gridStep) + index) * gridStep).filter(z => mapY(z) > 25 && mapY(z) < 635)
+            {Array.from({ length: 80 }, (_, index) => (Math.ceil((centerZ - SVG_HEIGHT / 2 / scale) / gridStep) + index) * gridStep).filter(z => mapY(z) > 25 && mapY(z) < SVG_HEIGHT - 25)
               .map(z => <g key={z}>
-                <line x1="42" x2="818" y1={mapY(z)} y2={mapY(z)} stroke="#d2c9bd" strokeDasharray="5 9" />
+                <line x1="42" x2={SVG_WIDTH - 42} y1={mapY(z)} y2={mapY(z)} stroke="#d2c9bd" strokeDasharray="5 9" />
                 <text x="45" y={mapY(z) - 5} fill="#73695e" fontSize="12">z {z}m</text>
               </g>)}
             <polygon points={stagePoints} fill="#423d3a" strokeWidth="4" data-menu-kind="stage" data-menu-id="stage"
@@ -334,22 +322,17 @@ export function AudienceLayoutEditor({ open, onClose }: { open: boolean; onClose
                 updateVenue({ stageVertices: vertices.map(([px, pz]) => [px - stageOffset[0], pz - stageOffset[1]]) })
               }} />)}
           </svg>
-          <div className="audience-editor-legend">
-            <span>■ 客席</span><span>━ 壁</span><span>╍ バトン</span><span>● 客席側の照明</span>
-            <span>{tool === 'select' ? '選ぶだけの道具です。動かすときは上の「移動」、大きさは「拡大」'
-              : tool === 'translate' ? '舞台・客席・部品をドラッグして移動'
-                : tool === 'scale' ? '選んだ舞台・部品に出る金色の点をドラッグして大きさを変える（自由形状の舞台は角が出ます）'
-                  : '回転は 3D の画面か、右の数字で変えます'}</span>
-            <span>ホイールで拡大・縮小。何も無い所のドラッグで図を動かす（「選択」の道具なら舞台の上でも）</span>
-            {!blocks.length && <span>客席はまだありません（なくても使えます）</span>}
-          </div>
-        </div>
-        <aside className="audience-editor-inspector">
-          <Inspector />
-          {stageOverlap > 0 && <p className="venue-capacity-warning">{stageOverlap} 席が舞台と重なっています。客席の位置を調整してください。</p>}
-          {protrudingSetPieces > 0 && <p className="venue-capacity-warning">現在のシーンで {protrudingSetPieces} 個の舞台セットが舞台の輪郭からはみ出しています。</p>}
-        </aside>
-      </div>
-    </section>
-  </div>
+    </div>
+    <div className="audience-editor-legend venue-map-legend">
+      <span>■ 客席</span><span>━ 壁</span><span>╍ バトン</span><span>● 客席側の照明</span>
+      <span>{tool === 'select' ? '選ぶだけの道具です。動かすときは上の「移動」、大きさは「拡大」'
+        : tool === 'translate' ? '舞台・客席・部品をドラッグして移動'
+          : tool === 'scale' ? '選んだ舞台・部品に出る金色の点をドラッグして大きさを変える（自由形状の舞台は角が出ます）'
+            : '回転は 3D の画面か、右の数字で変えます'}</span>
+      <span>ホイールで拡大・縮小。何も無い所のドラッグで図を動かす（「選択」の道具なら舞台の上でも）</span>
+      {!blocks.length && <span>客席はまだありません（なくても使えます）</span>}
+      {stageOverlap > 0 && <span className="venue-capacity-warning">{stageOverlap} 席が舞台と重なっています。客席の位置を調整してください。</span>}
+      {protrudingSetPieces > 0 && <span className="venue-capacity-warning">いまのシーンで {protrudingSetPieces} 個の舞台セットが舞台の輪郭からはみ出しています。</span>}
+    </div>
+  </>
 }
