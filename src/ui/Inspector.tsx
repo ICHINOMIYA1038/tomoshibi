@@ -4,7 +4,7 @@ import type { SetPiece, SetPieceAppearance } from '../types'
 import { DEFAULT_VENUE_LAYOUT, STAGE_SIZE, stageFootprint, THEATRE } from '../venueLayout'
 import { AUDIENCE_MAX_ELEVATION, clampAudienceElevation, clampAudiencePosition } from '../audienceLayout'
 import {
-  DEFAULT_CYC_COLOR, DEFAULT_WALL_COLOR, FLOOR_FINISHES, isFlat, stageTemplateOf, TEMPLATE_LABELS, type StagePart, type StageTemplate,
+  DEFAULT_CYC_COLOR, DEFAULT_WALL_COLOR, FLOOR_FINISHES, isFlat, PART_LABELS, type StagePart,
 } from '../stageParts'
 import { canBeParent, hierarchyContext, parentOf, STAGE_ID, type ChildKind } from '../hierarchy'
 import { PERFORMER_POSES } from '../performerPoses'
@@ -13,7 +13,6 @@ import { useStageParts } from './StagePartsEditor'
 import { InspectorSection, NumberField } from './fields'
 import { partName } from './HierarchyPanel'
 import { FixtureEditor } from './ControlPanel'
-import { askConfirm } from './askConfirm'
 import * as THREE from 'three'
 
 // 右パネルの下: 選んだ物の設定（Unity のインスペクター）。
@@ -223,10 +222,35 @@ function PartInspector({ part }: { part: StagePart }) {
       {part.kind !== 'floor' && part.kind !== 'batten' && <NumberField label="高さ" value={part.height} min={.1} max={20} onChange={value => change(part.id, { height: value })} />}
       {isFlat(part.kind) && <NumberField label="奥行" value={part.depth} min={.5} max={56} onChange={value => change(part.id, { depth: value })} />}
     </InspectorSection>
+    {part.kind !== 'batten' && <PartColorField part={part} />}
     {part.kind === 'batten' && <InspectorSection title="バトン">
       <p className="inspector-note">照明を吊るときは、上の一覧で照明の行をこのバトンの行に重ねてください（照明の「親」でも選べます）。吊った照明は、バトンを動かす・回すと一緒に動きます。</p>
     </InspectorSection>}
   </>
+}
+
+/** 部品 1 つだけの色。付けていなければ舞台全体の色（床・壁・ホリゾント）を見せる */
+function PartColorField({ part }: { part: StagePart }) {
+  const { layout, parts, commit } = useStageParts()
+  const finish = FLOOR_FINISHES.find(item => item.id === (layout.floorFinish ?? 'black')) ?? FLOOR_FINISHES[0]
+  const inherited = part.kind === 'floor' ? layout.floorColor ?? linearHex(finish.color)
+    : part.kind === 'wall' ? layout.wallColor ?? linearHex(DEFAULT_WALL_COLOR)
+    : part.kind === 'cyc' ? layout.cycColor ?? linearHex(DEFAULT_CYC_COLOR)
+    : part.kind === 'wing' ? linearHex([0.02, 0.019, 0.021]) : linearHex([0.4, 0.3, 0.2])
+  // 色だけを変えるときは「動かした」にしない（ひな形の部品が、舞台の大きさに合わせて置き直され続けるように）
+  const setColor = (color: string | undefined) => commit(parts.map(item => item.id === part.id ? { ...item, color } : item))
+  return <InspectorSection title="色">
+    <label className="inspector-text"><span>{PART_LABELS[part.kind]}</span>
+      <input type="color" value={part.color ?? inherited} onChange={event => setColor(event.target.value)} />
+      <button type="button" onClick={() => setColor(undefined)} disabled={!part.color}>舞台の色に戻す</button>
+    </label>
+    <p className="inspector-note">{part.color ? 'この部品だけの色です。' : '舞台全体の色に従っています。ここで変えると、この部品だけの色になります。'}</p>
+  </InspectorSection>
+}
+
+/** three.js の線形の色を、色の入力欄の #rrggbb（sRGB）にする */
+function linearHex(rgb: [number, number, number]) {
+  return `#${new THREE.Color(...rgb).getHexString()}`
 }
 
 const SHAPES: Array<[StageShape, string]> = [['proscenium', '額縁'], ['round', '円形'], ['thrust', '張り出し'], ['custom', '自由形状']]
@@ -237,7 +261,6 @@ function StageInspector() {
   const updateVenue = useStore(s => s.updateVenueLayout)
   const moveStageTo = useStore(s => s.moveStageTo)
   const offset = layout.stageOffset ?? [0, 0]
-  const template = stageTemplateOf(layout)
   const round = layout.stageShape === 'round'
   const seatCount = blocks.reduce((sum, block) => sum + block.rows * block.seatsPerRow, 0)
   const chooseShape = (shape: StageShape) => {
@@ -264,10 +287,6 @@ function StageInspector() {
     const vertices = [...outline]
     vertices.splice(edge + 1, 0, [(x + nx) / 2, (z + nz) / 2])
     updateVenue({ stageVertices: vertices.map(([px, pz]) => [px - offset[0], pz - offset[1]]) })
-  }
-  const chooseTemplate = async (next: StageTemplate) => {
-    if (layout.stageParts && !await askConfirm('いまの舞台の部品を、選んだひな形の部品に置き換えますか？いま置いている部品は消えます。', '置き換える')) return
-    updateVenue({ stageTemplate: next, stageParts: undefined })
   }
   const colorHex = (value: string | undefined, fallback: [number, number, number]) => value ?? `#${new THREE.Color(...fallback).getHexString()}`
   return <>
@@ -298,13 +317,7 @@ function StageInspector() {
         onChange={event => updateVenue({ showProsceniumFrame: event.target.checked })} />赤い舞台枠を表示</label>}
       <p className="inspector-note">形の違う床は、「＋ 追加」の「舞台」から床を足して組み合わせます。</p>
     </InspectorSection>
-    <InspectorSection title="ひな形（壁・バトンなどの並び）">
-      <div className="inspector-templates">{TEMPLATE_LABELS.map(item => <button key={item.id} type="button"
-        className={template === item.id ? 'active' : ''} aria-pressed={template === item.id} onClick={() => chooseTemplate(item.id)}>
-        <strong>{item.label}</strong><span>{item.detail}</span>
-      </button>)}</div>
-    </InspectorSection>
-    <InspectorSection title="床・壁の色">
+    <InspectorSection title="床・壁の色（舞台全体）">
       <div className="inspector-choice wrap" role="group" aria-label="床の仕上げ">
         {FLOOR_FINISHES.map(item => <button key={item.id} type="button"
           className={(layout.floorFinish ?? 'black') === item.id ? 'active' : ''} aria-pressed={(layout.floorFinish ?? 'black') === item.id}
@@ -318,6 +331,7 @@ function StageInspector() {
         <input type="color" value={colorHex(layout[key], fallback)} onChange={event => updateVenue({ [key]: event.target.value })} />
         <button type="button" onClick={() => updateVenue({ [key]: undefined })} disabled={!layout[key]}>元の色</button>
       </label>)}
+      <p className="inspector-note">ここで変えた色は、色を付けていない部品すべてに効きます。壁 1 枚だけの色は、その壁を選んで変えます。</p>
     </InspectorSection>
     <InspectorSection title="会場">
       <NumberField label="目標定員" value={layout.targetCapacity || 0} min={0} max={6400} step={1} unit="席"

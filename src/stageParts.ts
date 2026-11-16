@@ -22,6 +22,8 @@ export type StagePart = {
   /** 下端の高さ（壁・ホリゾント・袖幕）、吊る高さ（バトン） */
   elevation: number
   rotationDeg: number
+  /** #rrggbb。この部品だけの色。無ければ舞台の「床・壁の色」に従う（バトンは使わない） */
+  color?: string
 }
 export type StageTemplate = 'standard' | 'proscenium' | 'blackbox' | 'bare'
 export type FloorFinish = 'black' | 'wood' | 'lino-black' | 'lino-gray' | 'lino-white'
@@ -145,7 +147,8 @@ export function resolveStageParts(layout: VenueLayout = DEFAULT_VENUE_LAYOUT): S
   return layout.stageParts.flatMap(item => {
     if (!item.auto || item.edited) return [item]
     const fresh = generated.find(candidate => candidate.auto === item.auto)
-    return fresh ? [{ ...fresh, id: item.id }] : []
+    // 置き直しても、部品に付けた色は残す
+    return fresh ? [{ ...fresh, id: item.id, color: item.color }] : []
   })
 }
 
@@ -234,6 +237,7 @@ export function sanitizeStageParts(raw: unknown): StagePart[] | undefined {
       x: clamp(num(item.x, 0), -60, 60), z: clamp(num(item.z, 0), -60, 60),
       width: num(item.width, 2), depth: num(item.depth, 1), height: num(item.height, 1),
       elevation: num(item.elevation, 0), rotationDeg: num(item.rotationDeg, 0),
+      color: typeof item.color === 'string' && HEX_COLOR.test(item.color) ? item.color : undefined,
     })]
   })
 }

@@ -1,6 +1,9 @@
-import { useStore } from './store'
+import { useStore, type StagePoint } from './store'
 import { DEFAULT_VENUE_LAYOUT } from './venueLayout'
-import { clampPart, newPart, resolveStageParts, type StagePartKind } from './stageParts'
+import * as THREE from 'three'
+import { clampPart, newPart, partCorners, resolveStageParts, type StagePart, type StagePartKind } from './stageParts'
+import { clampAudiencePosition } from './audienceLayout'
+import { THEATRE } from './venueLayout'
 
 // 選んでいる物の複製・削除。種類によらず同じ操作にする（Unity の ⌘D・Delete）
 
@@ -65,25 +68,97 @@ const APPEARANCES: Record<string, { name: string; size: [number, number, number]
   window: { name: '窓', size: [2.5, 2.8, 0.16], color: '#5c6774' },
 }
 
-export function addSetPiece(type: SetPieceType) {
+/** at は床の上の位置（世界の x, z）。無ければ舞台の中央付近に、重ならないようずらして置く */
+export function addSetPiece(type: SetPieceType, at?: StagePoint) {
   const s = useStore.getState()
-  if (type === 'box' || type === 'platform' || type === 'riser') return s.addPrimitiveSetPiece(type)
-  const preset = APPEARANCES[type]
-  const id = s.addPrimitiveSetPiece('box')
-  const position = useStore.getState().setPieces.find(piece => piece.id === id)?.position
-  if (id && position) useStore.getState().updateSetPiece(id, {
-    ...preset, appearance: type, position: [position[0], preset.size[1] / 2, position[2]],
-  })
+  const id = s.addPrimitiveSetPiece(type === 'platform' || type === 'riser' ? type : 'box')
+  const preset = type === 'box' || type === 'platform' || type === 'riser' ? null : { ...APPEARANCES[type], appearance: type }
+  const piece = useStore.getState().setPieces.find(item => item.id === id)
+  if (!id || !piece) return id
+  const height = preset ? preset.size[1] : piece.position[1] * 2
+  const [x, z] = at ?? [piece.position[0], piece.position[2]]
+  if (preset || at) useStore.getState().updateSetPiece(id, { ...preset, position: [x, height / 2, z] })
   return id
 }
 
-export function addStagePart(kind: StagePartKind) {
+export function addStagePart(kind: StagePartKind, at?: StagePoint) {
   const s = useStore.getState()
   const layout = s.productionPlan.venueLayout ?? DEFAULT_VENUE_LAYOUT
   const parts = resolveStageParts(layout)
   if (parts.length >= 80) return null
   const id = `part-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`
-  s.updateStageParts([...parts, clampPart(newPart(kind, layout, id), layout.stageOffset ?? [0, 0])])
+  const offset = layout.stageOffset ?? [0, 0]
+  const fresh = newPart(kind, layout, id)
+  const placed = at ? { ...fresh, x: at[0] - offset[0], z: at[1] - offset[1] } : fresh
+  s.updateStageParts([...parts, clampPart(placed, offset)])
   s.select('stagepart', id)
+  return id
+}
+
+// ---- 追加の一覧から足す（押すと既定の位置、3D の画面へドラッグすると落とした所）----
+
+export type AddItem =
+  | { kind: 'fixture'; preset: string }
+  | { kind: 'performer' }
+  | { kind: 'setpiece'; type: SetPieceType }
+  | { kind: 'stagepart'; part: StagePartKind }
+  | { kind: 'audience' }
+
+/** ドラッグで運ぶデータの種類。ヒエラルキーの行の並べ替え（application/x-tomoshibi-object）とは別にする */
+export const ADD_DRAG_TYPE = 'application/x-tomoshibi-add'
+
+export function parseAddItem(raw: string): AddItem | null {
+  try {
+    const item = JSON.parse(raw) as AddItem
+    return item && typeof item === 'object' && typeof item.kind === 'string' ? item : null
+  } catch { return null }
+}
+
+/** 照明を落としたとき、視線がバトンからこの距離（m）より近ければ、そのバトンに吊る */
+const HANG_DISTANCE = 0.8
+
+/** 視線にいちばん近いバトンと、バトンの上の位置（世界の座標） */
+function battenOnRay(ray: THREE.Ray, parts: StagePart[], offset: StagePoint) {
+  const onRay = new THREE.Vector3()
+  const onBatten = new THREE.Vector3()
+  let best: { batten: StagePart; at: THREE.Vector3; distance: number } | null = null
+  for (const batten of parts) {
+    if (batten.kind !== 'batten') continue
+    const [[ax, az], [bx, bz]] = partCorners(batten)
+    const a = new THREE.Vector3(ax + offset[0], batten.elevation, az + offset[1])
+    const b = new THREE.Vector3(bx + offset[0], batten.elevation, bz + offset[1])
+    const distance = Math.sqrt(ray.distanceSqToSegment(a, b, onRay, onBatten))
+    if (distance <= HANG_DISTANCE && (!best || distance < best.distance)) best = { batten, at: onBatten.clone(), distance }
+  }
+  return best
+}
+
+/** at は床の上の位置（世界の x, z）。ray は 3D の画面で落とした所を通る視線（照明をバトンに吊るのに使う） */
+export function addItem(item: AddItem, at?: StagePoint, ray?: THREE.Ray) {
+  const s = useStore.getState()
+  const point: StagePoint | undefined = at && [
+    Math.min(THEATRE.maxX, Math.max(THEATRE.minX, at[0])),
+    Math.min(THEATRE.maxZ, Math.max(THEATRE.minZ, at[1])),
+  ]
+  if (item.kind === 'fixture') {
+    const layout = s.productionPlan.venueLayout ?? DEFAULT_VENUE_LAYOUT
+    const hung = ray ? battenOnRay(ray, resolveStageParts(layout), layout.stageOffset ?? [0, 0]) : null
+    if (!hung && !point) return s.addFixture(item.preset)
+    // バトンに重ねて落としたらバトンに吊り、そうでなければ落とした床の真上 6.5m に置く。どちらも少し客席側の床を向ける
+    const [x, z] = hung ? [hung.at.x, hung.at.z] : point!
+    const id = s.addFixture(item.preset, [x, hung ? Math.max(1, hung.batten.elevation - .35) : 6.5, z])
+    if (!id) return id
+    useStore.getState().updateFixture(id, { target: [x, 1.5, z + 2] })
+    if (hung) useStore.getState().setParent('fixture', id, hung.batten.id)
+    return id
+  }
+  if (item.kind === 'performer') return s.addPerformer(point && [point[0], 0, point[1]])
+  if (item.kind === 'setpiece') return addSetPiece(item.type, point)
+  if (item.kind === 'stagepart') return addStagePart(item.part, point)
+  const id = s.addAudienceBlock()
+  if (!id) return id
+  const block = (useStore.getState().productionPlan.audienceBlocks ?? []).find(entry => entry.id === id)
+  if (block && point) useStore.getState().updateAudienceBlock(id, { position: clampAudiencePosition(block, point[0], point[1]) })
+  useStore.getState().select('audience', id)
   return id
 }

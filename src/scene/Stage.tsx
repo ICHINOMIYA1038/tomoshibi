@@ -76,6 +76,23 @@ export function Stage({ onMaterialsReady }: { onMaterialsReady: (mats: THREE.Sha
     roughness: 0.7,
   }), [])
 
+  // 色を付けた部品は、その色の材質を使う。同じ種類と色なら 1 つの材質を使い回す
+  const partMats = useMemo(() => {
+    const map = new Map<string, THREE.Material>()
+    for (const item of parts) {
+      if (!item.color || item.kind === 'batten') continue
+      const key = `${item.kind}:${item.color}`
+      if (map.has(key)) continue
+      const roughness = item.kind === 'floor' ? finish.roughness : item.kind === 'platform' ? 0.7 : item.kind === 'wall' ? 0.98 : 1.0
+      const material = createStageMaterial({ baseColor: new THREE.Color(item.color), roughness }) as unknown as THREE.MeshStandardMaterial
+      if (item.kind !== 'floor' && item.kind !== 'platform') material.side = THREE.DoubleSide
+      map.set(key, material)
+    }
+    return map
+  }, [parts, finish])
+  useEffect(() => () => partMats.forEach(material => material.dispose()), [partMats])
+  const materialOf = (item: StagePart, fallback: THREE.Material) => (item.color && partMats.get(`${item.kind}:${item.color}`)) || fallback
+
   const mats = useMemo(
     () => [floorMat, wallMat, cycMat, wingMat, procMat, batonMat, platformMat],
     [floorMat, wallMat, cycMat, wingMat, procMat, batonMat, platformMat],
@@ -95,15 +112,15 @@ export function Stage({ onMaterialsReady }: { onMaterialsReady: (mats: THREE.Sha
         <meshBasicMaterial color="#6cf" wireframe transparent opacity={0.5} depthTest={false} />
       </mesh>}
       {parts.map(item => <group key={item.id} position={[item.x, 0, item.z]} rotation={[0, item.rotationDeg * Math.PI / 180, 0]} onClick={pick('stagepart', item.id)} onContextMenu={hit('stagepart', item.id)}>
-        {item.kind === 'floor' && <mesh position={[0, 0.006, 0]} rotation={[-Math.PI / 2, 0, 0]} material={floorMat} receiveShadow>
+        {item.kind === 'floor' && <mesh position={[0, 0.006, 0]} rotation={[-Math.PI / 2, 0, 0]} material={materialOf(item, floorMat)} receiveShadow>
           <planeGeometry args={[item.width, item.depth]} />
         </mesh>}
-        {item.kind === 'platform' && <mesh position={[0, item.height / 2, 0]} material={platformMat} castShadow receiveShadow>
+        {item.kind === 'platform' && <mesh position={[0, item.height / 2, 0]} material={materialOf(item, platformMat)} castShadow receiveShadow>
           <boxGeometry args={[item.width, item.height, item.depth]} />
         </mesh>}
         {(item.kind === 'wall' || item.kind === 'cyc' || item.kind === 'wing') &&
           <mesh position={[0, item.elevation + item.height / 2, 0]} receiveShadow
-            material={item.kind === 'cyc' ? cycMat : item.kind === 'wing' ? wingMat : wallMat}>
+            material={materialOf(item, item.kind === 'cyc' ? cycMat : item.kind === 'wing' ? wingMat : wallMat)}>
             <planeGeometry args={[item.width, item.height]} />
           </mesh>}
         {item.kind === 'batten' && <>
