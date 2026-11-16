@@ -1226,6 +1226,7 @@ export function packFixture(f: Fixture): PackedFixture {
   const kindMap: Record<string, number> = {
     PAR: 0, Fresnel: 1, PC: 2, Profile: 3,
     LED_PAR: 0, LED_Wash: 1, LED_Profile: 3, LED_Bar: 0, MovingHead: 3, FollowSpot: 3,
+    Border: 1, Cyc: 1, Footlight: 1,
   }
 
   return {

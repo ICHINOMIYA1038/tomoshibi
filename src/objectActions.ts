@@ -137,6 +137,25 @@ function battenOnRay(ray: THREE.Ray, parts: StagePart[], offset: StagePoint) {
   return best
 }
 
+/**
+ * 置き場所が決まっている器具の位置と狙い。フットは舞台の前の縁、ホリゾントはホリゾント幕の前に置き、幕を照らす。
+ * x だけは落とした所（押したときは中央）に合わせる
+ */
+function floorFixturePlacement(preset: string, layout: typeof DEFAULT_VENUE_LAYOUT, x: number): { position: [number, number, number]; target: [number, number, number] } {
+  const [ox, oz] = layout.stageOffset ?? [0, 0]
+  const parts = resolveStageParts(layout)
+  const floors = parts.filter(part => part.kind === 'floor')
+  const front = floors.length ? Math.max(...floors.map(part => part.z + part.depth / 2)) + oz : -3 + layout.stageDepth / 2 + oz
+  const cyc = parts.find(part => part.kind === 'cyc')
+  const cycZ = cyc ? cyc.z + oz : -3 - layout.stageDepth / 2 + 1.4 + oz
+  const cycTop = cyc ? cyc.elevation + cyc.height : 6.75
+  const px = x || ox
+  if (FIXTURE_PROFILES[preset]?.kind === 'Footlight') return { position: [px, 0.12, front - 0.3], target: [px, 1.7, front - 4] }
+  // ロアーホリゾントは幕の前の床から上へ、アッパーホリゾントは幕の上の前から下へ
+  if (preset === 'LowerCycLED') return { position: [px, 0.2, cycZ + 1], target: [px, cycTop * 0.6, cycZ] }
+  return { position: [px, Math.max(2, cycTop + 0.3), cycZ + 1.2], target: [px, cycTop * 0.35, cycZ] }
+}
+
 /** at は床の上の位置（世界の x, z）。ray は 3D の画面で落とした所を通る視線（照明をバトンに吊るのに使う） */
 export function addItem(item: AddItem, at?: StagePoint, ray?: THREE.Ray) {
   const s = useStore.getState()
@@ -154,6 +173,18 @@ export function addItem(item: AddItem, at?: StagePoint, ray?: THREE.Ray) {
       const z = Math.min(THEATRE.maxZ, rear + 2)
       const id = s.addFixture(item.preset, [0, 6, z])
       if (id) useStore.getState().updateFixture(id, { target: [0, 1.1, -3] })
+      return id
+    }
+    const kind = FIXTURE_PROFILES[item.preset]?.kind
+    if (!hung && (kind === 'Footlight' || kind === 'Cyc')) {
+      const placed = floorFixturePlacement(item.preset, layout, point?.[0] ?? 0)
+      const id = s.addFixture(item.preset, placed.position)
+      if (id) useStore.getState().updateFixture(id, { target: placed.target })
+      return id
+    }
+    if (!hung && !point && kind === 'Border') {
+      const id = s.addFixture(item.preset, [0, 6.5, -3])
+      if (id) useStore.getState().updateFixture(id, { target: [0, 0, -1.5] })
       return id
     }
     if (!hung && !point) return s.addFixture(item.preset)

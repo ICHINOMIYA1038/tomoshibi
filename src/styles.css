@@ -4766,7 +4766,8 @@ body.embed .workspace-switch { display: none; }
 
 .unity-panel { display: flex; flex-direction: column; gap: 10px; }
 
-.inspector { display: grid; gap: 10px; }
+/* 列を中身の幅にしない（長い名前の照明を選んだとき、パネルの右がはみ出さないように） */
+.inspector { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
 .inspector-empty p { margin: 0; color: var(--ink-secondary); font-size: 12px; line-height: 1.7; }
 .inspector-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding-bottom: 6px; border-bottom: 1px solid var(--panel-edge); }
 .inspector-head small { display: block; color: var(--ink-secondary); font-size: 10px; }
@@ -4818,6 +4819,7 @@ body.embed .workspace-switch { display: none; }
 .unity-panel .add-palette { display: grid; gap: 10px; padding: 10px; border-bottom: 1px solid var(--panel-edge); background: rgba(0, 0, 0, .22); }
 .unity-panel .add-palette h3 { margin: 0 0 6px; font-size: 10px; font-weight: 600; letter-spacing: .06em; color: var(--ink-muted); }
 .unity-panel .add-palette-hint { margin: 0; font-size: 11px; line-height: 1.5; color: var(--ink-muted); }
+.unity-panel .add-palette-note { margin: 6px 0 0; font-size: 11px; line-height: 1.5; color: var(--ink-muted); }
 .unity-panel .add-tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(56px, 1fr)); gap: 4px; }
 .unified-shell .unity-panel .add-palette .add-tile { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; min-height: 50px; padding: 5px 2px; border: 1px solid var(--panel-edge); border-radius: 6px; background: rgba(255, 255, 255, .04); color: var(--ink-secondary); font: 11px/1.2 var(--font-sans); text-align: center; cursor: grab; touch-action: manipulation; }
 .unified-shell .unity-panel .add-palette .add-tile:hover { border-color: rgba(232, 178, 98, .55); background: rgba(232, 178, 98, .08); color: var(--ink-primary); }

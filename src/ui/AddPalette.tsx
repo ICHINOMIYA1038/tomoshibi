@@ -1,22 +1,29 @@
 import { useState, type DragEvent, type ReactNode } from 'react'
-import { FIXTURE_PRESETS_BY_KIND, FIXTURE_PROFILES, KIND_LABELS, type FixtureKind } from '../lighting/fixtureTypes'
+import { addablePresets, FIXTURE_DISCLAIMER, FIXTURE_PROFILES, KIND_LABELS, type FixtureKind } from '../lighting/fixtureTypes'
 import { ADD_DRAG_TYPE, addItem, SET_PIECE_TYPES, type AddItem, type SetPieceType } from '../objectActions'
 import { PART_LABELS, type StagePartKind } from '../stageParts'
 
 // ヒエラルキーの「＋ 追加」で開く一覧。絵の付いた札を押すと既定の位置に、3D の画面へドラッグすると落とした所に置く
 
+// 札は種類ごとに 1 つ。押すと、その種類でいちばんよく使う器具（多くは 1kW）を置く
 const FIXTURE_TILES: Array<{ kind: FixtureKind; label: string; preset?: string }> = [
+  { kind: 'PC', label: '平凸', preset: 'PC8' },
   { kind: 'Fresnel', label: 'フレネル', preset: 'Fresnel8' },
-  { kind: 'PC', label: '平凸' },
   { kind: 'Profile', label: 'エリスポ', preset: 'Source4_26' },
   { kind: 'PAR', label: 'パーライト', preset: 'PAR64_MFL' },
+  { kind: 'Border', label: 'ボーダー' },
+  { kind: 'Cyc', label: 'ホリゾント' },
+  { kind: 'Footlight', label: 'フット' },
+  { kind: 'FollowSpot', label: 'ピンスポット' },
   { kind: 'LED_PAR', label: 'LED パーライト' },
   { kind: 'LED_Wash', label: 'LED ウォッシュ' },
   { kind: 'LED_Profile', label: 'LED エリスポ' },
   { kind: 'LED_Bar', label: 'LED バー' },
   { kind: 'MovingHead', label: 'ムービング' },
-  { kind: 'FollowSpot', label: 'ピンスポット' },
 ]
+const FIXTURE_GLYPH: Partial<Record<FixtureKind, string>> = {
+  LED_Bar: 'bar', Border: 'bar', Footlight: 'bar', Cyc: 'cyc', MovingHead: 'moving', FollowSpot: 'pin',
+}
 // 舞台の平台は、舞台セットの「平台」と紛らわしいので出さない（以前の追加の一覧と同じ）
 const STAGE_PART_KINDS: StagePartKind[] = ['floor', 'wall', 'cyc', 'batten', 'wing']
 
@@ -74,27 +81,26 @@ const SET_PIECE_GLYPH: Record<SetPieceType, string> = {
 
 export function AddPalette() {
   const [preset, setPreset] = useState('Fresnel8')
-  const presetOf = (tile: typeof FIXTURE_TILES[number]) => tile.preset ?? FIXTURE_PRESETS_BY_KIND[tile.kind][0]
+  const presetOf = (tile: typeof FIXTURE_TILES[number]) => tile.preset ?? addablePresets(tile.kind)[0]
   return <div className="add-palette">
     <p className="add-palette-hint">押すと舞台の中央に置きます。3D の画面へドラッグすると、落とした所に置きます。照明はバトンに重ねて落とすと、そのバトンに吊ります。</p>
     <section aria-label="照明">
       <h3>照明</h3>
       <div className="add-tiles">
-        {FIXTURE_TILES.filter(tile => FIXTURE_PRESETS_BY_KIND[tile.kind]?.length).map(tile => <Tile key={tile.kind}
+        {FIXTURE_TILES.filter(tile => addablePresets(tile.kind).length).map(tile => <Tile key={tile.kind}
           item={{ kind: 'fixture', preset: presetOf(tile) }} label={tile.label}
-          glyph={tile.kind === 'LED_Bar' ? 'bar' : tile.kind === 'MovingHead' ? 'moving' : tile.kind === 'FollowSpot' ? 'pin' : 'lamp'} />)}
+          title={`${FIXTURE_PROFILES[presetOf(tile)]?.model ?? tile.label}を足す（3D の画面へドラッグすると、落とした所に置きます）`}
+          glyph={FIXTURE_GLYPH[tile.kind] ?? 'lamp'} />)}
       </div>
       <div className="add-palette-model">
         <select value={preset} onChange={event => setPreset(event.target.value)} aria-label="照明の機種">
-          {(Object.keys(KIND_LABELS) as FixtureKind[]).map(kind => <optgroup key={kind} label={KIND_LABELS[kind]}>
-            {FIXTURE_PRESETS_BY_KIND[kind].map(key => {
-              const profile = FIXTURE_PROFILES[key]
-              return <option key={key} value={key}>{profile.brand ? `${profile.brand} — ${profile.model || key}` : (profile.model || key)}</option>
-            })}
+          {(Object.keys(KIND_LABELS) as FixtureKind[]).filter(kind => addablePresets(kind).length).map(kind => <optgroup key={kind} label={KIND_LABELS[kind]}>
+            {addablePresets(kind).map(key => <option key={key} value={key}>{FIXTURE_PROFILES[key].model || key}</option>)}
           </optgroup>)}
         </select>
         <Tile item={{ kind: 'fixture', preset }} glyph="lamp" label="この機種" title="選んだ機種を足す（3D の画面へドラッグすると、落とした所に置きます）" />
       </div>
+      <p className="add-palette-note">{FIXTURE_DISCLAIMER}</p>
     </section>
     <section aria-label="役者・客席">
       <h3>役者・客席</h3>

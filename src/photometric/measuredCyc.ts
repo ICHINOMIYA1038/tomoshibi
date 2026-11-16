@@ -1,16 +1,20 @@
 import * as THREE from 'three'
 import type { Fixture } from '../store'
-import { candelaAt, parseIES } from '../lighting-lab/photometry'
-import cycIES from './data/etc-s4-led-cyc-daylight-hd.ies?raw'
+import { candelaAt } from '../lighting-lab/photometry'
+import { syntheticCycProfile } from './syntheticProfiles'
 
+// ホリゾント用の配光表（公称値から作った近似）。キーの文字列は、保存済みのプランが読めるよう前のまま
 export const MEASURED_CYC_KEY = 'etc-s4-led-cyc-daylight-hd'
 
-const profile = parseIES(cycIES)
+const profile = syntheticCycProfile()
 const halfAngle = THREE.MathUtils.degToRad(75)
-const displayGain = 0.06
+const displayGain = 0.1
+
+/** 配光表を選べるホリゾントの器具 */
+export const CYC_TABLE_PRESETS = new Set(['CycWashStudy'])
 
 export function hasMeasuredCyc(fixture: Fixture): boolean {
-  return fixture.presetKey === 'CycWashStudy' && fixture.photometricProfile === MEASURED_CYC_KEY
+  return CYC_TABLE_PRESETS.has(fixture.presetKey) && fixture.photometricProfile === MEASURED_CYC_KEY
 }
 
 export function measuredCycCandela(fixture: Fixture, direction: THREE.Vector3): number {

@@ -71,8 +71,8 @@ export function gdtfToProfile(info: GDTFInfo): FixtureProfile {
   const isLED = info.colorTemperatureK >= 4000  // 簡易: 4000K以上を LED 扱い
   return {
     kind: kind as any,
-    brand: info.manufacturer,
-    model: info.model,
+    // 利用者が自分で読み込んだ GDTF なので、ファイルに書かれたメーカー名と製品名をそのまま名前にする
+    model: [info.manufacturer, info.model].filter(Boolean).join(' '),
     source: isLED ? 'led-rgbw' : 'tungsten',
     beamAngleDeg: info.beamAngleDeg,
     fieldAngleDeg: Math.max(info.fieldAngleDeg, info.beamAngleDeg * 1.2),
