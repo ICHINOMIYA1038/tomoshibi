@@ -4950,29 +4950,23 @@ body.embed .workspace-switch { display: none; }
 .project-create-error a { margin-left: 6px; color: #ffd9cf; text-decoration: underline; }
 .project-create-actions button:disabled { opacity: .45; cursor: not-allowed; filter: none; }
 
-/* プロジェクト一覧の右側。主な使い方 3 つを写真で見せる（EmptyLibrary.tsx） */
-.library-guide { display: grid; align-content: center; min-height: 100%; max-width: 1080px; margin: 0 auto; padding: 40px 32px; color: #2c2622; }
+/* プロジェクト一覧の右側。主な使い方 3 つを、写真と一緒に縦に並べる（EmptyLibrary.tsx） */
+.library-guide { max-width: 1080px; margin: 0 auto; padding: 40px 32px 56px; color: #2c2622; }
 .library-guide h2 { margin: 0 0 8px; font-size: 32px; font-weight: 700; text-wrap: balance; }
-.library-guide-lead { margin: 0 0 24px; color: #5e544b; font-size: 15px; line-height: 1.8; }
-.library-guide-body { display: grid; grid-template-columns: minmax(240px, 320px) minmax(0, 1fr); gap: 24px; align-items: start; }
-.library-guide-steps { display: grid; gap: 0; margin: 0; padding: 0; list-style: none; border-top: 2px solid #3d342d; }
-.library-guide-steps button { display: grid; grid-template-columns: 36px minmax(0, 1fr); column-gap: 12px; row-gap: 4px; width: 100%; padding: 14px 8px 14px 0; border: 0; border-bottom: 1px solid #d6cbb9; background: transparent; color: inherit; font: inherit; text-align: left; cursor: pointer; }
-.library-guide-steps button:hover strong { text-decoration: underline; text-underline-offset: 3px; }
-.library-guide-steps button:focus-visible { outline: 2px solid #b9452e; outline-offset: 2px; }
-.library-guide-number { grid-row: span 2; display: grid; place-items: center; width: 32px; height: 32px; border: 1.5px solid #8a7a66; border-radius: 50%; color: #6e6359; font-weight: 700; font-variant-numeric: tabular-nums; }
-.library-guide-steps strong { font-size: 16px; line-height: 1.5; }
-.library-guide-steps small { color: #6e6359; font-size: 13px; line-height: 1.7; }
-.library-guide-steps button:not(.active) small { display: none; }
-.library-guide-steps button.active .library-guide-number { border-color: #b9452e; background: #b9452e; color: #fff9f0; }
-.library-guide-shot { margin: 0; background: #15110f; box-shadow: 0 10px 28px rgba(40, 28, 20, .22); }
-.library-guide-shot img { display: block; width: 100%; height: auto; max-height: 56vh; object-fit: contain; }
+.library-guide-lead { margin: 0 0 16px; color: #5e544b; font-size: 15px; line-height: 1.8; }
+.library-guide-list { margin: 0; padding: 0; list-style: none; border-top: 2px solid #3d342d; }
+.library-guide-list li { display: grid; grid-template-columns: minmax(220px, 300px) minmax(0, 1fr); gap: 24px; align-items: start; padding: 24px 0; border-bottom: 1px solid #d6cbb9; }
+.library-guide-text { display: grid; grid-template-columns: 36px minmax(0, 1fr); column-gap: 12px; }
+.library-guide-number { grid-row: span 2; display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; background: #b9452e; color: #fff9f0; font-weight: 700; font-variant-numeric: tabular-nums; }
+.library-guide-text h3 { margin: 2px 0 8px; font-size: 18px; line-height: 1.5; }
+.library-guide-text p { margin: 0; color: #5e544b; font-size: 14px; line-height: 1.8; }
+.library-guide-list img { display: block; width: 100%; height: auto; border: 1px solid #3d342d; background: #15110f; }
 .library-guide-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 24px; margin-top: 24px; }
 .library-guide-demo { display: inline-flex; align-items: center; min-height: 44px; padding: 0 18px; border: 1.5px solid #b9452e; border-radius: 4px; color: #a43a26; font-weight: 700; font-size: 14px; text-decoration: none; }
 .library-guide-demo:hover { background: rgba(185, 69, 46, .08); }
 .library-guide-actions a:not(.library-guide-demo) { color: #5e544b; font-size: 14px; text-decoration: underline; text-underline-offset: 3px; }
 @media (max-width: 960px) {
-  .library-guide { padding: 24px 16px; }
+  .library-guide { padding: 24px 16px 40px; }
   .library-guide h2 { font-size: 26px; }
-  .library-guide-body { grid-template-columns: 1fr; }
-  .library-guide-shot { order: -1; }
+  .library-guide-list li { grid-template-columns: 1fr; gap: 12px; }
 }
