@@ -40,8 +40,9 @@ export function OnlineWorkspace({ children, enabled, editorVisible, onProjects }
     return () => window.removeEventListener('beforeunload', warnBeforeLeaving)
   }, [enabled, pendingChanges])
   const offline = enabled && (connectionError || !navigator.onLine)
-  // ログアウトしたあとや、ログインの期限が切れたあと。画面にまだ前のログインが残っていても、サーバーが 401 を返せばこちらにする
-  const loginRequired = enabled && !loading && !!getActiveCloudProject() && (!user || editor.signedOut)
+  // ログアウトしたあとや、ログインの期限が切れたあと。画面にまだ前のログインが残っていても、サーバーが 401 を返せばこちらにする。
+  // 編集画面にだけ出す。一覧にも出すと「プロジェクト一覧へ」で抜けられず、ログインしない限り何もできなくなる
+  const loginRequired = enabled && editorVisible && !loading && !!getActiveCloudProject() && (!user || editor.signedOut)
   const blocked = offline || loginRequired || editorBlocked
   useEffect(() => {
     if (content.current) content.current.inert = blocked
