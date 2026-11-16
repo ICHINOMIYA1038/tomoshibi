@@ -363,8 +363,6 @@ function StageInspector() {
       <p className="inspector-note">ここで変えた色は、色を付けていない部品すべてに効きます。壁 1 枚だけの色は、その壁を選んで変えます。</p>
     </InspectorSection>
     <InspectorSection title="会場">
-      <NumberField label="目標定員" value={layout.targetCapacity || 0} min={0} max={6400} step={1} unit="席"
-        onChange={value => updateVenue({ targetCapacity: Math.round(value) })} />
       <p className="inspector-note">置いた客席は {seatCount} 席です。</p>
     </InspectorSection>
   </>

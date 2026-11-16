@@ -121,6 +121,11 @@ export function StagePlayback({ onClose, simplified = false }: { onClose: () => 
       }
       const tag = (event.target as HTMLElement).tagName
       if (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA') return
+      if (event.key === 'h' || event.key === 'H') {
+        event.preventDefault()
+        setDisplayMode(mode => mode === 'hidden' ? 'compact' : 'hidden')
+        return
+      }
       if (event.code === 'Space') {
         event.preventDefault()
         if (!event.repeat) toggleAuto()
@@ -140,6 +145,16 @@ export function StagePlayback({ onClose, simplified = false }: { onClose: () => 
     return () => window.removeEventListener('keydown', onKey)
   }, [goTo, onClose, toggleAuto])
 
+  // いまのシーンを、タイムラインの真ん中へなめらかに寄せる
+  const timelineRef = useRef<HTMLOListElement>(null)
+  useEffect(() => {
+    const list = timelineRef.current
+    const current = list?.children[index] as HTMLElement | undefined
+    if (!list || !current) return
+    const left = current.offsetLeft - (list.clientWidth - current.offsetWidth) / 2
+    list.scrollTo({ left, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' })
+  }, [index, displayMode])
+
   const scene = scenes[index]
   if (!scene) return null
   const plan = planRef.current
@@ -147,8 +162,9 @@ export function StagePlayback({ onClose, simplified = false }: { onClose: () => 
   const chapter = plan?.chapters?.find(item => item.id === sequence?.chapterId)
 
   if (displayMode === 'hidden') return <button className="stage-playback-restore"
-    onClick={() => setDisplayMode('compact')} aria-label="通し再生の操作を表示">
-    操作を表示 <span>{index + 1} / {scenes.length}</span>
+    onClick={() => setDisplayMode('compact')} aria-label="通しで見るの操作を表示（H キー）">
+    <span className="stage-playback-restore-scene">{index + 1} / {scenes.length}　{scene.title || '無題のシーン'}</span>
+    <span>操作を表示</span>
   </button>
 
   return <section className={`stage-playback stage-playback-${displayMode}`} aria-label="通しで見る">
@@ -161,7 +177,8 @@ export function StagePlayback({ onClose, simplified = false }: { onClose: () => 
         ? `${scene.triggerType ? SCENE_TRIGGER_LABELS[scene.triggerType] : 'きっかけ'}：${scene.trigger}`
         : scene.triggerType ? `${SCENE_TRIGGER_LABELS[scene.triggerType]}：内容未入力` : 'シーンを確認中'}</small>}
     </div>
-    {displayMode === 'full' && <nav className="stage-playback-scenes" aria-label="シーンへ移動">
+    {displayMode === 'full' && <nav className="stage-playback-timeline" aria-label="シーンの流れ。押すとそのシーンへ移ります">
+      <ol ref={timelineRef}>
       {scenes.map((item, itemIndex) => {
         const itemSequence = plan?.sequences?.find(group => group.id === item.sequenceId)
         const itemChapter = plan?.chapters?.find(group => group.id === itemSequence?.chapterId)
@@ -169,27 +186,29 @@ export function StagePlayback({ onClose, simplified = false }: { onClose: () => 
         const startsGroup = itemIndex === 0 || (simplified
           ? previousSequence?.chapterId !== itemSequence?.chapterId
           : scenes[itemIndex - 1]?.sequenceId !== item.sequenceId)
-        return <Fragment key={item.id}>
-          {startsGroup && <span className="stage-playback-group">
-            {simplified ? itemChapter?.title : `${itemChapter?.title} / ${itemSequence?.title}`}
-          </span>}
-          <button className={itemIndex === index ? 'active' : ''}
-            aria-current={itemIndex === index ? 'step' : undefined}
-            disabled={transitioning}
-            onClick={() => { setAuto(false); showScene(itemIndex) }}>
-            {simplified && plan ? sceneDisplayTitle(plan, item.id)
-              : `${itemIndex + 1}. ${item.title || '無題のシーン'}`}
+        const state = itemIndex < index ? 'done' : itemIndex === index ? 'current' : 'next'
+        return <li key={item.id} className={`timeline-${state}` + (startsGroup ? ' timeline-group-start' : '')}
+          data-group={startsGroup ? (simplified ? itemChapter?.title : `${itemChapter?.title} / ${itemSequence?.title}`) ?? '' : undefined}>
+          <button aria-current={itemIndex === index ? 'step' : undefined} disabled={transitioning}
+            onClick={() => { setAuto(false); goTo(itemIndex) }}>
+            <span className="timeline-number">{itemIndex + 1}</span>
+            <strong>{simplified && plan ? sceneDisplayTitle(plan, item.id) : item.title || '無題のシーン'}</strong>
+            {item.trigger && <small>{item.trigger}</small>}
+            {/* 自動再生のとき、次のシーンまでの残りを帯で見せる */}
+            {itemIndex === index && auto && !transitioning && <span className="timeline-progress" key={`${index}-${holdSeconds}`}
+              style={{ animationDuration: `${holdSeconds}s` }} />}
           </button>
-        </Fragment>
+        </li>
       })}
+      </ol>
     </nav>}
     <div className="stage-playback-controls">
       <button disabled={transitioning || index === 0}
-        onClick={() => { setAuto(false); goTo(index - 1) }}>前へ</button>
+        onClick={() => { setAuto(false); goTo(index - 1) }}>前のシーン</button>
       <button className="stage-playback-primary" disabled={scenes.length < 2}
         onClick={toggleAuto}>{auto ? '一時停止' : index === scenes.length - 1 ? '最初から再生' : '自動再生'}</button>
       <button disabled={transitioning || index >= scenes.length - 1}
-        onClick={() => { setAuto(false); goTo(index + 1) }}>次へ GO</button>
+        onClick={() => { setAuto(false); goTo(index + 1) }}>次のシーン</button>
       {displayMode === 'full' && <><label>1シーン
         <select value={holdSeconds} onChange={event => setHoldSeconds(Number(event.target.value))}>
           <option value="2">2秒</option><option value="3">3秒</option>
@@ -205,7 +224,7 @@ export function StagePlayback({ onClose, simplified = false }: { onClose: () => 
       <button onClick={() => setDisplayMode(displayMode === 'full' ? 'compact' : 'full')}>
         {displayMode === 'full' ? '簡易表示' : '詳細'}
       </button>
-      <button onClick={() => setDisplayMode('hidden')}>隠す</button>
+      <button onClick={() => setDisplayMode('hidden')} title="H キーでも隠す・戻すができます">隠す</button>
       <button className="stage-playback-close" onClick={onClose}>編集に戻る</button>
     </div>
   </section>

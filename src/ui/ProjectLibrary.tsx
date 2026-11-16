@@ -260,9 +260,11 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
     while (taken.has(`${base} ${index}`)) index++
     return `${base} ${index}`
   }
+  // アカウントに保存できる件数の上限に達しているか。作成の画面を開いた時点で知らせ、作成のボタンを止める
+  const atLimit = !!user && memberProjects.length >= user.maxProjects
   const create = async () => {
     if (creating) return
-    if (user && memberProjects.length >= user.maxProjects) { setCreateError(`プロジェクトは${user.maxProjects}件まで保存できます。`); return }
+    if (atLimit) return
     // 名前が空なら「新しいプロジェクト」「新しいプロジェクト 2」…と、まだ無い名前を付ける
     const title = createName.trim() || defaultProjectName()
     if (cloudDirty) {
@@ -638,10 +640,14 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
           <p>編集中のプロジェクトに、まだクラウドに保存されていない変更があります。保存が完了すると新規作成できます。</p>
           <button type="button" onClick={onOpenEditor}>編集中のプロジェクトに戻る</button>
         </div>}
-        {createError && <p role="alert">{createError}</p>}
+        {atLimit && user && <div role="alert" className="project-create-error">
+          <strong>アカウントに保存できるのは {user.maxProjects} 件までで、いま {memberProjects.length} 件あります。</strong>
+          <p>使わないプロジェクトを一覧から削除すると、新しく作れます。{user.plan !== 'pro' && <>有料プランなら 10 件まで保存できます。<a href="/pro">有料プランを見る</a></>}</p>
+        </div>}
+        {createError && <div role="alert" className="project-create-error"><strong>{createError}</strong></div>}
         <div className="project-create-actions">
           <button type="button" disabled={creating} onClick={() => setCreateOpen(false)}>キャンセル</button>
-          <button type="submit" disabled={creating}>{creating ? '保存・作成中…' : cloudDirty ? '保存して新規作成' : 'プロジェクトを作成'}</button>
+          <button type="submit" disabled={creating || atLimit}>{creating ? '保存・作成中…' : cloudDirty ? '保存して新規作成' : 'プロジェクトを作成'}</button>
         </div>
       </form>
     </div>}
