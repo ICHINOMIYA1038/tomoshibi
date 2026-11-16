@@ -144,27 +144,32 @@ function PerformerInspector({ performer }: { performer: Performer }) {
     update({ position })
   }
   return <>
-    <InspectorSection title="名前と親">
+    <div className="scope-heading shared">全シーン共通（キャスト）</div>
+    <p className="scope-note">名前・身長・服の色を変えると、すべてのシーンで変わります。役者を消すと、すべてのシーンから消えます。</p>
+    <InspectorSection title="役者">
       <NameField value={performer.name} onChange={name => update({ name })} />
-      <ParentField kind="performer" id={performer.id} item={performer} />
+      <NumberField label="身長" value={Math.round(performer.scale * 170)} min={100} max={220} step={1} unit="cm"
+        onChange={value => update({ scale: value / 170 })} />
+      <label className="inspector-text"><span>服の色</span><input type="color" value={performer.color} onChange={event => update({ color: event.target.value })} /></label>
     </InspectorSection>
-    <InspectorSection title="位置">
+    <div className="scope-heading scene">このシーンだけ（立ち位置）</div>
+    <InspectorSection title="出番">
+      <label className="inspector-check"><input type="checkbox" checked={performer.onStage !== false}
+        onChange={event => update({ onStage: event.target.checked })} />このシーンで舞台上にいる</label>
+      <p className="scope-note">このシーンに出ない役者は、ここを外します（ほかのシーンには残ります）。</p>
+    </InspectorSection>
+    <InspectorSection title="位置と親">
       <NumberField label="X" value={performer.position[0]} onChange={value => move(0, value)} />
       <NumberField label="Y" value={performer.position[1]} min={0} max={10} onChange={value => move(1, value)} />
       <NumberField label="Z" value={performer.position[2]} onChange={value => move(2, value)} />
+      <ParentField kind="performer" id={performer.id} item={performer} />
     </InspectorSection>
-    <InspectorSection title="役者">
-      <label className="inspector-check"><input type="checkbox" checked={performer.onStage !== false}
-        onChange={event => update({ onStage: event.target.checked })} />このシーンで舞台上にいる</label>
+    <InspectorSection title="ポーズ">
       <div className="inspector-choice wrap" role="group" aria-label="ポーズ">
-        <span>ポーズ</span>
         {PERFORMER_POSES.map(pose => <button key={pose.value} type="button"
           className={(performer.pose ?? 'standing') === pose.value ? 'active' : ''} aria-pressed={(performer.pose ?? 'standing') === pose.value}
           onClick={() => update({ pose: pose.value })}>{pose.label}</button>)}
       </div>
-      <label className="inspector-text"><span>服の色</span><input type="color" value={performer.color} onChange={event => update({ color: event.target.value })} /></label>
-      <NumberField label="身長" value={Math.round(performer.scale * 170)} min={100} max={220} step={1} unit="cm"
-        onChange={value => update({ scale: value / 170 })} />
     </InspectorSection>
   </>
 }
