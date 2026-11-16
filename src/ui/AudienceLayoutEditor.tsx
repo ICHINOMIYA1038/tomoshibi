@@ -211,7 +211,7 @@ export function AudienceLayoutEditor({ open, onClose }: { open: boolean; onClose
             <button type="button" aria-label="拡大" title="拡大（ホイールでも変えられます）" onClick={() => venueZoom.zoomBy(1.5)}>＋</button>
           </div>
           <button type="button" title="何も無い所をドラッグすると、図を動かせます" onClick={() => { venueZoom.reset(); setWideView(value => venueZoom.zoom === 1 && venueZoom.pan[0] === 0 && venueZoom.pan[1] === 0 ? !value : value) }}>
-            {venueZoom.zoom !== 1 || venueZoom.pan[0] !== 0 || venueZoom.pan[1] !== 0 ? '元の縮尺' : wideView ? '舞台付近' : '全体を表示'}</button>
+            {venueZoom.zoom !== 1 || venueZoom.pan[0] !== 0 || venueZoom.pan[1] !== 0 ? '自動' : wideView ? '舞台付近' : '全体を表示'}</button>
           <button type="button" onClick={createBlock} disabled={blocks.length >= 16}>＋ 客席</button>
           <button type="button" onClick={() => { updateSettings({ cameraView: 'house' }); onClose() }} disabled={!blocks.length}>3Dで見る</button>
           <button type="button" className="audience-editor-close" onClick={onClose} aria-label="会場の配置を閉じる">×</button>
