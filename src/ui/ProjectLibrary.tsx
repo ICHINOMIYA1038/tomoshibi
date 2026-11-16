@@ -16,6 +16,7 @@ import { copyLegacyScene, ensureLegacyLocalProject, importedProjectName, listLeg
 import { importScene } from '../io/sceneIO'
 import { askConfirm } from './askConfirm'
 import { EmptyLibrary } from './EmptyLibrary'
+import { AdSlot, useShowAds } from './Ads'
 import { stopProjectEditor } from '../io/projectEditor'
 
 type LibraryItem = { key: string; scene: SerializedScene; draft: boolean }
@@ -114,6 +115,7 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
   const dirty = useIsDirty()
   const { cloudDirty, saveStatus } = useMockWorkspaceState()
   const { user, loading: sessionLoading } = useCloudSession()
+  const showAds = useShowAds()
   const [projects, setProjects] = useState(listSavedScenes)
   const [memberProjects, setMemberProjects] = useState<CloudProjectMeta[]>([])
   const [memberBusy, setMemberBusy] = useState(false)
@@ -553,6 +555,7 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
         </>}
         {user && projects.length > 0 && <button className="project-library-import" onClick={() => { setTransferKeys([]); setReplaceIds([]); setTransferMessage(''); setTransferOpen(true) }}>プロジェクトをアカウントへ引き継ぐ</button>}
         {feedback && <div className="project-library-feedback" role="status">{feedback}</div>}
+        {showAds && <AdSlot width="100%" height={100} className="ad-slot-library" />}
       </aside>
       <section className="project-library-detail" ref={detailsRef} aria-label="選択したプロジェクトの内容">
         {selected ? <>
