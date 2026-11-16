@@ -4,6 +4,7 @@ import * as THREE from 'three'
 import { clampPart, newPart, partCorners, resolveStageParts, type StagePart, type StagePartKind } from './stageParts'
 import { clampAudiencePosition } from './audienceLayout'
 import { THEATRE } from './venueLayout'
+import { FIXTURE_PROFILES } from './lighting/fixtureTypes'
 
 // 選んでいる物の複製・削除。種類によらず同じ操作にする（Unity の ⌘D・Delete）
 
@@ -143,6 +144,15 @@ export function addItem(item: AddItem, at?: StagePoint, ray?: THREE.Ray) {
   if (item.kind === 'fixture') {
     const layout = s.productionPlan.venueLayout ?? DEFAULT_VENUE_LAYOUT
     const hung = ray ? battenOnRay(ray, resolveStageParts(layout), layout.stageOffset ?? [0, 0]) : null
+    // ピンスポットは、押したときは客席のいちばん後ろの上に置き、舞台の中央を狙う
+    if (!hung && !point && FIXTURE_PROFILES[item.preset]?.kind === 'FollowSpot') {
+      const seats = s.productionPlan.audienceBlocks ?? []
+      const rear = seats.length ? Math.max(...seats.map(block => block.position[1] + block.rows * block.rowSpacing)) : 14
+      const z = Math.min(THEATRE.maxZ, rear + 2)
+      const id = s.addFixture(item.preset, [0, 6, z])
+      if (id) useStore.getState().updateFixture(id, { target: [0, 1.1, -3] })
+      return id
+    }
     if (!hung && !point) return s.addFixture(item.preset)
     // バトンに重ねて落としたらバトンに吊り、そうでなければ落とした床の真上 6.5m に置く。どちらも少し客席側の床を向ける
     const [x, z] = hung ? [hung.at.x, hung.at.z] : point!

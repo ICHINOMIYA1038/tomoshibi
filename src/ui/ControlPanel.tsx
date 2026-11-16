@@ -1,4 +1,4 @@
-import { aimFrom, canUseGobo, GOBO_LABELS, goboOf, isMover, MOVEMENT_LABELS, MOVEMENT_LIMITS, movementOf, panTiltOf, type FixtureMovement, type GoboPattern, type MovementPattern } from '../lighting/movingHead'
+import { aimFrom, canFollow, canUseGobo, followPoint, GOBO_LABELS, goboOf, isMover, MOVEMENT_LABELS, MOVEMENT_LIMITS, movementOf, panTiltOf, type FixtureMovement, type GoboPattern, type MovementPattern } from '../lighting/movingHead'
 import { useEffect, useRef } from 'react'
 import { useStore, type Fixture } from '../store'
 import { FIXTURE_PROFILES, KIND_LABELS } from '../lighting/fixtureTypes'
@@ -244,7 +244,9 @@ export function FixtureEditor({ fixture }: { fixture: Fixture }) {
 
       {isMeasured && <BarnDoorEditor fixture={fixture} onChange={update} />}
 
-      {isMover(fixture) && <MoverControls fixture={fixture} onChange={update} />}
+      {canFollow(fixture) && <FollowField fixture={fixture} onChange={update} />}
+
+      {isMover(fixture) && !fixture.followPerformerId && <MoverControls fixture={fixture} onChange={update} />}
 
       {canUseGobo(fixture) && <div className="row">
         <label>ゴボ</label>
@@ -312,5 +314,28 @@ function MoverControls({ fixture, onChange }: { fixture: Fixture; onChange: (pat
         onChange={v => setMovement({ periodS: v })} unit="秒" fmt={v => v.toFixed(1)} />
     </>}
     <p className="mover-note">パン・チルトは狙いの点と同じものです。3D や平面図で狙いを動かしても変わります。動きは、狙いの点のまわりを回ります。シーンが切り替わるときは、角度を回して次の狙いへ動きます。</p>
+  </>
+}
+
+/** 追う役者。選ぶと狙いの点もその役者に合わせる（平面図の狙いの印が役者の所に出るように） */
+function FollowField({ fixture, onChange }: { fixture: Fixture; onChange: (patch: Partial<Fixture>) => void }) {
+  const performers = useStore(s => s.performers)
+  const followed = performers.find(item => item.id === fixture.followPerformerId)
+  const choose = (id: string) => {
+    if (!id) { onChange({ followPerformerId: undefined }); return }
+    const point = followPoint({ ...fixture, followPerformerId: id }, performers)
+    onChange({ followPerformerId: id, ...(point ? { target: point } : {}) })
+  }
+  return <>
+    <div className="row">
+      <label>追う役者</label>
+      <select value={followed ? followed.id : ''} onChange={e => choose(e.target.value)}>
+        <option value="">追わない</option>
+        {performers.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}
+      </select>
+    </div>
+    {fixture.followPerformerId && <p className="mover-note">{followed
+      ? `${followed.name}を追い続けます。通しで見るでは、歩く役者についていきます。役者が舞台外のシーンでは消えます。`
+      : '追っていた役者が、このシーンにいません。いまは狙いの点を照らします。'}</p>}
   </>
 }
