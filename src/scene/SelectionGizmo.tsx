@@ -11,6 +11,7 @@ import { useStageParts } from '../ui/StagePartsEditor'
 import { isFlat, snapValue, type StagePart } from '../stageParts'
 import { clampAudienceElevation, clampAudiencePosition } from '../audienceLayout'
 import { toolFor } from '../tools'
+import { RotateRing } from './RotateRing'
 
 function isTouchDevice() {
   if (typeof window === 'undefined') return false
@@ -250,8 +251,14 @@ export function SelectionGizmo() {
 
   // ---- 舞台装置選択 ----
   if (selection.kind === 'setpiece' && setPiece) {
+    const footprint = setPiece.size ? Math.hypot(setPiece.size[0], setPiece.size[2]) / 2 : 0.6 * setPiece.scale
+    const floorY = Math.max(0, setPiece.position[1] - (setPiece.size?.[1] ?? 0) / 2) + 0.03
     return (
       <group>
+        {/* 足元の回転の輪。なぞると向きが変わる（移動の道具のとき。回転の道具では輪の代わりに TransformControls の輪が出る） */}
+        {tool === 'translate' && <RotateRing center={[setPiece.position[0], floorY, setPiece.position[2]]} radius={footprint + 0.3}
+          angle={setPiece.rotation[1]}
+          onRotate={angle => updateSetPiece(setPiece.id, { rotation: [setPiece.rotation[0], angle, setPiece.rotation[2]] })} />}
         <primitive object={dragRef.current} />
         <TransformControls
           ref={tcRef as any}
@@ -291,8 +298,14 @@ export function SelectionGizmo() {
     const mode = venueMode(['translate', 'rotate', 'scale'])
     const hanging = part.kind === 'batten' || part.kind === 'wall' || part.kind === 'cyc' || part.kind === 'wing'
     const hasHeight = part.kind === 'wall' || part.kind === 'cyc' || part.kind === 'wing' || part.kind === 'platform'
+    const ringY = part.kind === 'batten' ? part.elevation : part.kind === 'platform' ? part.height + 0.03 : part.elevation + 0.03
     return (
       <group>
+        {tool === 'translate' && <RotateRing center={[part.x + stageParts.offset[0], ringY, part.z + stageParts.offset[1]]}
+          radius={Math.min(8, Math.max(part.width, isFlat(part.kind) ? part.depth : 0) / 2 + 0.4)}
+          angle={part.rotationDeg * Math.PI / 180}
+          onStart={() => { partFixtures.current = part.kind === 'batten' ? stageParts.hungIds(part) : [] }}
+          onRotate={angle => stageParts.change(part.id, { rotationDeg: Math.round(angle * 180 / Math.PI) }, partFixtures.current)} />}
         <primitive object={dragRef.current} />
         <TransformControls
           ref={tcRef as any}
@@ -373,6 +386,13 @@ export function SelectionGizmo() {
   if (selection.kind === 'audience' && audience) {
     return (
       <group>
+        {tool === 'translate' && <RotateRing center={[audience.position[0], (audience.elevation ?? 0) + 0.03, audience.position[1]]}
+          radius={audience.seatsPerRow * audience.seatSpacing / 2 + 0.4}
+          angle={audience.rotationDeg * Math.PI / 180}
+          onRotate={angle => {
+            const rotationDeg = Math.round(angle * 180 / Math.PI)
+            updateAudienceBlock(audience.id, { rotationDeg, position: clampAudiencePosition({ ...audience, rotationDeg }, ...audience.position) })
+          }} />}
         <primitive object={dragRef.current} />
         <TransformControls ref={tcRef as any} object={dragRef.current} mode={venueMode(['translate', 'rotate'])}
           size={gizmoSize} showX={venueMode(['translate', 'rotate']) === 'translate'} showY
