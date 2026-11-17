@@ -35,15 +35,17 @@ export function ChangeScopeBar({ phone = false, docked = false }: { phone?: bool
   const showChapter = chapterCount > 1 && sameChapter > 1
   const apply = (range: 'chapter' | 'after' | 'all') => {
     const count = applyChangeToScenes(range)
-    setDone(count ? `ほかの ${count} シーンにも入れました` : 'ほかのシーンには、入れる物がありませんでした')
+    setDone(count ? `ほかの ${count} シーンも同じにしました` : 'ほかのシーンには、同じにする物がありませんでした')
   }
   return <div className={'change-scope-bar' + (phone ? ' phone' : '') + (docked ? ' docked' : '')} role="status"
     onPointerEnter={() => setHold(true)} onPointerLeave={() => setHold(false)}>
-    {/* 問いかけと答えの形にする（2026-11-17 オーナー「記述がわかりづらい」） */}
-    <span className="change-scope-text">{phone ? 'ほかにも入れる？' : `${describeChange(change)}。この変更を、ほかのシーンにも入れますか？`}</span>
-    {showChapter && <button type="button" onClick={() => apply('chapter')} title="同じ章のほかのシーンにも、同じ変更を入れる">{phone ? 'この章' : 'この章のシーン'}</button>}
-    {index < scenes.length - 1 && <button type="button" onClick={() => apply('after')} title="このあとのシーン全部に、同じ変更を入れる">{phone ? 'このあと' : 'このあとのシーン'}</button>}
-    <button type="button" onClick={() => apply('all')} title="ほかのすべてのシーンに、同じ変更を入れる">全シーン</button>
-    <button type="button" className="change-scope-close" title="ほかのシーンには入れない" onClick={clearChange}>{phone ? 'いいえ' : 'このシーンだけ'}</button>
+    {/* ボタンだけで何をするかわかる言い方にする（2026-11-17 オーナー「入れる？の文言が嫌」）。キーワードは「同じにする」 */}
+    <span className="change-scope-text">{describeChange(change)}<small>（このシーンだけ）</small></span>
+    <span className="change-scope-actions">
+      {showChapter && <button type="button" onClick={() => apply('chapter')} title="同じ章のほかのシーンも、この変更と同じにする">{phone ? 'この章も同じに' : 'この章も同じにする'}</button>}
+      {index < scenes.length - 1 && <button type="button" onClick={() => apply('after')} title="このあとのシーンも、この変更と同じにする">{phone ? 'このあとも同じに' : 'このあとのシーンも同じにする'}</button>}
+      <button type="button" onClick={() => apply('all')} title="ほかのすべてのシーンも、この変更と同じにする">{phone ? '全シーン同じに' : '全シーン同じにする'}</button>
+    </span>
+    <button type="button" className="change-scope-close" aria-label="閉じる（このシーンだけの変更のまま）" title="閉じる（このシーンだけの変更のまま）" onClick={clearChange}>×</button>
   </div>
 }
