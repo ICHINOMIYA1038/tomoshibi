@@ -292,22 +292,41 @@ function useTouchScreen() {
 }
 
 const badgeTextures = new Map<string, THREE.CanvasTexture>()
-/** 番号の札の絵（丸に番号）。同じ見た目は使い回す */
+/**
+ * 照明の札の絵。平面図・凡例と同じ「照明の器具の形」（胴に番号、先にゲルの色のレンズ）にし、
+ * 下に光の筋を短く描く。番号の丸だけでは照明だとわからなかった（2026-11-18 オーナー指摘）。同じ見た目は使い回す
+ */
 function badgeTexture(label: string, gel: string, selected: boolean) {
   const key = `${label}|${gel}|${selected}`
   const cached = badgeTextures.get(key)
   if (cached) return cached
-  const size = 128
+  const w = 192, h = 128
   const canvas = document.createElement('canvas')
-  canvas.width = canvas.height = size
+  canvas.width = w; canvas.height = h
   const ctx = canvas.getContext('2d')!
-  ctx.beginPath(); ctx.arc(size / 2, size / 2, size * .42, 0, Math.PI * 2)
-  ctx.fillStyle = selected ? '#e0b45c' : 'rgba(20,16,20,.82)'; ctx.fill()
-  ctx.lineWidth = size * .08; ctx.strokeStyle = selected ? '#fff3d6' : gel; ctx.stroke()
+  const body = selected ? '#e0b45c' : 'rgba(24,20,24,.9)'
+  const edge = selected ? '#fff3d6' : '#f0e8da'
+  // 光の筋（レンズから下へ広がる）
+  const beam = ctx.createLinearGradient(0, 70, 0, h)
+  beam.addColorStop(0, gel + 'cc'); beam.addColorStop(1, gel + '00')
+  ctx.fillStyle = beam
+  ctx.beginPath(); ctx.moveTo(w * .62, 72); ctx.lineTo(w * .84, 72); ctx.lineTo(w * .98, h); ctx.lineTo(w * .48, h); ctx.closePath(); ctx.fill()
+  // 胴（角の丸い四角）
+  const bx = 14, by = 14, bw = 112, bh = 58, r = 12
+  ctx.beginPath()
+  ctx.moveTo(bx + r, by); ctx.lineTo(bx + bw - r, by); ctx.quadraticCurveTo(bx + bw, by, bx + bw, by + r)
+  ctx.lineTo(bx + bw, by + bh - r); ctx.quadraticCurveTo(bx + bw, by + bh, bx + bw - r, by + bh)
+  ctx.lineTo(bx + r, by + bh); ctx.quadraticCurveTo(bx, by + bh, bx, by + bh - r)
+  ctx.lineTo(bx, by + r); ctx.quadraticCurveTo(bx, by, bx + r, by); ctx.closePath()
+  ctx.fillStyle = body; ctx.fill(); ctx.lineWidth = 6; ctx.strokeStyle = edge; ctx.stroke()
+  // レンズ（ゲルの色）
+  ctx.beginPath(); ctx.moveTo(126, 18); ctx.lineTo(170, 6); ctx.lineTo(170, 80); ctx.lineTo(126, 68); ctx.closePath()
+  ctx.fillStyle = gel; ctx.fill(); ctx.lineWidth = 6; ctx.strokeStyle = edge; ctx.stroke()
+  // 番号
   ctx.fillStyle = selected ? '#14110d' : '#fffdf8'
-  ctx.font = `700 ${label.length > 2 ? size * .34 : size * .44}px "Hiragino Sans", "Noto Sans JP", sans-serif`
+  ctx.font = `700 ${label.length > 2 ? 34 : 44}px "Hiragino Sans", "Noto Sans JP", sans-serif`
   ctx.textAlign = 'center'; ctx.textBaseline = 'middle'
-  ctx.fillText(label, size / 2, size / 2 + size * .02)
+  ctx.fillText(label, bx + bw / 2, by + bh / 2 + 2)
   const texture = new THREE.CanvasTexture(canvas)
   texture.colorSpace = THREE.SRGBColorSpace
   badgeTextures.set(key, texture)
@@ -326,12 +345,30 @@ function FixtureBadge({ fixture, index, selected }: { fixture: Fixture; index: n
   const texture = useMemo(() => touch ? badgeTexture(label.slice(0, 3), gel, selected) : null, [touch, label, gel, selected])
   if (!touch || !texture) return null
   return <group>
-    <sprite scale={[.07, .07, 1]} renderOrder={1002} raycast={() => null}>
+    <sprite scale={[.13, .087, 1]} renderOrder={1002} raycast={() => null}>
       <spriteMaterial map={texture} sizeAttenuation={false} depthTest={false} transparent />
     </sprite>
-    {/* 指を受ける見えない札（見える札の約 2 倍） */}
-    <sprite scale={[.14, .14, 1]} userData={{ priorityHandle: true }}>
-      <spriteMaterial sizeAttenuation={false} transparent opacity={0} depthWrite={false} />
-    </sprite>
+    {/* 指を受ける見えない球。画面の上で札より一回り大きく見えるよう、カメラからの距離に合わせて大きさを変える */}
+    <ScreenHitSphere />
   </group>
+}
+
+/** 画面の上でおよそ同じ大きさになる、見えない当たり判定の球（札の見えない受け口） */
+function ScreenHitSphere() {
+  const ref = useRef<THREE.Mesh>(null)
+  const world = useMemo(() => new THREE.Vector3(), [])
+  useFrame(({ camera }) => {
+    const mesh = ref.current
+    if (!mesh) return
+    mesh.getWorldPosition(world)
+    const distance = camera.position.distanceTo(world)
+    const fov = (camera as THREE.PerspectiveCamera).fov ?? 50
+    // 画面の上で、見える札をおおう程度の半径（指 1 本分の余裕をとる）
+    const radius = distance * Math.tan(THREE.MathUtils.degToRad(fov) / 2) * .16
+    mesh.scale.setScalar(Math.max(.3, radius))
+  })
+  return <mesh ref={ref} userData={{ priorityHandle: true }}>
+    <sphereGeometry args={[1, 10, 8]} />
+    <meshBasicMaterial visible={false} />
+  </mesh>
 }
