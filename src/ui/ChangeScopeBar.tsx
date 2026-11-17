@@ -11,20 +11,22 @@ export function ChangeScopeBar({ phone = false, docked = false }: { phone?: bool
   const sequences = useStore(state => state.productionPlan.sequences)
   const activeId = useStore(state => state.productionPlan.activeSceneId)
   const [done, setDone] = useState('')
+  // 帯の上にマウス（指）があるあいだは消さない
+  const [hold, setHold] = useState(false)
   const index = scenes.findIndex(scene => scene.id === activeId)
   const visible = !!change && change.sceneId === activeId && scenes.length > 1
-  // しばらく触らなければ消す（このシーンだけの変更のまま）
+  // 触らなければ 6 秒で消す（このシーンだけの変更のまま）。2026-11-17 オーナー「役者を動かすたびに出て鬱陶しい」で控えめにした
   useEffect(() => {
-    if (!visible) return
-    const timer = window.setTimeout(clearChange, 30000)
+    if (!visible || hold) return
+    const timer = window.setTimeout(clearChange, 6000)
     return () => window.clearTimeout(timer)
-  }, [visible, change?.seq, change?.patch])
+  }, [visible, hold, change?.seq, change?.patch])
   useEffect(() => {
     if (!done) return
     const timer = window.setTimeout(() => setDone(''), 2500)
     return () => window.clearTimeout(timer)
   }, [done])
-  if (done) return <div className={'change-scope-bar' + (phone ? ' phone' : '') + (docked ? ' docked' : '')} role="status"><span>{done}</span></div>
+  if (done) return <div className={'change-scope-bar' + (phone ? ' phone' : '') + (docked ? ' docked' : '')} role="status"><span className="change-scope-text">{done}</span></div>
   if (!visible || !change) return null
   // 章が 2 つ以上あって、同じ章にほかのシーンがあるときだけ「この章」を出す（章が 1 つなら「全シーン」と同じ）
   const chapterId = chapterOfScene({ sequences }, scenes[index]?.sequenceId)
@@ -35,11 +37,12 @@ export function ChangeScopeBar({ phone = false, docked = false }: { phone?: bool
     const count = applyChangeToScenes(range)
     setDone(count ? `ほかの ${count} シーンにも反映しました` : 'ほかのシーンには、反映する物がありませんでした')
   }
-  return <div className={'change-scope-bar' + (phone ? ' phone' : '') + (docked ? ' docked' : '')} role="status">
-    <span><strong>{describeChange(change)}</strong><small>このシーンだけの変更です</small></span>
-    {showChapter && <button type="button" onClick={() => apply('chapter')}>この章のシーンにも</button>}
-    {index < scenes.length - 1 && <button type="button" onClick={() => apply('after')}>このあとのシーンにも</button>}
-    <button type="button" onClick={() => apply('all')}>全シーンにも</button>
+  return <div className={'change-scope-bar' + (phone ? ' phone' : '') + (docked ? ' docked' : '')} role="status"
+    onPointerEnter={() => setHold(true)} onPointerLeave={() => setHold(false)}>
+    <span className="change-scope-text">{phone ? 'ほかのシーンにも：' : `${describeChange(change)}。ほかのシーンにも：`}</span>
+    {showChapter && <button type="button" onClick={() => apply('chapter')} title="同じ章のほかのシーンにも、同じ変更を入れる">この章</button>}
+    {index < scenes.length - 1 && <button type="button" onClick={() => apply('after')} title="このあとのシーン全部に、同じ変更を入れる">このあと</button>}
+    <button type="button" onClick={() => apply('all')} title="ほかのすべてのシーンに、同じ変更を入れる">全シーン</button>
     <button type="button" className="change-scope-close" aria-label="このシーンだけにする" onClick={clearChange}>×</button>
   </div>
 }
