@@ -603,7 +603,7 @@ function CloudProjectAutosave() {
       }
     }, 2200)
     return () => window.clearTimeout(timer)
-  }, [user?.id, activeId, cloudDirty, saveStatus, attempt, connectionError, editor.status, editor.epoch])
+  }, [user?.id, activeId, cloudDirty, saveStatus, attempt, connectionError, editor.status, editor.epoch, editor.deadline])
   return error ? <WorkspaceNotice kind="alert">{error}</WorkspaceNotice> : null
 }
 

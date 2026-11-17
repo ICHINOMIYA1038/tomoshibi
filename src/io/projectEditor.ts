@@ -71,10 +71,11 @@ export async function startProjectEditor(projectId: string, userId: string, dirt
   const stamp = generation
   publish({ projectId, status: 'checking' })
   timer = setInterval(() => {
-    if (state.status === 'owned' && Date.now() >= state.deadline) publish({ status: 'error', error: '編集権を確認できません。接続を確認して再開してください。' })
-    if (state.status === 'owned') void renewProjectEditor()
+    // 期限が切れていても、すぐには止めない。裏で取り直し、だめなときだけ知らせる（recoverProjectEditor）
+    if (state.status === 'owned' && Date.now() >= state.deadline) void recoverProjectEditor()
+    else if (state.status === 'owned') void renewProjectEditor()
     // 更新の失敗で止まったあとも、接続が戻れば自動で取り直す（取られていれば 423 で lost になる）
-    else if (state.status === 'error' && !needsSnapshot) void renewProjectEditor()
+    else if (state.status === 'error' && !needsSnapshot) void recoverProjectEditor()
   }, 15_000)
   await acquire(false, dirty, stamp)
 }
@@ -118,7 +119,7 @@ export async function takeoverProjectEditor() {
 }
 export async function retryProjectEditor() {
   if (needsSnapshot) await acquire(false, pendingDirty, generation)
-  else await renewProjectEditor()
+  else await recoverProjectEditor()
 }
 export async function renewProjectEditor() {
   const current = owner
@@ -131,13 +132,61 @@ export async function renewProjectEditor() {
     if (stamp === generation) publish({ status: 'owned', deadline: started + result.ttlMs - 5000, error: '', signedOut: false })
   } catch (error) {
     if (stamp === generation) {
-      if (error instanceof CloudError && error.status === 423) await loseProjectEditor()
-      else if (isSignedOut(error)) publishSignedOut()
+      if (isSignedOut(error)) publishSignedOut()
       // 一時的な失敗（サーバーの 500 など）では止めない。期限まではそのまま編集でき、15 秒後の更新でやり直す
-      else if (Date.now() < state.deadline) publish({ status: 'owned' })
-      else publish({ status: 'error', error: '編集権を確認できません。接続を確認して再開してください。' })
+      else if (!(error instanceof CloudError && error.status === 423) && Date.now() < state.deadline) publish({ status: 'owned' })
+      // 期限切れ（裏のタブで更新が止まった・スリープ）か、別の画面に取られた。取り直せるか確かめる
+      else { pendingRenew = false; void recoverProjectEditor() }
     }
   } finally { if (stamp === generation) pendingRenew = false }
+}
+let recovering = false
+const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
+/**
+ * 期限が切れた編集権を、画面を止めずに取り直す（2026-11-17「編集権を確認できません」が頻繁に出る、への対応）。
+ * - まず更新を試す。期限切れで 423 なら、だれも取っていなければ取り直せる（acquire）。この画面の作業は残す
+ * - 別の画面が持っていれば（acquire も 423）、編集を止める
+ * - 接続の失敗は、少し待ってやり直す。30 秒ほど続いたときだけ「確認できません」を出す
+ * 取り直すあいだは状態を owned のままにする（画面は止めない。保存は期限が戻るまで待つ）
+ */
+export async function recoverProjectEditor() {
+  const current = owner
+  if (!current || recovering) return
+  recovering = true
+  const stamp = generation
+  try {
+    for (const wait of [0, 2000, 4000, 8000, 16000]) {
+      if (wait) await sleep(wait)
+      if (stamp !== generation || owner !== current) return
+      const started = Date.now()
+      try {
+        const result = await requestProjectEditor(current.projectId, current.editorId, 'renew')
+        if (stamp === generation) publish({ status: 'owned', deadline: started + result.ttlMs - 5000, error: '', signedOut: false })
+        return
+      } catch (error) {
+        if (stamp !== generation) return
+        if (isSignedOut(error)) { publishSignedOut(); return }
+        if (!(error instanceof CloudError && error.status === 423)) continue
+      }
+      try {
+        const result = await requestProjectEditor(current.projectId, current.editorId, 'acquire')
+        if (stamp !== generation) return
+        // 期限切れのあいだに、別の画面が保存していた。この画面の内容は古いので、確かめてもらう
+        if (result.project && getActiveCloudProject()?.revision !== result.project.revision) {
+          await requestProjectEditor(current.projectId, current.editorId, 'release').catch(() => undefined)
+          if (stamp === generation) publish({ status: 'stale' })
+          return
+        }
+        publish({ status: 'owned', deadline: started + result.ttlMs - 5000, error: '', signedOut: false })
+        return
+      } catch (error) {
+        if (stamp !== generation) return
+        if (isSignedOut(error)) { publishSignedOut(); return }
+        if (error instanceof CloudError && error.status === 423) { await loseProjectEditor(); return }
+      }
+    }
+    if (stamp === generation) publish({ status: 'error', error: '編集権を確認できません。接続を確認して再開してください。' })
+  } finally { recovering = false }
 }
 export async function viewLatestProject() {
   if (!owner) return
@@ -145,11 +194,12 @@ export async function viewLatestProject() {
   const latest = await fetchCloudProject(owner.projectId)
   if (stamp === generation) install(latest)
 }
+// 画面に戻ったとき。「確認しています」で画面を止めず、裏で更新する（期限切れなら取り直す）
 window.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'visible' && owner && state.status === 'owned') {
-    publish({ status: 'checking' })
-    void renewProjectEditor()
+    if (Date.now() >= state.deadline) void recoverProjectEditor()
+    else void renewProjectEditor()
   }
 })
 window.addEventListener('pagehide', () => { if (owner) void requestProjectEditor(owner.projectId, owner.editorId, 'release').catch(() => undefined) })
-window.addEventListener('pageshow', event => { if (event.persisted && owner) { publish({ status: 'checking' }); void renewProjectEditor() } })
+window.addEventListener('pageshow', event => { if (event.persisted && owner) void recoverProjectEditor() })
