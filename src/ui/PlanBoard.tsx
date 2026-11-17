@@ -7,6 +7,7 @@ import { activeSceneDirections, LIMITS, PLAN_LIMITS, SCENE_TRIGGER_LABELS, scene
   type DirectionKind, type MoveSceneResult, type SceneTriggerType, type StagePoint } from '../store'
 import { StagePartsLayer } from './StagePartsEditor'
 import { Glyph } from './AddPalette'
+import { FIXTURE_PROFILES } from '../lighting/fixtureTypes'
 import { clearChange } from '../changeLog'
 import { audienceSeatPositions, clampAudiencePosition } from '../audienceLayout'
 import { isFlat, partCorners, resolveStageParts } from '../stageParts'
@@ -215,6 +216,9 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
   const [activeDrag, setActiveDrag] = useState<{ kind: 'fixture' | 'target'; id: string } | null>(null)
   // 図の 1px が viewBox の何単位か。つまみを画面上で一定の大きさにする
   const [unitsPerPx, setUnitsPerPx] = useState(1)
+  /** 照明・役者の印の大きさ（図の単位）。画面の上で 30px 前後になるようにする */
+  const markerSize = Math.max(40, 30 * unitsPerPx)
+  const labelFont = Math.max(16, 13 * unitsPerPx)
   const [feedback, setFeedback] = useState('')
   const [contextMenu, setContextMenu] = useState<{ kind: 'chapter' | 'scene' | 'empty'; id: string; x: number; y: number } | null>(null)
   const [draggingOutline, setDraggingOutline] = useState<{ kind: OutlineKind; id: string } | null>(null)
@@ -1318,17 +1322,35 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
                   }}>
                   <title>{fixture.name}{fixture.position[2] > 2 ? `・舞台前から ${(fixture.position[2] - 2).toFixed(1)}m` : ''}</title>
                   <circle cx={px} cy={py} r={Math.max(21, touchRadius)} fill="transparent" />
-                  {/* 照明は灯体の絵に、右上の番号。役者（色の丸に頭文字）と見分ける */}
-                  <circle cx={px} cy={py} r="18"
-                    fill={active ? '#c8482d' : '#6f665e'} stroke={dragging === 'fixture' ? '#2f6f8f' : '#fffdf8'}
-                    strokeWidth={dragging === 'fixture' ? Math.max(6, 3 * unitsPerPx) : 2.5} />
-                  <g transform={`translate(${px - 12} ${py - 12})`} fill="none" stroke="#fffdf8" strokeWidth="1.9"
-                    strokeLinecap="round" strokeLinejoin="round" pointerEvents="none">
-                    <path d="M6 5h7l3 5-3 5H6Z" /><path d="M16 10h1m2-4 2-1m-2 9 2 1M9 15v4m-3 0h6" />
-                  </g>
-                  <circle cx={px + 15} cy={py - 15} r="10" fill="#fffdf8" stroke="#6f665e" strokeWidth="1.5" pointerEvents="none" />
-                  <text x={px + 15} y={py - 11} textAnchor="middle" fill="#322b25" fontSize="12" fontWeight="700"
-                    pointerEvents="none">{index + 1}</text>
+                  {/* 照明は、仕込み図と同じく上から見た器具の形。狙いの方を向け、レンズにゲルの色。番号は胴に書く。
+                      大きさは画面の上での大きさで決める（平面図を小さく出しても潰れない） */}
+                  {(() => {
+                    const kind = FIXTURE_PROFILES[fixture.presetKey]?.kind
+                    const size = markerSize
+                    const angle = Math.atan2(ty - py, tx - px) * 180 / Math.PI
+                    const body = active ? '#c8482d' : '#4b443e'
+                    const edge = dragging === 'fixture' ? '#2f6f8f' : '#fffdf8'
+                    const edgeWidth = (dragging === 'fixture' ? 3 : 1.6) * size / 26
+                    const strip = kind === 'Border' || kind === 'Footlight' || kind === 'Cyc' || kind === 'LED_Bar'
+                    return <>
+                      {kind === 'MovingHead' ? <g>
+                        <circle cx={px} cy={py} r={size * .55} fill={body} stroke={edge} strokeWidth={edgeWidth} />
+                        <circle cx={px + Math.cos(angle * Math.PI / 180) * size * .28} cy={py + Math.sin(angle * Math.PI / 180) * size * .28}
+                          r={size * .2} fill={colorToHex(fixture.color)} stroke={edge} strokeWidth={edgeWidth * .7} />
+                      </g> : strip ? <g transform={`rotate(${angle + 90} ${px} ${py})`}>
+                        {/* ボーダー・フット・ホリゾントは横に長い器具。光の出る側にゲルの色 */}
+                        <rect x={px - size * .9} y={py - size * .28} width={size * 1.8} height={size * .56} rx={size * .08} fill={body} stroke={edge} strokeWidth={edgeWidth} />
+                        <rect x={px - size * .82} y={py + size * .1} width={size * 1.64} height={size * .14} fill={colorToHex(fixture.color)} />
+                      </g> : <g transform={`rotate(${angle} ${px} ${py})`}>
+                        <rect x={px - size * .62} y={py - size * .36} width={size * 1.05} height={size * .72} rx={size * .12} fill={body} stroke={edge} strokeWidth={edgeWidth} />
+                        <path d={`M ${px + size * .43} ${py - size * .42} L ${px + size * .7} ${py - size * .5} L ${px + size * .7} ${py + size * .5} L ${px + size * .43} ${py + size * .42} Z`}
+                          fill={colorToHex(fixture.color)} stroke={edge} strokeWidth={edgeWidth} />
+                      </g>}
+                      <text x={px - (strip || kind === 'MovingHead' ? 0 : Math.cos(angle * Math.PI / 180) * size * .1)}
+                        y={py - (strip || kind === 'MovingHead' ? 0 : Math.sin(angle * Math.PI / 180) * size * .1) + size * .17}
+                        textAnchor="middle" fill="#fffdf8" fontSize={size * .46} fontWeight="700" pointerEvents="none">{index + 1}</text>
+                    </>
+                  })()}
                   {dragging === 'fixture' && <text x={clamp(px, 130 * unitsPerPx, MAP.svgWidth - 130 * unitsPerPx)}
                     y={py - Math.max(21, touchRadius) - 6 * unitsPerPx} textAnchor="middle" fill="#2f6f8f"
                     fontSize={Math.max(15, 13 * unitsPerPx)} fontWeight="700" paintOrder="stroke" stroke="#fffdf8"
@@ -1342,7 +1364,7 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
               const active = performer.id === selectedPerformer?.id
               const x = mapX(point[0])
               return <g key={performer.id}>
-                <circle cx={x} cy={mapY(point[1])} r="27"
+                <circle cx={x} cy={mapY(point[1])} r={markerSize * .62}
                   fill={actorColors[index % actorColors.length]} stroke={active ? '#181519' : '#fffdf8'}
                   strokeWidth={active ? 6 : 4} style={{ cursor: 'grab', touchAction: 'none' }}
                   role="button" tabIndex={0} aria-label={performer.name + 'の立ち位置を移動'} data-menu-kind="performer" data-menu-id={performer.id}
@@ -1360,8 +1382,8 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
                       Math.round(clamp(point[1] + delta[1], mapBounds.rear + .2, mapBounds.front - .2) * 10) / 10,
                     ] })
                   }} />
-                <text x={x} y={mapY(point[1]) + 6} textAnchor="middle"
-                  fill="#fffdf8" fontSize="19" fontWeight="700" pointerEvents="none">{performer.name.trim().slice(0, 1) || index + 1}</text>
+                <text x={x} y={mapY(point[1]) + markerSize * .22} textAnchor="middle"
+                  fill="#fffdf8" fontSize={markerSize * .6} fontWeight="700" pointerEvents="none">{performer.name.trim().slice(0, 1) || index + 1}</text>
               </g>
             })}
             {/* 名前。重なる所には出さない（選んでいる物の名前だけは必ず出す）。「名前」の切り替えで隠せる */}
@@ -1374,8 +1396,9 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
               performers.forEach(performer => {
                 if (performer.onStage === false) return
                 const x = mapX(performer.position[0]), y = mapY(performer.position[2])
-                obstacles.push({ key: 'p' + performer.id, x0: x - 28, y0: y - 28, x1: x + 28, y1: y + 28 })
-                items.push({ key: 'p' + performer.id, x, y, r: 28, text: short(performer.name, 10), active: performer.id === selectedPerformer?.id, rank: 1 })
+                const r = markerSize * .64
+                obstacles.push({ key: 'p' + performer.id, x0: x - r, y0: y - r, x1: x + r, y1: y + r })
+                items.push({ key: 'p' + performer.id, x, y, r, text: short(performer.name, 10), active: performer.id === selectedPerformer?.id, rank: 1 })
               })
               if (showSetPieces) setPieces.forEach((piece, index) => {
                 const x = mapX(piece.position[0]), y = mapY(piece.position[2])
@@ -1388,10 +1411,11 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
               })
               if (showFixtures) fixtures.forEach(fixture => {
                 const x = mapX(fixture.position[0]), y = mapY(fixture.position[2])
-                obstacles.push({ key: 'f' + fixture.id, x0: x - 20, y0: y - 26, x1: x + 26, y1: y + 20 })
-                items.push({ key: 'f' + fixture.id, x, y, r: 22, text: short(fixture.name, 10), active: fixture.id === selectedFixture?.id, rank: 3 })
+                const r = markerSize * .75
+                obstacles.push({ key: 'f' + fixture.id, x0: x - r, y0: y - r, x1: x + r, y1: y + r })
+                items.push({ key: 'f' + fixture.id, x, y, r, text: short(fixture.name, 10), active: fixture.id === selectedFixture?.id, rank: 3 })
               })
-              const font = 15
+              const font = labelFont
               const placed: Box[] = []
               return items.filter(item => showLabels || item.active).sort((a, b) => Number(b.active) - Number(a.active) || a.rank - b.rank).map(item => {
                 const w = item.text.length * font * .98 + 10, h = font * 1.35
@@ -1454,7 +1478,7 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
         </>
         {/* 図の印の見方と、どれが全シーン共通か（2026-11-17 オーナー指摘で、いまの作りに合わせた） */}
         <div className="plan-scope-legend" aria-label="図の見方">
-          <span><Glyph name="lamp" />照明（右上は番号）</span>
+          <span><svg viewBox="0 0 30 20" aria-hidden="true" className="legend-fixture"><rect x="2" y="4" width="17" height="12" rx="2" fill="#4b443e" stroke="#d8cfc3" /><path d="M19 3 L27 1 L27 19 L19 17 Z" fill="#e6c27a" stroke="#d8cfc3" /><text x="10.5" y="13.5" textAnchor="middle" fontSize="8" fontWeight="700" fill="#fffdf8">1</text></svg>照明（狙う方を向く。前はゲルの色）</span>
           <span><i className="actor" aria-hidden="true">司</i>役者（頭文字）</span>
           <span><Glyph name="box" />舞台セット</span>
           <span><Glyph name="batten" />壁・バトン</span>

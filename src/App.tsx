@@ -137,6 +137,15 @@ export default function App() {
   const [mockPage, setMockPage] = useState<'projects' | 'editor'>(() => isProjectLibraryPath() ? 'projects' : 'editor')
   const [planOpen, setPlanOpen] = useState(isMockPreview)
   const [mapVisible, setMapVisible] = useState(true)
+  // PC の見え方。3D だけ・平面図だけ（どちらも画面いっぱい）・上下に並べる（2026-11-17 オーナーの提案）。覚えておく
+  const [deskView, setDeskViewState] = useState<'3d' | 'plan' | 'both'>(() => {
+    try { const value = localStorage.getItem('tomoshibi.deskView'); return value === 'plan' || value === 'both' ? value : '3d' } catch { return '3d' }
+  })
+  const setDeskView = (next: '3d' | 'plan' | 'both') => {
+    setDeskViewState(next)
+    setMapVisible(next !== '3d')
+    try { localStorage.setItem('tomoshibi.deskView', next) } catch { /* 覚えられなくても使える */ }
+  }
   const [mobileView, setMobileView] = useState<'stage' | 'plan'>('stage')
   const [outlineVisible, setOutlineVisible] = useState(window.innerWidth > 960)
   /** 追加の一覧から物をドラッグして、3D の画面の上にいる間 */
@@ -154,6 +163,8 @@ export default function App() {
   const wideScreen = useWideScreen()
   const phone = usePhone()
   const phoneLayout = phone && isMockPreview && !isEmbed
+  const deskLayout = isMockPreview && !phone
+  useEffect(() => { if (deskLayout) setMapVisible(deskView !== '3d') }, [deskLayout])
   const adFooter = showAds && wideScreen && isMockPreview && mockPage !== 'projects' && !playbackOpen && !isEmbed
   useEffect(() => {
     const close = () => setPlaybackOpen(false)
@@ -361,7 +372,7 @@ export default function App() {
       {isMockPreview && <><WorkspaceNotices /><UpdateNotice /><CloudProjectAutosave /></>}
       {isMockPreview && mockPage === 'projects'
         ? <ProjectLibrary onOpenEditor={() => navigateMock('editor')} />
-        : <div className={'unified-shell' + (planOpen ? ' plan-open' : '') + (settings.panelOpen ? ' panel-open' : '') + (playbackOpen ? ' playback-open' : '') + (isMockPreview ? ' workspace-layout mobile-view-' + mobileView : '') + (mapVisible ? '' : ' map-hidden') + (outlineVisible ? ' outline-visible' : '') + (adFooter ? ' has-ad-footer' : '') + (phoneLayout ? ' phone-layout' : '')}>
+        : <div className={'unified-shell' + (planOpen ? ' plan-open' : '') + (settings.panelOpen ? ' panel-open' : '') + (playbackOpen ? ' playback-open' : '') + (isMockPreview ? ' workspace-layout mobile-view-' + mobileView : '') + (mapVisible ? '' : ' map-hidden') + (outlineVisible ? ' outline-visible' : '') + (adFooter ? ' has-ad-footer' : '') + (phoneLayout ? ' phone-layout' : '') + (deskLayout && deskView === 'plan' && mapVisible ? ' desk-plan-full' : '')}>
       {/* 右ボタンを押して離しただけのときに、右クリックのメニューを出す（ドラッグは視点の移動。objectMenu.ts） */}
       <div className={'canvas-wrap' + (addDropActive ? ' add-drop-active' : '')} onContextMenu={event => event.preventDefault()}
         onPointerDownCapture={canvasPointerDown} onPointerUpCapture={canvasPointerUp}
@@ -485,6 +496,11 @@ export default function App() {
       {!isEmbed && !isMockPreview && <AccountMenu floating />}
 
       <div className="toolbar">
+        {deskLayout && <div className="desk-view-switch" role="group" aria-label="見え方">
+          {([['3d', '3D'], ['plan', '平面図'], ['both', '並べる']] as const).map(([key, label]) =>
+            <button key={key} type="button" aria-pressed={(mapVisible ? deskView : '3d') === key}
+              onClick={() => setDeskView(key)}>{label}</button>)}
+        </div>}
         {isMockPreview && <>
           <div className="workspace-display-menu-wrap" ref={displayMenuRef}>
             <button className={'workspace-display-trigger' + (displayMenuOpen ? ' active' : '')}
@@ -515,7 +531,7 @@ export default function App() {
         <strong>表示するもの</strong>
         <button type="button" aria-pressed={outlineVisible} onClick={() => { setOutlineVisible(value => !value); setDisplayMenuOpen(false) }}>
           <span aria-hidden="true">{outlineVisible ? '✓' : ''}</span>シーン一覧</button>
-        <button type="button" aria-pressed={mapVisible} onClick={() => { setMapVisible(value => !value); setDisplayMenuOpen(false) }}>
+        <button type="button" aria-pressed={mapVisible} onClick={() => { if (deskLayout) setDeskView(mapVisible ? '3d' : 'both'); else setMapVisible(value => !value); setDisplayMenuOpen(false) }}>
           <span aria-hidden="true">{mapVisible ? '✓' : ''}</span>平面図</button>
         <button type="button" aria-pressed={showSceneDirections} onClick={() => { setShowSceneDirections(value => !value); setDisplayMenuOpen(false) }}>
           <span aria-hidden="true">{showSceneDirections ? '✓' : ''}</span>役者の動きの矢印</button>
@@ -530,7 +546,7 @@ export default function App() {
       {!playbackOpen && <SettingsModal />}
       {!playbackOpen && <PlanBoard open={planOpen} persistent={isMockPreview}
         onClose={() => setPlanOpen(false)} onPlay={startPlayback}
-        onCloseOutline={() => setOutlineVisible(false)} onCloseMap={() => { setMapVisible(false); setMobileView('stage') }}
+        onCloseOutline={() => setOutlineVisible(false)} onCloseMap={() => { setMapVisible(false); setMobileView('stage'); if (deskLayout) setDeskView('3d') }}
         showDirections={showSceneDirections} onToggleDirections={() => setShowSceneDirections(value => !value)}
         sceneEditorOpen={sceneEditorOpen} onOpenSceneEditor={() => setSceneEditorOpen(true)}
         onCloseSceneEditor={() => setSceneEditorOpen(false)}
