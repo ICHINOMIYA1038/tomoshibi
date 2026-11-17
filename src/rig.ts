@@ -96,10 +96,10 @@ export function unifyRig(scenes: PlanScene[]): PlanScene[] {
   })
 }
 
-// 役者も同じ考え方にする。顔ぶれと、名前・身長・服の色は全シーンで 1 つ（キャスト）。
-// 立つ位置・ポーズ・舞台上にいるか・親はシーンごと（場面ごとの立ち位置）。
+// 役者も同じ考え方にする。顔ぶれと名前は全シーンで 1 つ（キャスト）。
+// 身長・服の色（衣装替え）・立つ位置・ポーズ・舞台上にいるか・親はシーンごと。ほかのシーンへは、変えた直後に選んで反映する（changeScope.ts）
 
-export const SHARED_PERFORMER_KEYS = ['name', 'scale', 'color'] as const
+export const SHARED_PERFORMER_KEYS = ['name'] as const
 
 function copyPerformer(performer: Performer): Performer {
   return { ...performer, position: [...performer.position] }
@@ -109,7 +109,7 @@ function copyPerformer(performer: Performer): Performer {
  * いまのシーンのキャストを、ほかのすべてのシーンへ写す。
  * - いまのシーンで足した役者は、ほかのシーンでは舞台にいない状態で、同じ位置に足す
  * - いまのシーンで消した役者は、ほかのシーンからも消す（このシーンだけ出さないときは「舞台上にいる」を外す）
- * - 名前・身長・服の色は、いまのシーンの値にする。位置やポーズは各シーンのまま
+ * - 名前は、いまのシーンの値にする。身長・服の色・位置・ポーズは各シーンのまま
  */
 export function propagateCast(plan: ProductionPlan, activePerformers: Performer[]): ProductionPlan {
   if (!plan.activeSceneId) return plan
@@ -123,7 +123,7 @@ export function propagateCast(plan: ProductionPlan, activePerformers: Performer[
         performers: activePerformers.map(master => {
           const mine = own.get(master.id)
           return mine
-            ? { ...mine, name: master.name, scale: master.scale, color: master.color }
+            ? { ...mine, name: master.name }
             : { ...copyPerformer(master), onStage: false }
         }),
       }
@@ -131,12 +131,12 @@ export function propagateCast(plan: ProductionPlan, activePerformers: Performer[
   }
 }
 
-const castKey = (performer: Performer) => [performer.name, Math.round(performer.scale * 1000), performer.color.toLowerCase()].join('|')
+const castKey = (performer: Performer) => performer.name
 
 /**
  * 古いプランを、キャストが全シーンで 1 つの形にする（開いたときに 1 回）。
  * - あるシーンにだけいない役者は、そのシーンでは舞台にいない状態で足す
- * - 同じ役者でもシーンによって名前・身長・服の色が違うときは、違う分を別の役者に分ける
+ * - 同じ役者でもシーンによって名前が違うときは、違う分を別の役者に分ける
  * どのシーンも見た目は変わらない
  */
 export function unifyCast(scenes: PlanScene[]): PlanScene[] {

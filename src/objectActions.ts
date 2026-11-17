@@ -5,6 +5,7 @@ import { clampPart, newPart, partCorners, resolveStageParts, type StagePart, typ
 import { clampAudiencePosition } from './audienceLayout'
 import { THEATRE } from './venueLayout'
 import { FIXTURE_PROFILES } from './lighting/fixtureTypes'
+import { clearChange } from './changeLog'
 
 // 選んでいる物の複製・削除。種類によらず同じ操作にする（Unity の ⌘D・Delete）
 
@@ -158,6 +159,13 @@ function floorFixturePlacement(preset: string, layout: typeof DEFAULT_VENUE_LAYO
 
 /** at は床の上の位置（世界の x, z）。ray は 3D の画面で落とした所を通る視線（照明をバトンに吊るのに使う） */
 export function addItem(item: AddItem, at?: StagePoint, ray?: THREE.Ray) {
+  const id = addItemAt(item, at, ray)
+  // 照明・役者は全シーンに足される。足した直後の向きなどの調整を「変更」として残さない（舞台セットだけ、ほかのシーンにも足せる）
+  if (item.kind !== 'setpiece') clearChange()
+  return id
+}
+
+function addItemAt(item: AddItem, at?: StagePoint, ray?: THREE.Ray) {
   const s = useStore.getState()
   const point: StagePoint | undefined = at && [
     Math.min(THEATRE.maxX, Math.max(THEATRE.minX, at[0])),

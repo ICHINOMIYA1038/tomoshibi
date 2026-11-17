@@ -5111,3 +5111,19 @@ body.embed .workspace-switch { display: none; }
   .unified-shell.phone-layout .plan-scope-legend { position: absolute; z-index: 3; left: 8px; right: 8px; top: 8px; padding: 6px 8px; background: rgba(25,22,25,.9); }
   .unified-shell.phone-layout .plan-rig-toggle { min-height: 44px; }
 }
+
+/* 変えた直後の「このあとのシーンにも／全シーンにも」（ChangeScopeBar） */
+.change-scope-bar { position: fixed; z-index: 45; top: calc(var(--header-height) + 64px); left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 8px; max-width: calc(100vw - 24px); padding: 8px 8px 8px 14px; background: #f0e8da; color: #14110d; font-family: var(--font-sans); box-shadow: 0 4px 16px rgba(0,0,0,.35); }
+.change-scope-bar > span { display: flex; flex-direction: column; min-width: 0; margin-right: 4px; }
+.change-scope-bar strong { font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.change-scope-bar small { font-size: 12px; color: #4a4036; }
+.change-scope-bar button { flex: none; min-height: 40px; padding: 0 12px; border: 1px solid #14110d; border-radius: 0; background: transparent; color: #14110d; font: 700 13px var(--font-sans); }
+.change-scope-bar button:hover { background: #e2d6c2; }
+.change-scope-bar .change-scope-close { border: 0; padding: 0 8px; font-size: 18px; }
+@media (max-width: 600px) {
+  .change-scope-bar.phone { top: auto; transform: none; left: 12px; right: 12px; bottom: calc(var(--phone-bottom, 80px) + 12px); flex-wrap: wrap; z-index: 59; }
+  .change-scope-bar.phone > span { flex: 1 1 100%; }
+  .change-scope-bar.phone button { flex: 1 1 auto; min-height: 44px; }
+  .change-scope-bar.phone .change-scope-close { flex: 0 0 44px; }
+  .change-scope-bar.phone ~ .phone-card { display: none; }
+}
