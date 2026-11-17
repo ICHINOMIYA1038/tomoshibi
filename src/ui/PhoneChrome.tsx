@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { focusSelection } from '../scene/focusBus'
 import { HierarchyPanel } from './HierarchyPanel'
 import { APP_RESTORE_URL, hasAppBridge } from '../io/appBridge'
 import { ProjectTitleEdit } from './ProjectTitleEdit'
@@ -301,10 +302,11 @@ function UndoRedo() {
   </>
 }
 
-/** 置いた物の一覧。行を押して選ぶと閉じ、下の札から設定や固定ができる */
+/** 置いた物の一覧。行を押して選ぶと閉じて 3D でその物に寄り、下の札から設定や固定ができる */
 function ListSheet({ onPicked }: { onPicked: () => void }) {
   const selected = useStore(s => s.selection.id)
   const [first] = useState(selected)
-  useEffect(() => { if (selected && selected !== first) onPicked() }, [selected, first, onPicked])
+  // 選んだら一覧を閉じ、3D の視点をその物に寄せる（ダブルタップと同じ動き。2026-11-18）
+  useEffect(() => { if (selected && selected !== first) { onPicked(); focusSelection() } }, [selected, first, onPicked])
   return <div className="phone-list unity-panel"><HierarchyPanel /></div>
 }

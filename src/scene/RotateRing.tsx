@@ -69,7 +69,7 @@ export function RotateRing({ center, radius, angle, onRotate, onStart }: {
       </mesh>
       {/* つまみ */}
       <mesh position={knob} renderOrder={1001} userData={{ priorityHandle: true }} {...handlers}>
-        <sphereGeometry args={[Math.max(0.18, radius * 0.14), 16, 12]} />
+        <sphereGeometry args={[Math.max(0.1, radius * 0.12), 16, 12]} />
         <meshBasicMaterial color="#e0b45c" depthTest={false} transparent opacity={0.95} />
       </mesh>
     </group>
