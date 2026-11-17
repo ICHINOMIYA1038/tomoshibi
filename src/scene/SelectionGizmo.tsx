@@ -91,7 +91,7 @@ export function SelectionGizmo() {
   const performer = useStore(s => s.performers.find(p => p.id === selection.id))
   const setPiece = useStore(s => s.setPieces.find(sp => sp.id === selection.id))
   const updateSetPiece = useStore(s => s.updateSetPiece)
-  const showGizmos = useStore(s => s.settings.showGizmos)
+  // 移動の矢印は、設定の欄から消せないようにした（旧「ビーム円錐ガイド」で切れていた。2026-11-17）
   const transformMode = useStore(s => s.settings.transformMode)
   const updateFixture = useStore(s => s.updateFixture)
   const updatePerformer = useStore(s => s.updatePerformer)
@@ -177,7 +177,7 @@ export function SelectionGizmo() {
     audience?.position.join(','), audience?.rotationDeg, audience?.elevation,
   ])
 
-  if (!showGizmos || transformMode === 'select') return null
+  if (transformMode === 'select') return null
   // 固定した物には矢印を出さない（照明は、狙いの球だけ出す）
   if (locked && selection.kind !== 'fixture') return null
 

@@ -95,6 +95,9 @@ function Beam({ fixture, hazeDensity, allowMap, castShadow }: { fixture: Fixture
   const lightRef = useRef<THREE.SpotLight>(null)
   const coneRef = useRef<THREE.Mesh>(null)
   const matRef = useRef<THREE.ShaderMaterial>(null)
+  const invalidateBeam = useThree(state => state.invalidate)
+  // uniforms は 1 つの物を使い続ける（描くたびに新しい物を渡すと、three は最初の物を見続けて値が映らない）
+  const beamUniforms = useMemo(() => ({ uColor: { value: new THREE.Color() }, uIntensity: { value: 0 }, uHaze: { value: 0 } }), [])
 
   const spotlight = useMemo(() => fixtureSpotlightModel(fixture), [fixture])
   const { color, fieldAngleRad, halfAngle } = spotlight
@@ -138,6 +141,14 @@ function Beam({ fixture, hazeDensity, allowMap, castShadow }: { fixture: Fixture
   })
   const gobo = goboOf(fixture)
 
+  // three はシェーダーの uniforms を最初に組んだときの物で描き続けるので、値が変わったら中身を書き換える。
+  // 書き換えないと、ヘイズの量や照明の色・強さを変えても、描き直されるまで光の筋に映らなかった（2026-11-17）
+  useEffect(() => {
+    beamUniforms.uColor.value = color
+    beamUniforms.uIntensity.value = fixture.intensity
+    beamUniforms.uHaze.value = hazeDensity
+    invalidateBeam()
+  }, [beamUniforms, color, fixture.intensity, hazeDensity, invalidateBeam])
   return (
     <group>
       <primitive object={targetRef.current} position={fixture.target} />
@@ -173,11 +184,7 @@ function Beam({ fixture, hazeDensity, allowMap, castShadow }: { fixture: Fixture
           depthWrite={false}
           blending={THREE.AdditiveBlending}
           side={THREE.DoubleSide}
-          uniforms={{
-            uColor: { value: color },
-            uIntensity: { value: fixture.intensity },
-            uHaze: { value: hazeDensity },
-          }}
+          uniforms={beamUniforms}
         />
       </mesh>
     </group>
