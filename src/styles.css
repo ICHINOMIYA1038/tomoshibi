@@ -5161,3 +5161,9 @@ body.embed .workspace-switch { display: none; }
 .unified-shell.workspace-layout.desk-plan-full .plan-resize-handle { display: none; }
 @media (max-width: 600px) { .desk-view-switch { display: none; } }
 .unified-shell .plan-map-layerbar { flex-wrap: wrap; row-gap: 6px; }
+/* 平面図の見た目の切り替え（明かり／仕込み図） */
+.unified-shell .plan-map-layerbar .plan-style-switch { display: inline-flex; border: 1px solid #4c4246; border-radius: 5px; overflow: hidden; }
+.unified-shell .plan-map-layerbar .plan-style-switch button { border: 0; border-radius: 0; }
+.unified-shell .plan-map-layerbar .plan-style-switch button::before { content: none; }
+.unified-shell .plan-map-layerbar .plan-style-switch button + button { border-left: 1px solid #4c4246; }
+.unified-shell .plan-map-layerbar .plan-style-switch button[aria-pressed="true"] { background: var(--kin); color: #14110d; }

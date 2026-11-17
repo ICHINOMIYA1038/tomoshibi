@@ -21,6 +21,18 @@ const MAP = { left: 100, top: 70, width: 760, height: 548, svgWidth: 960, svgHei
 const pathColors: Record<DirectionKind, string> = {
   move: '#d4af6f', entrance: '#78bca0', exit: '#df8f7c',
 }
+/** 平面図の見た目（2026-11-17 オーナーが 2 案とも採用）。light＝3D と同じ暗い舞台に明かりの輪、plot＝紙と墨の線の仕込み図 */
+type PlanStyle = 'light' | 'plot'
+const PLAN_THEMES = {
+  light: { paper: '#0d0b0e', title: '#f0e8da', grid: '#2b2629', gridText: '#7a7066', stageFill: '#2a2420', stageStroke: '#8a6a44', stageWidth: 3,
+    seat: '#5a4448', seatStroke: '#8a7a68', setStroke: '#a8957f', setActive: '#e0b45c', label: '#f0e8da', halo: '#0d0b0e', labelActive: '#e0b45c',
+    aim: '#a29179', actorStroke: '#f0e8da', actorText: '#fffdf8', fixtureBody: '#1a1618', fixtureText: '#f0e8da', edge: '#f0e8da' },
+  plot: { paper: '#f7f5ef', title: '#1d1d1f', grid: '#dfe5ea', gridText: '#7c8791', stageFill: '#fbfaf6', stageStroke: '#1d1d1f', stageWidth: 1.6,
+    seat: '#ffffff', seatStroke: '#1d1d1f', setStroke: '#1d1d1f', setActive: '#b0321b', label: '#1d1d1f', halo: '#f7f5ef', labelActive: '#b0321b',
+    aim: '#7c8791', actorStroke: '#1d1d1f', actorText: '#1d1d1f', fixtureBody: '#ffffff', fixtureText: '#1d1d1f', edge: '#1d1d1f' },
+} as const
+const PLAN_STYLE_KEY = 'tomoshibi.planStyle'
+
 const actorColors = ['#9f674d', '#627f9b', '#708d62', '#a27793', '#9a7e48', '#688e89']
 const triggerPlaceholders: Record<SceneTriggerType, string> = {
   dialogue: '例：行こう', sound: '例：ドアが閉まる音', light: '例：暗転', other: 'きっかけを入力',
@@ -205,6 +217,9 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
   const updateSetPiece = useStore(s => s.updateSetPiece)
   const [showFixtures, setShowFixtures] = useState(true)
   const [showLabels, setShowLabels] = useState(true)
+  const [planStyle, setPlanStyleState] = useState<PlanStyle>(() => { try { return localStorage.getItem(PLAN_STYLE_KEY) === 'plot' ? 'plot' : 'light' } catch { return 'light' } })
+  const setPlanStyle = (next: PlanStyle) => { setPlanStyleState(next); try { localStorage.setItem(PLAN_STYLE_KEY, next) } catch { /* 覚えられなくても使える */ } }
+  const T = PLAN_THEMES[planStyle]
   const [showSetPieces, setShowSetPieces] = useState(true)
   const [showShared, setShowShared] = useState(true)
   /** 図に出すもの。シーン = このシーンの役者・セット・照明、会場 = 全シーン共通の舞台・部品・客席（オーナー指摘で 1 つにまとめた、2026-11-16） */
@@ -1117,6 +1132,12 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
             {stageLarge && <button type="button" className={showWholeStage ? 'active' : ''} aria-pressed={showWholeStage}
               onClick={() => { setShowWholeStage(true); mapZoom.reset() }}>舞台全体</button>}
           </div>
+          <div className="plan-style-switch" role="group" aria-label="平面図の見た目">
+            <button type="button" aria-pressed={planStyle === 'light'} onClick={() => setPlanStyle('light')}
+              title="3D と同じ暗い舞台に、明かりの当たる所を色の輪で描きます">明かり</button>
+            <button type="button" aria-pressed={planStyle === 'plot'} onClick={() => setPlanStyle('plot')}
+              title="紙と墨の線の仕込み図。画像で保存して配れます">仕込み図</button>
+          </div>
           <button type="button" className={showLabels ? 'active' : ''} aria-pressed={showLabels}
             title="役者・舞台セット・照明・壁やバトンの名前。重なる所には出しません"
             onClick={() => setShowLabels(value => !value)}>名前：{showLabels ? '表示中' : '非表示'}</button>
@@ -1154,9 +1175,23 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
                 refX="8" refY="5" orient="auto" markerUnits="strokeWidth">
                 <path d="M 1 1 L 9 5 L 1 9 z" fill="#5b88a0" />
               </marker>
+              <pattern id="plan-hatch" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+                <line x1="0" y1="0" x2="0" y2="7" stroke="#1d1d1f" strokeWidth="1" />
+              </pattern>
+              <pattern id="plan-grid" width="20" height="20" patternUnits="userSpaceOnUse">
+                <path d="M20 0H0V20" fill="none" stroke={T.grid} strokeWidth=".8" />
+              </pattern>
+              {planStyle === 'light' && fixtures.map(fixture => <radialGradient key={'pool-' + fixture.id} id={'plan-pool-' + fixture.id}>
+                <stop offset="0" stopColor={colorToHex(fixture.color)} stopOpacity=".85" />
+                <stop offset=".55" stopColor={colorToHex(fixture.color)} stopOpacity=".3" />
+                <stop offset="1" stopColor={colorToHex(fixture.color)} stopOpacity="0" />
+              </radialGradient>)}
             </defs>
-            <rect width="960" height="630" fill="#ede8df" />
-            <text x="24" y="35" fill="#2e2925" fontSize="21" fontWeight="700" fontFamily="sans-serif">
+            <rect width="960" height="630" fill={planStyle === 'plot' ? 'url(#plan-grid)' : T.paper} />
+            {planStyle === 'plot' && <rect width="960" height="630" fill={T.paper} opacity=".55" />}
+            {planStyle === 'plot' && <text x="936" y="35" textAnchor="end" fill={T.title} fontSize="13" fontFamily="sans-serif">
+              {(plan.projectTitle || plan.title || '').slice(0, 30)}　目盛り 1m</text>}
+            <text x="24" y="35" fill={T.title} fontSize="21" fontWeight="700" fontFamily="sans-serif">
               {persistent ? sceneDisplayTitle(plan, scene.id).slice(0, 40)
                 : `${sequenceSceneIndex + 1} / ${sequenceScenes.length}　${scene.title.slice(0, 32)}`}
             </text>
@@ -1168,12 +1203,12 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
               const first = Math.ceil(mapBounds.rear / step)
               return Array.from({ length: 60 }, (_, index) => (first + index) * step).filter(z => z <= mapBounds.front)
                 .map(z => <g key={'grid-' + z} pointerEvents="none">
-                  <line x1="12" x2="948" y1={mapY(z)} y2={mapY(z)} stroke="#d2c9bd" strokeDasharray="5 9" />
-                  <text x="15" y={mapY(z) - 5} fill="#73695e" fontSize="12">z {z}m</text>
+                  <line x1="12" x2="948" y1={mapY(z)} y2={mapY(z)} stroke={T.grid} strokeDasharray="5 9" />
+                  <text x="15" y={mapY(z) - 5} fill={T.gridText} fontSize="12">z {z}m</text>
                 </g>)
             })()}
             <polygon points={stageOutline.map(([x, z]) => `${mapX(x)},${stageMapY(z)}`).join(' ')}
-              fill="#423d3a" stroke={selection.kind === 'stage' ? '#f2c27b' : '#a57545'} strokeWidth="4"
+              fill={T.stageFill} stroke={selection.kind === 'stage' ? '#f2c27b' : T.stageStroke} strokeWidth={T.stageWidth * (selection.kind === 'stage' ? 2 : 1)}
               role="button" tabIndex={0} aria-label="舞台（全シーン共通）。ドラッグで移動" data-menu-kind="stage" data-menu-id="stage"
               style={{ cursor: tool === 'translate' ? 'grab' : 'pointer', touchAction: 'none' }}
               onPointerDown={event => {
@@ -1184,7 +1219,7 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
             {showShared && <StagePartsLayer selectedId={selection.kind === 'stagepart' ? selection.id : null}
               onSelect={id => select(id ? 'stagepart' : null, id)} tool={tool} onPan={mapZoom.beginPan}
               toWorld={point => rawMapPoint(point as unknown as PointerEvent<SVGSVGElement>, svgRef.current!, true, mapBounds)}
-              mapX={mapX} mapY={mapY} unitsPerPx={unitsPerPx} showLabels={showLabels} />}
+              mapX={mapX} mapY={mapY} unitsPerPx={unitsPerPx} showLabels={showLabels} theme={planStyle} />}
             {showShared && audienceBlocks.map(block => {
               const seat = Math.max(3, MAP.width / (mapBounds.right - mapBounds.left) * .5)
               const active = selection.kind === 'audience' && selection.id === block.id
@@ -1200,9 +1235,19 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
                 }}>
                 {audienceSeatPositions(block).map(([x, z], index) => <rect key={index}
                   x={mapX(x) - seat / 2} y={mapY(z) - seat * .45} width={seat} height={seat * .9} rx="2"
-                  transform={`rotate(${-block.rotationDeg} ${mapX(x)} ${mapY(z)})`} fill="#71565c" stroke="#f6ede4" strokeWidth=".8" />)}
+                  transform={`rotate(${-block.rotationDeg} ${mapX(x)} ${mapY(z)})`} fill={T.seat} stroke={T.seatStroke} strokeWidth=".8" />)}
               </g>
             })}
+            {/* 明かりの輪（明かりの地図だけ）。器具の開きと距離から、床に当たる大きさを目安で出す */}
+            {planStyle === 'light' && showFixtures && <g style={{ mixBlendMode: 'screen' }} pointerEvents="none">
+              {fixtures.filter(fixture => fixture.enabled && fixture.intensity > 0).map(fixture => {
+                const distance = Math.hypot(fixture.target[0] - fixture.position[0], fixture.target[1] - fixture.position[1], fixture.target[2] - fixture.position[2])
+                const meters = Math.max(.6, distance * Math.tan((fixture.beamAngleDeg || 30) * Math.PI / 360))
+                const radius = meters * MAP.width / (mapBounds.right - mapBounds.left)
+                return <ellipse key={'pool-' + fixture.id} cx={mapX(fixture.target[0])} cy={mapY(fixture.target[2])}
+                  rx={radius} ry={radius * .85} fill={`url(#plan-pool-${fixture.id})`} opacity={Math.min(1, .35 + fixture.intensity * .6)} />
+              })}
+            </g>}
             {showSetPieces && setPieces.map((piece, index) => {
               const active = selectedSetPiece?.id === piece.id
               const width = Math.max(28, (piece.size?.[0] ?? 1) * Math.abs(piece.scale) * MAP.width / (mapBounds.right - mapBounds.left))
@@ -1236,8 +1281,8 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
                 {piece.kind === 'gltf' && <title>3D モデルの平面上の大きさは目安です</title>}
                 <rect x={-width / 2} y={-depth / 2} width={width} height={depth}
                   transform={`rotate(${-piece.rotation[1] * 180 / Math.PI})`}
-                  fill={piece.color ?? '#8d795e'} fillOpacity={active ? .72 : .48}
-                  stroke={active ? '#c8482d' : '#76634e'} strokeWidth={active ? 4 : 2}
+                  fill={planStyle === 'plot' ? 'url(#plan-hatch)' : piece.color ?? '#8d795e'} fillOpacity={planStyle === 'plot' ? 1 : active ? .8 : .6}
+                  stroke={active ? T.setActive : T.setStroke} strokeWidth={active ? 3 : 1.4}
                   strokeDasharray={piece.kind === 'gltf' ? '6 4' : undefined} />
                 {piece.appearance === 'bench' && <line x1={-width * .4} x2={width * .4} y1={-depth * .28} y2={-depth * .28}
                   stroke="#382b22" strokeWidth="5" pointerEvents="none" />}
@@ -1288,12 +1333,12 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
                 : key === 'ArrowUp' ? [0, -.5] : key === 'ArrowDown' ? [0, .5] : null
               return <g key={fixture.id} opacity={fixture.enabled ? 1 : .45}>
                 <line x1={px} y1={py} x2={tx} y2={ty}
-                  stroke={active ? '#c8482d' : '#a29179'} strokeWidth={active ? 4 : 2}
-                  strokeDasharray={active ? undefined : '7 5'} pointerEvents="none" />
+                  stroke={active ? T.labelActive : planStyle === 'light' ? colorToHex(fixture.color) : T.aim}
+                  strokeOpacity={active ? 1 : planStyle === 'light' ? .45 : 1} strokeWidth={active ? 3 : 1.2}
+                  strokeDasharray={active || planStyle === 'light' ? undefined : '4 4'} pointerEvents="none" />
                 {/* 狙いの点。選んでいない照明では目印だけで、触っても動かない（誤操作を防ぐ） */}
-                <circle cx={tx} cy={ty} r={active ? 19 : 13}
-                  fill={colorToHex(fixture.color)} fillOpacity=".3" stroke={active ? '#c8482d' : '#7b6b5a'}
-                  strokeWidth={active ? 5 : 2} pointerEvents="none" />
+                <circle cx={tx} cy={ty} r={active ? 10 : 4}
+                  fill="none" stroke={active ? T.labelActive : T.aim} strokeWidth={active ? 3 : 1.2} pointerEvents="none" />
                 <g role="button" tabIndex={0} aria-label={fixture.name + 'の吊る位置を動かす（全シーン共通。向きはそのまま）'} data-menu-kind="fixture" data-menu-id={fixture.id}
                   style={{ cursor: 'grab', touchAction: 'none' }}
                   onPointerDown={event => beginDrag(event, 'fixture', fixture.id, [fixture.position[0], fixture.position[2]])}
@@ -1328,8 +1373,8 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
                     const kind = FIXTURE_PROFILES[fixture.presetKey]?.kind
                     const size = markerSize
                     const angle = Math.atan2(ty - py, tx - px) * 180 / Math.PI
-                    const body = active ? '#c8482d' : '#4b443e'
-                    const edge = dragging === 'fixture' ? '#2f6f8f' : '#fffdf8'
+                    const body = active ? T.labelActive : T.fixtureBody
+                    const edge = dragging === 'fixture' ? '#2f6f8f' : planStyle === 'light' ? colorToHex(fixture.color) : T.edge
                     const edgeWidth = (dragging === 'fixture' ? 3 : 1.6) * size / 26
                     const strip = kind === 'Border' || kind === 'Footlight' || kind === 'Cyc' || kind === 'LED_Bar'
                     return <>
@@ -1348,7 +1393,7 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
                       </g>}
                       <text x={px - (strip || kind === 'MovingHead' ? 0 : Math.cos(angle * Math.PI / 180) * size * .1)}
                         y={py - (strip || kind === 'MovingHead' ? 0 : Math.sin(angle * Math.PI / 180) * size * .1) + size * .17}
-                        textAnchor="middle" fill="#fffdf8" fontSize={size * .46} fontWeight="700" pointerEvents="none">{index + 1}</text>
+                        textAnchor="middle" fill={active ? '#fffdf8' : T.fixtureText} fontSize={size * .46} fontWeight="700" pointerEvents="none">{index + 1}</text>
                     </>
                   })()}
                   {dragging === 'fixture' && <text x={clamp(px, 130 * unitsPerPx, MAP.svgWidth - 130 * unitsPerPx)}
@@ -1365,7 +1410,7 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
               const x = mapX(point[0])
               return <g key={performer.id}>
                 <circle cx={x} cy={mapY(point[1])} r={markerSize * .62}
-                  fill={actorColors[index % actorColors.length]} stroke={active ? '#181519' : '#fffdf8'}
+                  fill={planStyle === 'plot' ? '#ffffff' : actorColors[index % actorColors.length]} stroke={active ? T.labelActive : T.actorStroke}
                   strokeWidth={active ? 6 : 4} style={{ cursor: 'grab', touchAction: 'none' }}
                   role="button" tabIndex={0} aria-label={performer.name + 'の立ち位置を移動'} data-menu-kind="performer" data-menu-id={performer.id}
                   onPointerDown={event => beginDrag(event, 'performer', performer.id, point)}
@@ -1383,7 +1428,7 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
                     ] })
                   }} />
                 <text x={x} y={mapY(point[1]) + markerSize * .22} textAnchor="middle"
-                  fill="#fffdf8" fontSize={markerSize * .6} fontWeight="700" pointerEvents="none">{performer.name.trim().slice(0, 1) || index + 1}</text>
+                  fill={T.actorText} fontSize={markerSize * .6} fontWeight="700" pointerEvents="none">{performer.name.trim().slice(0, 1) || index + 1}</text>
               </g>
             })}
             {/* 名前。重なる所には出さない（選んでいる物の名前だけは必ず出す）。「名前」の切り替えで隠せる */}
@@ -1430,8 +1475,8 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
                 if (!spot) return null
                 placed.push({ ...boxAt(spot), key: item.key + ':label' })
                 return <text key={'label-' + item.key} x={spot[0]} y={spot[1] + font * .36} textAnchor="middle"
-                  fill={item.active ? '#9b2f1b' : '#322b25'} fontSize={font} fontWeight="700" paintOrder="stroke"
-                  stroke="#fffdf8" strokeWidth="4" pointerEvents="none">{item.text}</text>
+                  fill={item.active ? T.labelActive : T.label} fontSize={font} fontWeight={planStyle === 'plot' ? 500 : 700} paintOrder="stroke"
+                  stroke={T.halo} strokeWidth={planStyle === 'plot' ? 3 : 4} pointerEvents="none">{item.text}</text>
               })
             })()}
             {/* 選んだ照明の「向き」のつまみ。役者やほかの器具の下に隠れないよう最後に描く */}
