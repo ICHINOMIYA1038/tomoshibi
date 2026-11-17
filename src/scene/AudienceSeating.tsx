@@ -1,37 +1,59 @@
 import { useLayoutEffect, useMemo, useRef } from 'react'
 import { recordHit } from '../objectMenu'
 import * as THREE from 'three'
+import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js'
 import type { ThreeEvent } from '@react-three/fiber'
 import { audienceSeatPositions } from '../audienceLayout'
 import { useStore, type AudienceBlock } from '../store'
 
+// 劇場の座席らしい見た目（2026-11-18 オーナー「座席の見栄えが悪い」）。角の丸い座面と、少し後ろに倒した背もたれ、
+// 座席のあいだの肘掛け。えんじの布地で、光が当たると陰影が出る。客電を消しても形がわかるよう、少しだけ自分で光らせる
+const seatGeometry = new RoundedBoxGeometry(.5, .1, .46, 2, .035)
+const backGeometry = new RoundedBoxGeometry(.5, .6, .09, 2, .04)
+const armGeometry = new RoundedBoxGeometry(.06, .62, .52, 2, .02)
+const seatMaterial = new THREE.MeshStandardMaterial({ color: '#8c3040', roughness: .8, emissive: '#4a1822', emissiveIntensity: .75 })
+const backMaterial = new THREE.MeshStandardMaterial({ color: '#7a2836', roughness: .8, emissive: '#3e141e', emissiveIntensity: .75 })
+const armMaterial = new THREE.MeshStandardMaterial({ color: '#3a3034', roughness: .55, emissive: '#1c1619', emissiveIntensity: .9 })
+
 function SeatingBlock({ block }: { block: AudienceBlock }) {
   const seats = useMemo(() => audienceSeatPositions(block), [block])
-  const cushionRef = useRef<THREE.InstancedMesh>(null)
+  const seatRef = useRef<THREE.InstancedMesh>(null)
   const backRef = useRef<THREE.InstancedMesh>(null)
-  // 座面の下の脚。これが無いと、座席が床から 0.4m 浮いて見える（オーナー指摘、2026-11-15）
-  const legRef = useRef<THREE.InstancedMesh>(null)
+  const armRef = useRef<THREE.InstancedMesh>(null)
+  const armCount = block.rows * (block.seatsPerRow + 1)
   useLayoutEffect(() => {
     const object = new THREE.Object3D()
+    object.rotation.order = 'YXZ'
     const angle = block.rotationDeg * Math.PI / 180
+    const cos = Math.cos(angle), sin = Math.sin(angle)
     const base = block.elevation ?? 0
-    object.rotation.y = angle
-    for (let index = 0; index < seats.length; index++) {
-      const [x, z] = seats[index]
-      object.position.set(x, base + .43, z)
+    // 客席のまとまりの中の位置（lx: 横、lz: 前後。+lz が後ろ）を、場内の位置へ
+    const place = (lx: number, y: number, lz: number, tilt = 0) => {
+      object.position.set(block.position[0] + cos * lx + sin * lz, base + y, block.position[1] - sin * lx + cos * lz)
+      object.rotation.set(tilt, angle, 0)
       object.updateMatrix()
-      cushionRef.current?.setMatrixAt(index, object.matrix)
-      object.position.set(x, base + .19, z)
-      object.updateMatrix()
-      legRef.current?.setMatrixAt(index, object.matrix)
-      object.position.set(x + Math.sin(angle) * .23, base + .7, z + Math.cos(angle) * .23)
-      object.updateMatrix()
-      backRef.current?.setMatrixAt(index, object.matrix)
+      return object.matrix
     }
-    if (cushionRef.current) cushionRef.current.instanceMatrix.needsUpdate = true
-    if (backRef.current) backRef.current.instanceMatrix.needsUpdate = true
-    if (legRef.current) legRef.current.instanceMatrix.needsUpdate = true
-  }, [seats, block.rotationDeg, block.elevation])
+    let index = 0
+    for (let row = 0; row < block.rows; row++) {
+      const lz = (row - (block.rows - 1) / 2) * block.rowSpacing
+      for (let column = 0; column < block.seatsPerRow; column++) {
+        const lx = (column - (block.seatsPerRow - 1) / 2) * block.seatSpacing
+        seatRef.current?.setMatrixAt(index, place(lx, .44, lz - .02, -.06))
+        backRef.current?.setMatrixAt(index, place(lx, .8, lz + .25, .18))
+        index++
+      }
+    }
+    let arm = 0
+    for (let row = 0; row < block.rows; row++) {
+      const lz = (row - (block.rows - 1) / 2) * block.rowSpacing
+      for (let column = 0; column <= block.seatsPerRow; column++) {
+        const lx = (column - .5 - (block.seatsPerRow - 1) / 2) * block.seatSpacing
+        armRef.current?.setMatrixAt(arm++, place(lx, .31, lz + .03))
+      }
+    }
+    for (const ref of [seatRef, backRef, armRef]) if (ref.current) ref.current.instanceMatrix.needsUpdate = true
+  }, [seats, block])
   const selected = useStore(state => state.selection.kind === 'audience' && state.selection.id === block.id)
   const select = useStore(state => state.select)
   const halfWidth = ((block.seatsPerRow - 1) * block.seatSpacing + .54) / 2
@@ -54,18 +76,9 @@ function SeatingBlock({ block }: { block: AudienceBlock }) {
       <boxGeometry args={[halfWidth * 2 + .2, .9, halfDepth * 2 + .2]} />
       <meshBasicMaterial color="#6cf" wireframe transparent opacity={0.6} depthTest={false} />
     </mesh>}
-    <instancedMesh ref={cushionRef} args={[undefined, undefined, seats.length]} receiveShadow>
-      <boxGeometry args={[.54, .11, .5]} />
-      <meshBasicMaterial color="#503b43" toneMapped={false} />
-    </instancedMesh>
-    <instancedMesh ref={legRef} args={[undefined, undefined, seats.length]}>
-      <boxGeometry args={[.4, .38, .36]} />
-      <meshBasicMaterial color="#2b2229" toneMapped={false} />
-    </instancedMesh>
-    <instancedMesh ref={backRef} args={[undefined, undefined, seats.length]} receiveShadow>
-      <boxGeometry args={[.54, .58, .08]} />
-      <meshBasicMaterial color="#604b53" toneMapped={false} />
-    </instancedMesh>
+    <instancedMesh ref={seatRef} args={[seatGeometry, seatMaterial, seats.length]} receiveShadow />
+    <instancedMesh ref={backRef} args={[backGeometry, backMaterial, seats.length]} receiveShadow />
+    <instancedMesh ref={armRef} args={[armGeometry, armMaterial, armCount]} receiveShadow />
   </group>
 }
 
