@@ -37,7 +37,7 @@ export function IOPanel() {
         <button onClick={() => downloadSceneJSON(sceneName)}>JSON書出</button>
         <label className="file-btn">
           JSON読込
-          <input type="file" accept=".json" hidden onChange={async e => {
+          <input type="file" accept=".tomoshibi,.json,application/json" hidden onChange={async e => {
             const f = e.target.files?.[0]; if (f) { await uploadSceneJSON(f) }
           }} />
         </label>
