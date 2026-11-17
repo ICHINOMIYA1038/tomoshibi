@@ -1211,7 +1211,7 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
         <div className="plan-map-scroll">
           <svg ref={svgRef} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 630"
             aria-label="舞台の平面図。役者の立ち位置と器具の狙う位置を変更できます"
-            style={canPanByTouch ? { touchAction: 'none' } : undefined}
+            style={{ touchAction: 'none' }}
             onPointerDown={event => {
               // 何も無い所をドラッグすると、図を動かす（物の上を押したときは、物の側で止めている）
               if (event.button !== 0 || (event.pointerType === 'touch' && !canPanByTouch)) return

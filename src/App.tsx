@@ -425,6 +425,7 @@ export default function App() {
             enablePan
           />
           {!playbackOpen && <CameraKeyboardPan />}
+          <TouchTwist />
 
           <ambientLight intensity={settings.ambient ?? 0.05} color={'#3a2a20'} />
           <hemisphereLight args={['#3a2a20', '#1a1208', 0.2]} />
@@ -875,4 +876,46 @@ function useWideScreen() {
     return () => media.removeEventListener('change', change)
   }, [])
   return wide
+}
+
+/**
+ * スマホ・タブレットで、2 本指をひねると舞台を中心に視点を回す（2026-11-17 オーナー指摘）。
+ * 広げる・つまむ（ズーム）と 2 本指の移動は OrbitControls のまま。ひねった角度だけ、狙う点のまわりで回す
+ */
+function TouchTwist() {
+  const gl = useThree(state => state.gl)
+  const camera = useThree(state => state.camera)
+  const controls = useThree(state => state.controls) as unknown as { target: THREE.Vector3; update: () => void } | null
+  useEffect(() => {
+    const element = gl.domElement
+    let last: number | null = null
+    const angle = (touches: TouchList) => Math.atan2(touches[1].clientY - touches[0].clientY, touches[1].clientX - touches[0].clientX)
+    const start = (event: TouchEvent) => { last = event.touches.length === 2 ? angle(event.touches) : null }
+    const move = (event: TouchEvent) => {
+      if (event.touches.length !== 2 || last === null || !controls) return
+      const now = angle(event.touches)
+      let delta = now - last
+      if (delta > Math.PI) delta -= Math.PI * 2
+      if (delta < -Math.PI) delta += Math.PI * 2
+      last = now
+      // 指を時計回りにひねると、舞台も時計回りに回って見える（カメラは逆向きに回る）
+      const offset = camera.position.clone().sub(controls.target)
+      offset.applyAxisAngle(new THREE.Vector3(0, 1, 0), delta)
+      camera.position.copy(controls.target).add(offset)
+      camera.lookAt(controls.target)
+      controls.update()
+    }
+    const end = (event: TouchEvent) => { if (event.touches.length < 2) last = null }
+    element.addEventListener('touchstart', start, { passive: true })
+    element.addEventListener('touchmove', move, { passive: true })
+    element.addEventListener('touchend', end)
+    element.addEventListener('touchcancel', end)
+    return () => {
+      element.removeEventListener('touchstart', start)
+      element.removeEventListener('touchmove', move)
+      element.removeEventListener('touchend', end)
+      element.removeEventListener('touchcancel', end)
+    }
+  }, [gl, camera, controls])
+  return null
 }

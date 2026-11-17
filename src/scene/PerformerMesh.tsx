@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef } from 'react'
+import { useFloorDrag } from './floorDrag'
 import { recordHit } from '../objectMenu'
 import * as THREE from 'three'
 import { useStore, type Performer } from '../store'
@@ -45,6 +46,7 @@ function PerformerMeshSingle({ performer, material }: { performer: Performer; ma
   const s = performer.scale
   const frame = getPoseFrame(performer.pose)
   const groupRef = useRef<THREE.Group>(null)
+  const floorDrag = useFloorDrag('performer', performer.id)
   // 全パーツに castShadow/receiveShadow を伝播
   useEffect(() => {
     groupRef.current?.traverse((o) => {
@@ -62,6 +64,7 @@ function PerformerMeshSingle({ performer, material }: { performer: Performer; ma
       ref={groupRef}
       position={performer.position}
       visible={performer.onStage !== false}
+      {...floorDrag}
       onPointerOver={(e) => { e.stopPropagation(); setHover('performer', performer.id) }}
       onPointerOut={(e) => { e.stopPropagation(); setHover(null, null) }}
       onContextMenu={(e) => { e.stopPropagation(); recordHit({ kind: 'performer', id: performer.id }) }}
