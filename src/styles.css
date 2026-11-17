@@ -5132,3 +5132,10 @@ body.embed .workspace-switch { display: none; }
 .change-scope-bar.docked .change-scope-close { flex: 0 0 auto; }
 .plan-marker-key b { margin-right: 2px; color: #8d847b; font-weight: 700; }
 .change-scope-bar.docked .change-scope-close { position: absolute; top: 4px; right: 4px; min-height: 32px; }
+
+/* PC の 3D と平面図の境目（PlanResizeHandle）。上下にドラッグして平面図の高さを変える */
+.plan-resize-handle { position: absolute; z-index: 5; left: 0; right: 0; top: -5px; height: 10px; cursor: row-resize; touch-action: none; }
+.plan-resize-handle::after { content: ''; position: absolute; left: 50%; top: 3px; width: 48px; height: 4px; margin-left: -24px; border-radius: 2px; background: #6b5d52; }
+.plan-resize-handle:hover::after { background: var(--kin); }
+@media (max-width: 960px) { .plan-resize-handle { display: none; } }
+.plan-scope-legend { padding: 4px 12px; gap: 2px 14px; font-size: 13px; }

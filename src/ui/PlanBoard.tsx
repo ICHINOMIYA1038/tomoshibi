@@ -735,12 +735,34 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
   const menuChapterScenes = plan.scenes.filter(item => menuChapterSequenceIds.has(item.sequenceId ?? ''))
   const menuSceneIndex = menuChapterScenes.findIndex(item => item.id === menuScene?.id)
   const lastChapterId = plan.chapters?.slice(-1)[0]?.id
+  // 平面図を PNG の画像で保存する（SVG はなじみが薄いため。2026-11-17 オーナー指摘）。大きさは図の 2 倍
   const saveDiagram = async () => {
     if (!svgRef.current) return
-    const svg = new XMLSerializer().serializeToString(svgRef.current)
+    const clone = svgRef.current.cloneNode(true) as SVGSVGElement
+    clone.setAttribute('width', String(MAP.svgWidth * 2))
+    clone.setAttribute('height', String(MAP.svgHeight * 2))
+    const source = URL.createObjectURL(new Blob([new XMLSerializer().serializeToString(clone)], { type: 'image/svg+xml' }))
+    let blob: Blob | null = null
+    try {
+      const image = new Image()
+      await new Promise((resolve, reject) => { image.onload = resolve; image.onerror = reject; image.src = source })
+      const canvas = document.createElement('canvas')
+      canvas.width = MAP.svgWidth * 2
+      canvas.height = MAP.svgHeight * 2
+      const context = canvas.getContext('2d')
+      if (!context) throw new Error('canvas')
+      context.fillStyle = '#ffffff'
+      context.fillRect(0, 0, canvas.width, canvas.height)
+      context.drawImage(image, 0, 0, canvas.width, canvas.height)
+      blob = await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, 'image/png'))
+    } catch {
+      setFeedback('平面図を画像にできませんでした。もう一度お試しください')
+      return
+    } finally { URL.revokeObjectURL(source) }
+    if (!blob) return
     const name = (persistent ? sceneDisplayTitle(plan, scene.id) : scene.title.trim() || '演出プラン')
       .replace(/[\\/:*?"<>|]/g, '_')
-    const file = new File([svg], name + (persistent ? '' : '-シーン' + (activeIndex + 1)) + '.svg', { type: 'image/svg+xml' })
+    const file = new File([blob], name + (persistent ? '' : '-シーン' + (activeIndex + 1)) + '-平面図.png', { type: 'image/png' })
     if (navigator.canShare?.({ files: [file] })) {
       try {
         await navigator.share({ files: [file], title: persistent ? sceneDisplayTitle(plan, scene.id) : scene.title || '演出プラン' })
@@ -755,7 +777,7 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
     link.href = url
     link.download = file.name
     link.click()
-    setFeedback('平面図をSVGファイルとして保存しました')
+    setFeedback('平面図を画像（PNG）で保存しました')
     window.setTimeout(() => URL.revokeObjectURL(url), 1000)
   }
 
@@ -1053,6 +1075,7 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
         </section>
       </div>}
     <div className="plan-board-content">
+      {persistent && <PlanResizeHandle />}
       <div className="plan-map-pane">
         <div className="plan-map-caption"><strong>平面図</strong>
           <span>{stageIsEmpty
@@ -1384,16 +1407,17 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
           </svg>
         </div>
         </>
-        {<div className="plan-scope-legend" aria-label="図の見方">
-          <span className="plan-marker-key"><b aria-hidden="true">◆</b>照明（番号）　<b aria-hidden="true">●</b>役者（名前の頭文字）　<b aria-hidden="true">■</b>舞台セット</span>
-          <span><i className="shared" aria-hidden="true" />全シーン共通：舞台・壁・バトン・客席・照明の吊る位置（動かすと、すべてのシーンで変わります）</span>
-          <span><i className="scene" aria-hidden="true" />シーンごと：役者・セット・照明の狙い（変えたあと、ほかのシーンにも反映できます）</span>
-        </div>}
+        {/* 図を広く使うため 1 行にまとめる。詳しい説明は title に */}
+        <div className="plan-scope-legend" aria-label="図の見方">
+          <span className="plan-marker-key"><b aria-hidden="true">◆</b>照明 <b aria-hidden="true">●</b>役者 <b aria-hidden="true">■</b>セット</span>
+          <span title="舞台・壁・バトン・客席・照明の吊る位置。動かすと、すべてのシーンで変わります"><i className="shared" aria-hidden="true" />全シーン共通：舞台・壁・客席・吊る位置</span>
+          <span title="役者・セット・照明の狙い。変えたあと、ほかのシーンにも反映できます"><i className="scene" aria-hidden="true" />シーンごと：役者・セット・狙い</span>
+        </div>
         {<div className="plan-map-footer">
           <div className="plan-actor-key">{performers.map((actor, index) => <div className="plan-actor-entry" key={actor.id}>
             <button className={'plan-actor-select' + (actor.id === selectedPerformer?.id ? ' active' : '')}
               onClick={() => selectActor(actor.id)}>
-              <span style={{ background: actorColors[index % actorColors.length] }}>{index + 1}</span>{actor.name}
+              <span style={{ background: actorColors[index % actorColors.length] }}>{actor.name.trim().slice(0, 1) || index + 1}</span>{actor.name}
               <small>{actor.onStage === false ? '舞台外' : '舞台上'}</small>
             </button>
             <button className={'plan-presence-toggle' + (actor.onStage === false ? '' : ' active')}
@@ -1406,7 +1430,7 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
               {actor.onStage === false ? '舞台に出す' : '舞台から外す'}
             </button>
           </div>)}</div>
-          <button onClick={saveDiagram}>平面図をSVGで保存</button>
+          <button onClick={saveDiagram}>平面図を画像で保存</button>
         </div>}
       </div>
       {!persistent && <div className="plan-fields">
@@ -1473,4 +1497,41 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
     </div>
     </div>
   </section>
+}
+
+const MAP_HEIGHT_KEY = 'tomoshibi.planMapHeight'
+/** PC の 3D と平面図の境目。ドラッグで平面図の高さを変え、ダブルクリックで大きく／元に戻す。高さは覚えておく */
+function PlanResizeHandle() {
+  const shell = () => document.querySelector<HTMLElement>('.unified-shell')
+  const wide = () => window.matchMedia('(min-width: 961px)').matches
+  const apply = (height: number | null) => {
+    const target = shell()
+    if (!target) return
+    if (height === null || !wide()) { target.style.removeProperty('--map-height'); return }
+    const max = window.innerHeight - 180
+    target.style.setProperty('--map-height', `${Math.round(Math.min(max, Math.max(220, height)))}px`)
+  }
+  const stored = () => { try { const value = Number(localStorage.getItem(MAP_HEIGHT_KEY)); return value > 0 ? value : null } catch { return null } }
+  const store = (height: number | null) => { try { if (height === null) localStorage.removeItem(MAP_HEIGHT_KEY); else localStorage.setItem(MAP_HEIGHT_KEY, String(Math.round(height))) } catch { /* 保存できなくても使える */ } }
+  useEffect(() => {
+    apply(stored())
+    const onResize = () => apply(stored())
+    window.addEventListener('resize', onResize)
+    return () => { window.removeEventListener('resize', onResize); shell()?.style.removeProperty('--map-height') }
+  }, [])
+  const begin = (event: PointerEvent<HTMLDivElement>) => {
+    event.preventDefault()
+    const move = (next: globalThis.PointerEvent) => { const height = window.innerHeight - next.clientY; apply(height); store(height) }
+    const up = () => { window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', up) }
+    window.addEventListener('pointermove', move)
+    window.addEventListener('pointerup', up)
+  }
+  const toggle = () => {
+    const large = window.innerHeight * .72
+    const current = stored()
+    const next = current && current > window.innerHeight * .6 ? null : large
+    store(next); apply(next)
+  }
+  return <div className="plan-resize-handle" role="separator" aria-orientation="horizontal" aria-label="平面図の高さ。ドラッグで変える。ダブルクリックで大きく・元に戻す"
+    title="ドラッグで平面図の高さを変えます。ダブルクリックで大きく・元に戻す" onPointerDown={begin} onDoubleClick={toggle} />
 }
