@@ -12,6 +12,7 @@ import { isFlat, snapValue, type StagePart } from '../stageParts'
 import { clampAudienceElevation, clampAudiencePosition } from '../audienceLayout'
 import { toolFor } from '../tools'
 import { RotateRing } from './RotateRing'
+import { facingRad } from './PerformerMesh'
 
 function isTouchDevice() {
   if (typeof window === 'undefined') return false
@@ -417,6 +418,10 @@ export function SelectionGizmo() {
   if (selection.kind === 'performer' && performer && performer.onStage !== false) {
     return (
       <group>
+        {/* 足元の回転の輪で向きを変える（つまみは顔の向き。2026-11-18 オーナー「役者の向きも作って」） */}
+        {tool === 'translate' && <RotateRing center={[performer.position[0], performer.position[1] + 0.03, performer.position[2]]}
+          radius={0.55 * performer.scale} angle={facingRad(performer.facingDeg)}
+          onRotate={angle => updatePerformer(performer.id, { facingDeg: Math.round(angle * 180 / Math.PI) })} />}
         <primitive object={dragRef.current} />
         <TransformControls
           object={dragRef.current}

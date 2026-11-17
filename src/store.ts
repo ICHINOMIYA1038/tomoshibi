@@ -62,6 +62,8 @@ export interface Performer {
   scale: number       // 身長スケール 0.7=子, 1.0=平均, 1.2=高身長
   color: string       // 服色
   pose: PerformerPose
+  /** 向き（度、シーンごと）。0 が客席向き、90 が上手、-90 が下手、180 が奥。無ければ 0（2026-11-18） */
+  facingDeg?: number
   /** 親（hierarchy.ts）。null は親なし、無ければ舞台の床 */
   parentId?: string | null
 }

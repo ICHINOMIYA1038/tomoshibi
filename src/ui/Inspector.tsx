@@ -173,6 +173,16 @@ function PerformerInspector({ performer }: { performer: Performer }) {
       <NumberField label="Z" value={performer.position[2]} onChange={value => move(2, value)} />
       <ParentField kind="performer" id={performer.id} item={performer} />
     </InspectorSection>
+    <InspectorSection title="向き">
+      <div className="inspector-choice wrap" role="group" aria-label="向き">
+        {FACINGS.map(([deg, label]) => <button key={label} type="button"
+          className={normalDeg(performer.facingDeg ?? 0) === deg ? 'active' : ''} aria-pressed={normalDeg(performer.facingDeg ?? 0) === deg}
+          onClick={() => update({ facingDeg: deg })}>{label}</button>)}
+      </div>
+      <NumberField label="角度" value={normalDeg(performer.facingDeg ?? 0)} min={-180} max={180} step={5} unit="°"
+        onChange={value => update({ facingDeg: normalDeg(value) })} />
+      <p className="inspector-note">3D で役者を選ぶと、足元の輪のつまみが顔の向きです。つまみをなぞっても回せます。</p>
+    </InspectorSection>
     <InspectorSection title="ポーズ">
       <div className="inspector-choice wrap" role="group" aria-label="ポーズ">
         {PERFORMER_POSES.map(pose => <button key={pose.value} type="button"
@@ -414,4 +424,12 @@ function AudienceInspector({ block }: { block: AudienceBlock }) {
       <NumberField label="席の間隔" value={block.seatSpacing} min={.5} max={1.2} step={.05} onChange={value => change({ seatSpacing: value })} />
     </InspectorSection>
   </>
+}
+
+/** 役者の向きのよく使う 4 つ（0 が客席。上手は客席から見て右 = +X） */
+const FACINGS: Array<[number, string]> = [[0, '客席'], [90, '上手'], [-90, '下手'], [180, '奥']]
+/** 角度を -180〜180 にそろえる（180 と -180 は 180 にする） */
+function normalDeg(deg: number) {
+  const value = ((Math.round(deg) % 360) + 540) % 360 - 180
+  return value === -180 ? 180 : value
 }

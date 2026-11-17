@@ -1532,7 +1532,15 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
               const point: StagePoint = [performer.position[0], performer.position[2]]
               const active = performer.id === selectedPerformer?.id
               const x = mapX(point[0])
+              // 向き（シーンごと）。円の外に小さな三角で顔の向きを出す。z が大きいほど図の下（客席側）
+              const facing = Number.isFinite(performer.facingDeg) ? (performer.facingDeg as number) * Math.PI / 180 : 0
+              const fx = Math.sin(facing), fy = Math.cos(facing)
+              const cy0 = mapY(point[1]), r0 = markerSize * .62
+              const tip: [number, number] = [x + fx * r0 * 1.55, cy0 + fy * r0 * 1.55]
+              const side = (sign: number): [number, number] => [x + fx * r0 * .95 - fy * sign * r0 * .5, cy0 + fy * r0 * .95 + fx * sign * r0 * .5]
               return <g key={performer.id}>
+                <polygon points={[tip, side(1), side(-1)].map(p => p.join(',')).join(' ')}
+                  fill={active ? T.labelActive : T.actorStroke} pointerEvents="none" />
                 <circle cx={x} cy={mapY(point[1])} r={markerSize * .62}
                   fill={planStyle === 'plot' ? '#ffffff' : actorColors[index % actorColors.length]} stroke={active ? T.labelActive : T.actorStroke}
                   strokeWidth={active ? 6 : 4} style={{ cursor: 'grab', touchAction: 'none' }}
