@@ -5264,3 +5264,17 @@ input[type="color"]::-moz-color-swatch { border: 0; border-radius: 0; }
 .unified-shell input, .unified-shell textarea, .unified-shell select, .unified-shell [contenteditable="true"], .unified-shell [contenteditable="true"] * { -webkit-user-select: text; user-select: text; -webkit-touch-callout: default; }
 /* Pro のページの「購入を復元」（iOS アプリだけ。2026-11-18） */
 .pro-restore-link { display: block; margin-top: 12px; text-align: center; font-size: 14px; color: inherit; text-decoration: underline; }
+/* プロジェクト名（押すと名前を変えられる。2026-11-18）。長い名前は … で切り、枠からはみ出さない */
+.unified-shell.workspace-layout button.workspace-project-title, .phone-layout button.phone-title {
+  display: inline-flex; align-items: center; gap: 5px; min-width: 0; padding: 3px 6px; border: 1px solid transparent; border-radius: 4px;
+  background: none; color: var(--ink-primary); font-family: inherit; text-align: left; cursor: text;
+}
+.unified-shell.workspace-layout button.workspace-project-title:hover, .phone-layout button.phone-title:hover { border-color: rgba(224, 180, 92, .45); }
+.project-title-text { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.project-title-pen { flex: none; opacity: .55; }
+.unified-shell.workspace-layout input.workspace-project-title, .phone-layout input.phone-title {
+  min-width: 0; width: 240px; max-width: 100%; padding: 3px 6px; border: 1px solid var(--kin); border-radius: 4px;
+  background: #120f12; color: var(--ink-primary); font: 700 13px var(--font-sans); -webkit-user-select: text; user-select: text;
+}
+.phone-layout input.phone-title { width: auto; flex: 1 1 auto; font-size: 16px; }
+.phone-layout button.phone-title { flex: 1 1 auto; }

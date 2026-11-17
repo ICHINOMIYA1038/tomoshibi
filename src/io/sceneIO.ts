@@ -263,6 +263,11 @@ export function saveSerializedSceneLS(scene: SerializedScene) {
   else list.push(scene)
   workspaceStorage().setItem(LS_KEY, JSON.stringify(list))
 }
+/** この端末に保存したプロジェクトの名前を変える（一覧の並びはそのまま） */
+export function renameSavedSceneLS(from: string, to: string) {
+  const list = listSavedScenes().map(scene => scene.name === from ? { ...scene, name: to } : scene)
+  workspaceStorage().setItem(LS_KEY, JSON.stringify(list))
+}
 export function deleteSceneLS(name: string) {
   const list = listSavedScenes().filter(s => s.name !== name)
   workspaceStorage().setItem(LS_KEY, JSON.stringify(list))

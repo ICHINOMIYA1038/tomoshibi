@@ -34,6 +34,7 @@ import { ScenePanel } from './ui/ScenePanel'
 import { PlanBoard } from './ui/PlanBoard'
 import { ProjectLibrary } from './ui/ProjectLibrary'
 import { useReportAdsToApp } from './ui/Ads'
+import { ProjectTitleEdit } from './ui/ProjectTitleEdit'
 import { AccountMenu } from './ui/AccountMenu'
 import { getActiveCloudProject, getActiveSavedProjectName, setActiveCloudProject } from './io/mockProjectSession'
 import { consumeWorkspaceHandoff, currentWorkspaceSnapshot, flushMockAutosave, initMockWorkspace, markCloudSaved, markMockDemoBaseline, preserveMockDraftBeforeDemo, redoMockWorkspace, undoMockWorkspace, useMockWorkspaceState } from './io/mockWorkspace'
@@ -636,8 +637,7 @@ function MockProjectTitle({ title }: { title?: string }) {
   const { saveStatus, cloudDirty } = useMockWorkspaceState()
   const cloud = getActiveCloudProject()
   return <>
-    <strong className="workspace-project-title" title={title?.trim() || '名称未設定のプロジェクト'}>
-      {title?.trim() || '名称未設定'}</strong>
+    <ProjectTitleEdit className="workspace-project-title" fallback="名称未設定" />
     <span className={'workspace-save-state' + (saveStatus !== 'saved' ? ' changed' : '')} role="status">
       {saveStatus === 'saving' ? '自動保存中…' : saveStatus === 'error' ? '保存できません' : cloud ? cloudDirty ? 'アカウントへの保存待ち' : 'アカウントに保存済み' : hasDeviceStorage() ? 'このアプリに保存済み' : 'ブラウザに一時保存'}</span>
   </>
