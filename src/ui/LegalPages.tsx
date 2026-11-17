@@ -1,4 +1,5 @@
 import { useEffect, useState, type ReactNode } from 'react'
+import { APP_RESTORE_URL, hasAppBridge } from '../io/appBridge'
 import {
   createProCheckout,
   createBillingPortal,
@@ -151,7 +152,8 @@ export function PrivacyPage() {
 
       <h2>4. Cookie 等の利用</h2>
       <p>本サービスでは、利便性向上のため Cookie を使用する場合があります。ブラウザの設定により Cookie を無効化することも可能ですが、その場合本サービスの一部機能が利用できなくなることがあります。</p>
-      <p>ウェブ版では、無料プランの利用者とログインしていない利用者に、第三者配信の広告サービス「Google AdSense」による広告を表示します。Google などの第三者配信事業者は、Cookie を使用して、利用者が本サービスやほかのウェブサイトに過去にアクセスした際の情報に基づいて広告を配信することがあります。利用者は、<a href="https://adssettings.google.com/" target="_blank" rel="noreferrer">Google の広告設定</a>でパーソナライズ広告を無効にできます。Google による情報の使い方は、<a href="https://policies.google.com/technologies/ads" target="_blank" rel="noreferrer">Google のポリシーと規約</a>をご覧ください。Pro プランの利用者と iOS アプリ版には、広告を表示しません。</p>
+      <p>ウェブ版では、無料プランの利用者とログインしていない利用者に、第三者配信の広告サービス「Google AdSense」による広告を表示します。Google などの第三者配信事業者は、Cookie を使用して、利用者が本サービスやほかのウェブサイトに過去にアクセスした際の情報に基づいて広告を配信することがあります。利用者は、<a href="https://adssettings.google.com/" target="_blank" rel="noreferrer">Google の広告設定</a>でパーソナライズ広告を無効にできます。Google による情報の使い方は、<a href="https://policies.google.com/technologies/ads" target="_blank" rel="noreferrer">Google のポリシーと規約</a>をご覧ください。Pro プランの利用者には、広告を表示しません。</p>
+      <p>iOS アプリ版では、無料プランの利用者とログインしていない利用者に、Google の広告サービス「Google AdMob」による広告を画面の下に表示します。端末の広告識別子は、利用者がトラッキングを許可した場合にだけ、広告の配信に使います。許可しない場合は、パーソナライズしない広告を表示します。</p>
 
       <h2>5. 外部サービスの利用</h2>
       <ul>
@@ -159,6 +161,7 @@ export function PrivacyPage() {
         <li>決済: Stripe 等の決済事業者</li>
         <li>ホスティング: Cloudflare, Inc.</li>
         <li>広告配信(ウェブ版の無料プラン): Google AdSense</li>
+        <li>広告配信(iOS アプリ版の無料プラン): Google AdMob</li>
         <li>アプリの利用状況の統計・クラッシュ情報の収集(iOS アプリ版): Google Firebase(Firebase Analytics・Firebase Crashlytics)</li>
       </ul>
       <p>これらのサービスにおける情報の取り扱いは、各サービスのプライバシーポリシーに従います。</p>
@@ -231,6 +234,7 @@ export function ProPage() {
         <div className="pro-price-amount">¥{SERVICE.proPriceMonthly}<span>/月</span></div>
         <div className="pro-price-sub">税込・自動更新・いつでも解約可能</div>
         <ProSubscribeButton />
+        {hasAppBridge() && <a className="pro-restore-link" href={APP_RESTORE_URL}>購入を復元</a>}
       </div>
 
       <ExistingWebSubscription />

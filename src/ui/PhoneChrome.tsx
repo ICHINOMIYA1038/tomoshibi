@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { APP_RESTORE_URL, hasAppBridge } from '../io/appBridge'
 import { addablePresets, FIXTURE_DISCLAIMER, FIXTURE_PROFILES } from '../lighting/fixtureTypes'
 import { addItem, deleteSelection, SET_PIECE_TYPES, type AddItem } from '../objectActions'
 import { PART_LABELS } from '../stageParts'
@@ -263,6 +264,8 @@ function MenuSheet({ onDone }: { onDone: () => void }) {
       <button type="button" onClick={() => { update({ settingsOpen: true }); onDone() }}>表示の設定</button>
       <button type="button" onClick={() => { update({ showHelp: true }); onDone() }}>使い方</button>
       <a href={user ? accountUrl() : loginUrl()}>{user ? 'アカウント' : 'ログイン'}</a>
+      {/* アプリの下の帯を広告にしたので、購入の復元はここと Pro のページから（2026-11-18） */}
+      {hasAppBridge() && <a href={APP_RESTORE_URL}>購入を復元</a>}
     </div>
   </div>
 }

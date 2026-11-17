@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import { hasAppBridge, postToApp } from '../io/appBridge'
 import { useCloudSession } from '../io/cloudSession'
 import { hasDeviceStorage } from '../io/workspaceStorage'
 
@@ -46,4 +47,17 @@ export function AdSlot({ width, height, className }: { width: number | '100%'; h
     {AD_PREVIEW ? <div className="ad-slot-preview" style={{ width, height }}>広告（仮の枠）</div> : <ins ref={ref} className="adsbygoogle" style={{ display: 'inline-block', width, height }}
       data-ad-client={AD_CLIENT} data-ad-slot={AD_SLOT} />}
   </div>
+}
+
+/**
+ * iOS アプリに、画面の下のバナー広告（AdMob）を出してよいかを知らせる（2026-11-18 オーナー決定）。
+ * 出すのは無料の人（ログインしていない人を含む）だけ。ログインを確かめているあいだは出さない
+ */
+export function useReportAdsToApp() {
+  const { user, loading } = useCloudSession()
+  const show = !loading && user?.plan !== 'pro'
+  useEffect(() => {
+    if (!hasAppBridge()) return
+    postToApp({ type: 'ads', show })
+  }, [show])
 }
