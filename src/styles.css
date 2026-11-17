@@ -5258,3 +5258,7 @@ input[type="color"]::-moz-color-swatch { border: 0; border-radius: 0; }
 /* PC の変更の帯: 平面図の見方の欄に重なって埋もれていた（2026-11-17 オーナー「平面図のときに出てこない」）。
    見方の欄より上に出し、地を透かさず、金の線で囲んで目に入るようにする */
 .change-scope-bar:not(.phone):not(.docked) { bottom: 64px; background: #191619; border-color: var(--kin); box-shadow: 0 6px 18px rgba(0,0,0,.5); }
+/* 編集画面では、長押しやドラッグで文字が選ばれて「コピー」などの標準のメニューが出ないようにする
+   （2026-11-17 オーナー「範囲選択のコピーのメニューが出て鬱陶しい」）。入力欄だけは選べるまま */
+.unified-shell, .unified-shell * { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+.unified-shell input, .unified-shell textarea, .unified-shell select, .unified-shell [contenteditable="true"], .unified-shell [contenteditable="true"] * { -webkit-user-select: text; user-select: text; -webkit-touch-callout: default; }
