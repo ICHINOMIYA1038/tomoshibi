@@ -423,6 +423,8 @@ export default function App() {
             maxDistance={100}
             maxPolarAngle={Math.PI * 0.49}
             enablePan
+            // 指（マウス）のある所へ向かって拡大する。舞台の真ん中ではなく、役者などに寄れる（2026-11-17）
+            zoomToCursor
           />
           {!playbackOpen && <CameraKeyboardPan />}
           <TouchTwist />

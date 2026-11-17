@@ -415,7 +415,6 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
       window.removeEventListener('pointerup', up)
       window.removeEventListener('pointercancel', up)
       setFrozenBounds(null)
-      if (turned) setFeedback(`${label}を ${turned > 0 ? '右' : '左'}へ ${Math.abs(turned)}° 回しました`)
     }
     window.addEventListener('pointermove', move)
     window.addEventListener('pointerup', up)
@@ -443,7 +442,6 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
       window.removeEventListener('pointerup', up)
       window.removeEventListener('pointercancel', up)
       setFrozenBounds(null)
-      if (moved) setFeedback(`${label}を動かしました（全シーン共通）`)
     }
     window.addEventListener('pointermove', move)
     window.addEventListener('pointerup', up)
@@ -519,9 +517,7 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
           : useStore.getState().setPieces.find(piece => piece.id === start.id)?.position
     if (point && Math.hypot(point[0] - start.from[0], point[2] - start.from[1]) > 0.01) {
       setLastMove(start)
-      setFeedback(start.kind === 'target' ? '照明の向きを変えました（位置はそのまま）' : start.kind === 'fixture'
-        ? '照明の位置を動かしました（向きはそのまま）' : start.kind === 'performer'
-          ? '役者の立ち位置を変更しました' : '舞台セットの位置を変更しました')
+      // 動かした・回したことは図を見ればわかるので、知らせは出さない（2026-11-17 オーナー「動かすたびに通知が出る」）
     }
   }
   const undoMove = () => {
