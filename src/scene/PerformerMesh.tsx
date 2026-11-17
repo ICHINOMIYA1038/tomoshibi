@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef } from 'react'
-import { useFloorDrag } from './floorDrag'
+import { hitsHandle, useFloorDrag } from './floorDrag'
 import { recordHit } from '../objectMenu'
 import * as THREE from 'three'
 import { useStore, type Performer } from '../store'
@@ -69,6 +69,7 @@ function PerformerMeshSingle({ performer, material }: { performer: Performer; ma
       onPointerOut={(e) => { e.stopPropagation(); setHover(null, null) }}
       onContextMenu={(e) => { e.stopPropagation(); recordHit({ kind: 'performer', id: performer.id }) }}
       onClick={(e) => {
+        if (hitsHandle(e)) return
         e.stopPropagation()
         const st = useStore.getState()
         if (st.settings.probeMode) {
