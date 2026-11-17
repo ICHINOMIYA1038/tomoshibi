@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { HierarchyPanel } from './HierarchyPanel'
 import { APP_RESTORE_URL, hasAppBridge } from '../io/appBridge'
 import { ProjectTitleEdit } from './ProjectTitleEdit'
 import { addablePresets, FIXTURE_DISCLAIMER, FIXTURE_PROFILES } from '../lighting/fixtureTypes'
@@ -16,7 +17,7 @@ import { ChangeScopeBar } from './ChangeScopeBar'
 // スマホ（幅 600px 以下）の編集画面。PC の道具の列・ヒエラルキー・インスペクターは出さず、
 // 舞台をいつも見せたまま、追加・シーン・設定を下からのシートで出す（2026-11-17 オーナーと決めた案 A）
 
-type Sheet = null | 'add' | 'scenes' | 'inspector' | 'menu'
+type Sheet = null | 'add' | 'scenes' | 'inspector' | 'menu' | 'list'
 type Toast = { label: string; kind: string; id: string }
 type AddTab = 'light' | 'cast' | 'set'
 
@@ -62,6 +63,8 @@ export function PhoneChrome({ title, view, onView, onBack, onPlay }: {
       <button type="button" aria-pressed={view === 'stage'} onClick={() => onView('stage')}>3D</button>
       <button type="button" aria-pressed={view === 'plan'} onClick={() => onView('plan')}>平面図</button>
     </div>
+    {/* 置いた物の一覧（PC のヒエラルキー）。2026-11-18 オーナー「スマホから一覧が見れない」 */}
+    <button type="button" className="phone-list-button" aria-expanded={sheet === 'list'} onClick={() => setSheet('list')}>一覧</button>
 
     <ChangeScopeBar phone />
     <GestureHint view={view} />
@@ -83,6 +86,7 @@ export function PhoneChrome({ title, view, onView, onBack, onPlay }: {
     {sheet === 'add' && <PhoneSheet title="何を足しますか" onClose={() => setSheet(null)}><AddSheet onAdd={added} onSettings={id => { useStore.getState().select('performer', id); setSheet('inspector') }} /></PhoneSheet>}
     {sheet === 'scenes' && <PhoneSheet title="シーン" tall onClose={() => setSheet(null)}><ScenesSheet onDone={() => setSheet(null)} /></PhoneSheet>}
     {sheet === 'inspector' && <PhoneSheet title="設定" tall onClose={() => setSheet(null)}><div className="phone-inspector"><Inspector /></div></PhoneSheet>}
+    {sheet === 'list' && <PhoneSheet title="置いた物の一覧" tall onClose={() => setSheet(null)}><ListSheet onPicked={() => setSheet(null)} /></PhoneSheet>}
     {sheet === 'menu' && <PhoneSheet title="メニュー" onClose={() => setSheet(null)}><MenuSheet onDone={() => setSheet(null)} /></PhoneSheet>}
   </>
 }
@@ -295,4 +299,12 @@ function UndoRedo() {
     <button type="button" className="phone-icon" aria-label="元に戻す" disabled={!canUndo} onClick={undoMockWorkspace}>↶</button>
     <button type="button" className="phone-icon" aria-label="やり直す" disabled={!canRedo} onClick={redoMockWorkspace}>↷</button>
   </>
+}
+
+/** 置いた物の一覧。行を押して選ぶと閉じ、下の札から設定や固定ができる */
+function ListSheet({ onPicked }: { onPicked: () => void }) {
+  const selected = useStore(s => s.selection.id)
+  const [first] = useState(selected)
+  useEffect(() => { if (selected && selected !== first) onPicked() }, [selected, first, onPicked])
+  return <div className="phone-list unity-panel"><HierarchyPanel /></div>
 }
