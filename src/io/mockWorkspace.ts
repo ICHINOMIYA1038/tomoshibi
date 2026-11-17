@@ -4,6 +4,7 @@ import { useSyncExternalStore } from 'react'
 import { exportScene, importScene, listSavedScenes, saveSceneLS, saveSerializedSceneLS, type SerializedScene } from './sceneIO'
 import { getActiveCloudProject, getActiveSavedProjectName, setActiveCloudProject, setActiveSavedProjectName } from './mockProjectSession'
 import { useStore } from '../store'
+import { trackSaveAbandoned } from '../analytics'
 
 const SESSION_KEY = 'tomoshibi.mock.workspace.v1'
 const HANDOFF_KEY = 'tomoshibi.workspace.handoff.v1'
@@ -222,7 +223,14 @@ export function initMockWorkspace(restore = true) {
   lastSignature = signature(useStore.getState())
   installed = true
   useStore.subscribe(record)
-  window.addEventListener('pagehide', () => { if (saveStatus === 'saving') flushMockAutosave() })
+  window.addEventListener('pagehide', () => {
+    if (saveStatus !== 'saving') return
+    trackSaveAbandoned({
+      storage: getActiveCloudProject() ? 'cloud' : 'local',
+      reason: 'pagehide_before_autosave',
+    })
+    flushMockAutosave()
+  })
   publish()
 }
 

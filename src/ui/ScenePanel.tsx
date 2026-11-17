@@ -1,6 +1,6 @@
 import { askConfirm } from './askConfirm'
 import { hasDeviceStorage } from '../io/workspaceStorage'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useStore, useIsDirty } from '../store'
 import { exportScene, importScene } from '../io/sceneIO'
 import {
@@ -17,6 +17,7 @@ import { getActiveCloudProject, getActiveSavedProjectName, setActiveCloudProject
 import { currentWorkspaceSnapshot, flushMockAutosave, markCloudSaved, resetMockWorkspace } from '../io/mockWorkspace'
 import { createCloudProject } from '../io/cloud'
 import { isWorkspacePath } from '../io/workspacePath'
+import { trackSaveCompleted, trackSaveFailed, trackSavePromptViewed, trackSaveStarted } from '../analytics'
 
 const FALLBACK_MAX_SCENES = 3
 const isMockPreview = isWorkspacePath()
@@ -58,25 +59,36 @@ function CloudProjectCreate() {
   const [name, setName] = useState(projectTitle || '')
   const [busy, setBusy] = useState(false)
   const [message, setMessage] = useState('')
+  const promptTracked = useRef(false)
+  useEffect(() => {
+    if (loading || promptTracked.current) return
+    promptTracked.current = true
+    trackSavePromptViewed({ storage: 'cloud', authenticated: Boolean(user) })
+  }, [loading, user])
   const active = getActiveCloudProject()
   if (loading) return null
   if (!user) return <section className="scene-section"><header className="scene-section-h"><span>アカウントに保存</span></header>
     <p className="scene-local-note">ログインすると、プロジェクトをアカウントに保存して別の端末でも開けます。</p>
-    <a href={loginUrl()}>ログインする →</a></section>
+    <a href={loginUrl()} onClick={() => trackSaveStarted({ storage: 'cloud', authenticated: false })}>ログインする →</a></section>
   if (active) return <section className="scene-section"><header className="scene-section-h"><span>アカウントに保存</span></header>
     <p className="scene-local-note">「{active.name}」は編集後にクラウドへ自動保存されます。</p></section>
   const save = async () => {
     const title = name.trim() || projectTitle?.trim()
     if (!title) { setMessage('プロジェクト名を入力してください。'); return }
     setBusy(true); setMessage('')
+    trackSaveStarted({ storage: 'cloud', authenticated: true })
     try {
       useStore.getState().updateProductionPlan({ projectTitle: title })
       const snapshot = currentWorkspaceSnapshot()
       const created = await createCloudProject(title, exportScene(title))
       setActiveCloudProject({ id: created.id, name: created.name, revision: created.revision })
       markCloudSaved(snapshot)
+      trackSaveCompleted({ storage: 'cloud', authenticated: true })
       setMessage('アカウントに保存しました。以後の編集は自動保存されます。')
-    } catch (error) { setMessage(error instanceof CloudError ? error.message : 'アカウントに保存できませんでした。端末内のデータは残っています。') }
+    } catch (error) {
+      trackSaveFailed({ storage: 'cloud', authenticated: true, reason: error instanceof CloudError ? `http_${error.status}` : 'unknown' })
+      setMessage(error instanceof CloudError ? error.message : 'アカウントに保存できませんでした。端末内のデータは残っています。')
+    }
     finally { setBusy(false) }
   }
   return <section className="scene-section"><header className="scene-section-h"><span>アカウントに保存</span></header>
@@ -117,6 +129,7 @@ function LocalScenesBody({ authenticated, loading }: { authenticated: boolean; l
     if (!sceneName) { setError(isMockPreview ? 'プロジェクト名を入力してください。' : '保存名を入力してください。'); return }
     if (scenes.some(scene => scene.name === sceneName) && loadedName !== sceneName &&
         !await askConfirm(`「${sceneName}」に上書き保存しますか？`)) return
+    trackSaveStarted({ storage: 'local', authenticated })
     try {
       if (isMockPreview) {
         useStore.getState().updateProductionPlan({ projectTitle: sceneName })
@@ -130,8 +143,10 @@ function LocalScenesBody({ authenticated, loading }: { authenticated: boolean; l
       setError('')
       setSuccess(`「${sceneName}」を${hasDeviceStorage() ? 'このアプリに保存' : 'ブラウザに一時保存'}しました`)
       markSaved()
+      trackSaveCompleted({ storage: 'local', authenticated })
     } catch {
       if (isMockPreview) setActiveSavedProjectName(previousActiveName)
+      trackSaveFailed({ storage: 'local', authenticated, reason: 'storage_error' })
       setError('この端末に保存できませんでした。JSON 書き出しを利用してください。')
     }
   }
