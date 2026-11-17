@@ -3,18 +3,24 @@ import { captureActiveScene, useStore } from './store'
 
 const KEY = { fixture: 'fixtures', performer: 'performers', setpiece: 'setPieces' } as const
 
-/** いまのシーンでした変更を、このあとのシーン（after）か、ほかのすべてのシーン（all）にも当てる。当てたシーンの数を返す */
-export function applyChangeToScenes(range: 'after' | 'all'): number {
+/** シーンの章の id（章が無いプランは undefined） */
+export function chapterOfScene(plan: { sequences?: Array<{ id: string; chapterId: string }> }, sequenceId?: string) {
+  return plan.sequences?.find(item => item.id === sequenceId)?.chapterId
+}
+
+/** いまのシーンでした変更を、同じ章のシーン（chapter）、このあとのシーン（after）、ほかのすべてのシーン（all）にも当てる。当てたシーンの数を返す */
+export function applyChangeToScenes(range: 'chapter' | 'after' | 'all'): number {
   const change = useChangeLog.getState().change
   const s = useStore.getState()
   if (!change || change.sceneId !== s.productionPlan.activeSceneId) return 0
   const plan = captureActiveScene(s.productionPlan, s)
   const index = plan.scenes.findIndex(scene => scene.id === plan.activeSceneId)
   const key = KEY[change.kind]
+  const chapterId = chapterOfScene(plan, plan.scenes[index]?.sequenceId)
   const live = (s[key] as Array<{ id: string }>).find(item => item.id === change.id)
   let count = 0
   const scenes = plan.scenes.map((scene, i) => {
-    if (i === index || (range === 'after' && i < index)) return scene
+    if (i === index || (range === 'after' && i < index) || (range === 'chapter' && chapterOfScene(plan, scene.sequenceId) !== chapterId)) return scene
     const items = scene[key] as Array<{ id: string }>
     const exists = items.some(item => item.id === change.id)
     let next = items
