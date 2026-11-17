@@ -31,8 +31,10 @@ export function useStageParts() {
 type Drag = { id: string; handle: 'body' | 'end-a' | 'end-b' | 'left' | 'right' | 'rear' | 'front'; pointerId: number; at: StagePoint; from: StagePart; moved: boolean; fixtureIds: string[] }
 
 /** 平面図の上に部品を描き、選んだ部品には取っ手を出す。座標は世界の座標（舞台の移動を含む） */
-export function StagePartsLayer({ selectedId, onSelect, tool = 'translate', toWorld, mapX, mapY, unitsPerPx, onPan, showLabels = true }: {
+export function StagePartsLayer({ selectedId, onSelect, tool = 'translate', toWorld, mapX, mapY, unitsPerPx, onPan, showLabels = true, theme }: {
   showLabels?: boolean
+  /** 平面図の見た目。plot は墨の線、light は暗い舞台の上のうすい線。無ければこれまでの色 */
+  theme?: 'light' | 'plot'
   selectedId: string | null
   /** 部品を動かさない道具のとき、本体のドラッグで図を動かす（大きな床では、図のほとんどが床になる） */
   onPan?: (event: { pointerId: number; clientX: number; clientY: number }) => void
@@ -152,17 +154,18 @@ export function StagePartsLayer({ selectedId, onSelect, tool = 'translate', toWo
       return <g key={item.id}>
         {isFlat(item.kind)
           ? <polygon {...common} points={corners.map(([x, z]) => `${px(x)},${py(z)}`).join(' ')}
-            fill={item.color ?? PART_COLORS[item.kind]} fillOpacity={item.kind === 'floor' ? .55 : .85}
-            stroke={selected ? '#f2c27b' : '#c9b9a3'} strokeWidth={selected ? 4 : 1.5} strokeDasharray={item.kind === 'floor' ? '6 4' : undefined} />
+            fill={theme === 'plot' ? '#fbfaf6' : item.color ?? PART_COLORS[item.kind]} fillOpacity={theme === 'plot' ? .9 : item.kind === 'floor' ? .55 : .85}
+            stroke={selected ? '#f2c27b' : theme === 'plot' ? '#1d1d1f' : '#c9b9a3'} strokeWidth={selected ? 4 : 1.5} strokeDasharray={item.kind === 'floor' ? '6 4' : undefined} />
           : <g {...common}>
             <line x1={px(corners[0][0])} y1={py(corners[0][1])} x2={px(corners[1][0])} y2={py(corners[1][1])}
               stroke="transparent" strokeWidth={hitRadius * 1.4} strokeLinecap="round" />
             <line x1={px(corners[0][0])} y1={py(corners[0][1])} x2={px(corners[1][0])} y2={py(corners[1][1])}
-              stroke={selected ? '#f2c27b' : item.color ?? PART_COLORS[item.kind]} strokeWidth={item.kind === 'batten' ? 4 : 7}
+              stroke={selected ? '#f2c27b' : theme === 'plot' ? '#1d1d1f' : theme === 'light' ? (item.kind === 'batten' ? '#7c8791' : '#6d6258') : item.color ?? PART_COLORS[item.kind]}
+              strokeWidth={theme === 'plot' ? (item.kind === 'batten' ? 1.6 : 3) : item.kind === 'batten' ? 3 : 6}
               strokeDasharray={item.kind === 'batten' ? '10 5' : undefined} strokeLinecap="round" />
             {/* 名前（バトン 1 など）。平面図で、どの線が何かわかるように */}
-            {(showLabels || selected) && <text x={Math.min(px(corners[0][0]), px(corners[1][0])) - 6 * unitsPerPx} y={(py(corners[0][1]) + py(corners[1][1])) / 2 + 4 * unitsPerPx} textAnchor="end" fill="#5a4f45"
-              fontSize={Math.max(11, 11 * unitsPerPx)} fontWeight="700" paintOrder="stroke" stroke="#fffdf8"
+            {(showLabels || selected) && <text x={Math.min(px(corners[0][0]), px(corners[1][0])) - 6 * unitsPerPx} y={(py(corners[0][1]) + py(corners[1][1])) / 2 + 4 * unitsPerPx} textAnchor="end" fill={theme === 'light' ? '#a39789' : '#3a332d'}
+              fontSize={Math.max(11, 11 * unitsPerPx)} fontWeight="700" paintOrder="stroke" stroke={theme === 'light' ? '#0d0b0e' : '#fffdf8'}
               strokeWidth={3 * unitsPerPx} pointerEvents="none">{PART_LABELS[item.kind]} {parts.filter(other => other.kind === item.kind).indexOf(item) + 1}</text>}
           </g>}
       </g>
