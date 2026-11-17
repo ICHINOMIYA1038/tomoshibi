@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { APP_RESTORE_URL, hasAppBridge } from '../io/appBridge'
+import { ProjectTitleEdit } from './ProjectTitleEdit'
 import { addablePresets, FIXTURE_DISCLAIMER, FIXTURE_PROFILES } from '../lighting/fixtureTypes'
 import { addItem, deleteSelection, SET_PIECE_TYPES, type AddItem } from '../objectActions'
 import { PART_LABELS } from '../stageParts'
@@ -52,7 +53,7 @@ export function PhoneChrome({ title, view, onView, onBack, onPlay }: {
   return <>
     <header className="phone-top">
       <button type="button" className="phone-icon" aria-label="プロジェクト一覧へ戻る" onClick={onBack}>←</button>
-      <div className="phone-title">{title || '名称未設定'}</div>
+      <ProjectTitleEdit className="phone-title" fallback="名称未設定" />
       <UndoRedo />
       <button type="button" className="phone-play" aria-label="通しで見る" onClick={onPlay}>▶</button>
       <button type="button" className="phone-icon" aria-label="そのほかのメニュー" aria-expanded={sheet === 'menu'} onClick={() => setSheet('menu')}>⋯</button>
