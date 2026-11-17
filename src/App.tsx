@@ -34,6 +34,7 @@ import { ScenePanel } from './ui/ScenePanel'
 import { PlanBoard } from './ui/PlanBoard'
 import { ProjectLibrary } from './ui/ProjectLibrary'
 import { useReportAdsToApp } from './ui/Ads'
+import { DoubleTapFocus } from './scene/DoubleTapFocus'
 import { ProjectTitleEdit } from './ui/ProjectTitleEdit'
 import { AccountMenu } from './ui/AccountMenu'
 import { getActiveCloudProject, getActiveSavedProjectName, setActiveCloudProject } from './io/mockProjectSession'
@@ -414,6 +415,7 @@ export default function App() {
           <ExposureSync exposure={settings.exposure ?? 1.0} />
           <PerspectiveCamera key={`cam-${viewKey}`} makeDefault position={cameraPose.pos} fov={BASE_FOV} near={0.1} far={600} />
           <ResponsiveFov />
+          <DoubleTapFocus />
           <OrbitControls
             key={`ctl-${viewKey}`}
             makeDefault
