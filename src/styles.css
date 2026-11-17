@@ -5122,7 +5122,7 @@ body.embed .workspace-switch { display: none; }
   .change-scope-bar.phone > span { flex: 1 1 100%; }
   .change-scope-bar.phone button { flex: 1 1 auto; min-height: 44px; }
   .change-scope-bar.phone .change-scope-close { flex: 0 0 44px; }
-  .change-scope-bar.phone ~ .phone-card { display: none; }
+  /* 帯は上に出すので、札は隠さない（2026-11-17 オーナー「選んでも札が出ないときがある」） */
 }
 /* 右のパネルの中に出す帯（3D の画面に重ねない）。パネルを閉じているときは画面の下に出す */
 .change-scope-bar:not(.phone):not(.docked) { top: auto; bottom: 16px; }
