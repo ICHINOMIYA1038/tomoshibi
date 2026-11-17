@@ -149,7 +149,7 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
   const savedName = getActiveSavedProjectName()
   useEffect(() => {
     try {
-      if (hasDeviceStorage() && !getActiveCloudProject()) preserveMockDraftBeforeDemo()
+      if (!getActiveCloudProject()) preserveMockDraftBeforeDemo()
       const migratedName = ensureLegacyLocalProject()
       setProjects(listSavedScenes())
       if (migratedName && !getActiveSavedProjectName() && !getActiveCloudProject()) setSelectedKey(migratedName)
@@ -210,7 +210,7 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
   const draftTitle = plan.projectTitle?.trim() || '名称未設定のプロジェクト'
   const items: LibraryItem[] = [
     ...(!user && hasDraft ? [{ key: '__draft', scene: exportScene(draftTitle), draft: true }] : []),
-    ...(hasDeviceStorage() ? projects : []).slice().reverse().map(scene => ({ key: scene.name, scene, draft: false })),
+    ...(hasDeviceStorage() || !user ? projects : []).slice().reverse().map(scene => ({ key: scene.name, scene, draft: false })),
   ]
   const selected = items.find(item => item.key === selectedKey) ?? items[0]
 
@@ -264,7 +264,10 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
     return `${base} ${index}`
   }
   // アカウントに保存できる件数の上限に達しているか。作成の画面を開いた時点で知らせ、作成のボタンを止める
-  const atLimit = !!user && memberProjects.length >= user.maxProjects
+  // ログインしていないときも、ウェブ・アプリとも 2 件まで（Free と同じ。2026-11-17 オーナー決定）
+  const LOCAL_MAX_PROJECTS = 2
+  const localCount = projects.length + (hasDraft && !savedName ? 1 : 0)
+  const atLimit = user ? memberProjects.length >= user.maxProjects : localCount >= LOCAL_MAX_PROJECTS
   const create = async () => {
     if (creating) return
     if (atLimit) return
@@ -278,8 +281,7 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
       setCreating(false)
     }
     if (!flushMockAutosave() && !await askConfirm('現在の変更を保存できませんでした。新しいプロジェクトを作りますか？')) return
-    if (hasDeviceStorage() && !preserveMockDraftBeforeDemo()) { setCreateError('現在の変更を保存できませんでした。'); return }
-    if (!user && !hasDeviceStorage() && hasDraft && !await askConfirm('編集中のプロジェクトを新しい内容に置き換えますか？ブラウザで保持できるのは1件です。')) return
+    if (!user && !preserveMockDraftBeforeDemo()) { setCreateError('現在の変更を保存できませんでした。'); return }
     const previous = exportScene()
     const previousCloud = getActiveCloudProject()
     const previousName = getActiveSavedProjectName()
@@ -638,6 +640,10 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
         {cloudDirty && <div role="status" className="project-create-save-notice">
           <p>編集中のプロジェクトに、まだクラウドに保存されていない変更があります。保存が完了すると新規作成できます。</p>
           <button type="button" onClick={onOpenEditor}>編集中のプロジェクトに戻る</button>
+        </div>}
+        {atLimit && !user && <div role="alert" className="project-create-error">
+          <strong>{hasDeviceStorage() ? 'このアプリ' : 'このブラウザ'}に保存できるのは {LOCAL_MAX_PROJECTS} 件までで、いま {localCount} 件あります。</strong>
+          <p>使わないプロジェクトを一覧から削除すると、新しく作れます。ログインして有料プランにすると、10 件まで保存でき、ほかの端末からも開けます。<a href="/pro">有料プランを見る</a></p>
         </div>}
         {atLimit && user && <div role="alert" className="project-create-error">
           <strong>アカウントに保存できるのは {user.maxProjects} 件までで、いま {memberProjects.length} 件あります。</strong>

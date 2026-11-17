@@ -5255,3 +5255,6 @@ input[type="color"]::-moz-color-swatch { border: 0; border-radius: 0; }
   .phone-card .phone-card-close { border: 0; }
 }
 .lock-button { display: inline-flex; align-items: center; gap: 5px; }
+/* PC の変更の帯: 平面図の見方の欄に重なって埋もれていた（2026-11-17 オーナー「平面図のときに出てこない」）。
+   見方の欄より上に出し、地を透かさず、金の線で囲んで目に入るようにする */
+.change-scope-bar:not(.phone):not(.docked) { bottom: 64px; background: #191619; border-color: var(--kin); box-shadow: 0 6px 18px rgba(0,0,0,.5); }
