@@ -54,10 +54,30 @@ export function StagePartsLayer({ selectedId, onSelect, tool = 'translate', toWo
   }
   const px = (x: number) => mapX(x + offset[0])
   const py = (z: number) => mapY(z + offset[1])
+  // 回転の道具では、部品の中心のまわりに回す。図では時計回りが rotationDeg の減る向き。5° ごとに止まる
+  const rotate = (event: PointerEvent<SVGElement>, item: StagePart) => {
+    const angleOf = (point: { clientX: number; clientY: number }) => { const [x, z] = toLocal(point); return Math.atan2(z - item.z, x - item.x) * 180 / Math.PI }
+    const start = angleOf(event)
+    const move = (next: globalThis.PointerEvent) => {
+      if (next.pointerId !== event.pointerId) return
+      const deg = Math.round((((angleOf(next) - start) + 540) % 360 - 180) / 5) * 5
+      change(item.id, { rotationDeg: ((item.rotationDeg - deg) % 360 + 360) % 360 })
+    }
+    const stop = (up: globalThis.PointerEvent) => {
+      if (up.pointerId !== event.pointerId) return
+      window.removeEventListener('pointermove', move)
+      window.removeEventListener('pointerup', stop)
+      window.removeEventListener('pointercancel', stop)
+    }
+    window.addEventListener('pointermove', move)
+    window.addEventListener('pointerup', stop)
+    window.addEventListener('pointercancel', stop)
+  }
   const begin = (event: PointerEvent<SVGElement>, item: StagePart, handle: Drag['handle']) => {
     event.preventDefault()
     event.stopPropagation()
     onSelect(item.id)
+    if (handle === 'body' && tool === 'rotate') { rotate(event, item); return }
     if (handle === 'body' ? tool !== 'translate' : tool !== 'scale') { if (handle === 'body' && event.button === 0) onPan?.(event); return }
     drag.current = { id: item.id, handle, pointerId: event.pointerId, at: toLocal(event), from: item, moved: false, fixtureIds: hungIds(item) }
     // 動きは window で受ける。押した要素で受けると、選んだときの再描画で要素が入れ替わり、ドラッグが途切れることがある
