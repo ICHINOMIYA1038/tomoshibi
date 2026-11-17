@@ -34,6 +34,25 @@ export function isGizmoEngaged(): boolean {
   return !!controls && (controls.dragging || controls.axis != null)
 }
 
+const gizmoRaycaster = new THREE.Raycaster()
+/**
+ * その視線が矢印（TransformControls のつかむ所）に当たるか。指では、押す前に「矢印の上にいる」が分からないので、
+ * 押した瞬間に視線で確かめる（2026-11-17 オーナー「人を上下に動かそうとしても矢印の方向にいかない」）
+ */
+export function isGizmoHit(ray: THREE.Ray): boolean {
+  const controls = activeControls?.current
+  if (!controls?.object) return false
+  if (controls.dragging || controls.axis != null) return true
+  const gizmo = controls._gizmo ?? controls.children?.find((child: any) => child.gizmo && child.picker)
+  const picker = gizmo?.picker?.[controls.mode]
+  if (!picker) return false
+  gizmoRaycaster.ray.copy(ray)
+  return gizmoRaycaster.intersectObject(picker, true).some(hit => {
+    for (let item: THREE.Object3D | null = hit.object; item; item = item.parent) if (!item.visible) return false
+    return true
+  })
+}
+
 function useGizmoSize(): number {
   const width = useThree(s => s.size.width)
   const height = useThree(s => s.size.height)
