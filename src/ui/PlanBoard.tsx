@@ -217,7 +217,8 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
   const updateSetPiece = useStore(s => s.updateSetPiece)
   const [showFixtures, setShowFixtures] = useState(true)
   const [showLabels, setShowLabels] = useState(true)
-  const [planStyle, setPlanStyleState] = useState<PlanStyle>(() => { try { return localStorage.getItem(PLAN_STYLE_KEY) === 'plot' ? 'plot' : 'light' } catch { return 'light' } })
+  // 初めは仕込み図（2026-11-17 オーナー指定）
+  const [planStyle, setPlanStyleState] = useState<PlanStyle>(() => { try { return localStorage.getItem(PLAN_STYLE_KEY) === 'light' ? 'light' : 'plot' } catch { return 'plot' } })
   const setPlanStyle = (next: PlanStyle) => { setPlanStyleState(next); try { localStorage.setItem(PLAN_STYLE_KEY, next) } catch { /* 覚えられなくても使える */ } }
   const T = PLAN_THEMES[planStyle]
   const [showSetPieces, setShowSetPieces] = useState(true)
@@ -1462,7 +1463,7 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
                       </g>}
                       <text x={px - (strip || kind === 'MovingHead' ? 0 : Math.cos(angle * Math.PI / 180) * size * .1)}
                         y={py - (strip || kind === 'MovingHead' ? 0 : Math.sin(angle * Math.PI / 180) * size * .1) + size * .17}
-                        textAnchor="middle" fill={active ? '#fffdf8' : T.fixtureText} fontSize={size * .46} fontWeight="700" pointerEvents="none">{index + 1}</text>
+                        textAnchor="middle" fill={active ? '#fffdf8' : T.fixtureText} fontSize={size * .46} fontWeight="700" pointerEvents="none">{(typeof fixture.number === 'string' && fixture.number.trim()) || index + 1}</text>
                     </>
                   })()}
                   {dragging === 'fixture' && <text x={clamp(px, 130 * unitsPerPx, MAP.svgWidth - 130 * unitsPerPx)}

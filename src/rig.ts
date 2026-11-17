@@ -4,7 +4,7 @@ import type { Fixture, Performer, PlanScene, ProductionPlan } from './store'
 // 点く・消える、明るさ、色、狙いなどはシーンごと（キュー）。
 // データはこれまでどおりシーンごとに照明の写しを持ち、いまのシーンの仕込みをほかのシーンへ写して揃える。
 
-export const SHARED_FIXTURE_KEYS = ['position', 'presetKey', 'name', 'parentId', 'battenId', 'rotationZDeg'] as const
+export const SHARED_FIXTURE_KEYS = ['position', 'presetKey', 'name', 'number', 'parentId', 'battenId', 'rotationZDeg'] as const
 type Shared = Pick<Fixture, typeof SHARED_FIXTURE_KEYS[number]>
 
 function sharedOf(fixture: Fixture): Shared {
@@ -12,6 +12,7 @@ function sharedOf(fixture: Fixture): Shared {
     position: [...fixture.position] as Fixture['position'],
     presetKey: fixture.presetKey,
     name: fixture.name,
+    number: fixture.number,
     parentId: fixture.parentId,
     battenId: fixture.battenId,
     rotationZDeg: fixture.rotationZDeg,
