@@ -33,6 +33,7 @@ import { CloudError } from './io/cloud'
 import { ScenePanel } from './ui/ScenePanel'
 import { PlanBoard } from './ui/PlanBoard'
 import { ProjectLibrary } from './ui/ProjectLibrary'
+import { useReportAdsToApp } from './ui/Ads'
 import { AccountMenu } from './ui/AccountMenu'
 import { getActiveCloudProject, getActiveSavedProjectName, setActiveCloudProject } from './io/mockProjectSession'
 import { consumeWorkspaceHandoff, currentWorkspaceSnapshot, flushMockAutosave, initMockWorkspace, markCloudSaved, markMockDemoBaseline, preserveMockDraftBeforeDemo, redoMockWorkspace, undoMockWorkspace, useMockWorkspaceState } from './io/mockWorkspace'
@@ -120,6 +121,7 @@ function ExposureSync({ exposure }: { exposure: number }) {
 }
 
 export default function App() {
+  useReportAdsToApp()
   const settings = useStore(s => s.settings)
   const hasAudienceBlocks = useStore(s => (s.productionPlan.audienceBlocks?.length ?? 0) > 0)
   const audienceBlocks = useStore(s => s.productionPlan.audienceBlocks ?? [])

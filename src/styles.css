@@ -5262,3 +5262,5 @@ input[type="color"]::-moz-color-swatch { border: 0; border-radius: 0; }
    （2026-11-17 オーナー「範囲選択のコピーのメニューが出て鬱陶しい」）。入力欄だけは選べるまま */
 .unified-shell, .unified-shell * { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
 .unified-shell input, .unified-shell textarea, .unified-shell select, .unified-shell [contenteditable="true"], .unified-shell [contenteditable="true"] * { -webkit-user-select: text; user-select: text; -webkit-touch-callout: default; }
+/* Pro のページの「購入を復元」（iOS アプリだけ。2026-11-18） */
+.pro-restore-link { display: block; margin-top: 12px; text-align: center; font-size: 14px; color: inherit; text-decoration: underline; }
