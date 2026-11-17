@@ -67,6 +67,7 @@ export function PhoneChrome({ title, view, onView, onBack, onPlay }: {
     {/* 置いた物の一覧（PC のヒエラルキー）。2026-11-18 オーナー「スマホから一覧が見れない」 */}
     <button type="button" className="phone-list-button" aria-expanded={sheet === 'list'} onClick={() => setSheet('list')}>一覧</button>
     {view === 'stage' && <ViewPicker />}
+    {view === 'stage' && <HouseLightsButton />}
 
     <ChangeScopeBar phone />
     <GestureHint view={view} />
@@ -247,15 +248,11 @@ function ScenesSheet({ onDone }: { onDone: () => void }) {
 }
 
 function MenuSheet({ onDone }: { onDone: () => void }) {
-  // 元に戻す・やり直すは上の帯に、見る位置は「一覧」の横にあるので、メニューには入れない（2026-11-18 オーナー）
+  // 元に戻す・やり直すは上の帯に、見る位置と客電は「一覧」の横にあるので、メニューには入れない（2026-11-18 オーナー）
   const { user } = useCloudSession()
   const settings = useStore(s => s.settings)
   const update = useStore(s => s.updateSettings)
   return <div className="phone-menu">
-    <div className="phone-row-buttons">
-      <button type="button" aria-pressed={!!settings.showHouseLights} onClick={() => update({ showHouseLights: !settings.showHouseLights })}>
-        客電 {settings.showHouseLights ? 'ON' : 'OFF'}</button>
-    </div>
     <h3 className="phone-subhead">そのほか</h3>
     <div className="phone-menu-list">
       <button type="button" onClick={() => { update({ settingsOpen: true }); onDone() }}>表示の設定</button>
@@ -317,4 +314,12 @@ function ViewPicker() {
         onClick={() => { update({ cameraView: key as never }); setOpen(false) }}>{text}</button>)}
     </div>}
   </>
+}
+
+/** 客電（客席の明かり）の入・切。3D の上の列の右端に置く（2026-11-18 オーナー「客電はメニューでなく画面に」） */
+function HouseLightsButton() {
+  const on = useStore(s => !!s.settings.showHouseLights)
+  const update = useStore(s => s.updateSettings)
+  return <button type="button" className={'phone-house-lights' + (on ? ' on' : '')} aria-pressed={on}
+    onClick={() => update({ showHouseLights: !on })}>客電 {on ? 'ON' : 'OFF'}</button>
 }

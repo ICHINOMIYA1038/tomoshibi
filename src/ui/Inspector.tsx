@@ -15,6 +15,7 @@ import { InspectorSection, NumberField } from './fields'
 import { partName } from './HierarchyPanel'
 import { FixtureEditor } from './ControlPanel'
 import { LockButton } from './LockButton'
+import { askConfirm } from './askConfirm'
 import { StageShapeEditor } from './StageShapeEditor'
 import { clearChange } from '../changeLog'
 import * as THREE from 'three'
@@ -318,7 +319,9 @@ function StageInspector() {
   const round = layout.stageShape === 'round'
   const seatCount = blocks.reduce((sum, block) => sum + block.rows * block.seatsPerRow, 0)
   const chooseShape = (shape: StageShape) => {
-    if (shape === 'custom' && layout.stageShape !== 'custom') {
+    // 自由形状の形は、ほかの形にしても覚えておき、戻したときはその形にする（2026-11-18 オーナー指摘）
+    if (shape === 'custom' && layout.stageShape !== 'custom' && (layout.stageVertices?.length ?? 0) >= 3) updateVenue({ stageShape: shape })
+    else if (shape === 'custom' && layout.stageShape !== 'custom') {
       const outline = stageFootprint(layout)
       const vertices = outline.length > 8 ? Array.from({ length: 8 }, (_, index) => outline[Math.floor(index * outline.length / 8)]) : outline
       updateVenue({ stageShape: shape, stageVertices: vertices.map(([x, z]) => [x - offset[0], z - offset[1]]) })
@@ -365,6 +368,11 @@ function StageInspector() {
           <button type="button" onClick={addVertex} disabled={stageFootprint(layout).length >= 8}>＋ 角を足す</button>
           <button type="button" disabled={stageFootprint(layout).length <= 3} onClick={() => updateVenue({
             stageVertices: stageFootprint(layout).slice(0, -1).map(([x, z]) => [x - offset[0], z - offset[1]]) })}>最後の角を消す</button>
+          {/* 幅・奥行の四角に戻す（覚えている形を捨てる） */}
+          <button type="button" onClick={async () => {
+            if (!await askConfirm('自由形状の形を、幅と奥行の四角に戻しますか？', '四角に戻す')) return
+            updateVenue({ stageVertices: stageFootprint({ ...layout, stageShape: 'proscenium' }).map(([x, z]) => [x - offset[0], z - offset[1]]) })
+          }}>形を元に戻す</button>
         </div>
       </>}
       {layout.stageShape === 'proscenium' && <label className="inspector-check"><input type="checkbox" checked={layout.showProsceniumFrame === true}
