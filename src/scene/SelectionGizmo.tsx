@@ -1,4 +1,5 @@
 import { STAGE_SIZE } from '../venueLayout'
+import { useAimDrag, useFloorDrag } from './floorDrag'
 import { clearChange } from '../changeLog'
 import { useRef, useEffect } from 'react'
 import * as THREE from 'three'
@@ -76,6 +77,8 @@ export function SelectionGizmo() {
   const updatePerformer = useStore(s => s.updatePerformer)
   const select = useStore(s => s.select)
   const gizmoSize = useGizmoSize()
+  const aimDrag = useAimDrag(selection.kind === 'fixture' && selection.id ? selection.id : '')
+  const bodyDrag = useFloorDrag('fixture', selection.kind === 'fixture' && selection.id ? selection.id : '')
   const stageParts = useStageParts()
   const part = selection.kind === 'stagepart' ? stageParts.parts.find(item => item.id === selection.id) : undefined
   // バトンに吊った照明は、つかんだときの分を使い続ける（動かす途中で近くの照明を拾わない）
@@ -165,23 +168,27 @@ export function SelectionGizmo() {
 
     return (
       <group>
-        {/* 光源ハンドル (掴める球) */}
+        {/* 光源ハンドル (掴める球)。押さえて引っぱると位置が動く */}
         <mesh
           position={pos.toArray()}
           renderOrder={1001}
+          userData={{ priorityHandle: true }}
+          {...bodyDrag}
           onClick={(e) => { e.stopPropagation(); select('fixture', fixture.id, 'position') }}
         >
           <sphereGeometry args={[0.16, 16, 12]} />
           <meshBasicMaterial color={handle === 'position' ? '#6cf' : '#789'} depthTest={false} transparent opacity={0.85} />
         </mesh>
-        {/* ターゲットハンドル */}
+        {/* ターゲットハンドル。押さえて引っぱると狙いだけが動く（つかむ点を切り替えなくてよい） */}
         <mesh
           position={tgt.toArray()}
           renderOrder={1001}
+          userData={{ priorityHandle: true }}
+          {...aimDrag}
           onClick={(e) => { e.stopPropagation(); select('fixture', fixture.id, 'target') }}
         >
-          <sphereGeometry args={[0.16, 16, 12]} />
-          <meshBasicMaterial color={handle === 'target' ? '#fc6' : '#987'} depthTest={false} transparent opacity={0.85} />
+          <sphereGeometry args={[0.24, 16, 12]} />
+          <meshBasicMaterial color={handle === 'target' ? '#fc6' : '#d9b25a'} depthTest={false} transparent opacity={0.9} />
         </mesh>
 
         <primitive object={dragRef.current} />

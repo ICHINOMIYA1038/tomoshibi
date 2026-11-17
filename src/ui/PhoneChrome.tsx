@@ -63,7 +63,7 @@ export function PhoneChrome({ title, view, onView, onBack, onPlay }: {
     <ChangeScopeBar phone />
     <GestureHint view={view} />
     {toast ? <div className="phone-card phone-toast" role="status">
-      <div className="phone-card-text"><strong>{toast.label}を足しました</strong><span>矢印の付いた物が、足した物です</span></div>
+      <div className="phone-card-text"><strong>{toast.label}を足しました</strong></div>
       <button type="button" className="phone-card-main" onClick={() => setSheet('inspector')}>設定</button>
       <button type="button" className="phone-card-link" onClick={() => {
         useStore.getState().select(toast.kind as never, toast.id)

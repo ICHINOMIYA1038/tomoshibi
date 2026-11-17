@@ -11,6 +11,10 @@ import { isGizmoEngaged } from './SelectionGizmo'
 
 type Kind = 'performer' | 'setpiece' | 'fixture'
 const STEP = 0.05
+/** 照明の本体・狙いの球（つかむ点）に当たっているか。当たっていれば、手前の役者やセットより球を優先する */
+export function hitsHandle(event: { intersections?: Array<{ object: THREE.Object3D }> }) {
+  return !!event.intersections?.some(hit => hit.object.userData?.priorityHandle)
+}
 const snap = (value: number) => Math.round(value / STEP) * STEP
 /** 押してから、この距離（画面の px）を超えたら動かし始める */
 const THRESHOLD = 5
@@ -32,6 +36,8 @@ export function useFloorDrag(kind: Kind, id: string) {
   const onPointerDown = (event: ThreeEvent<PointerEvent>) => {
     const s = useStore.getState()
     if (event.button !== 0 || s.settings.probeMode || s.settings.transformMode !== 'translate' || isGizmoEngaged()) return
+    // 球（つかむ点）の上なら、そちらに任せる。ただし自分が照明で、自分の本体の球を押したときは自分で動かす
+    if (hitsHandle(event) && !(kind === 'fixture' && (event.object as THREE.Object3D).userData?.priorityHandle)) return
     const item = itemOf()
     if (!item) return
     // 指でも、物を押さえて引っぱればその物を動かす（部屋のレイアウトアプリと同じ）。
@@ -92,5 +98,44 @@ export function useFloorDrag(kind: Kind, id: string) {
     if (controls) controls.enabled = true
   }
 
+  return { onPointerDown, onPointerMove, onPointerUp: end, onPointerCancel: end }
+}
+
+/**
+ * 照明の狙い（黄色い球）を押さえて引っぱると、狙いだけを床と平行に動かす（照明の位置はそのまま）。
+ * 本体を引っぱれば位置、狙いを引っぱれば向き。設定の欄で「つかむ点」を切り替えなくてよい（2026-11-17 オーナー指摘）
+ */
+export function useAimDrag(id: string) {
+  const controls = useThree(state => state.controls) as { enabled: boolean } | null
+  const drag = useRef<{ plane: THREE.Plane; offset: THREE.Vector3; y: number; pointerId: number } | null>(null)
+  const onPointerDown = (event: ThreeEvent<PointerEvent>) => {
+    const s = useStore.getState()
+    const fixture = s.fixtures.find(item => item.id === id)
+    if (event.button !== 0 || !fixture || isGizmoEngaged()) return
+    const plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), -fixture.target[1])
+    const hit = new THREE.Vector3()
+    if (!event.ray.intersectPlane(plane, hit)) return
+    event.stopPropagation()
+    s.select('fixture', id, 'target')
+    drag.current = { plane, offset: hit.sub(new THREE.Vector3(...fixture.target)), y: fixture.target[1], pointerId: event.pointerId }
+    ;(event.target as unknown as Element).setPointerCapture?.(event.pointerId)
+    if (controls) controls.enabled = false
+  }
+  const onPointerMove = (event: ThreeEvent<PointerEvent>) => {
+    const current = drag.current
+    if (!current || current.pointerId !== event.pointerId) return
+    event.stopPropagation()
+    const hit = new THREE.Vector3()
+    if (!event.ray.intersectPlane(current.plane, hit)) return
+    useStore.getState().updateFixture(id, { target: [snap(hit.x - current.offset.x), current.y, snap(hit.z - current.offset.z)] })
+  }
+  const end = (event: ThreeEvent<PointerEvent>) => {
+    const current = drag.current
+    if (!current || current.pointerId !== event.pointerId) return
+    event.stopPropagation()
+    ;(event.target as unknown as Element).releasePointerCapture?.(event.pointerId)
+    drag.current = null
+    if (controls) controls.enabled = true
+  }
   return { onPointerDown, onPointerMove, onPointerUp: end, onPointerCancel: end }
 }
