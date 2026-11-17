@@ -5206,3 +5206,7 @@ body.embed .workspace-switch { display: none; }
 }
 .change-scope-bar .change-scope-close { font-size: 12px; font-weight: 500; color: #c9bfb4; border-left: 1px solid #4c4246 !important; margin-left: 2px; }
 @media (max-width: 600px) { .change-scope-bar.phone button { padding: 0 6px; } .change-scope-bar.phone { padding-left: 10px; } }
+@media (max-width: 600px) {
+  .phone-gesture-hint { position: fixed; z-index: 57; left: 50%; bottom: calc(var(--phone-bottom, 80px) + 20px); transform: translateX(-50%); display: flex; flex-direction: column; gap: 4px; padding: 10px 14px; border: 1px solid #4c4246; border-radius: 0; background: rgba(25,22,25,.94); color: #e5dccf; font: 500 13px var(--font-sans); text-align: left; white-space: nowrap; }
+  .phone-gesture-hint b { display: inline-block; min-width: 52px; color: var(--kin); }
+}

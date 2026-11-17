@@ -34,9 +34,8 @@ export function useFloorDrag(kind: Kind, id: string) {
     if (event.button !== 0 || s.settings.probeMode || s.settings.transformMode !== 'translate' || isGizmoEngaged()) return
     const item = itemOf()
     if (!item) return
-    // 指のときは、選んである物だけを引っぱって動かす。選んでいない物の上に置いた指は、視点の回転・拡大に使う
-    // （2026-11-17 オーナー「スマホで役者までズームできない」: 1 本目の指が役者の上だと、拡大が止まっていた）
-    if (event.pointerType === 'touch' && (s.selection.kind !== kind || s.selection.id !== id)) return
+    // 指でも、物を押さえて引っぱればその物を動かす（部屋のレイアウトアプリと同じ）。
+    // 2 本目の指が触れたら動かすのをやめて、拡大・回転に任せる（下の second）
     const plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), -item.position[1])
     const hit = new THREE.Vector3()
     if (!event.ray.intersectPlane(plane, hit)) return
