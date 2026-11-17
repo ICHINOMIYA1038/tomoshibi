@@ -1,4 +1,4 @@
-import { useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useFloorDrag } from './floorDrag'
 import { useFrame } from '@react-three/fiber'
 import { recordHit } from '../objectMenu'
@@ -140,12 +140,12 @@ export function FixtureMeshes() {
   const fixtures = useStore(s => s.fixtures)
   return (
     <group>
-      {fixtures.map(f => <FixtureMeshSingle key={f.id} id={f.id} />)}
+      {fixtures.map((f, index) => <FixtureMeshSingle key={f.id} id={f.id} index={index} />)}
     </group>
   )
 }
 
-function FixtureMeshSingle({ id }: { id: string }) {
+function FixtureMeshSingle({ id, index }: { id: string; index: number }) {
   const floorDrag = useFloorDrag('fixture', id)
   const stored = useStore(s => s.fixtures.find(x => x.id === id))
   const performers = useStore(s => s.performers)
@@ -215,7 +215,8 @@ function FixtureMeshSingle({ id }: { id: string }) {
         <meshBasicMaterial transparent opacity={0} />
       </mesh>
 
-      {/* 選択/ホバー インジケータ: 不要 (ハンドル球で表現する) */}
+      {/* スマホ・タッチでは、照明ごとに番号の札を画面の大きさで出す（見失わず、指でつかめるように） */}
+      <FixtureBadge fixture={f} index={index} selected={selection.kind === 'fixture' && selection.id === f.id} />
     </group>
   )
 }
@@ -274,5 +275,63 @@ function MoverBody({ fixture, color }: { fixture: Fixture; color: THREE.Color })
         </group>
       </group>
     </group>
+  </group>
+}
+
+/** 指で使う画面か（スマホの幅か、指で触る端末）。3D の照明に番号の札を出すかを決める */
+function useTouchScreen() {
+  const query = '(max-width: 600px), (pointer: coarse)'
+  const [touch, setTouch] = useState(() => typeof window !== 'undefined' && window.matchMedia(query).matches)
+  useEffect(() => {
+    const media = window.matchMedia(query)
+    const sync = () => setTouch(media.matches)
+    media.addEventListener('change', sync)
+    return () => media.removeEventListener('change', sync)
+  }, [])
+  return touch
+}
+
+const badgeTextures = new Map<string, THREE.CanvasTexture>()
+/** 番号の札の絵（丸に番号）。同じ見た目は使い回す */
+function badgeTexture(label: string, gel: string, selected: boolean) {
+  const key = `${label}|${gel}|${selected}`
+  const cached = badgeTextures.get(key)
+  if (cached) return cached
+  const size = 128
+  const canvas = document.createElement('canvas')
+  canvas.width = canvas.height = size
+  const ctx = canvas.getContext('2d')!
+  ctx.beginPath(); ctx.arc(size / 2, size / 2, size * .42, 0, Math.PI * 2)
+  ctx.fillStyle = selected ? '#e0b45c' : 'rgba(20,16,20,.82)'; ctx.fill()
+  ctx.lineWidth = size * .08; ctx.strokeStyle = selected ? '#fff3d6' : gel; ctx.stroke()
+  ctx.fillStyle = selected ? '#14110d' : '#fffdf8'
+  ctx.font = `700 ${label.length > 2 ? size * .34 : size * .44}px "Hiragino Sans", "Noto Sans JP", sans-serif`
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle'
+  ctx.fillText(label, size / 2, size / 2 + size * .02)
+  const texture = new THREE.CanvasTexture(canvas)
+  texture.colorSpace = THREE.SRGBColorSpace
+  badgeTextures.set(key, texture)
+  return texture
+}
+
+/**
+ * 照明の番号の札（2026-11-18 オーナー「スマホの 3D で照明が小さすぎて見失う・つかみづらい」）。
+ * 遠くても同じ大きさで見える札を器具の位置に出し、そのまわりの見えない大きな札で指を受ける。
+ * 札を押さえて引けば照明が動く（親の group の floorDrag）。手前の役者より札を優先してつかむ
+ */
+function FixtureBadge({ fixture, index, selected }: { fixture: Fixture; index: number; selected: boolean }) {
+  const touch = useTouchScreen()
+  const label = (typeof fixture.number === 'string' && fixture.number.trim()) || String(index + 1)
+  const gel = '#' + new THREE.Color(...fixture.color).getHexString()
+  const texture = useMemo(() => touch ? badgeTexture(label.slice(0, 3), gel, selected) : null, [touch, label, gel, selected])
+  if (!touch || !texture) return null
+  return <group>
+    <sprite scale={[.07, .07, 1]} renderOrder={1002} raycast={() => null}>
+      <spriteMaterial map={texture} sizeAttenuation={false} depthTest={false} transparent />
+    </sprite>
+    {/* 指を受ける見えない札（見える札の約 2 倍） */}
+    <sprite scale={[.14, .14, 1]} userData={{ priorityHandle: true }}>
+      <spriteMaterial sizeAttenuation={false} transparent opacity={0} depthWrite={false} />
+    </sprite>
   </group>
 }
