@@ -6,6 +6,7 @@ import { Fragment, useEffect, useRef, useState, type MouseEvent, type PointerEve
 import { activeSceneDirections, LIMITS, PLAN_LIMITS, SCENE_TRIGGER_LABELS, sceneDisplayTitle, useStore,
   type DirectionKind, type MoveSceneResult, type SceneTriggerType, type StagePoint } from '../store'
 import { StagePartsLayer } from './StagePartsEditor'
+import { Glyph } from './AddPalette'
 import { clearChange } from '../changeLog'
 import { audienceSeatPositions, clampAudiencePosition } from '../audienceLayout'
 import { isFlat, partCorners, resolveStageParts } from '../stageParts'
@@ -202,6 +203,7 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
   const updateFixture = useStore(s => s.updateFixture)
   const updateSetPiece = useStore(s => s.updateSetPiece)
   const [showFixtures, setShowFixtures] = useState(true)
+  const [showLabels, setShowLabels] = useState(true)
   const [showSetPieces, setShowSetPieces] = useState(true)
   const [showShared, setShowShared] = useState(true)
   /** 図に出すもの。シーン = このシーンの役者・セット・照明、会場 = 全シーン共通の舞台・部品・客席（オーナー指摘で 1 つにまとめた、2026-11-16） */
@@ -1111,6 +1113,9 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
             {stageLarge && <button type="button" className={showWholeStage ? 'active' : ''} aria-pressed={showWholeStage}
               onClick={() => { setShowWholeStage(true); mapZoom.reset() }}>舞台全体</button>}
           </div>
+          <button type="button" className={showLabels ? 'active' : ''} aria-pressed={showLabels}
+            title="役者・舞台セット・照明・壁やバトンの名前。重なる所には出しません"
+            onClick={() => setShowLabels(value => !value)}>名前：{showLabels ? '表示中' : '非表示'}</button>
           <button type="button" className="plan-save-image" onClick={saveDiagram}>画像で保存</button>
           <small>図を左右にスワイプ</small>
         </div>
@@ -1175,7 +1180,7 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
             {showShared && <StagePartsLayer selectedId={selection.kind === 'stagepart' ? selection.id : null}
               onSelect={id => select(id ? 'stagepart' : null, id)} tool={tool} onPan={mapZoom.beginPan}
               toWorld={point => rawMapPoint(point as unknown as PointerEvent<SVGSVGElement>, svgRef.current!, true, mapBounds)}
-              mapX={mapX} mapY={mapY} unitsPerPx={unitsPerPx} />}
+              mapX={mapX} mapY={mapY} unitsPerPx={unitsPerPx} showLabels={showLabels} />}
             {showShared && audienceBlocks.map(block => {
               const seat = Math.max(3, MAP.width / (mapBounds.right - mapBounds.left) * .5)
               const active = selection.kind === 'audience' && selection.id === block.id
@@ -1201,10 +1206,8 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
               const duplicates = setPieces.filter(item => item.name === piece.name)
               const order = setPieces.slice(0, index + 1).filter(item => item.name === piece.name).length
               const name = (piece.name.trim() || '名称未設定') + (duplicates.length > 1 ? ` ${order}` : '')
-              const label = name.length > 14 ? name.slice(0, 13) + '…' : name
               const x = mapX(piece.position[0])
               const y = mapY(piece.position[2])
-              const labelAnchor = x < 230 ? 'start' : x > 730 ? 'end' : 'middle'
               return <g key={piece.id} transform={`translate(${x} ${y})`}
                 role="button" tabIndex={0} aria-label={`${name}を選択・移動`} data-menu-kind="setpiece" data-menu-id={piece.id}
                 style={{ cursor: 'grab', touchAction: 'none' }}
@@ -1246,8 +1249,6 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
                   stroke="#2f2522" strokeWidth="3" pointerEvents="none" />)}
                 {piece.appearance === 'window' && <path d={`M 0 ${-depth * .5} V ${depth * .5} M ${-width * .5} 0 H ${width * .5}`}
                   fill="none" stroke="#d7e7ed" strokeWidth="3" pointerEvents="none" />}
-                <text y={depth / 2 + 20} textAnchor={labelAnchor} fill="#332820" fontSize="16" fontWeight="700"
-                  paintOrder="stroke" stroke="#fffdf8" strokeWidth="5" pointerEvents="none">{label}</text>
               </g>
             })}
             {showDirections && directions.map(direction => <line key={direction.id}
@@ -1317,15 +1318,17 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
                   }}>
                   <title>{fixture.name}{fixture.position[2] > 2 ? `・舞台前から ${(fixture.position[2] - 2).toFixed(1)}m` : ''}</title>
                   <circle cx={px} cy={py} r={Math.max(21, touchRadius)} fill="transparent" />
-                  {/* 照明はひし形に番号。役者（丸に頭文字）と見分ける */}
-                  <rect x={px - 16} y={py - 16} width="32" height="32" transform={`rotate(45 ${px} ${py})`}
-                    fill={active ? '#c8482d' : '#8d847b'} stroke={dragging === 'fixture' ? '#2f6f8f' : '#fffdf8'}
-                    strokeWidth={dragging === 'fixture' ? Math.max(6, 3 * unitsPerPx) : 3} />
-                  <text x={px} y={py + 6}
-                    textAnchor="middle" fill="#fffdf8" fontSize="16" fontWeight="700"
+                  {/* 照明は灯体の絵に、右上の番号。役者（色の丸に頭文字）と見分ける */}
+                  <circle cx={px} cy={py} r="18"
+                    fill={active ? '#c8482d' : '#6f665e'} stroke={dragging === 'fixture' ? '#2f6f8f' : '#fffdf8'}
+                    strokeWidth={dragging === 'fixture' ? Math.max(6, 3 * unitsPerPx) : 2.5} />
+                  <g transform={`translate(${px - 12} ${py - 12})`} fill="none" stroke="#fffdf8" strokeWidth="1.9"
+                    strokeLinecap="round" strokeLinejoin="round" pointerEvents="none">
+                    <path d="M6 5h7l3 5-3 5H6Z" /><path d="M16 10h1m2-4 2-1m-2 9 2 1M9 15v4m-3 0h6" />
+                  </g>
+                  <circle cx={px + 15} cy={py - 15} r="10" fill="#fffdf8" stroke="#6f665e" strokeWidth="1.5" pointerEvents="none" />
+                  <text x={px + 15} y={py - 11} textAnchor="middle" fill="#322b25" fontSize="12" fontWeight="700"
                     pointerEvents="none">{index + 1}</text>
-                  {active && <text x={px} y={py - 30} textAnchor="middle" fill="#322b25" fontSize="16" fontWeight="700"
-                    paintOrder="stroke" stroke="#fffdf8" strokeWidth="4" pointerEvents="none">{fixture.name}</text>}
                   {dragging === 'fixture' && <text x={clamp(px, 130 * unitsPerPx, MAP.svgWidth - 130 * unitsPerPx)}
                     y={py - Math.max(21, touchRadius) - 6 * unitsPerPx} textAnchor="middle" fill="#2f6f8f"
                     fontSize={Math.max(15, 13 * unitsPerPx)} fontWeight="700" paintOrder="stroke" stroke="#fffdf8"
@@ -1338,8 +1341,6 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
               const point: StagePoint = [performer.position[0], performer.position[2]]
               const active = performer.id === selectedPerformer?.id
               const x = mapX(point[0])
-              const actorLabel = performer.name.length > 12 ? performer.name.slice(0, 11) + '…' : performer.name
-              const labelAnchor = x < 230 ? 'start' : x > 730 ? 'end' : 'middle'
               return <g key={performer.id}>
                 <circle cx={x} cy={mapY(point[1])} r="27"
                   fill={actorColors[index % actorColors.length]} stroke={active ? '#181519' : '#fffdf8'}
@@ -1361,11 +1362,54 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
                   }} />
                 <text x={x} y={mapY(point[1]) + 6} textAnchor="middle"
                   fill="#fffdf8" fontSize="19" fontWeight="700" pointerEvents="none">{performer.name.trim().slice(0, 1) || index + 1}</text>
-                <text x={x} y={mapY(point[1]) - 34} textAnchor={labelAnchor}
-                  fill="#322b25" fontSize="17" fontWeight="700" paintOrder="stroke"
-                  stroke="#fffdf8" strokeWidth="4" pointerEvents="none">{actorLabel}</text>
               </g>
             })}
+            {/* 名前。重なる所には出さない（選んでいる物の名前だけは必ず出す）。「名前」の切り替えで隠せる */}
+            {(() => {
+              type Box = { key: string; x0: number; y0: number; x1: number; y1: number }
+              const hit = (a: Box, b: Box) => a.key !== b.key && a.x0 < b.x1 && a.x1 > b.x0 && a.y0 < b.y1 && a.y1 > b.y0
+              const obstacles: Box[] = []
+              const items: Array<{ key: string; x: number; y: number; r: number; text: string; active: boolean; rank: number }> = []
+              const short = (text: string, max: number) => text.length > max ? text.slice(0, max - 1) + '…' : text
+              performers.forEach(performer => {
+                if (performer.onStage === false) return
+                const x = mapX(performer.position[0]), y = mapY(performer.position[2])
+                obstacles.push({ key: 'p' + performer.id, x0: x - 28, y0: y - 28, x1: x + 28, y1: y + 28 })
+                items.push({ key: 'p' + performer.id, x, y, r: 28, text: short(performer.name, 10), active: performer.id === selectedPerformer?.id, rank: 1 })
+              })
+              if (showSetPieces) setPieces.forEach((piece, index) => {
+                const x = mapX(piece.position[0]), y = mapY(piece.position[2])
+                const w = Math.max(28, (piece.size?.[0] ?? 1) * Math.abs(piece.scale) * MAP.width / (mapBounds.right - mapBounds.left))
+                const d = Math.max(24, (piece.size?.[2] ?? 1) * Math.abs(piece.scale) * MAP.height / (mapBounds.front - mapBounds.rear))
+                const same = setPieces.filter(item => item.name === piece.name)
+                const order = setPieces.slice(0, index + 1).filter(item => item.name === piece.name).length
+                const name = (piece.name.trim() || '名称未設定') + (same.length > 1 ? ` ${order}` : '')
+                items.push({ key: 's' + piece.id, x, y, r: Math.max(w, d) / 2, text: short(name, 12), active: piece.id === selectedSetPiece?.id, rank: 2 })
+              })
+              if (showFixtures) fixtures.forEach(fixture => {
+                const x = mapX(fixture.position[0]), y = mapY(fixture.position[2])
+                obstacles.push({ key: 'f' + fixture.id, x0: x - 20, y0: y - 26, x1: x + 26, y1: y + 20 })
+                items.push({ key: 'f' + fixture.id, x, y, r: 22, text: short(fixture.name, 10), active: fixture.id === selectedFixture?.id, rank: 3 })
+              })
+              const font = 15
+              const placed: Box[] = []
+              return items.filter(item => showLabels || item.active).sort((a, b) => Number(b.active) - Number(a.active) || a.rank - b.rank).map(item => {
+                const w = item.text.length * font * .98 + 10, h = font * 1.35
+                const spots: Array<[number, number]> = [
+                  [item.x, item.y + item.r + 4 + h / 2], [item.x, item.y - item.r - 4 - h / 2],
+                  [item.x + item.r + 6 + w / 2, item.y], [item.x - item.r - 6 - w / 2, item.y],
+                ]
+                const boxAt = ([cx, cy]: [number, number]): Box => ({ key: item.key, x0: cx - w / 2, y0: cy - h / 2, x1: cx + w / 2, y1: cy + h / 2 })
+                const inside = (box: Box) => box.x0 >= 4 && box.x1 <= MAP.svgWidth - 4 && box.y0 >= 70 && box.y1 <= MAP.svgHeight - 4
+                let spot = spots.find(candidate => { const box = boxAt(candidate); return inside(box) && !placed.some(other => hit(box, other)) && !obstacles.some(other => hit(box, other)) })
+                if (!spot && item.active) spot = spots.find(candidate => inside(boxAt(candidate))) ?? spots[0]
+                if (!spot) return null
+                placed.push({ ...boxAt(spot), key: item.key + ':label' })
+                return <text key={'label-' + item.key} x={spot[0]} y={spot[1] + font * .36} textAnchor="middle"
+                  fill={item.active ? '#9b2f1b' : '#322b25'} fontSize={font} fontWeight="700" paintOrder="stroke"
+                  stroke="#fffdf8" strokeWidth="4" pointerEvents="none">{item.text}</text>
+              })
+            })()}
             {/* 選んだ照明の「向き」のつまみ。役者やほかの器具の下に隠れないよう最後に描く */}
             {showFixtures && selectedFixture && (() => {
               const fixture = selectedFixture
@@ -1408,11 +1452,13 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
           </svg>
         </div>
         </>
-        {/* 図を広く使うため 1 行にまとめる。詳しい説明は title に */}
+        {/* 図の印の見方と、どれが全シーン共通か（2026-11-17 オーナー指摘で、いまの作りに合わせた） */}
         <div className="plan-scope-legend" aria-label="図の見方">
-          <span className="plan-marker-key"><b aria-hidden="true">◆</b>照明 <b aria-hidden="true">●</b>役者 <b aria-hidden="true">■</b>セット</span>
-          <span title="舞台・壁・バトン・客席・照明の吊る位置。動かすと、すべてのシーンで変わります"><i className="shared" aria-hidden="true" />全シーン共通：舞台・壁・客席・吊る位置</span>
-          <span title="役者・セット・照明の狙い。変えたあと、ほかのシーンにも反映できます"><i className="scene" aria-hidden="true" />シーンごと：役者・セット・狙い</span>
+          <span><Glyph name="lamp" />照明（右上は番号）</span>
+          <span><i className="actor" aria-hidden="true">司</i>役者（頭文字）</span>
+          <span><Glyph name="box" />舞台セット</span>
+          <span><Glyph name="batten" />壁・バトン</span>
+          <span className="plan-scope-note">舞台・壁・バトン・客席・照明の吊る位置は全シーン共通。ほかはシーンごとで、変えたあとにほかのシーンにも反映できます</span>
         </div>
         {/* 役者の「舞台から外す」の札はやめた（設定の欄の「このシーンで舞台上にいる」と、一覧から選べる。2026-11-17 オーナー指摘） */}
       </div>

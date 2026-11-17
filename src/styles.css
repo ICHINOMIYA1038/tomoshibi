@@ -5141,3 +5141,8 @@ body.embed .workspace-switch { display: none; }
 .plan-scope-legend { padding: 4px 12px; gap: 2px 14px; font-size: 13px; }
 .unified-shell .plan-map-layerbar .plan-save-image::before { display: none; }
 .unified-shell .plan-map-layerbar .plan-save-image { margin-left: auto; }
+.plan-scope-legend { align-items: center; }
+.plan-scope-legend svg { width: 16px; height: 16px; margin-right: 4px; vertical-align: -3px; color: #b9ab9b; }
+.plan-scope-legend i.actor { display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; margin-right: 4px; border-radius: 50%; background: #9f674d; color: #fffdf8; font: 700 10px var(--font-sans); font-style: normal; }
+.plan-scope-legend .plan-scope-note { flex-basis: 100%; color: var(--ink-muted); }
+.unified-shell .plan-map-layerbar > span { white-space: nowrap; flex: none; }
