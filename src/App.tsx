@@ -163,6 +163,7 @@ export default function App() {
   const wideScreen = useWideScreen()
   const phone = usePhone()
   const phoneLayout = phone && isMockPreview && !isEmbed
+  const coarsePointer = typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches
   const deskLayout = isMockPreview && !phone
   useEffect(() => { if (deskLayout) setMapVisible(deskView !== '3d') }, [deskLayout])
   const adFooter = showAds && wideScreen && isMockPreview && mockPage !== 'projects' && !playbackOpen && !isEmbed
@@ -425,6 +426,9 @@ export default function App() {
             enablePan
             // 指（マウス）のある所へ向かって拡大する。舞台の真ん中ではなく、役者などに寄れる（2026-11-17）
             zoomToCursor
+            // 指は地図アプリと同じ: 1 本指で床と平行に動かし、2 本指で拡大・回転（ひねりは TouchTwist）。マウスはこれまでどおり
+            touches={{ ONE: THREE.TOUCH.PAN, TWO: THREE.TOUCH.DOLLY_ROTATE }}
+            screenSpacePanning={!coarsePointer}
           />
           {!playbackOpen && <CameraKeyboardPan />}
           <TouchTwist />

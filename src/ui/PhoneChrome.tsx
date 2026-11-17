@@ -61,6 +61,7 @@ export function PhoneChrome({ title, view, onView, onBack, onPlay }: {
     </div>
 
     <ChangeScopeBar phone />
+    <GestureHint view={view} />
     {toast ? <div className="phone-card phone-toast" role="status">
       <div className="phone-card-text"><strong>{toast.label}を足しました</strong><span>矢印の付いた物が、足した物です</span></div>
       <button type="button" className="phone-card-main" onClick={() => setSheet('inspector')}>設定</button>
@@ -262,4 +263,21 @@ function MenuSheet({ onDone }: { onDone: () => void }) {
       <a href={user ? accountUrl() : loginUrl()}>{user ? 'アカウント' : 'ログイン'}</a>
     </div>
   </div>
+}
+
+const GESTURE_HINT_KEY = 'tomoshibi.gestureHintSeen'
+/** 最初の 1 回だけ、指の使い方を短く出す。押すか 8 秒で消え、次からは出さない（2026-11-17） */
+function GestureHint({ view }: { view: 'stage' | 'plan' }) {
+  const [show, setShow] = useState(() => { try { return !localStorage.getItem(GESTURE_HINT_KEY) } catch { return false } })
+  const close = () => { setShow(false); try { localStorage.setItem(GESTURE_HINT_KEY, '1') } catch { /* 覚えられなくても使える */ } }
+  useEffect(() => {
+    if (!show) return
+    const timer = window.setTimeout(close, 8000)
+    return () => window.clearTimeout(timer)
+  }, [show])
+  if (!show) return null
+  return <button type="button" className="phone-gesture-hint" onClick={close} aria-label="指の使い方。押すと閉じます">
+    <span><b>1 本指</b>{view === 'plan' ? '図を動かす・物を動かす' : '視点を動かす・物を動かす'}</span>
+    <span><b>2 本指</b>{view === 'plan' ? '広げて拡大' : '広げて拡大・ひねって回転'}</span>
+  </button>
 }
