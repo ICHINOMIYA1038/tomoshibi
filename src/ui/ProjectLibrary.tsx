@@ -515,7 +515,8 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
     <header className="project-library-header">
       <a href="/" className="project-library-brand">TOMOSHIBI<span>小屋</span></a>
       <div className="project-library-header-actions">
-        {!user && <span className="project-library-storage">{hasDeviceStorage() ? 'このアプリに保存' : 'ブラウザに一時保存'}</span>}
+        {/* アプリでは保存先は言わなくてもわかるので出さない（2026-11-18 オーナー）。ブラウザは消える注意を兼ねて出す */}
+        {!user && !hasDeviceStorage() && <span className="project-library-storage">ブラウザに一時保存</span>}
         <AccountMenu />
       </div>
     </header>
@@ -542,7 +543,7 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
         </>}
         {(!user || hasDeviceStorage()) && <>
         <div className="project-library-list-head project-library-list-head-explained">
-          <strong>{items.length ? `${hasDeviceStorage() ? 'このアプリに保存' : 'ブラウザに一時保存'} ${items.length}件` : (hasDeviceStorage() ? 'このアプリに保存' : 'ブラウザに一時保存')}</strong>
+          <strong>{hasDeviceStorage() ? `プロジェクト ${items.length}件` : items.length ? `ブラウザに一時保存 ${items.length}件` : 'ブラウザに一時保存'}</strong>
           <span>{hasDeviceStorage() ? 'アカウントとは同期されません' : 'タブを閉じる前に、アカウントへ保存してください'}</span>
         </div>
         {items.length ? <div className="project-library-list">
@@ -567,7 +568,7 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
               <p>{selected.draft
                 ? saveStatus === 'saving' ? '変更を自動保存しています…'
                   : saveStatus === 'error' ? '自動保存できませんでした。通信状況や保存容量を確認してください。'
-                    : cloudDirty ? 'アカウントへの保存待ち' : getActiveCloudProject() ? 'アカウントに自動保存されています' : (hasDeviceStorage() ? 'このアプリに自動保存されています' : 'ブラウザに一時保存中です。タブを閉じると失われます。')
+                    : cloudDirty ? 'アカウントへの保存待ち' : getActiveCloudProject() ? 'アカウントに自動保存されています' : (hasDeviceStorage() ? '自動保存されています' : 'ブラウザに一時保存中です。タブを閉じると失われます。')
                 : `最終保存 ${savedDate(selected.scene.savedAt)}`}</p></div>
             <button className="project-library-open" onClick={() => open(selected)}>{selected.draft ? '編集に戻る' : 'このプロジェクトを開く'}</button>
           </div>

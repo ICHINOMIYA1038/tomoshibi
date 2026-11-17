@@ -66,6 +66,7 @@ export function PhoneChrome({ title, view, onView, onBack, onPlay }: {
     </div>
     {/* 置いた物の一覧（PC のヒエラルキー）。2026-11-18 オーナー「スマホから一覧が見れない」 */}
     <button type="button" className="phone-list-button" aria-expanded={sheet === 'list'} onClick={() => setSheet('list')}>一覧</button>
+    {view === 'stage' && <ViewPicker />}
 
     <ChangeScopeBar phone />
     <GestureHint view={view} />
@@ -246,21 +247,11 @@ function ScenesSheet({ onDone }: { onDone: () => void }) {
 }
 
 function MenuSheet({ onDone }: { onDone: () => void }) {
-  const { canUndo, canRedo } = useMockWorkspaceState()
+  // 元に戻す・やり直すは上の帯に、見る位置は「一覧」の横にあるので、メニューには入れない（2026-11-18 オーナー）
   const { user } = useCloudSession()
   const settings = useStore(s => s.settings)
   const update = useStore(s => s.updateSettings)
-  const views: Array<[string, string]> = [['audience', '客席から'], ['aerial', '上から'], ['sidewing', '袖から'], ['free', '自由']]
   return <div className="phone-menu">
-    <div className="phone-row-buttons">
-      <button type="button" disabled={!canUndo} onClick={undoMockWorkspace}>↶ 元に戻す</button>
-      <button type="button" disabled={!canRedo} onClick={redoMockWorkspace}>↷ やり直す</button>
-    </div>
-    <h3 className="phone-subhead">見る位置</h3>
-    <div className="phone-row-buttons">
-      {views.map(([key, label]) => <button key={key} type="button" aria-pressed={settings.cameraView === key}
-        onClick={() => { update({ cameraView: key as never }); onDone() }}>{label}</button>)}
-    </div>
     <div className="phone-row-buttons">
       <button type="button" aria-pressed={!!settings.showHouseLights} onClick={() => update({ showHouseLights: !settings.showHouseLights })}>
         客電 {settings.showHouseLights ? 'ON' : 'OFF'}</button>
@@ -309,4 +300,21 @@ function ListSheet({ onPicked }: { onPicked: () => void }) {
   // 選んだら一覧を閉じ、3D の視点をその物に寄せる（ダブルタップと同じ動き。2026-11-18）
   useEffect(() => { if (selected && selected !== first) { onPicked(); focusSelection() } }, [selected, first, onPicked])
   return <div className="phone-list unity-panel"><HierarchyPanel /></div>
+}
+
+const VIEWS: Array<[string, string]> = [['audience', '客席から'], ['aerial', '上から'], ['sidewing', '袖から'], ['free', '自由']]
+/** 3D の見る位置。「一覧」の横のボタンから小窓で選ぶ（2026-11-18 オーナー「見る位置は一覧の横に」） */
+function ViewPicker() {
+  const current = useStore(s => s.settings.cameraView)
+  const update = useStore(s => s.updateSettings)
+  const [open, setOpen] = useState(false)
+  const label = VIEWS.find(([key]) => key === current)?.[1] ?? '見る位置'
+  return <>
+    <button type="button" className="phone-view-picker" aria-expanded={open} aria-haspopup="true" onClick={() => setOpen(value => !value)}>
+      {label} <span aria-hidden="true">▾</span></button>
+    {open && <div className="phone-view-picker-menu" role="group" aria-label="見る位置">
+      {VIEWS.map(([key, text]) => <button key={key} type="button" aria-pressed={current === key}
+        onClick={() => { update({ cameraView: key as never }); setOpen(false) }}>{text}</button>)}
+    </div>}
+  </>
 }

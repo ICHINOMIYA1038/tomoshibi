@@ -641,7 +641,7 @@ function MockProjectTitle({ title }: { title?: string }) {
   return <>
     <ProjectTitleEdit className="workspace-project-title" fallback="名称未設定" />
     <span className={'workspace-save-state' + (saveStatus !== 'saved' ? ' changed' : '')} role="status">
-      {saveStatus === 'saving' ? '自動保存中…' : saveStatus === 'error' ? '保存できません' : cloud ? cloudDirty ? 'アカウントへの保存待ち' : 'アカウントに保存済み' : hasDeviceStorage() ? 'このアプリに保存済み' : 'ブラウザに一時保存'}</span>
+      {saveStatus === 'saving' ? '自動保存中…' : saveStatus === 'error' ? '保存できません' : cloud ? cloudDirty ? 'アカウントへの保存待ち' : 'アカウントに保存済み' : hasDeviceStorage() ? '' : 'ブラウザに一時保存'}</span>
   </>
 }
 
@@ -681,7 +681,7 @@ function MockSceneIndicator({ outlineVisible, onToggleOutline }: { outlineVisibl
       aria-controls="plan-outline" aria-label={`${sceneDisplayTitle(plan, scene.id)}。シーン一覧を${outlineVisible ? '閉じる' : '開く'}`}
       onClick={onToggleOutline}><small>シーン一覧 <span aria-hidden="true">▾</span></small>
       <strong aria-live="polite">{sceneDisplayTitle(plan, scene.id)}</strong>
-      <span className="workspace-current-save">{saveStatus === 'saving' ? '自動保存中…' : saveStatus === 'error' ? '保存できません' : getActiveCloudProject() ? cloudDirty ? 'アカウントへの保存待ち' : 'アカウントに保存済み' : hasDeviceStorage() ? 'このアプリに保存済み' : 'ブラウザに一時保存'}</span></button>
+      <span className="workspace-current-save">{saveStatus === 'saving' ? '自動保存中…' : saveStatus === 'error' ? '保存できません' : getActiveCloudProject() ? cloudDirty ? 'アカウントへの保存待ち' : 'アカウントに保存済み' : hasDeviceStorage() ? '' : 'ブラウザに一時保存'}</span></button>
     <button type="button" aria-label="次のシーン" disabled={index >= plan.scenes.length - 1}
       onClick={() => selectScene(plan.scenes[index + 1].id)}>→</button>
   </div>
