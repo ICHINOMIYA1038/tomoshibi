@@ -1293,12 +1293,15 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
                   }}>
                   <title>{fixture.name}{fixture.position[2] > 2 ? `・舞台前から ${(fixture.position[2] - 2).toFixed(1)}m` : ''}</title>
                   <circle cx={px} cy={py} r={Math.max(21, touchRadius)} fill="transparent" />
-                  <circle cx={px} cy={py} r="21"
+                  {/* 照明はひし形に番号。役者（丸に頭文字）と見分ける */}
+                  <rect x={px - 16} y={py - 16} width="32" height="32" transform={`rotate(45 ${px} ${py})`}
                     fill={active ? '#c8482d' : '#8d847b'} stroke={dragging === 'fixture' ? '#2f6f8f' : '#fffdf8'}
                     strokeWidth={dragging === 'fixture' ? Math.max(6, 3 * unitsPerPx) : 3} />
                   <text x={px} y={py + 6}
-                    textAnchor="middle" fill="#fffdf8" fontSize="17" fontWeight="700"
+                    textAnchor="middle" fill="#fffdf8" fontSize="16" fontWeight="700"
                     pointerEvents="none">{index + 1}</text>
+                  {active && <text x={px} y={py - 30} textAnchor="middle" fill="#322b25" fontSize="16" fontWeight="700"
+                    paintOrder="stroke" stroke="#fffdf8" strokeWidth="4" pointerEvents="none">{fixture.name}</text>}
                   {dragging === 'fixture' && <text x={clamp(px, 130 * unitsPerPx, MAP.svgWidth - 130 * unitsPerPx)}
                     y={py - Math.max(21, touchRadius) - 6 * unitsPerPx} textAnchor="middle" fill="#2f6f8f"
                     fontSize={Math.max(15, 13 * unitsPerPx)} fontWeight="700" paintOrder="stroke" stroke="#fffdf8"
@@ -1333,7 +1336,7 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
                     ] })
                   }} />
                 <text x={x} y={mapY(point[1]) + 6} textAnchor="middle"
-                  fill="#fffdf8" fontSize="19" fontWeight="700" pointerEvents="none">{index + 1}</text>
+                  fill="#fffdf8" fontSize="19" fontWeight="700" pointerEvents="none">{performer.name.trim().slice(0, 1) || index + 1}</text>
                 <text x={x} y={mapY(point[1]) - 34} textAnchor={labelAnchor}
                   fill="#322b25" fontSize="17" fontWeight="700" paintOrder="stroke"
                   stroke="#fffdf8" strokeWidth="4" pointerEvents="none">{actorLabel}</text>
@@ -1382,6 +1385,7 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
         </div>
         </>
         {<div className="plan-scope-legend" aria-label="図の見方">
+          <span className="plan-marker-key"><b aria-hidden="true">◆</b>照明（番号）　<b aria-hidden="true">●</b>役者（名前の頭文字）　<b aria-hidden="true">■</b>舞台セット</span>
           <span><i className="shared" aria-hidden="true" />全シーン共通：舞台・壁・バトン・客席・照明の吊る位置（動かすと、すべてのシーンで変わります）</span>
           <span><i className="scene" aria-hidden="true" />シーンごと：役者・セット・照明の狙い（変えたあと、ほかのシーンにも反映できます）</span>
         </div>}

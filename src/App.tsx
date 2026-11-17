@@ -15,7 +15,7 @@ import { Stage } from './scene/Stage'
 import { PerformerMeshes } from './scene/PerformerMesh'
 import { FixtureMeshes } from './scene/FixtureMesh'
 import { Beams } from './scene/Beams'
-import { SelectionGizmo } from './scene/SelectionGizmo'
+import { SelectionGizmo, isGizmoEngaged } from './scene/SelectionGizmo'
 import { PhotometricProbe, useProbeClickHandler } from './scene/PhotometricProbe'
 import { SetPieces } from './scene/SetPieces'
 import { AdSlot, useShowAds } from './ui/Ads'
@@ -394,7 +394,7 @@ export default function App() {
             gl.toneMapping = THREE.ACESFilmicToneMapping
             gl.toneMappingExposure = EXPOSURE_SCALE * (settings.exposure ?? 1.0)
           }}
-          onPointerMissed={(event) => { if (event.button !== 2) select(null, null) }}
+          onPointerMissed={(event) => { if (event.button !== 2 && !isGizmoEngaged()) select(null, null) }}
         >
           <ExposureSync exposure={settings.exposure ?? 1.0} />
           <PerspectiveCamera key={`cam-${viewKey}`} makeDefault position={cameraPose.pos} fov={BASE_FOV} near={0.1} far={600} />
@@ -539,7 +539,8 @@ export default function App() {
       {!playbackOpen && <HelpOverlay />}
 
       {!playbackOpen && <SelectionStatusHint />}
-      {!phoneLayout && !playbackOpen && <ChangeScopeBar />}
+      {/* 右のパネルを開いているときは、パネルの中に出す（3D の画面に重ねない）。閉じているときだけ画面の下に出す */}
+      {!phoneLayout && !playbackOpen && !settings.panelOpen && <ChangeScopeBar />}
       {!isEmbed && <KeyHint />}
     </div>}
     {adFooter && <footer className="ad-footer" aria-label="広告">

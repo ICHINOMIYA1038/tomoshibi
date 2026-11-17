@@ -15,6 +15,7 @@ import { InspectorSection, NumberField } from './fields'
 import { partName } from './HierarchyPanel'
 import { FixtureEditor } from './ControlPanel'
 import { scopeOf } from '../scope'
+import { ChangeScopeBar } from './ChangeScopeBar'
 import { clearChange } from '../changeLog'
 import * as THREE from 'three'
 
@@ -50,6 +51,7 @@ export function Inspector() {
         {canDelete(selection.kind) && <button type="button" className="danger" onClick={deleteSelection} title="削除（Delete）。⌘Z で戻せます">削除</button>}
       </div>
     </header>
+    <ChangeScopeBar docked />
     {scopeOf(selection.kind) && <p className={'scope-chip ' + scopeOf(selection.kind)!.kind}>{scopeOf(selection.kind)!.detail}</p>}
     {fixture && <FixtureInspector fixture={fixture} />}
     {performer && <PerformerInspector performer={performer} />}

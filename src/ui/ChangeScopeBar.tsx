@@ -5,7 +5,7 @@ import { clearChange } from '../changeLog'
 import { useStore } from '../store'
 
 // 変えた直後に出す 1 行。「このあとのシーンにも／全シーンにも」で、同じ変更をほかのシーンに当てる
-export function ChangeScopeBar({ phone = false }: { phone?: boolean }) {
+export function ChangeScopeBar({ phone = false, docked = false }: { phone?: boolean; docked?: boolean }) {
   const change = useChangeLog(state => state.change)
   const scenes = useStore(state => state.productionPlan.scenes)
   const sequences = useStore(state => state.productionPlan.sequences)
@@ -24,7 +24,7 @@ export function ChangeScopeBar({ phone = false }: { phone?: boolean }) {
     const timer = window.setTimeout(() => setDone(''), 2500)
     return () => window.clearTimeout(timer)
   }, [done])
-  if (done) return <div className={'change-scope-bar' + (phone ? ' phone' : '')} role="status"><span>{done}</span></div>
+  if (done) return <div className={'change-scope-bar' + (phone ? ' phone' : '') + (docked ? ' docked' : '')} role="status"><span>{done}</span></div>
   if (!visible || !change) return null
   // 章が 2 つ以上あって、同じ章にほかのシーンがあるときだけ「この章」を出す（章が 1 つなら「全シーン」と同じ）
   const chapterId = chapterOfScene({ sequences }, scenes[index]?.sequenceId)
@@ -35,7 +35,7 @@ export function ChangeScopeBar({ phone = false }: { phone?: boolean }) {
     const count = applyChangeToScenes(range)
     setDone(count ? `ほかの ${count} シーンにも反映しました` : 'ほかのシーンには、反映する物がありませんでした')
   }
-  return <div className={'change-scope-bar' + (phone ? ' phone' : '')} role="status">
+  return <div className={'change-scope-bar' + (phone ? ' phone' : '') + (docked ? ' docked' : '')} role="status">
     <span><strong>{describeChange(change)}</strong><small>このシーンだけの変更です</small></span>
     {showChapter && <button type="button" onClick={() => apply('chapter')}>この章のシーンにも</button>}
     {index < scenes.length - 1 && <button type="button" onClick={() => apply('after')}>このあとのシーンにも</button>}

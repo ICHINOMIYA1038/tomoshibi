@@ -26,6 +26,13 @@ function isTouchDevice() {
  */
 const BASE_FOV_DEG = 45
 const MAX_FOV_DEG = 70
+// いま出ている矢印（TransformControls）。矢印の上で押したときは、空の所を押した扱い（選ぶのをやめる）にしない
+let activeControls: { current: any } | null = null
+export function isGizmoEngaged(): boolean {
+  const controls = activeControls?.current
+  return !!controls && (controls.dragging || controls.axis != null)
+}
+
 function useGizmoSize(): number {
   const width = useThree(s => s.size.width)
   const height = useThree(s => s.size.height)
@@ -44,10 +51,11 @@ function useGizmoSize(): number {
   const fovScale =
     Math.tan(THREE.MathUtils.degToRad(BASE_FOV_DEG) / 2) /
     Math.tan(THREE.MathUtils.degToRad(fov) / 2)
-  const base = isTouchDevice() ? 0.8 : 0.7
+  // 矢印をつかみやすい大きさにする（オーナー指摘「うまく掴めないことがある」2026-11-17）
+  const base = isTouchDevice() ? 1.05 : 0.95
   // 幅が狭い端末 (スマホ縦) では指で掴める最小限まで落とす。
   const narrow = Math.min(width, height) < 520 ? 0.8 : 1
-  return THREE.MathUtils.clamp(base * fovScale * narrow, 0.35, 1.1)
+  return THREE.MathUtils.clamp(base * fovScale * narrow, 0.45, 1.4)
 }
 
 // 選択中フィクスチャ → ビーム円錐ガイド + TransformControls (位置/狙い)
@@ -89,6 +97,7 @@ export function SelectionGizmo() {
   const dragRef = useRef<THREE.Object3D>(new THREE.Object3D())
   // TransformControls 本体 ref (plane-drag を隠すため)
   const tcRef = useRef<any>(null)
+  useEffect(() => { activeControls = tcRef })
   // gizmo の updateMatrixWorld を差し替えて plane (XY/YZ/XZ) を強制非表示
   useEffect(() => {
     let raf = 0
