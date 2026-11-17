@@ -36,14 +36,9 @@ export function SettingsModal() {
         <button className="settings-close" onClick={() => update({ settingsOpen: false })}>×</button>
         <div className="settings-header">
           <h1>設定</h1>
-          <div className="settings-tabs">
-            <SetTab id="look" label="表現" />
-            <SetTab id="advanced" label="高度ツール (準備中)" />
-          </div>
         </div>
         <div className="settings-body">
-          {tab === 'look' && <LookSection />}
-          {tab === 'advanced' && <AdvancedPlaceholder />}
+          <LookSection />
         </div>
       </div>
     </div>
@@ -228,47 +223,23 @@ function SceneSection_DEPRECATED() {
 }
 
 // ============ 表現 (見た目 + 性能) ============
+// 3D で見た目がはっきり変わるものだけを置く（2026-11-17 に測って、アンビエント・ブルーム・描画品質・器具の形・
+// ビーム円錐ガイドを外した。前の 4 つは画面がほぼ変わらず、ビーム円錐ガイドは実際には移動の矢印の切り替えだった）
 function LookSection() {
   const settings = useStore(s => s.settings)
   const update = useStore(s => s.updateSettings)
-  const q = QUALITY_PRESETS[settings.quality]
   return (
     <>
       <h3>雰囲気</h3>
-      <Slider label="ヘイズ濃度" hint="スモークの量。ビームが太く見える" value={settings.hazeDensity} min={0} max={1} onChange={v => update({ hazeDensity: v })} />
-      <Slider label="アンビエント" hint="全体に乗る最小光。陰影の硬さに影響" value={settings.ambient} min={0} max={0.1} step={0.001} onChange={v => update({ ambient: v })} />
-      <Slider label="露出" hint="カメラのEV補正" value={settings.exposure} min={0.2} max={3} onChange={v => update({ exposure: v })} />
-      <Slider label="ブルーム" hint="光のにじみ。劇場っぽい質感" value={settings.bloom} min={0} max={2} onChange={v => update({ bloom: v })} />
-
-      <h3>描画品質</h3>
-      <div className="quality-grid">
-        {(['low', 'medium', 'high', 'ultra'] as QualityPreset[]).map(qp => (
-          <button
-            key={qp}
-            className={'quality-btn' + (settings.quality === qp ? ' active' : '')}
-            onClick={() => update({ quality: qp })}
-          >{QUALITY_LABELS[qp]}</button>
-        ))}
-      </div>
-      <div className="info-block" style={{ fontSize: 10, lineHeight: 1.5, marginTop: 6 }}>
-        サンプル <b>{q.volumetricSteps}</b> / シャドウ <b>{q.shadowSteps}</b> / 解像度 <b>{Math.round(q.volumetricScale * 100)}%</b> / DPR <b>{q.pixelRatio}</b>
-      </div>
-      <div className="info-block" style={{ fontSize: 10, marginTop: 4, color: '#998468' }}>
-        動作が重い場合は <b>Low</b> へ。古いPC/タブレットで約 10 倍軽量に。
-      </div>
+      <Slider label="スモークの量" hint="多いほど、光の筋がはっきり見える" value={settings.hazeDensity} min={0} max={1} onChange={v => update({ hazeDensity: v })} />
+      <Slider label="明るさ" hint="3D の画面全体の明るさ（カメラの露出）" value={settings.exposure} min={0.2} max={3} onChange={v => update({ exposure: v })} />
 
       <h3>表示</h3>
-      <Toggle label="器具メッシュを表示" value={settings.showFixtureMeshes} onChange={v => update({ showFixtureMeshes: v })} />
       <Toggle label="役者を表示" value={settings.showPerformers} onChange={v => update({ showPerformers: v })} />
-      <Toggle label="ステージを表示" value={settings.showStage} onChange={v => update({ showStage: v })} />
-      <Toggle label="ビーム円錐ガイド" value={settings.showGizmos} onChange={v => update({ showGizmos: v })} />
-      <Toggle label="客電 (ハウスライト)" value={settings.showHouseLights} onChange={v => update({ showHouseLights: v })} />
+      <Toggle label="舞台を表示" value={settings.showStage} onChange={v => update({ showStage: v })} />
+      <Toggle label="客電（客席の明かり）" value={settings.showHouseLights} onChange={v => update({ showHouseLights: v })} />
     </>
   )
-}
-
-const QUALITY_LABELS: Record<QualityPreset, string> = {
-  low: 'Low', medium: 'Medium', high: 'High', ultra: 'Ultra',
 }
 
 // ============ 高度ツール (準備中) ============

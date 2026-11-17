@@ -445,7 +445,7 @@ export default function App() {
           {settings.showStage && <Stage onMaterialsReady={noopMaterials} />}
           <AudienceSeating />
           {settings.showPerformers && <PerformerMeshes onMaterialsReady={noopMaterials} />}
-          {settings.showFixtureMeshes && <FixtureMeshes />}
+          <FixtureMeshes />
           <SetPieces />
           <Beams />
           {!playbackOpen && <SelectionGizmo />}
