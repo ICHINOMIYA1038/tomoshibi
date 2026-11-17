@@ -1111,6 +1111,7 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
             {stageLarge && <button type="button" className={showWholeStage ? 'active' : ''} aria-pressed={showWholeStage}
               onClick={() => { setShowWholeStage(true); mapZoom.reset() }}>舞台全体</button>}
           </div>
+          <button type="button" className="plan-save-image" onClick={saveDiagram}>画像で保存</button>
           <small>図を左右にスワイプ</small>
         </div>
         <div className="plan-map-scroll">
@@ -1413,25 +1414,7 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
           <span title="舞台・壁・バトン・客席・照明の吊る位置。動かすと、すべてのシーンで変わります"><i className="shared" aria-hidden="true" />全シーン共通：舞台・壁・客席・吊る位置</span>
           <span title="役者・セット・照明の狙い。変えたあと、ほかのシーンにも反映できます"><i className="scene" aria-hidden="true" />シーンごと：役者・セット・狙い</span>
         </div>
-        {<div className="plan-map-footer">
-          <div className="plan-actor-key">{performers.map((actor, index) => <div className="plan-actor-entry" key={actor.id}>
-            <button className={'plan-actor-select' + (actor.id === selectedPerformer?.id ? ' active' : '')}
-              onClick={() => selectActor(actor.id)}>
-              <span style={{ background: actorColors[index % actorColors.length] }}>{actor.name.trim().slice(0, 1) || index + 1}</span>{actor.name}
-              <small>{actor.onStage === false ? '舞台外' : '舞台上'}</small>
-            </button>
-            <button className={'plan-presence-toggle' + (actor.onStage === false ? '' : ' active')}
-              aria-label={`${actor.name}を${actor.onStage === false ? '舞台に出す' : '舞台から外す'}`}
-              onClick={() => {
-                const enters = actor.onStage === false
-                updatePerformer(actor.id, { onStage: enters })
-                setFeedback(`${actor.name}を${enters ? '舞台に出しました' : '舞台から外しました'}`)
-              }}>
-              {actor.onStage === false ? '舞台に出す' : '舞台から外す'}
-            </button>
-          </div>)}</div>
-          <button onClick={saveDiagram}>平面図を画像で保存</button>
-        </div>}
+        {/* 役者の「舞台から外す」の札はやめた（設定の欄の「このシーンで舞台上にいる」と、一覧から選べる。2026-11-17 オーナー指摘） */}
       </div>
       {!persistent && <div className="plan-fields">
         {(selectedPerformer || selectedFixture || selectedSetPiece) && <div className="plan-selected-object">
