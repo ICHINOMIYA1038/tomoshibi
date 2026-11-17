@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useChangeLog } from '../changeLog'
-import { applyChangeToScenes, describeChange } from '../changeScope'
+import { applyChangeToScenes, chapterOfScene, describeChange } from '../changeScope'
 import { clearChange } from '../changeLog'
 import { useStore } from '../store'
 
@@ -8,6 +8,7 @@ import { useStore } from '../store'
 export function ChangeScopeBar({ phone = false }: { phone?: boolean }) {
   const change = useChangeLog(state => state.change)
   const scenes = useStore(state => state.productionPlan.scenes)
+  const sequences = useStore(state => state.productionPlan.sequences)
   const activeId = useStore(state => state.productionPlan.activeSceneId)
   const [done, setDone] = useState('')
   const index = scenes.findIndex(scene => scene.id === activeId)
@@ -25,12 +26,18 @@ export function ChangeScopeBar({ phone = false }: { phone?: boolean }) {
   }, [done])
   if (done) return <div className={'change-scope-bar' + (phone ? ' phone' : '')} role="status"><span>{done}</span></div>
   if (!visible || !change) return null
-  const apply = (range: 'after' | 'all') => {
+  // 章が 2 つ以上あって、同じ章にほかのシーンがあるときだけ「この章」を出す（章が 1 つなら「全シーン」と同じ）
+  const chapterId = chapterOfScene({ sequences }, scenes[index]?.sequenceId)
+  const chapterCount = new Set(scenes.map(scene => chapterOfScene({ sequences }, scene.sequenceId))).size
+  const sameChapter = scenes.filter(scene => chapterOfScene({ sequences }, scene.sequenceId) === chapterId).length
+  const showChapter = chapterCount > 1 && sameChapter > 1
+  const apply = (range: 'chapter' | 'after' | 'all') => {
     const count = applyChangeToScenes(range)
     setDone(count ? `ほかの ${count} シーンにも反映しました` : 'ほかのシーンには、反映する物がありませんでした')
   }
   return <div className={'change-scope-bar' + (phone ? ' phone' : '')} role="status">
     <span><strong>{describeChange(change)}</strong><small>このシーンだけの変更です</small></span>
+    {showChapter && <button type="button" onClick={() => apply('chapter')}>この章のシーンにも</button>}
     {index < scenes.length - 1 && <button type="button" onClick={() => apply('after')}>このあとのシーンにも</button>}
     <button type="button" onClick={() => apply('all')}>全シーンにも</button>
     <button type="button" className="change-scope-close" aria-label="このシーンだけにする" onClick={clearChange}>×</button>
