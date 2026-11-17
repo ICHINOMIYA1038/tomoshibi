@@ -5278,3 +5278,10 @@ input[type="color"]::-moz-color-swatch { border: 0; border-radius: 0; }
 }
 .phone-layout input.phone-title { width: auto; flex: 1 1 auto; font-size: 16px; }
 .phone-layout button.phone-title { flex: 1 1 auto; }
+/* プロジェクト名を見切れにくくする（2026-11-18 オーナー「まだ見切れている」）。
+   PC は帯の空きに合わせて広げ、スマホは小さめの字で 2 行まで折り返す */
+.unified-shell.workspace-layout button.workspace-project-title { max-width: min(520px, 36vw); }
+.phone-layout button.phone-title { font-size: 14px; line-height: 1.25; }
+.phone-layout button.phone-title .project-title-text {
+  white-space: normal; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; word-break: break-all;
+}
