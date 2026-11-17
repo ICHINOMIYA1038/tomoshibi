@@ -339,6 +339,32 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
     // 平面図でも道具に従う。「移動」のときだけドラッグで動かし、ほかの道具では選ぶだけ
     const selectKind = kind === 'target' ? 'fixture' : kind
     const tool = useStore.getState().settings.transformMode
+    if (tool === 'rotate' && kind === 'setpiece') {
+      selectSetPiece(id)
+      const piece = useStore.getState().setPieces.find(item => item.id === id)
+      if (piece) {
+        const from = piece.rotation
+        // 平面図は rotate(-rotation) で描くので、画面で時計回りに回すと rotation は減る
+        dragRotate(event, [piece.position[0], piece.position[2]], piece.name || '舞台セット',
+          deg => updateSetPiece(id, { rotation: [from[0], from[1] - deg * Math.PI / 180, from[2]] }))
+      }
+      return
+    }
+    if (tool === 'rotate' && (kind === 'fixture' || kind === 'target')) {
+      // 照明は、吊る位置を中心に狙いを回す（向きを変える。距離はそのまま）
+      selectFixture(id, 'position')
+      const fixture = useStore.getState().fixtures.find(item => item.id === id)
+      if (fixture) {
+        const [px, , pz] = fixture.position
+        const [tx, ty, tz] = fixture.target
+        dragRotate(event, [px, pz], fixture.name, deg => {
+          const r = deg * Math.PI / 180
+          const dx = tx - px, dz = tz - pz
+          updateFixture(id, { target: [round1(px + dx * Math.cos(r) - dz * Math.sin(r)), ty, round1(pz + dx * Math.sin(r) + dz * Math.cos(r))] })
+        })
+      }
+      return
+    }
     if (tool === 'select' || toolFor(tool, selectKind, kind === 'target' ? 'target' : 'position') !== 'translate') {
       if (kind === 'performer') selectActor(id)
       else if (kind === 'target' || kind === 'fixture') selectFixture(id, kind === 'target' ? 'target' : 'position')
@@ -357,6 +383,42 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
     if (kind === 'performer') selectActor(id)
     else if (kind === 'target' || kind === 'fixture') selectFixture(id, kind === 'target' ? 'target' : 'position')
     else selectSetPiece(id)
+  }
+  /**
+   * 回転の道具で、物を中心のまわりに回す（2026-11-17 オーナー指摘「平面図で回転がうまくできない」）。
+   * center は世界の (x, z)。onTurn には、押したときからの回転（度。画面で時計回りが正）を渡す。5° ごとに止まる
+   */
+  const dragRotate = (event: PointerEvent<SVGElement>, center: StagePoint, label: string, onTurn: (deg: number) => void) => {
+    event.preventDefault()
+    event.stopPropagation()
+    const svg = svgRef.current
+    if (!svg) return
+    const bounds = mapBounds
+    setFrozenBounds(frozenBounds ?? fitBounds)
+    const angleOf = (point: { clientX: number; clientY: number }) => {
+      const [x, z] = rawMapPoint(point as unknown as PointerEvent<SVGSVGElement>, svg, true, bounds)
+      return Math.atan2(z - center[1], x - center[0]) * 180 / Math.PI
+    }
+    const start = angleOf(event)
+    let turned = 0
+    const move = (next: globalThis.PointerEvent) => {
+      if (next.pointerId !== event.pointerId) return
+      let deg = angleOf(next) - start
+      deg = ((deg + 540) % 360) - 180
+      turned = Math.round(deg / 5) * 5
+      onTurn(turned)
+    }
+    const up = (next: globalThis.PointerEvent) => {
+      if (next.pointerId !== event.pointerId) return
+      window.removeEventListener('pointermove', move)
+      window.removeEventListener('pointerup', up)
+      window.removeEventListener('pointercancel', up)
+      setFrozenBounds(null)
+      if (turned) setFeedback(`${label}を ${turned > 0 ? '右' : '左'}へ ${Math.abs(turned)}° 回しました`)
+    }
+    window.addEventListener('pointermove', move)
+    window.addEventListener('pointerup', up)
+    window.addEventListener('pointercancel', up)
   }
   // 全シーン共通の物（舞台・客席）をドラッグで動かす。動きは window で受ける（StagePartsLayer と同じ）
   const dragShared = (event: PointerEvent<SVGElement>, label: string, onMove: (dx: number, dz: number) => void) => {
@@ -1121,7 +1183,8 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
           <button type="button" className={showFixtures ? 'active' : ''} aria-pressed={showFixtures}
             onClick={() => setShowFixtures(value => !value)}>照明：{showFixtures ? '表示中' : '非表示'}</button>
           {persistent && <button type="button" className={showDirections ? 'active' : ''} aria-pressed={showDirections}
-            onClick={onToggleDirections}>役者の動き：{showDirections ? '表示中' : '非表示'}</button>}
+            title="ひとつ前のシーンから、役者がどう動いたか・照明の狙いがどう変わったかを矢印で出します"
+            onClick={onToggleDirections}>前のシーンからの変化：{showDirections ? '表示中' : '非表示'}</button>}
           <div className="plan-map-zoom" role="group" aria-label="平面図の縮尺">
             <button type="button" aria-label="縮小" title="縮小（ホイールでも変えられます）" onClick={() => mapZoom.zoomBy(1 / 1.5)}>−</button>
             <button type="button" aria-label="拡大" title="拡大（ホイールでも変えられます）" onClick={() => mapZoom.zoomBy(1.5)}>＋</button>
@@ -1227,6 +1290,11 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
                 aria-label={`${block.name}（全シーン共通）。ドラッグで移動`} style={{ cursor: tool === 'translate' ? 'grab' : 'pointer', touchAction: 'none' }}
                 onPointerDown={event => {
                   select('audience', block.id)
+                  if (tool === 'rotate') {
+                    const fromDeg = block.rotationDeg
+                    dragRotate(event, block.position, block.name || '客席', deg => useStore.getState().updateAudienceBlock(block.id, { rotationDeg: fromDeg - deg }))
+                    return
+                  }
                   const from = block.position
                   dragShared(event, block.name || '客席', (dx, dz) => {
                     const current = useStore.getState().productionPlan.audienceBlocks?.find(item => item.id === block.id)
@@ -1312,16 +1380,17 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
                 fill="#fffdf8" fillOpacity=".65" stroke={pathColors[direction.kind]}
                 strokeWidth="3" strokeDasharray="5 4" />
               <text x={mapX(direction.from[0])} y={mapY(direction.from[1]) + 5}
-                textAnchor="middle" fill="#665b4c" fontSize="13" fontWeight="700">前</text>
+                textAnchor="middle" fill="#665b4c" fontSize="13" fontWeight="700">前のシーン</text>
             </g>)}
-            {showFixtures && targetChanges.map(({ fixture, from }) => <g key={'light-move-' + fixture.id} pointerEvents="none">
+            {/* 前のシーンからの照明の狙いの変化。「前のシーンからの変化」を出したときだけ（いつも出すとわかりにくい） */}
+            {showFixtures && showDirections && targetChanges.map(({ fixture, from }) => <g key={'light-move-' + fixture.id} pointerEvents="none">
               <line x1={mapX(from[0])} y1={mapY(from[2])}
                 x2={mapX(fixture.target[0])} y2={mapY(fixture.target[2])}
                 stroke="#5b88a0" strokeWidth={fixture.id === selectedFixture?.id ? 5 : 3}
                 strokeDasharray="8 6" markerEnd="url(#plan-arrow-light)" />
               {fixture.id === selectedFixture?.id && <text x={mapX(from[0])} y={mapY(from[2]) - 17}
                 textAnchor="middle" fill="#42677a" fontSize="14" fontWeight="700"
-                paintOrder="stroke" stroke="#fffdf8" strokeWidth="4">前の狙い</text>}
+                paintOrder="stroke" stroke="#fffdf8" strokeWidth="4">前のシーンの狙い</text>}
             </g>)}
             {showFixtures && fixtures.map((fixture, index) => {
               const active = selectedFixture?.id === fixture.id
