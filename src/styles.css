@@ -5100,8 +5100,6 @@ body.embed .workspace-switch { display: none; }
 .scope-tag { flex: none; margin-left: 6px; padding: 0 5px; border: 1px solid #8d847b; color: #c9bfb4; font-size: 10px; font-style: normal; font-weight: 700; line-height: 16px; }
 .scope-tag.scene { border-color: var(--shu); color: #f0a08c; }
 .scope-tag.mixed { border-color: var(--kin); color: var(--kin); }
-.plan-rig-toggle { min-height: 34px; padding: 0 12px; border: 1px solid #8d847b; border-radius: 0; background: transparent; color: #e5dccf; font: 700 13px var(--font-sans); }
-.plan-rig-toggle.active { border-color: var(--kin); background: var(--kin); color: #14110d; }
 .plan-scope-legend { display: flex; flex-wrap: wrap; gap: 4px 16px; padding: 6px 12px; color: var(--ink-secondary); font-size: 12px; }
 .plan-scope-legend span { display: inline-flex; align-items: center; gap: 6px; }
 .plan-scope-legend i { width: 12px; height: 12px; border-radius: 50%; }
@@ -5109,7 +5107,6 @@ body.embed .workspace-switch { display: none; }
 .plan-scope-legend i.scene { background: #c8482d; }
 @media (max-width: 600px) {
   .unified-shell.phone-layout .plan-scope-legend { position: absolute; z-index: 3; left: 8px; right: 8px; top: 8px; padding: 6px 8px; background: rgba(25,22,25,.9); }
-  .unified-shell.phone-layout .plan-rig-toggle { min-height: 44px; }
 }
 
 /* 変えた直後の「このあとのシーンにも／全シーンにも」（ChangeScopeBar） */

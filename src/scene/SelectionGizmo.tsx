@@ -1,4 +1,5 @@
 import { STAGE_SIZE } from '../venueLayout'
+import { clearChange } from '../changeLog'
 import { useRef, useEffect } from 'react'
 import * as THREE from 'three'
 import { TransformControls } from '@react-three/drei'
@@ -199,6 +200,8 @@ export function SelectionGizmo() {
                 position: [o.position.x, o.position.y, o.position.z],
                 target: [current.target[0] + dx, current.target[1] + dy, current.target[2] + dz],
               })
+              // 吊る位置は全シーン共通。向きを保つための狙いの動きは「このシーンだけの変更」として出さない
+              clearChange()
             }
           }}
         />
