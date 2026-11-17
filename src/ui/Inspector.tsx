@@ -15,6 +15,7 @@ import { InspectorSection, NumberField } from './fields'
 import { partName } from './HierarchyPanel'
 import { FixtureEditor } from './ControlPanel'
 import { LockButton } from './LockButton'
+import { StageShapeEditor } from './StageShapeEditor'
 import { clearChange } from '../changeLog'
 import * as THREE from 'three'
 
@@ -359,7 +360,7 @@ function StageInspector() {
           aria-pressed={layout.stageShape === shape} onClick={() => chooseShape(shape)}>{label}</button>)}
       </div>
       {layout.stageShape === 'custom' && <>
-        <p className="inspector-note">平面図で舞台を選ぶと、角に金色の点が出ます。点を引っぱると形が変わります。</p>
+        <StageShapeEditor />
         <div className="inspector-choice">
           <button type="button" onClick={addVertex} disabled={stageFootprint(layout).length >= 8}>＋ 角を足す</button>
           <button type="button" disabled={stageFootprint(layout).length <= 3} onClick={() => updateVenue({
