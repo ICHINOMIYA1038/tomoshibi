@@ -5181,3 +5181,26 @@ body.embed .workspace-switch { display: none; }
   .phone-cast-name small { font-size: 12px; color: var(--ink-secondary); }
   .phone-cast button { flex: none; min-height: 44px; padding: 0 10px; border: 1px solid #4c4246; border-radius: 0; background: transparent; color: var(--ink-primary); font: 500 13px var(--font-sans); }
 }
+
+/* 変更の帯を控えめに（2026-11-17）。暗い細い 1 行、ボタンは短い文字だけ。前の明るい帯の指定を上書きする */
+.change-scope-bar, .change-scope-bar:not(.phone):not(.docked) {
+  gap: 2px; padding: 2px 4px 2px 12px; background: rgba(25,22,25,.92); color: #e5dccf; border: 1px solid #4c4246;
+  box-shadow: 0 4px 12px rgba(0,0,0,.3); flex-wrap: nowrap;
+}
+.change-scope-bar:not(.phone):not(.docked) { bottom: 12px; }
+.change-scope-bar .change-scope-text { flex: none; font-size: 12px; white-space: nowrap; color: #c9bfb4; margin-right: 4px; }
+.change-scope-bar button, .change-scope-bar:not(.phone):not(.docked) button {
+  min-height: 30px; padding: 0 8px; border: 0; background: transparent; color: var(--kin); font: 700 12px var(--font-sans);
+}
+.change-scope-bar button:hover { background: rgba(212,175,111,.15); }
+.change-scope-bar .change-scope-close { color: #8e8379; font-size: 14px; }
+@media (max-width: 600px) {
+  .change-scope-bar.phone { flex-wrap: nowrap; left: 12px; right: auto; max-width: calc(100vw - 24px); overflow-x: auto; }
+  .change-scope-bar.phone > span { flex: none; }
+  .change-scope-bar.phone button { flex: none; min-height: 40px; }
+  .change-scope-bar.phone .change-scope-close { flex: none; }
+}
+@media (max-width: 600px) {
+  /* 下には「立ち位置を変更しました」などの知らせが出るので、帯は上（3D／平面図の切り替えの下）に出す */
+  .change-scope-bar.phone { top: calc(var(--phone-top, 56px) + 60px); bottom: auto; }
+}
