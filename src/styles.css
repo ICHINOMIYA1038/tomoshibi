@@ -5139,3 +5139,5 @@ body.embed .workspace-switch { display: none; }
 .plan-resize-handle:hover::after { background: var(--kin); }
 @media (max-width: 960px) { .plan-resize-handle { display: none; } }
 .plan-scope-legend { padding: 4px 12px; gap: 2px 14px; font-size: 13px; }
+.unified-shell .plan-map-layerbar .plan-save-image::before { display: none; }
+.unified-shell .plan-map-layerbar .plan-save-image { margin-left: auto; }
