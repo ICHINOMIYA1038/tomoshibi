@@ -499,6 +499,34 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
     window.addEventListener('pointerup', up)
     window.addEventListener('pointercancel', up)
   }
+  /** 自由形状の舞台の角を引っぱって、形を変える（2026-11-18。以前の「会場」の切り替えで出していた金色の点を、1 枚の平面図に戻した） */
+  const dragVertex = (event: PointerEvent<SVGElement>, index: number) => {
+    event.preventDefault()
+    event.stopPropagation()
+    const svg = svgRef.current
+    if (!svg) return
+    const bounds = mapBounds
+    setFrozenBounds(frozenBounds ?? fitBounds)
+    const layout = useStore.getState().productionPlan.venueLayout ?? DEFAULT_VENUE_LAYOUT
+    const offset = layout.stageOffset ?? [0, 0]
+    const start = stageFootprint(layout)
+    const move = (next: globalThis.PointerEvent) => {
+      if (next.pointerId !== event.pointerId) return
+      const [x, z] = rawMapPoint(next as unknown as PointerEvent<SVGSVGElement>, svg, true, bounds)
+      const vertices = start.map((point, at) => at === index ? [round1(x), round1(z)] as StagePoint : point)
+      useStore.getState().updateVenueLayout({ stageVertices: vertices.map(([px, pz]) => [round1(px - offset[0]), round1(pz - offset[1])] as StagePoint) })
+    }
+    const up = (next: globalThis.PointerEvent) => {
+      if (next.pointerId !== event.pointerId) return
+      window.removeEventListener('pointermove', move)
+      window.removeEventListener('pointerup', up)
+      window.removeEventListener('pointercancel', up)
+      setFrozenBounds(null)
+    }
+    window.addEventListener('pointermove', move)
+    window.addEventListener('pointerup', up)
+    window.addEventListener('pointercancel', up)
+  }
   const moveDrag = (event: PointerEvent<SVGSVGElement>) => {
     const start = dragStart.current
     if (!start || start.sceneId !== scene.id) return
@@ -1344,6 +1372,12 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
                 const from = venue.stageOffset ?? [0, 0]
                 dragShared(event, '舞台', (dx, dz) => useStore.getState().moveStageTo([round1(from[0] + dx), round1(from[1] + dz)]), { kind: 'stage', id: 'stage' })
               }} />
+            {/* 自由形状の舞台を選んでいるときは、角に金色の点を出す。引っぱると形が変わる（固定していても、形はここで変えられる） */}
+            {selection.kind === 'stage' && venue.stageShape === 'custom' && stageOutline.map(([vx, vz], index) =>
+              <circle key={'stage-vertex-' + index} cx={mapX(vx)} cy={stageMapY(vz)} r={Math.max(10, 10 * unitsPerPx)}
+                fill="#e0b45c" stroke="#14110d" strokeWidth={2 * unitsPerPx} style={{ cursor: 'move', touchAction: 'none' }}
+                role="button" aria-label={`舞台の角 ${index + 1}。引っぱると形が変わります`} data-stage-vertex={index}
+                onPointerDown={event => dragVertex(event, index)} />)}
             {showShared && <StagePartsLayer selectedId={selection.kind === 'stagepart' ? selection.id : null}
               onSelect={id => select(id ? 'stagepart' : null, id)} tool={tool} onPan={mapZoom.beginPan}
               toWorld={point => rawMapPoint(point as unknown as PointerEvent<SVGSVGElement>, svgRef.current!, true, mapBounds)}
