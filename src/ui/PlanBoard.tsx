@@ -1601,11 +1601,12 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
         </>
         {/* 図の印の見方と、どれが全シーン共通か（2026-11-17 オーナー指摘で、いまの作りに合わせた） */}
         <div className="plan-scope-legend" aria-label="図の見方">
-          <span><svg viewBox="0 0 30 20" aria-hidden="true" className="legend-fixture"><rect x="2" y="4" width="17" height="12" rx="2" fill="#4b443e" stroke="#d8cfc3" /><path d="M19 3 L27 1 L27 19 L19 17 Z" fill="#e6c27a" stroke="#d8cfc3" /><text x="10.5" y="13.5" textAnchor="middle" fontSize="8" fontWeight="700" fill="#fffdf8">1</text></svg>照明（狙う方を向く。前はゲルの色）</span>
-          <span><i className="actor" aria-hidden="true">司</i>役者（頭文字）</span>
+          <span><svg viewBox="0 0 30 20" aria-hidden="true" className="legend-fixture"><rect x="2" y="4" width="17" height="12" rx="2" fill="#4b443e" stroke="#d8cfc3" /><path d="M19 3 L27 1 L27 19 L19 17 Z" fill="#e6c27a" stroke="#d8cfc3" /><text x="10.5" y="13.5" textAnchor="middle" fontSize="8" fontWeight="700" fill="#fffdf8">1</text></svg>照明</span>
+          <span><i className="actor" aria-hidden="true">司</i>役者</span>
           <span><Glyph name="box" />舞台セット</span>
           <span><Glyph name="batten" />壁・バトン</span>
-          <span className="plan-scope-note">舞台・壁・バトン・客席・照明の吊る位置は全シーン共通。ほかはシーンごとで、変えたあとにほかのシーンにも反映できます</span>
+          <span className="plan-scope-note">全シーン共通：舞台・壁・バトン・客席・照明の吊る位置</span>
+          <span className="plan-scope-note">ほかはシーンごと（ほかのシーンにコピーできます）</span>
         </div>
         {/* 役者の「舞台から外す」の札はやめた（設定の欄の「このシーンで舞台上にいる」と、一覧から選べる。2026-11-17 オーナー指摘） */}
       </div>
