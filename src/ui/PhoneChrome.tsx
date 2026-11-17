@@ -52,7 +52,8 @@ export function PhoneChrome({ title, view, onView, onBack, onPlay }: {
     <header className="phone-top">
       <button type="button" className="phone-icon" aria-label="プロジェクト一覧へ戻る" onClick={onBack}>←</button>
       <div className="phone-title">{title || '名称未設定'}</div>
-      <button type="button" className="phone-play" onClick={onPlay}>▶ 通し</button>
+      <UndoRedo />
+      <button type="button" className="phone-play" aria-label="通しで見る" onClick={onPlay}>▶</button>
       <button type="button" className="phone-icon" aria-label="そのほかのメニュー" aria-expanded={sheet === 'menu'} onClick={() => setSheet('menu')}>⋯</button>
     </header>
     <div className="phone-view-switch" role="group" aria-label="見え方">
@@ -280,4 +281,13 @@ function GestureHint({ view }: { view: 'stage' | 'plan' }) {
     <span><b>1 本指</b>{view === 'plan' ? '図を動かす・物を動かす' : '視点を動かす・物を動かす'}</span>
     <span><b>2 本指</b>{view === 'plan' ? '広げて拡大' : '広げて拡大・ひねって回転'}</span>
   </button>
+}
+
+/** 元に戻す・やり直す。スマホでは「⋯」の中だけだと見つからないので、上の列にも出す（2026-11-17） */
+function UndoRedo() {
+  const { canUndo, canRedo } = useMockWorkspaceState()
+  return <>
+    <button type="button" className="phone-icon" aria-label="元に戻す" disabled={!canUndo} onClick={undoMockWorkspace}>↶</button>
+    <button type="button" className="phone-icon" aria-label="やり直す" disabled={!canRedo} onClick={redoMockWorkspace}>↷</button>
+  </>
 }

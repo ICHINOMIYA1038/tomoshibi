@@ -3,7 +3,7 @@ import { useThree, type ThreeEvent } from '@react-three/fiber'
 import * as THREE from 'three'
 import { clearChange } from '../changeLog'
 import { useStore } from '../store'
-import { isGizmoEngaged } from './SelectionGizmo'
+import { isGizmoEngaged, isGizmoHit } from './SelectionGizmo'
 
 // 物そのものを押さえて引っぱると、床と平行に動かす（2026-11-17 オーナー「平行移動の矢印がうまく掴めない」）。
 // 「移動」の道具のときだけ。押して少ししか動かさなければ、これまでどおり選ぶだけ（onClick）。
@@ -35,7 +35,7 @@ export function useFloorDrag(kind: Kind, id: string) {
 
   const onPointerDown = (event: ThreeEvent<PointerEvent>) => {
     const s = useStore.getState()
-    if (event.button !== 0 || s.settings.probeMode || s.settings.transformMode !== 'translate' || isGizmoEngaged()) return
+    if (event.button !== 0 || s.settings.probeMode || s.settings.transformMode !== 'translate' || isGizmoEngaged() || isGizmoHit(event.ray)) return
     // 球（つかむ点）の上なら、そちらに任せる。ただし自分が照明で、自分の本体の球を押したときは自分で動かす
     if (hitsHandle(event) && !(kind === 'fixture' && (event.object as THREE.Object3D).userData?.priorityHandle)) return
     const item = itemOf()
@@ -111,7 +111,7 @@ export function useAimDrag(id: string) {
   const onPointerDown = (event: ThreeEvent<PointerEvent>) => {
     const s = useStore.getState()
     const fixture = s.fixtures.find(item => item.id === id)
-    if (event.button !== 0 || !fixture || isGizmoEngaged()) return
+    if (event.button !== 0 || !fixture || isGizmoEngaged() || isGizmoHit(event.ray)) return
     const plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), -fixture.target[1])
     const hit = new THREE.Vector3()
     if (!event.ray.intersectPlane(plane, hit)) return
