@@ -105,6 +105,11 @@ function normalizeProductionPlan(raw: unknown, fixtures: Fixture[], performers: 
     : [data.workTitle, data.venueTitle].filter(value => typeof value === 'string' && value.trim()).join(' / ').slice(0, 60)
   const workTitle = typeof data.workTitle === 'string' ? data.workTitle.slice(0, 60) : ''
   const venueTitle = typeof data.venueTitle === 'string' ? data.venueTitle.slice(0, 60) : ''
+  const lockOverrides = data.lockOverrides && typeof data.lockOverrides === 'object'
+    ? Object.fromEntries(Object.entries(data.lockOverrides as Record<string, unknown>)
+      .filter(([key, value]) => typeof value === 'boolean' && /^[a-z]+:[\w-]{1,80}$/.test(key)).slice(0, 500)) as Record<string, boolean>
+    : undefined
+  const lockSpread = lockOverrides ? { lockOverrides } : {}
   const audienceBlocks: AudienceBlock[] = Array.isArray(data.audienceBlocks)
     ? data.audienceBlocks.slice(0, 16).flatMap(value => {
       if (!value || typeof value.id !== 'string' || !Array.isArray(value.position) ||
@@ -185,8 +190,8 @@ function normalizeProductionPlan(raw: unknown, fixtures: Fixture[], performers: 
     })
     const activeSceneId = scenes.some(scene => scene.id === data.activeSceneId)
       ? data.activeSceneId as string : scenes[scenes.length - 1]?.id ?? null
-    return scenes.length ? ensurePlanHierarchy({ title, projectTitle, workTitle, venueTitle, chapters, sequences, scenes, activeSceneId, audienceBlocks, venueLayout })
-      : { title, projectTitle, workTitle, venueTitle, chapters: [], sequences: [], scenes, activeSceneId, audienceBlocks, venueLayout }
+    return scenes.length ? ensurePlanHierarchy({ title, projectTitle, workTitle, venueTitle, chapters, sequences, scenes, activeSceneId, audienceBlocks, venueLayout, ...lockSpread })
+      : { title, projectTitle, workTitle, venueTitle, chapters: [], sequences: [], scenes, activeSceneId, audienceBlocks, venueLayout, ...lockSpread }
   }
   const scenes = [] as ProductionPlan['scenes']
   if (Array.isArray(data.beats)) {
@@ -231,7 +236,7 @@ function normalizeProductionPlan(raw: unknown, fixtures: Fixture[], performers: 
     scenes[0].note = [scenes[0].note, data.note.trim()].filter(Boolean).join('\n').slice(0, 1000)
   }
   return ensurePlanHierarchy({
-    title, projectTitle, workTitle, venueTitle, audienceBlocks, venueLayout,
+    title, projectTitle, workTitle, venueTitle, audienceBlocks, venueLayout, ...lockSpread,
     scenes,
     activeSceneId: scenes.find(scene => scene.id === `sc-${legacyActiveId}`)?.id ?? scenes[scenes.length - 1]?.id ?? null,
   })

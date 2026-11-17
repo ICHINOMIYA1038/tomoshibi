@@ -4,6 +4,7 @@ import * as THREE from 'three'
 import { clearChange } from '../changeLog'
 import { useStore } from '../store'
 import { isGizmoEngaged, isGizmoHit } from './SelectionGizmo'
+import { lockedNow, nudgeLock } from '../locks'
 
 // 物そのものを押さえて引っぱると、床と平行に動かす（2026-11-17 オーナー「平行移動の矢印がうまく掴めない」）。
 // 「移動」の道具のときだけ。押して少ししか動かさなければ、これまでどおり選ぶだけ（onClick）。
@@ -40,6 +41,11 @@ export function useFloorDrag(kind: Kind, id: string) {
     if (hitsHandle(event) && !(kind === 'fixture' && (event.object as THREE.Object3D).userData?.priorityHandle)) return
     const item = itemOf()
     if (!item) return
+    // 固定した物は動かさない。選んである物なら鍵のボタンを光らせて、固定に気づけるようにする
+    if (lockedNow(kind, id)) {
+      if (s.selection.kind === kind && s.selection.id === id) nudgeLock()
+      return
+    }
     // 指でも、物を押さえて引っぱればその物を動かす（部屋のレイアウトアプリと同じ）。
     // 2 本目の指が触れたら動かすのをやめて、拡大・回転に任せる（下の second）
     const plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), -item.position[1])

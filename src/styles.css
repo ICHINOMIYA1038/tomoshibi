@@ -5244,3 +5244,14 @@ input[type="color"] {
 input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
 input[type="color"]::-webkit-color-swatch { border: 0; border-radius: 0; }
 input[type="color"]::-moz-color-swatch { border: 0; border-radius: 0; }
+
+/* 固定の鍵のボタン（LockButton）。固定中は金、動かそうとすると一瞬光る */
+.lock-button { flex: none; min-height: 34px; padding: 0 10px; border: 1px solid #4c4246; border-radius: 0; background: transparent; color: #c9bfb4; font: 600 12px var(--font-sans); white-space: nowrap; cursor: pointer; }
+.lock-button.locked { border-color: var(--kin); color: var(--kin); }
+.lock-button.flash { animation: lock-flash .9s ease-out; }
+@keyframes lock-flash { 0%, 40% { background: var(--kin); color: #14110d; } 100% { background: transparent; } }
+@media (max-width: 600px) {
+  .phone-card .lock-button { min-height: 44px; }
+  .phone-card .phone-card-close { border: 0; }
+}
+.lock-button { display: inline-flex; align-items: center; gap: 5px; }

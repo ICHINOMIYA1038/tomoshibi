@@ -1,5 +1,6 @@
 import { STAGE_SIZE } from '../venueLayout'
 import { useAimDrag, useFloorDrag } from './floorDrag'
+import { isLocked } from '../locks'
 import { clearChange } from '../changeLog'
 import { useRef, useEffect } from 'react'
 import * as THREE from 'three'
@@ -96,6 +97,7 @@ export function SelectionGizmo() {
   const updatePerformer = useStore(s => s.updatePerformer)
   const select = useStore(s => s.select)
   const gizmoSize = useGizmoSize()
+  const locked = useStore(s => isLocked(s.productionPlan, selection.kind, selection.id))
   const aimDrag = useAimDrag(selection.kind === 'fixture' && selection.id ? selection.id : '')
   const bodyDrag = useFloorDrag('fixture', selection.kind === 'fixture' && selection.id ? selection.id : '')
   const stageParts = useStageParts()
@@ -176,6 +178,8 @@ export function SelectionGizmo() {
   ])
 
   if (!showGizmos || transformMode === 'select') return null
+  // 固定した物には矢印を出さない（照明は、狙いの球だけ出す）
+  if (locked && selection.kind !== 'fixture') return null
 
   // ---- フィクスチャ選択 ----
   if (selection.kind === 'fixture' && fixture) {
@@ -211,7 +215,7 @@ export function SelectionGizmo() {
         </mesh>
 
         <primitive object={dragRef.current} />
-        <TransformControls
+        {!locked && <TransformControls
           ref={tcRef as any}
           object={dragRef.current}
           mode={mode}
@@ -239,7 +243,7 @@ export function SelectionGizmo() {
               clearChange()
             }
           }}
-        />
+        />}
       </group>
     )
   }

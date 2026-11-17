@@ -90,6 +90,8 @@ export interface ProductionPlan {
   activeSceneId: string | null
   audienceBlocks?: AudienceBlock[]
   venueLayout?: VenueLayout
+  /** 固定の上書き（locks.ts）。キーは「種類:id」。無ければ種類ごとの初めの値 */
+  lockOverrides?: Record<string, boolean>
 }
 
 export type StageShape = 'proscenium' | 'round' | 'thrust' | 'custom'
