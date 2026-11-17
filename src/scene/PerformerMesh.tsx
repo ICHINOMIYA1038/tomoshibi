@@ -81,7 +81,8 @@ function PerformerMeshSingle({ performer, material }: { performer: Performer; ma
         }
       }}
     >
-      <group scale={s}>
+      {/* 向き（シーンごと）。0 で客席（+Z）を向く */}
+      <group scale={s} rotation={[0, facingRad(performer.facingDeg), 0]}>
         <PoseBody frame={frame} material={material} />
       </group>
 
@@ -142,4 +143,9 @@ function PoseBody({ frame, material }: { frame: PoseFrame; material: THREE.Shade
     <mesh position={frame.leftFoot} material={material}><boxGeometry args={[0.09, 0.06, 0.19]} /></mesh>
     <mesh position={frame.rightFoot} material={material}><boxGeometry args={[0.09, 0.06, 0.19]} /></mesh>
   </>
+}
+
+/** 役者の向き（度）をラジアンに。おかしな値なら客席向き */
+export function facingRad(deg: number | undefined) {
+  return Number.isFinite(deg) ? (deg as number) * Math.PI / 180 : 0
 }
