@@ -5204,3 +5204,5 @@ body.embed .workspace-switch { display: none; }
   /* 下には「立ち位置を変更しました」などの知らせが出るので、帯は上（3D／平面図の切り替えの下）に出す */
   .change-scope-bar.phone { top: calc(var(--phone-top, 56px) + 60px); bottom: auto; }
 }
+.change-scope-bar .change-scope-close { font-size: 12px; font-weight: 500; color: #c9bfb4; border-left: 1px solid #4c4246 !important; margin-left: 2px; }
+@media (max-width: 600px) { .change-scope-bar.phone button { padding: 0 6px; } .change-scope-bar.phone { padding-left: 10px; } }
