@@ -236,6 +236,43 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
   /** 照明・役者の印の大きさ（図の単位）。画面の上で 30px 前後になるようにする */
   const markerSize = Math.max(40, 30 * unitsPerPx)
   const labelFont = Math.max(16, 13 * unitsPerPx)
+  // 照明が混み合うときの描き方（2026-11-18 オーナー「照明が多いとカオスで操作できない」）。
+  // - 同じ所に吊った照明は、印を少しずつずらして見せる（どれも押せるように。本当の位置には小さな点を残す）
+  // - 隣が近い照明は、印を小さくする（重なって番号が読めなくならないように）
+  // - 押せる範囲は、隣との間の半分までにする（隣の印を押したのに、こちらが選ばれないように）
+  const fixtureLayout = (() => {
+    const out = new Map<string, { dx: number; dy: number; scale: number; touch: number }>()
+    const base = fixtures.map(fixture => ({ id: fixture.id, x: mapX(fixture.position[0]), y: mapY(fixture.position[2]) }))
+    const shown = base.map(point => ({ ...point }))
+    const groups = new Map<string, number[]>()
+    base.forEach((point, index) => {
+      const key = Math.round(point.x / 3) + ':' + Math.round(point.y / 3)
+      groups.set(key, [...(groups.get(key) ?? []), index])
+    })
+    groups.forEach(members => {
+      if (members.length < 2) return
+      members.forEach((index, order) => {
+        const angle = -Math.PI / 2 + order * 2 * Math.PI / members.length
+        shown[index].x += Math.cos(angle) * markerSize * .6
+        shown[index].y += Math.sin(angle) * markerSize * .6
+      })
+    })
+    const reach = Math.max(21, TOUCH_RADIUS_PX * unitsPerPx)
+    shown.forEach((point, index) => {
+      let nearest = Infinity
+      shown.forEach((other, otherIndex) => { if (otherIndex !== index) nearest = Math.min(nearest, Math.hypot(other.x - point.x, other.y - point.y)) })
+      const scale = Math.max(.45, Math.min(1, nearest / (markerSize * 1.15)))
+      out.set(point.id, {
+        dx: point.x - base[index].x, dy: point.y - base[index].y, scale,
+        touch: Math.max(markerSize * scale * .45, Math.min(reach, nearest / 2)),
+      })
+    })
+    return out
+  })()
+  const fixtureAt = (fixture: { id: string; position: [number, number, number] }) => {
+    const layout = fixtureLayout.get(fixture.id)
+    return { x: mapX(fixture.position[0]) + (layout?.dx ?? 0), y: mapY(fixture.position[2]) + (layout?.dy ?? 0), scale: layout?.scale ?? 1, touch: layout?.touch ?? 21 }
+  }
   const [feedback, setFeedback] = useState('')
   const [contextMenu, setContextMenu] = useState<{ kind: 'chapter' | 'scene' | 'empty'; id: string; x: number; y: number } | null>(null)
   const [draggingOutline, setDraggingOutline] = useState<{ kind: OutlineKind; id: string } | null>(null)
@@ -1401,11 +1438,15 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
                 textAnchor="middle" fill="#42677a" fontSize="14" fontWeight="700"
                 paintOrder="stroke" stroke="#fffdf8" strokeWidth="4">前のシーンの狙い</text>}
             </g>)}
-            {showFixtures && fixtures.map((fixture, index) => {
+            {/* 選んだ照明は最後に描く（隣の印の下に隠れないように） */}
+            {showFixtures && fixtures.map((fixture, index) => ({ fixture, index }))
+              .sort((a, b) => Number(a.fixture.id === selectedFixture?.id) - Number(b.fixture.id === selectedFixture?.id))
+              .map(({ fixture, index }) => {
               const active = selectedFixture?.id === fixture.id
-              const px = mapX(fixture.position[0]), py = mapY(fixture.position[2])
+              const at = fixtureAt(fixture)
+              const px = at.x, py = at.y
+              const trueX = mapX(fixture.position[0]), trueY = mapY(fixture.position[2])
               const tx = mapX(fixture.target[0]), ty = mapY(fixture.target[2])
-              const touchRadius = TOUCH_RADIUS_PX * unitsPerPx
               const dragging = activeDrag?.id === fixture.id ? activeDrag.kind : null
               const arrowDelta = (key: string): [number, number] | null => key === 'ArrowLeft' ? [-.5, 0] : key === 'ArrowRight' ? [.5, 0]
                 : key === 'ArrowUp' ? [0, -.5] : key === 'ArrowDown' ? [0, .5] : null
@@ -1444,12 +1485,17 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
                     clearChange()
                   }}>
                   <title>{fixture.name}{fixture.position[2] > 2 ? `・舞台前から ${(fixture.position[2] - 2).toFixed(1)}m` : ''}</title>
-                  <circle cx={px} cy={py} r={Math.max(21, touchRadius)} fill="transparent" />
+                  <circle cx={px} cy={py} r={at.touch} fill="transparent" />
+                  {/* ずらして見せている照明は、本当の吊る位置に点と線を残す */}
+                  {(px !== trueX || py !== trueY) && <g pointerEvents="none">
+                    <line x1={trueX} y1={trueY} x2={px} y2={py} stroke={T.edge} strokeWidth={1.2 * unitsPerPx} strokeOpacity={.6} />
+                    <circle cx={trueX} cy={trueY} r={3 * unitsPerPx} fill={T.edge} />
+                  </g>}
                   {/* 照明は、仕込み図と同じく上から見た器具の形。狙いの方を向け、レンズにゲルの色。番号は胴に書く。
                       大きさは画面の上での大きさで決める（平面図を小さく出しても潰れない） */}
                   {(() => {
                     const kind = FIXTURE_PROFILES[fixture.presetKey]?.kind
-                    const size = markerSize
+                    const size = markerSize * at.scale
                     const angle = Math.atan2(ty - py, tx - px) * 180 / Math.PI
                     const body = active ? T.labelActive : T.fixtureBody
                     const edge = dragging === 'fixture' ? '#2f6f8f' : planStyle === 'light' ? colorToHex(fixture.color) : T.edge
@@ -1475,7 +1521,7 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
                     </>
                   })()}
                   {dragging === 'fixture' && <text x={clamp(px, 130 * unitsPerPx, MAP.svgWidth - 130 * unitsPerPx)}
-                    y={py - Math.max(21, touchRadius) - 6 * unitsPerPx} textAnchor="middle" fill="#2f6f8f"
+                    y={py - at.touch - 6 * unitsPerPx} textAnchor="middle" fill="#2f6f8f"
                     fontSize={Math.max(15, 13 * unitsPerPx)} fontWeight="700" paintOrder="stroke" stroke="#fffdf8"
                     strokeWidth={Math.max(4, 4 * unitsPerPx)} pointerEvents="none">位置を移動中（向きはそのまま）</text>}
                 </g>
@@ -1533,8 +1579,8 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
                 items.push({ key: 's' + piece.id, x, y, r: Math.max(w, d) / 2, text: short(name, 12), active: piece.id === selectedSetPiece?.id, rank: 2 })
               })
               if (showFixtures) fixtures.forEach(fixture => {
-                const x = mapX(fixture.position[0]), y = mapY(fixture.position[2])
-                const r = markerSize * .75
+                const { x, y, scale } = fixtureAt(fixture)
+                const r = markerSize * .75 * scale
                 obstacles.push({ key: 'f' + fixture.id, x0: x - r, y0: y - r, x1: x + r, y1: y + r })
                 items.push({ key: 'f' + fixture.id, x, y, r, text: short(fixture.name, 10), active: fixture.id === selectedFixture?.id, rank: 3 })
               })
