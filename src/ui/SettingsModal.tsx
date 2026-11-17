@@ -189,7 +189,7 @@ function SceneSection_DEPRECATED() {
         <button onClick={() => downloadSceneJSON(sceneName)}>書出</button>
         <label className="file-btn">
           読込
-          <input type="file" accept=".json" hidden onChange={async e => {
+          <input type="file" accept=".tomoshibi,.json,application/json" hidden onChange={async e => {
             const f = e.target.files?.[0]; if (f) { await uploadSceneJSON(f) }
           }} />
         </label>

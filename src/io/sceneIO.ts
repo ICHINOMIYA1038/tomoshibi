@@ -278,16 +278,21 @@ export function loadSceneLS(name: string) {
   if (s) importScene(s)
 }
 
-// ---- JSON ダウンロード/アップロード ----
+// ---- ファイルへの書き出し・読み込み（.tomoshibi、中身は JSON） ----
 export function downloadSceneJSON(name?: string) {
-  const scene = exportScene(name || `scene_${Date.now()}`)
-  const blob = new Blob([JSON.stringify(scene, null, 2)], { type: 'application/json' })
+  downloadSerializedScene(exportScene(name || `scene_${Date.now()}`))
+}
+/** プロジェクトの中身を .tomoshibi のファイルにして保存させる（一覧の保存済み・アカウントのプロジェクトにも使う） */
+export function downloadSerializedScene(scene: SerializedScene, name = scene.productionPlan?.projectTitle?.trim() || scene.name) {
+  // TOMOSHIBI 専用の拡張子 .tomoshibi（中身は JSON。2026-11-18 オーナー決定）。
+  // application/json にすると、Safari が名前の後ろに .json を足すことがあるので、octet-stream で渡す
+  const blob = new Blob([JSON.stringify(scene, null, 2)], { type: 'application/octet-stream' })
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
-  a.download = `${scene.name}.shou.json`
+  a.download = `${(name || 'TOMOSHIBI').replace(/[\\/:*?"<>|]/g, '_')}.tomoshibi`
   a.click()
-  URL.revokeObjectURL(url)
+  window.setTimeout(() => URL.revokeObjectURL(url), 10_000)
 }
 export async function uploadSceneJSON(file: File) {
   const text = await file.text()
