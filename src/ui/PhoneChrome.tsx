@@ -76,7 +76,7 @@ export function PhoneChrome({ title, view, onView, onBack, onPlay }: {
       <button type="button" className="phone-add" aria-expanded={sheet === 'add'} onClick={() => setSheet('add')}>＋ 追加</button>
     </footer>
 
-    {sheet === 'add' && <PhoneSheet title="何を足しますか" onClose={() => setSheet(null)}><AddSheet onAdd={added} /></PhoneSheet>}
+    {sheet === 'add' && <PhoneSheet title="何を足しますか" onClose={() => setSheet(null)}><AddSheet onAdd={added} onSettings={id => { useStore.getState().select('performer', id); setSheet('inspector') }} /></PhoneSheet>}
     {sheet === 'scenes' && <PhoneSheet title="シーン" tall onClose={() => setSheet(null)}><ScenesSheet onDone={() => setSheet(null)} /></PhoneSheet>}
     {sheet === 'inspector' && <PhoneSheet title="設定" tall onClose={() => setSheet(null)}><div className="phone-inspector"><Inspector /></div></PhoneSheet>}
     {sheet === 'menu' && <PhoneSheet title="メニュー" onClose={() => setSheet(null)}><MenuSheet onDone={() => setSheet(null)} /></PhoneSheet>}
@@ -130,8 +130,9 @@ function SceneStepper({ onOpen }: { onOpen: () => void }) {
   </div>
 }
 
-function AddSheet({ onAdd }: { onAdd: (item: AddItem, label: string) => void }) {
+function AddSheet({ onAdd, onSettings }: { onAdd: (item: AddItem, label: string) => void; onSettings: (id: string) => void }) {
   const [tab, setTab] = useState<AddTab>('light')
+  const performers = useStore(s => s.performers)
   const tile = (key: string, item: AddItem, glyph: string, label: string, note?: string) =>
     <button key={key} type="button" className="phone-tile" onClick={() => onAdd(item, label)}>
       <Glyph name={glyph} /><span>{label}</span>{note && <small>{note}</small>}
@@ -156,6 +157,21 @@ function AddSheet({ onAdd }: { onAdd: (item: AddItem, label: string) => void }) 
       {tile('performer', { kind: 'performer' }, 'performer', '役者', '全シーンに足す')}
       {tile('audience', { kind: 'audience' }, 'audience', '客席')}
     </div>}
+    {/* いまの役者。舞台にいない役者は 3D にも平面図にも出ないので、ここから出し入れ・設定できるようにする（2026-11-17） */}
+    {tab === 'cast' && performers.length > 0 && <>
+      <h3 className="phone-subhead">このシーンの役者</h3>
+      <ul className="phone-cast">
+        {performers.map(performer => {
+          const on = performer.onStage !== false
+          return <li key={performer.id}>
+            <span className="phone-cast-dot" style={{ background: performer.color }} aria-hidden="true">{performer.name.trim().slice(0, 1)}</span>
+            <span className="phone-cast-name">{performer.name}<small>{on ? '舞台上' : '舞台外'}</small></span>
+            <button type="button" onClick={() => useStore.getState().updatePerformer(performer.id, { onStage: !on })}>{on ? '舞台から外す' : '舞台に出す'}</button>
+            <button type="button" onClick={() => onSettings(performer.id)}>設定</button>
+          </li>
+        })}
+      </ul>
+    </>}
     {tab === 'set' && <>
       <div className="phone-tiles">
         {SET_PIECE_TYPES.filter(item => !EFFECT_TYPES.has(item.id)).map(item => tile(item.id, { kind: 'setpiece', type: item.id }, SET_PIECE_GLYPH[item.id], item.label))}
