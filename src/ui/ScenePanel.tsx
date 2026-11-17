@@ -128,7 +128,7 @@ function LocalScenesBody({ authenticated, loading }: { authenticated: boolean; l
       setLoadedName(sceneName)
       setScenes(listSavedScenes())
       setError('')
-      setSuccess(`「${sceneName}」を${hasDeviceStorage() ? 'このアプリに保存' : 'ブラウザに一時保存'}しました`)
+      setSuccess(`「${sceneName}」を${hasDeviceStorage() ? '保存' : 'ブラウザに一時保存'}しました`)
       markSaved()
     } catch {
       if (isMockPreview) setActiveSavedProjectName(previousActiveName)
@@ -164,7 +164,7 @@ function LocalScenesBody({ authenticated, loading }: { authenticated: boolean; l
   }
   return (
     <section className="scene-section">
-      <header className="scene-section-h"><span>{isMockPreview ? (hasDeviceStorage() ? 'このアプリに保存' : 'ブラウザに一時保存') : 'この端末に保存'}</span></header>
+      <header className="scene-section-h"><span>{isMockPreview ? (hasDeviceStorage() ? '保存' : 'ブラウザに一時保存') : 'この端末に保存'}</span></header>
       {isMockPreview ? <label className="project-save-label">保存する名前
         <input className="scene-name-input" value={name} maxLength={60} placeholder="例：秋公演 A劇場"
           onChange={e => { setName(e.target.value); setError(''); setSuccess('') }} />

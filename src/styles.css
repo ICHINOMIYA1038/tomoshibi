@@ -5315,3 +5315,24 @@ input[type="color"]::-moz-color-swatch { border: 0; border-radius: 0; }
 .phone-list.unity-panel .hierarchy-head h2 { font-size: 13px; }
 .phone-list .hierarchy-tree button, .phone-list .hierarchy-tree [role="treeitem"] > div { min-height: 40px; }
 .phone-list.unity-panel .hierarchy-tree { max-height: none; overflow: visible; }
+/* 光の色の「自由な色」のマス。虹色の丸で、押すと色を選ぶ欄が開く。選んでいるときはその色で塗る（2026-11-18） */
+.gel-swatch-free {
+  position: relative; display: inline-block; width: 24px; height: 24px; border-radius: 50%; overflow: hidden; cursor: pointer;
+  border: 1px solid rgba(255, 255, 255, .35);
+  background: conic-gradient(#ff5a5a, #ffd25a, #7dff6a, #5ae6ff, #6a7dff, #e65aff, #ff5a5a);
+}
+.gel-swatch-free.active { outline: 2px solid var(--kin); outline-offset: 2px; }
+.gel-swatch-free input[type="color"] { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; border: 0; padding: 0; }
+.phone-inspector .gel-swatch-free { width: 30px; height: 30px; }
+/* スマホの「見る位置」（一覧の横）。2026-11-18 */
+.phone-view-picker, .phone-view-picker-menu { display: none; }
+.unified-shell.phone-layout .phone-view-picker {
+  display: inline-flex; align-items: center; gap: 4px; position: fixed; z-index: 55; top: calc(var(--phone-top) + 10px); left: 212px;
+  min-height: 42px; padding: 0 12px; border: 1px solid #4c4246; background: #191619; color: var(--ink-primary); font: 600 14px var(--font-sans);
+}
+.unified-shell.phone-layout .phone-view-picker-menu {
+  display: grid; position: fixed; z-index: 56; top: calc(var(--phone-top) + 58px); left: 212px; min-width: 140px; padding: 6px;
+  border: 1px solid rgba(224,180,92,.6); border-radius: 6px; background: #191619; box-shadow: 0 8px 24px rgba(0,0,0,.5);
+}
+.unified-shell.phone-layout .phone-view-picker-menu button { min-height: 44px; padding: 0 12px; border: 0; background: none; color: var(--ink-primary); font-size: 15px; text-align: left; }
+.unified-shell.phone-layout .phone-view-picker-menu button[aria-pressed="true"] { color: var(--kin); font-weight: 700; }

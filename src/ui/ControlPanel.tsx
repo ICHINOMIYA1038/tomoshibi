@@ -269,15 +269,7 @@ export function FixtureEditor({ fixture }: { fixture: Fixture }) {
           <input type="checkbox" checked={fixture.gelEnabled} onChange={e => update({ gelEnabled: e.target.checked })} />
         </div>
       )}
-      <div className="row">
-        <label>色</label>
-        <input
-          type="color"
-          value={colorToHex(fixture.color)}
-          onChange={e => update({ color: hexToRgb(e.target.value), gelEnabled: !isMeasured })}
-        />
-        <span className="numval" style={{ flex: 1, textAlign: 'left' }}>{colorToHex(fixture.color)}</span>
-      </div>
+      {/* 色は色見本 1 つにまとめた。見本に無い色は、最後の「自由な色」のマスから選ぶ（2026-11-18 オーナー「色見本とカラーパレットは一緒じゃね」） */}
       <GelSwatches fixture={fixture} onPick={hex => update({ color: hexToRgb(hex), gelEnabled: !isMeasured })} />
       {profile.source === 'tungsten' && profile.kind !== 'FollowSpot' && <p className="mover-note">ハロゲンは、絞るほど電球の色が赤っぽくなります（いま {Math.round(dimmedKelvin(profile, fixture.intensity))}K）。</p>}
       {isLED && (
@@ -345,14 +337,21 @@ function FollowField({ fixture, onChange }: { fixture: Fixture; onChange: (patch
 
 /** ゲルの色見本。押すとその色にする（在来の照明ではゲルを付けた扱い、LED ではその色を出す） */
 function GelSwatches({ fixture, onPick }: { fixture: Fixture; onPick: (hex: string) => void }) {
-  const current = fixture.gelEnabled ? gelByHex(colorToHex(fixture.color)) : null
+  const hex = colorToHex(fixture.color)
+  const current = fixture.gelEnabled ? gelByHex(hex) : null
   return <div className="gel-swatches">
-    <div className="gel-swatches-current">{current ? `${current.name}${current.note ? `（${current.note}）` : ''}` : '色見本から選ぶ'}</div>
+    <div className="gel-swatches-current">{current ? `${current.name}${current.note ? `（${current.note}）` : ''}` : `自由な色 ${hex}`}</div>
     {GEL_GROUPS.map(group => <div key={group} className="gel-swatch-group">
       <span>{group}</span>
       <div>{GELS.filter(gel => gel.group === group).map(gel => <button key={gel.id} type="button" title={gel.note ? `${gel.name}（${gel.note}）` : gel.name}
         aria-label={gel.name} aria-pressed={current?.id === gel.id} className={current?.id === gel.id ? 'active' : ''}
         style={{ background: gel.hex }} onClick={() => onPick(gel.hex)} />)}</div>
     </div>)}
+    <div className="gel-swatch-group">
+      <span>自由な色</span>
+      <div><label className={'gel-swatch-free' + (current ? '' : ' active')} title="見本に無い色を選ぶ" style={{ background: current ? undefined : hex }}>
+        <input type="color" aria-label="自由な色を選ぶ" value={hex} onChange={event => onPick(event.target.value)} />
+      </label></div>
+    </div>
   </div>
 }
