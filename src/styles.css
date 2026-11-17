@@ -5345,3 +5345,6 @@ input[type="color"]::-moz-color-swatch { border: 0; border-radius: 0; }
 .unified-shell .hierarchy-filter button.active { border-color: var(--kin); background: rgba(224,180,92,.16); color: var(--ink-primary); }
 .hierarchy-filter small { opacity: .7; font-size: 11px; }
 .unified-shell .phone-list .hierarchy-filter button { min-height: 38px; padding: 0 12px; font-size: 14px; border-radius: 19px; }
+/* 設定の欄の中の、自由形状の舞台の図（2026-11-18） */
+.stage-shape-editor { margin: 6px 0 8px; }
+.stage-shape-editor svg { display: block; width: 100%; height: auto; border: 1px solid rgba(255,255,255,.14); border-radius: 4px; touch-action: none; }
