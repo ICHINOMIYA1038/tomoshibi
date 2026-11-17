@@ -44,7 +44,32 @@ export function useMapZoom(svgRef: RefObject<SVGSVGElement | null>, view: () => 
       zoomBy(Math.exp(-delta * (event.ctrlKey ? .01 : .0025)), viewRef.current().toWorld(event.clientX, event.clientY))
     }
     svg.addEventListener('wheel', onWheel, { passive: false })
-    return () => svg.removeEventListener('wheel', onWheel)
+    // 2 本指で広げる・つまむと拡大・縮小する（スマホ・タブレット。2026-11-17 オーナー指摘）。2 本の指の真ん中を動かさない
+    let pinch: number | null = null
+    const spread = (touches: TouchList) => Math.hypot(touches[0].clientX - touches[1].clientX, touches[0].clientY - touches[1].clientY)
+    const onTouchStart = (event: TouchEvent) => { if (event.touches.length === 2) pinch = spread(event.touches) }
+    const onTouchMove = (event: TouchEvent) => {
+      if (event.touches.length !== 2 || pinch === null) return
+      event.preventDefault()
+      const now = spread(event.touches)
+      if (!pinch || !now) return
+      const midX = (event.touches[0].clientX + event.touches[1].clientX) / 2
+      const midY = (event.touches[0].clientY + event.touches[1].clientY) / 2
+      zoomBy(now / pinch, viewRef.current().toWorld(midX, midY))
+      pinch = now
+    }
+    const onTouchEnd = (event: TouchEvent) => { if (event.touches.length < 2) pinch = null }
+    svg.addEventListener('touchstart', onTouchStart, { passive: true })
+    svg.addEventListener('touchmove', onTouchMove, { passive: false })
+    svg.addEventListener('touchend', onTouchEnd)
+    svg.addEventListener('touchcancel', onTouchEnd)
+    return () => {
+      svg.removeEventListener('wheel', onWheel)
+      svg.removeEventListener('touchstart', onTouchStart)
+      svg.removeEventListener('touchmove', onTouchMove)
+      svg.removeEventListener('touchend', onTouchEnd)
+      svg.removeEventListener('touchcancel', onTouchEnd)
+    }
   })
 
   /** 何も無い所を押したときに呼ぶ。ドラッグした分だけ図を動かす。動かさずに離したときは onTap を呼ぶ */

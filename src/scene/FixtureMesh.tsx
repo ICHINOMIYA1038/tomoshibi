@@ -1,4 +1,5 @@
 import { useMemo, useRef } from 'react'
+import { useFloorDrag } from './floorDrag'
 import { useFrame } from '@react-three/fiber'
 import { recordHit } from '../objectMenu'
 import * as THREE from 'three'
@@ -145,6 +146,7 @@ export function FixtureMeshes() {
 }
 
 function FixtureMeshSingle({ id }: { id: string }) {
+  const floorDrag = useFloorDrag('fixture', id)
   const stored = useStore(s => s.fixtures.find(x => x.id === id))
   const performers = useStore(s => s.performers)
   // 役者を追う照明は、体も役者のほうへ向ける
@@ -174,6 +176,7 @@ function FixtureMeshSingle({ id }: { id: string }) {
   return (
     <group
       position={pos.toArray()}
+      {...floorDrag}
       onPointerOver={(e) => { e.stopPropagation(); setHover('fixture', f.id) }}
       onPointerOut={(e) => { e.stopPropagation(); setHover(null, null) }}
       onContextMenu={(e) => { e.stopPropagation(); recordHit({ kind: 'fixture', id: f.id }) }}

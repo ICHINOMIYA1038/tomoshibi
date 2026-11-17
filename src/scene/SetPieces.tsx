@@ -1,4 +1,5 @@
 import { useGLTF } from '@react-three/drei'
+import { useFloorDrag } from './floorDrag'
 import { recordHit } from '../objectMenu'
 import { useStore } from '../store'
 import type { SetPiece } from '../types'
@@ -17,6 +18,7 @@ function SetPieceItem({ piece }: { piece: SetPiece }) {
   const select = useStore(s => s.select)
   const selection = useStore(s => s.selection)
   const isSelected = selection.kind === 'setpiece' && selection.id === piece.id
+  const floorDrag = useFloorDrag('setpiece', piece.id)
 
   const onClick = (e: any) => {
     e.stopPropagation()
@@ -40,6 +42,7 @@ function SetPieceItem({ piece }: { piece: SetPiece }) {
       position={piece.position}
       rotation={piece.rotation}
       scale={piece.scale}
+      {...floorDrag}
       onClick={onClick}
       onContextMenu={onContextMenu}
     >
