@@ -159,6 +159,10 @@ export function StagePartsLayer({ selectedId, onSelect, tool = 'translate', toWo
             <line x1={px(corners[0][0])} y1={py(corners[0][1])} x2={px(corners[1][0])} y2={py(corners[1][1])}
               stroke={selected ? '#f2c27b' : item.color ?? PART_COLORS[item.kind]} strokeWidth={item.kind === 'batten' ? 4 : 7}
               strokeDasharray={item.kind === 'batten' ? '10 5' : undefined} strokeLinecap="round" />
+            {/* 名前（バトン 1 など）。平面図で、どの線が何かわかるように */}
+            <text x={Math.min(px(corners[0][0]), px(corners[1][0])) - 6 * unitsPerPx} y={(py(corners[0][1]) + py(corners[1][1])) / 2 + 4 * unitsPerPx} textAnchor="end" fill="#5a4f45"
+              fontSize={Math.max(11, 11 * unitsPerPx)} fontWeight="700" paintOrder="stroke" stroke="#fffdf8"
+              strokeWidth={3 * unitsPerPx} pointerEvents="none">{PART_LABELS[item.kind]} {parts.filter(other => other.kind === item.kind).indexOf(item) + 1}</text>
           </g>}
       </g>
     })}

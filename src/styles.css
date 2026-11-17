@@ -5124,3 +5124,11 @@ body.embed .workspace-switch { display: none; }
   .change-scope-bar.phone .change-scope-close { flex: 0 0 44px; }
   .change-scope-bar.phone ~ .phone-card { display: none; }
 }
+/* 右のパネルの中に出す帯（3D の画面に重ねない）。パネルを閉じているときは画面の下に出す */
+.change-scope-bar:not(.phone):not(.docked) { top: auto; bottom: 16px; }
+.change-scope-bar.docked { position: sticky; top: 0; z-index: 3; transform: none; flex-wrap: wrap; max-width: none; margin: 0 0 12px; box-shadow: none; }
+.change-scope-bar.docked > span { flex: 1 1 100%; margin: 0 0 4px; }
+.change-scope-bar.docked button { flex: 1 1 auto; min-height: 36px; padding: 0 8px; font-size: 12px; }
+.change-scope-bar.docked .change-scope-close { flex: 0 0 auto; }
+.plan-marker-key b { margin-right: 2px; color: #8d847b; font-weight: 700; }
+.change-scope-bar.docked .change-scope-close { position: absolute; top: 4px; right: 4px; min-height: 32px; }
