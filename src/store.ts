@@ -25,6 +25,8 @@ export const PLAN_LIMITS = { chapters: 100, scenes: 100 } as const
 export interface Fixture {
   id: string
   name: string
+  /** 仕込み図の器具番号（回路番号など、自由に付ける）。無ければ並び順の番号を出す。全シーン共通 */
+  number?: string
   presetKey: string
   photometricProfile?: 'etc-fos4-fresnel10-mid' | 'etc-s4-led-cyc-daylight-hd'
   upstageCutDeg?: number

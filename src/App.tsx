@@ -556,7 +556,7 @@ export default function App() {
 
       {!playbackOpen && <SelectionStatusHint />}
       {/* 右のパネルを開いているときは、パネルの中に出す（3D の画面に重ねない）。閉じているときだけ画面の下に出す */}
-      {!phoneLayout && !playbackOpen && !settings.panelOpen && <ChangeScopeBar />}
+      {!phoneLayout && !playbackOpen && <ChangeScopeBar />}
       {!isEmbed && <KeyHint />}
     </div>}
     {adFooter && <footer className="ad-footer" aria-label="広告">
