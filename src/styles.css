@@ -5146,3 +5146,18 @@ body.embed .workspace-switch { display: none; }
 .plan-scope-legend i.actor { display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; margin-right: 4px; border-radius: 50%; background: #9f674d; color: #fffdf8; font: 700 10px var(--font-sans); font-style: normal; }
 .plan-scope-legend .plan-scope-note { flex-basis: 100%; color: var(--ink-muted); }
 .unified-shell .plan-map-layerbar > span { white-space: nowrap; flex: none; }
+.plan-scope-legend svg.legend-fixture { width: 27px; height: 18px; }
+@media (min-width: 961px) { .unified-shell.workspace-layout.plan-open { --map-height: 52vh; } }
+
+/* PC の見え方の切り替え（3D／平面図／並べる）。道具の列の先頭に置く */
+.toolbar .desk-view-switch { display: flex; margin-right: 6px; border: 1px solid #4c4246; border-radius: 5px; overflow: hidden; }
+.toolbar .desk-view-switch button { padding: 0 12px; border: 0; border-radius: 0; background: transparent; color: var(--ink-primary); font: 500 13px var(--font-sans); }
+.toolbar .desk-view-switch button + button { border-left: 1px solid #4c4246; }
+.toolbar .desk-view-switch button[aria-pressed="true"] { background: var(--kin) !important; color: #14110d; font-weight: 700; }
+/* 平面図だけのときは、3D 用の道具・視点を隠す（平面図にも道具がある） */
+.unified-shell.workspace-layout.desk-plan-full .toolbar > :not(.desk-view-switch) { display: none; }
+.unified-shell.workspace-layout.desk-plan-full { --map-height: calc(100dvh - var(--header-height) - 64px) !important; }
+.unified-shell.workspace-layout.desk-plan-full .canvas-wrap { visibility: hidden; pointer-events: none; }
+.unified-shell.workspace-layout.desk-plan-full .plan-resize-handle { display: none; }
+@media (max-width: 600px) { .desk-view-switch { display: none; } }
+.unified-shell .plan-map-layerbar { flex-wrap: wrap; row-gap: 6px; }
