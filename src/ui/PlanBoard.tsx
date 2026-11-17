@@ -217,6 +217,9 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
   const updateFixture = useStore(s => s.updateFixture)
   const updateSetPiece = useStore(s => s.updateSetPiece)
   const [showFixtures, setShowFixtures] = useState(true)
+  const [showPerformers, setShowPerformers] = useState(true)
+  // スマホでは表示の切り替えを「表示」の小窓にまとめる（2026-11-18 オーナー「スマホで照明や役者の表示を切り替えられない」）
+  const [layerMenuOpen, setLayerMenuOpen] = useState(false)
   const [showLabels, setShowLabels] = useState(true)
   // 初めは仕込み図（2026-11-17 オーナー指定）
   const [planStyle, setPlanStyleState] = useState<PlanStyle>(() => { try { return localStorage.getItem(PLAN_STYLE_KEY) === 'light' ? 'light' : 'plot' } catch { return 'plot' } })
@@ -1228,6 +1231,22 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
             onClick={() => setShowSetPieces(value => !value)}>舞台セット：{showSetPieces ? '表示中' : '非表示'}</button>
           <button type="button" className={showFixtures ? 'active' : ''} aria-pressed={showFixtures}
             onClick={() => setShowFixtures(value => !value)}>照明：{showFixtures ? '表示中' : '非表示'}</button>
+          <button type="button" className={showPerformers ? 'active' : ''} aria-pressed={showPerformers}
+            onClick={() => setShowPerformers(value => !value)}>役者：{showPerformers ? '表示中' : '非表示'}</button>
+          <button type="button" className="plan-layer-menu-button" aria-expanded={layerMenuOpen} aria-haspopup="true"
+            onClick={() => setLayerMenuOpen(open => !open)}>表示</button>
+          {layerMenuOpen && <div className="plan-layer-menu" role="group" aria-label="平面図に出すもの">
+            {([
+              ['壁・客席', showShared, setShowShared],
+              ['舞台セット', showSetPieces, setShowSetPieces],
+              ['照明', showFixtures, setShowFixtures],
+              ['役者', showPerformers, setShowPerformers],
+              ['名前', showLabels, setShowLabels],
+            ] as Array<[string, boolean, (update: (value: boolean) => boolean) => void]>).map(([label, on, set]) =>
+              <label key={label} className="plan-layer-menu-row">
+                <input type="checkbox" checked={on} onChange={() => set(value => !value)} />{label}</label>)}
+            <button type="button" className="plan-layer-menu-close" onClick={() => setLayerMenuOpen(false)}>閉じる</button>
+          </div>}
           {persistent && <button type="button" className={showDirections ? 'active' : ''} aria-pressed={showDirections}
             title="ひとつ前のシーンから、役者がどう動いたか・照明の狙いがどう変わったかを矢印で出します"
             onClick={onToggleDirections}>前のシーンからの変化：{showDirections ? '表示中' : '非表示'}</button>}
@@ -1527,7 +1546,7 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
                 </g>
               </g>
             })}
-            {performers.map((performer, index) => {
+            {showPerformers && performers.map((performer, index) => {
               if (performer.onStage === false) return null
               const point: StagePoint = [performer.position[0], performer.position[2]]
               const active = performer.id === selectedPerformer?.id
@@ -1570,7 +1589,7 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
               const obstacles: Box[] = []
               const items: Array<{ key: string; x: number; y: number; r: number; text: string; active: boolean; rank: number }> = []
               const short = (text: string, max: number) => text.length > max ? text.slice(0, max - 1) + '…' : text
-              performers.forEach(performer => {
+              if (showPerformers) performers.forEach(performer => {
                 if (performer.onStage === false) return
                 const x = mapX(performer.position[0]), y = mapY(performer.position[2])
                 const r = markerSize * .64
