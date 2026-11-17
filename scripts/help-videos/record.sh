@@ -5,6 +5,8 @@
 #   bash scripts/help-videos/record.sh 03         → 03 だけ録り直す
 #   node scripts/help-videos/publish.mjs          → public/help-media/ にウェブ用の mp4・表紙・videos.json を作る
 # 録った webm は scripts/help-videos/out/（git には入れない）に置く。
+# agent-browser は npx で毎回起こすと 1 操作ごとに遅れ、動画が 10 倍近く長くなる。入っている本体を AGENT_BROWSER で渡す:
+#   AGENT_BROWSER=$(ls -d ~/.npm/_npx/*/node_modules/.bin/agent-browser | head -1) bash scripts/help-videos/record.sh
 set -u
 . "$(dirname "$0")/lib.sh"
 OUT="$HERE/out"
@@ -39,10 +41,10 @@ scene_02() {
   click_el '.hierarchy-name' '平台 (下手)'
   cap '行を押すと選べます。設定は一覧の下に出ます'
   pause 1600
-  cap '「＋ 追加」から、照明・役者・舞台セットなどを足せます'
+  cap '「＋ 追加」の絵を押すと足せます。3D の画面へドラッグすると、落とした所に置けます'
   click_el '.hierarchy-add-button'
-  pause 500
-  click_el '.hierarchy-add-menu button' '＋ 役者'
+  pause 700
+  click_el '.add-tile' '役者'
   pause 900
   cap '「親」を選ぶと、その物の子になります'
   local p; p=$(at '.inspector select'); set -- $p; glide "$1" "$2"; pause 300
@@ -77,29 +79,32 @@ scene_03() {
   stop
 }
 
-# ---- 04 会場の配置（舞台の大きさ・客席） ----
+# ---- 04 舞台と客席を平面図で動かす（全シーン共通の物） ----
 scene_04() {
   fresh; start "$OUT/04.webm"
-  cap '平面図の「会場の配置」で、舞台と客席を並べます'
-  click_el '.plan-audience-button, button' '会場の配置'
+  cap '平面図では、舞台・壁・バトン・客席も、そのままドラッグで動かせます'
   pause 900
-  cap '「＋ 客席」で客席を足し、ドラッグで動かします'
-  click_el '.audience-editor button' '＋ 客席'
+  click_el '.hierarchy-add-button'
+  pause 600
+  click_el '.add-tile' '客席'
   pause 700
-  local p; p=$(at '.audience-editor [data-menu-kind="audience"]'); set -- $p
-  drag_to "$1" "$2" $(($1 + 60)) $(($2 + 50))
-  pause 600
-  cap '舞台を選び、道具を「拡大」にすると、金色の点で大きさを変えられます'
-  # 中央の「舞台」の文字の所を押す（文字は押せないので、下の舞台の床が選ばれる。バトンの上を避ける）
-  p=$(at '.audience-editor polygon[data-menu-kind="stage"]'); set -- $p; click_at "$1" "$2"
-  click_el '.audience-editor button' '拡大'
-  pause 600
-  p=$(at '[aria-label^="舞台の幅をドラッグ"] circle:last-child'); set -- $p
-  drag_to "$1" "$2" $(($1 + 70)) "$2"
+  # 足した客席は舞台の前の遠くに置かれ、平面図の外になるので、縮めて見えるようにする
+  click_el '.plan-map-zoom button[aria-label="縮小"]'
+  pause 300
+  click_el '.plan-map-zoom button[aria-label="縮小"]'
+  pause 700
+  cap '客席は全シーン共通です。動かすと、すべてのシーンで変わります'
+  local p; p=$(at '.plan-map-scroll [data-menu-kind="audience"]'); set -- $p
+  drag_to "$1" "$2" $(($1 + 40)) $(($2 - 20))
+  pause 700
+  cap '「回転」の道具にすると、ドラッグで回せます（5° ごと）'
+  click_el '.plan-map-caption .tool-buttons button' '回転'
   pause 500
-  p=$(at '[aria-label^="舞台の奥行をドラッグ"] circle:last-child'); set -- $p
-  drag_to "$1" "$2" "$1" $(($2 + 35))
-  pause 1500
+  p=$(at '.plan-map-scroll [data-menu-kind="audience"]'); set -- $p
+  drag_to $(($1 + 60)) "$2" $(($1 + 45)) $(($2 + 45))
+  pause 1200
+  click_el '.plan-map-caption .tool-buttons button' '移動'
+  pause 600
   stop
 }
 
@@ -145,7 +150,50 @@ scene_06() {
   stop
 }
 
-ALL="01 02 03 04 05 06"
+# ---- 07 ほかのシーンにも反映する ----
+scene_07() {
+  fresh
+  # 反映する先が要るので、撮る前にシーンを 1 つ足しておく
+  click_el '.plan-outline-node.scene .plan-outline-node-edit'
+  pause 500
+  click_el '.plan-context-menu button' 'この後にシーンを追加'
+  pause 900
+  start "$OUT/07.webm"
+  cap '変えた物は、まずいまのシーンだけに入ります'
+  pause 900
+  local p; p=$(at '.plan-map-scroll [data-menu-kind="performer"]'); set -- $p
+  drag_to "$1" "$2" $(($1 + 80)) $(($2 - 20))
+  pause 900
+  cap '下に出る帯で「この章」「このあと」「全シーン」にも同じ変更を入れられます'
+  pause 1600
+  click_el '.change-scope-bar button' '全シーンにも'
+  pause 1800
+  cap '押さなければ、このシーンだけの変更のままです'
+  pause 1500
+  stop
+}
+
+# ---- 08 3D と平面図を切り替える ----
+scene_08() {
+  fresh; start "$OUT/08.webm"
+  cap '左上で「3D・平面図・並べる」を切り替えます'
+  pause 900
+  click_el '.desk-view-switch button' '平面図'
+  pause 1300
+  cap '平面図だけを大きく出せます。見た目は「仕込み図」と「明かり」から選べます'
+  click_el '.plan-style-switch button' '明かり'
+  pause 1800
+  click_el '.plan-style-switch button' '仕込み図'
+  pause 1200
+  cap '「画像で保存」で、そのまま配れる図になります'
+  local p; p=$(at '.plan-save-image'); set -- $p; glide "$1" "$2"
+  pause 1500
+  click_el '.desk-view-switch button' '並べる'
+  pause 1200
+  stop
+}
+
+ALL="01 02 03 04 05 06 07 08"
 for id in ${@:-$ALL}; do
   echo "録画: $id"
   "scene_$id"

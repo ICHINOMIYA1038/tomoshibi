@@ -51,7 +51,10 @@ fresh() {
   ab open "$BASE_URL/studio/"
   pause 3500
   # 初めての人向けの案内を閉じる
-  ab eval "localStorage.setItem('tomoshibi.helpSeen', '1'); 1"
+  ab eval "localStorage.setItem('tomoshibi.helpSeen', '1'); localStorage.setItem('tomoshibi.deskView', 'both'); localStorage.setItem('tomoshibi.planStyle', 'plot'); 1"
+  # 3D と平面図を並べる見え方で撮る（初めの値は 3D だけ。2026-11-17 から）。いったん開き直して効かせる
+  ab open "$BASE_URL/studio/"
+  pause 3500
   ab eval "document.querySelector('[aria-label=\"ヘルプを閉じる\"], .help-overlay button')?.click(); 1"
   pause 400
 }
