@@ -35,14 +35,15 @@ export function ChangeScopeBar({ phone = false, docked = false }: { phone?: bool
   const showChapter = chapterCount > 1 && sameChapter > 1
   const apply = (range: 'chapter' | 'after' | 'all') => {
     const count = applyChangeToScenes(range)
-    setDone(count ? `ほかの ${count} シーンにも反映しました` : 'ほかのシーンには、反映する物がありませんでした')
+    setDone(count ? `ほかの ${count} シーンにも入れました` : 'ほかのシーンには、入れる物がありませんでした')
   }
   return <div className={'change-scope-bar' + (phone ? ' phone' : '') + (docked ? ' docked' : '')} role="status"
     onPointerEnter={() => setHold(true)} onPointerLeave={() => setHold(false)}>
-    <span className="change-scope-text">{phone ? 'ほかのシーンにも：' : `${describeChange(change)}。ほかのシーンにも：`}</span>
-    {showChapter && <button type="button" onClick={() => apply('chapter')} title="同じ章のほかのシーンにも、同じ変更を入れる">この章</button>}
-    {index < scenes.length - 1 && <button type="button" onClick={() => apply('after')} title="このあとのシーン全部に、同じ変更を入れる">このあと</button>}
+    {/* 問いかけと答えの形にする（2026-11-17 オーナー「記述がわかりづらい」） */}
+    <span className="change-scope-text">{phone ? 'ほかにも入れる？' : `${describeChange(change)}。この変更を、ほかのシーンにも入れますか？`}</span>
+    {showChapter && <button type="button" onClick={() => apply('chapter')} title="同じ章のほかのシーンにも、同じ変更を入れる">{phone ? 'この章' : 'この章のシーン'}</button>}
+    {index < scenes.length - 1 && <button type="button" onClick={() => apply('after')} title="このあとのシーン全部に、同じ変更を入れる">{phone ? 'このあと' : 'このあとのシーン'}</button>}
     <button type="button" onClick={() => apply('all')} title="ほかのすべてのシーンに、同じ変更を入れる">全シーン</button>
-    <button type="button" className="change-scope-close" aria-label="このシーンだけにする" onClick={clearChange}>×</button>
+    <button type="button" className="change-scope-close" title="ほかのシーンには入れない" onClick={clearChange}>{phone ? 'いいえ' : 'このシーンだけ'}</button>
   </div>
 }
