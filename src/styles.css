@@ -5302,3 +5302,16 @@ input[type="color"]::-moz-color-swatch { border: 0; border-radius: 0; }
 }
 .plan-map-layerbar > button.plan-layer-menu-button::before, .plan-layer-menu-close::before { content: none !important; display: none !important; }
 .unified-shell .plan-map-layerbar > button.plan-layer-menu-button { display: none; }
+/* スマホの「一覧」ボタン（3D・平面図の切り替えの右）。2026-11-18 */
+.phone-list-button { display: none; }
+.unified-shell.phone-layout .phone-list-button {
+  display: inline-flex; align-items: center; position: fixed; z-index: 55; top: calc(var(--phone-top) + 10px); left: 146px;
+  min-height: 42px; padding: 0 16px; border: 1px solid #4c4246; background: #191619;
+  color: var(--ink-primary); font: 600 14px var(--font-sans);
+}
+.phone-list .hierarchy-panel { max-height: none; border: 0; }
+/* スマホの一覧は、PC のヒエラルキーと同じ見た目を使い、行を指で押しやすい高さにする */
+.phone-list.unity-panel .hierarchy-panel { border: 0; background: none; }
+.phone-list.unity-panel .hierarchy-head h2 { font-size: 13px; }
+.phone-list .hierarchy-tree button, .phone-list .hierarchy-tree [role="treeitem"] > div { min-height: 40px; }
+.phone-list.unity-panel .hierarchy-tree { max-height: none; overflow: visible; }

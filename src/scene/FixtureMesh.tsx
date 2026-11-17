@@ -215,7 +215,7 @@ function FixtureMeshSingle({ id, index }: { id: string; index: number }) {
         <meshBasicMaterial transparent opacity={0} />
       </mesh>
 
-      {/* スマホ・タッチでは、照明のまわりに光の輪を出し、遠いときだけ番号を出す。指で受ける範囲も広げる（2026-11-18） */}
+      {/* スマホ・タッチでは、遠くて器具が小さく見えるときだけ番号を出す（近ければ出さない）。指で受ける範囲も広げる（2026-11-18） */}
       <FixtureBadge fixture={f} index={index} selected={selection.kind === 'fixture' && selection.id === f.id} />
     </group>
   )
@@ -314,21 +314,6 @@ function badgeTexture(label: string, gel: string, selected: boolean) {
   return texture
 }
 
-let haloTexture: THREE.CanvasTexture | null = null
-/** 照明のまわりの光の輪（白のぼかし。色はマテリアルで付ける） */
-function haloMap() {
-  if (haloTexture) return haloTexture
-  const size = 128
-  const canvas = document.createElement('canvas')
-  canvas.width = canvas.height = size
-  const ctx = canvas.getContext('2d')!
-  const g = ctx.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2)
-  g.addColorStop(0, 'rgba(255,255,255,.95)'); g.addColorStop(.35, 'rgba(255,255,255,.55)'); g.addColorStop(1, 'rgba(255,255,255,0)')
-  ctx.fillStyle = g; ctx.fillRect(0, 0, size, size)
-  haloTexture = new THREE.CanvasTexture(canvas)
-  return haloTexture
-}
-
 /**
  * 照明の番号の札（2026-11-18 オーナー「スマホの 3D で照明が小さすぎて見失う・つかみづらい」）。
  * 遠くても同じ大きさで見える札を器具の位置に出し、そのまわりの見えない大きな札で指を受ける。
@@ -341,7 +326,7 @@ function FixtureBadge({ fixture, index, selected }: { fixture: Fixture; index: n
   const texture = useMemo(() => touch ? badgeTexture(label.slice(0, 3), gel, selected) : null, [touch, label, gel, selected])
   const badgeRef = useRef<THREE.Sprite>(null)
   const world = useMemo(() => new THREE.Vector3(), [])
-  // 器具が画面の上で小さく見える（遠い）ときだけ、番号の丸を出す。近ければ器具そのものと光の輪で見せる
+  // 器具が画面の上で小さく見える（遠い）ときだけ、番号の丸を出す。近ければ器具そのもので見せる（光の輪はオーナー判断でやめた）
   useFrame(({ camera, size }) => {
     const badge = badgeRef.current
     if (!badge) return
@@ -349,15 +334,10 @@ function FixtureBadge({ fixture, index, selected }: { fixture: Fixture; index: n
     const distance = camera.position.distanceTo(world)
     const fov = (camera as THREE.PerspectiveCamera).fov ?? 50
     const pixels = .35 / (2 * distance * Math.tan(THREE.MathUtils.degToRad(fov) / 2)) * size.height
-    badge.visible = pixels < 9
+    badge.visible = pixels < 10
   })
   if (!touch || !texture) return null
   return <group>
-    {/* 器具のまわりの光の輪（ゲルの色）。暗い吊り込みの中でも照明の場所がわかるように。選んだ照明は金色 */}
-    <sprite scale={[1.4, 1.4, 1]} renderOrder={999} raycast={() => null}>
-      <spriteMaterial map={haloMap()} color={selected ? '#e0b45c' : gel} transparent opacity={selected ? 1 : .85}
-        depthWrite={false} blending={THREE.AdditiveBlending} />
-    </sprite>
     <sprite ref={badgeRef} scale={[.05, .05, 1]} renderOrder={1002} raycast={() => null} visible={false}>
       <spriteMaterial map={texture} sizeAttenuation={false} depthTest={false} transparent />
     </sprite>
