@@ -9,6 +9,7 @@ import { StagePartsLayer } from './StagePartsEditor'
 import { Glyph } from './AddPalette'
 import { FIXTURE_PROFILES } from '../lighting/fixtureTypes'
 import { clearChange } from '../changeLog'
+import { lockedNow, nudgeLock } from '../locks'
 import { audienceSeatPositions, clampAudiencePosition } from '../audienceLayout'
 import { isFlat, partCorners, resolveStageParts } from '../stageParts'
 import { ToolButtons } from './ToolButtons'
@@ -340,6 +341,16 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
     // 平面図でも道具に従う。「移動」のときだけドラッグで動かし、ほかの道具では選ぶだけ
     const selectKind = kind === 'target' ? 'fixture' : kind
     const tool = useStore.getState().settings.transformMode
+    // 固定した物は動かさない。選んで、図を動かす（選んであれば鍵のボタンを光らせる）
+    if (kind !== 'target' && lockedNow(kind, id)) {
+      const current = useStore.getState().selection
+      if (current.kind === kind && current.id === id) nudgeLock()
+      if (kind === 'performer') selectActor(id)
+      else if (kind === 'fixture') selectFixture(id, 'position')
+      else selectSetPiece(id)
+      if (event.button === 0) mapZoom.beginPan(event)
+      return
+    }
     if (tool === 'rotate' && kind === 'setpiece') {
       selectSetPiece(id)
       const piece = useStore.getState().setPieces.find(item => item.id === id)
@@ -421,9 +432,10 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
     window.addEventListener('pointercancel', up)
   }
   // 全シーン共通の物（舞台・客席）をドラッグで動かす。動きは window で受ける（StagePartsLayer と同じ）
-  const dragShared = (event: PointerEvent<SVGElement>, label: string, onMove: (dx: number, dz: number) => void) => {
+  const dragShared = (event: PointerEvent<SVGElement>, label: string, onMove: (dx: number, dz: number) => void, lock?: { kind: 'stage' | 'audience'; id: string }) => {
     event.preventDefault()
     event.stopPropagation()
+    if (lock && lockedNow(lock.kind, lock.id)) { nudgeLock(); if (event.button === 0) mapZoom.beginPan(event); return }
     const svg = svgRef.current
     if (!svg || useStore.getState().settings.transformMode !== 'translate') { if (event.button === 0) mapZoom.beginPan(event); return }
     const bounds = mapBounds
@@ -1274,7 +1286,7 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
               onPointerDown={event => {
                 select('stage', 'stage')
                 const from = venue.stageOffset ?? [0, 0]
-                dragShared(event, '舞台', (dx, dz) => useStore.getState().moveStageTo([round1(from[0] + dx), round1(from[1] + dz)]))
+                dragShared(event, '舞台', (dx, dz) => useStore.getState().moveStageTo([round1(from[0] + dx), round1(from[1] + dz)]), { kind: 'stage', id: 'stage' })
               }} />
             {showShared && <StagePartsLayer selectedId={selection.kind === 'stagepart' ? selection.id : null}
               onSelect={id => select(id ? 'stagepart' : null, id)} tool={tool} onPan={mapZoom.beginPan}
@@ -1287,7 +1299,7 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
                 aria-label={`${block.name}（全シーン共通）。ドラッグで移動`} style={{ cursor: tool === 'translate' ? 'grab' : 'pointer', touchAction: 'none' }}
                 onPointerDown={event => {
                   select('audience', block.id)
-                  if (tool === 'rotate') {
+                  if (tool === 'rotate' && !lockedNow('audience', block.id)) {
                     const fromDeg = block.rotationDeg
                     dragRotate(event, block.position, block.name || '客席', deg => useStore.getState().updateAudienceBlock(block.id, { rotationDeg: fromDeg - deg }))
                     return
@@ -1296,7 +1308,7 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
                   dragShared(event, block.name || '客席', (dx, dz) => {
                     const current = useStore.getState().productionPlan.audienceBlocks?.find(item => item.id === block.id)
                     if (current) useStore.getState().updateAudienceBlock(block.id, { position: clampAudiencePosition(current, round1(from[0] + dx), round1(from[1] + dz)) })
-                  })
+                  }, { kind: 'audience', id: block.id })
                 }}>
                 {audienceSeatPositions(block).map(([x, z], index) => <rect key={index}
                   x={mapX(x) - seat / 2} y={mapY(z) - seat * .45} width={seat} height={seat * .9} rx="2"
@@ -1398,13 +1410,13 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
               const arrowDelta = (key: string): [number, number] | null => key === 'ArrowLeft' ? [-.5, 0] : key === 'ArrowRight' ? [.5, 0]
                 : key === 'ArrowUp' ? [0, -.5] : key === 'ArrowDown' ? [0, .5] : null
               return <g key={fixture.id} opacity={fixture.enabled ? 1 : .45}>
-                <line x1={px} y1={py} x2={tx} y2={ty}
+                {/* 狙いへの線と狙いの印は、選んだ照明だけに出す（照明が多いと線で埋まって操作できなかった。2026-11-17） */}
+                {active && <line x1={px} y1={py} x2={tx} y2={ty}
                   stroke={active ? T.labelActive : planStyle === 'light' ? colorToHex(fixture.color) : T.aim}
                   strokeOpacity={active ? 1 : planStyle === 'light' ? .45 : 1} strokeWidth={active ? 3 : 1.2}
-                  strokeDasharray={active || planStyle === 'light' ? undefined : '4 4'} pointerEvents="none" />
-                {/* 狙いの点。選んでいない照明では目印だけで、触っても動かない（誤操作を防ぐ） */}
-                <circle cx={tx} cy={ty} r={active ? 10 : 4}
-                  fill="none" stroke={active ? T.labelActive : T.aim} strokeWidth={active ? 3 : 1.2} pointerEvents="none" />
+                  strokeDasharray={active || planStyle === 'light' ? undefined : '4 4'} pointerEvents="none" />}
+                {active && <circle cx={tx} cy={ty} r={10}
+                  fill="none" stroke={T.labelActive} strokeWidth={3} pointerEvents="none" />}
                 <g role="button" tabIndex={0} aria-label={fixture.name + 'の吊る位置を動かす（全シーン共通。向きはそのまま）'} data-menu-kind="fixture" data-menu-id={fixture.id}
                   style={{ cursor: 'grab', touchAction: 'none' }}
                   onPointerDown={event => beginDrag(event, 'fixture', fixture.id, [fixture.position[0], fixture.position[2]])}

@@ -6,6 +6,7 @@ import { clampAudiencePosition } from './audienceLayout'
 import { THEATRE } from './venueLayout'
 import { FIXTURE_PROFILES } from './lighting/fixtureTypes'
 import { clearChange } from './changeLog'
+import { setLocked } from './locks'
 
 // 選んでいる物の複製・削除。種類によらず同じ操作にする（Unity の ⌘D・Delete）
 
@@ -206,9 +207,11 @@ function addItemAt(item: AddItem, at?: StagePoint, ray?: THREE.Ray) {
   }
   if (item.kind === 'performer') return s.addPerformer(point && [point[0], 0, point[1]])
   if (item.kind === 'setpiece') return addSetPiece(item.type, point)
-  if (item.kind === 'stagepart') return addStagePart(item.part, point)
+  if (item.kind === 'stagepart') { const id = addStagePart(item.part, point); if (id) setLocked('stagepart', id, false); return id }
   const id = s.addAudienceBlock()
   if (!id) return id
+  // あとから足した客席は、置いた直後に動かせるよう固定しない
+  setLocked('audience', id, false)
   const block = (useStore.getState().productionPlan.audienceBlocks ?? []).find(entry => entry.id === id)
   if (block && point) useStore.getState().updateAudienceBlock(id, { position: clampAudiencePosition(block, point[0], point[1]) })
   useStore.getState().select('audience', id)

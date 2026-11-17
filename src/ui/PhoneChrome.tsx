@@ -8,7 +8,7 @@ import { useCloudSession } from '../io/cloudSession'
 import { redoMockWorkspace, undoMockWorkspace, useMockWorkspaceState } from '../io/mockWorkspace'
 import { EFFECT_TYPES, FIXTURE_GLYPH, FIXTURE_TILES, Glyph, SET_PIECE_GLYPH, STAGE_PART_KINDS } from './AddPalette'
 import { Inspector } from './Inspector'
-import { scopeOf } from '../scope'
+import { LockButton } from './LockButton'
 import { ChangeScopeBar } from './ChangeScopeBar'
 
 // スマホ（幅 600px 以下）の編集画面。PC の道具の列・ヒエラルキー・インスペクターは出さず、
@@ -111,9 +111,10 @@ function SelectedCard({ onSettings }: { onSettings: () => void }) {
   })
   if (!selection.kind) return null
   return <div className="phone-card">
-    <div className="phone-card-text"><span>{KIND_LABELS[selection.kind] ?? ''}{scopeOf(selection.kind) && <b className={'scope-tag ' + scopeOf(selection.kind)!.kind}>{scopeOf(selection.kind)!.short}</b>}</span><strong>{name ?? KIND_LABELS[selection.kind]}</strong></div>
+    <div className="phone-card-text"><span>{KIND_LABELS[selection.kind] ?? ''}</span><strong>{name ?? KIND_LABELS[selection.kind]}</strong></div>
+    <LockButton className="phone-card-lock" />
     <button type="button" className="phone-card-main" onClick={onSettings}>設定</button>
-    <button type="button" className="phone-card-sub" onClick={() => useStore.getState().select(null, null)}>選ぶのをやめる</button>
+    <button type="button" className="phone-icon phone-card-close" aria-label="選ぶのをやめる" onClick={() => useStore.getState().select(null, null)}>×</button>
   </div>
 }
 

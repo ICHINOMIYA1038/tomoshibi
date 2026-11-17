@@ -1,4 +1,5 @@
 import { useRef, type PointerEvent, type KeyboardEvent } from 'react'
+import { lockedNow, nudgeLock } from '../locks'
 import { useStore, type StagePoint } from '../store'
 import { DEFAULT_VENUE_LAYOUT } from '../venueLayout'
 import {
@@ -77,6 +78,8 @@ export function StagePartsLayer({ selectedId, onSelect, tool = 'translate', toWo
     event.preventDefault()
     event.stopPropagation()
     onSelect(item.id)
+    // 固定した部品は、ドラッグでは動かさない（図を動かす）。鍵のボタンを光らせて知らせる
+    if (lockedNow('stagepart', item.id)) { nudgeLock(); if (handle === 'body' && event.button === 0) onPan?.(event); return }
     if (handle === 'body' && tool === 'rotate') { rotate(event, item); return }
     if (handle === 'body' ? tool !== 'translate' : tool !== 'scale') { if (handle === 'body' && event.button === 0) onPan?.(event); return }
     drag.current = { id: item.id, handle, pointerId: event.pointerId, at: toLocal(event), from: item, moved: false, fixtureIds: hungIds(item) }

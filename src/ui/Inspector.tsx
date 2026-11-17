@@ -14,7 +14,7 @@ import { smokeAmountOf } from '../scene/SmokeCloud'
 import { InspectorSection, NumberField } from './fields'
 import { partName } from './HierarchyPanel'
 import { FixtureEditor } from './ControlPanel'
-import { scopeOf } from '../scope'
+import { LockButton } from './LockButton'
 import { clearChange } from '../changeLog'
 import * as THREE from 'three'
 
@@ -46,11 +46,11 @@ export function Inspector() {
     <header className="inspector-head">
       <div><small>{KIND_LABELS[selection.kind]}</small><strong>{title || '名称未設定'}</strong></div>
       <div className="inspector-actions">
+        <LockButton />
         {canDelete(selection.kind) && <button type="button" onClick={duplicateSelection} title="複製（⌘D / Ctrl+D）">複製</button>}
         {canDelete(selection.kind) && <button type="button" className="danger" onClick={deleteSelection} title="削除（Delete）。⌘Z で戻せます">削除</button>}
       </div>
     </header>
-    {scopeOf(selection.kind) && <p className={'scope-chip ' + scopeOf(selection.kind)!.kind}>{scopeOf(selection.kind)!.detail}</p>}
     {fixture && <FixtureInspector fixture={fixture} />}
     {performer && <PerformerInspector performer={performer} />}
     {setPiece && <SetPieceInspector piece={setPiece} />}
