@@ -103,6 +103,9 @@ export function HierarchyPanel() {
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set())
   const [dropTarget, setDropTarget] = useState<string | null>(null)
   const [adding, setAdding] = useState(false)
+  // 種類で絞る（2026-11-18 オーナー「照明や舞台が混ざっているので、照明だけ・役者だけで切り替えたい」）。
+  // 絞ったときは親子をたどらず、その種類だけを平らに並べる
+  const [filter, setFilter] = useState<Filter>('all')
   /** 行をドラッグしている間だけ「親なしにする」置き場を出す */
   const [dragging, setDragging] = useState(false)
 
@@ -170,12 +173,21 @@ export function HierarchyPanel() {
         onClick={() => setAdding(value => !value)}>＋ 追加</button>
     </div>
     {adding && <AddPalette />}
+    <div className="hierarchy-filter" role="group" aria-label="種類で絞る">
+      {FILTERS.map(([value, label]) => {
+        const count = value === 'all' ? null : flatten(tree).filter(node => FILTER_KINDS[value].has(node.kind)).length
+        return <button key={value} type="button" aria-pressed={filter === value} className={filter === value ? 'active' : ''}
+          onClick={() => setFilter(value)}>{label}{count !== null && <small>{count}</small>}</button>
+      })}
+    </div>
     <ul className="hierarchy-tree" role="tree" onContextMenu={event => {
       // 行の外（何も無い所）は、足すためのメニュー
       if (event.defaultPrevented) return
       event.preventDefault()
       useObjectMenu.getState().open({ x: event.clientX, y: event.clientY, target: null })
-    }}>{tree.map(node => row(node, 0))}</ul>
+    }}>{filter === 'all'
+      ? tree.map(node => row(node, 0))
+      : flatten(tree).filter(node => FILTER_KINDS[filter].has(node.kind)).map(node => row({ ...node, children: [] }, 0))}</ul>
     {dragging ? <div className={'hierarchy-root-drop' + (dropTarget === 'root' ? ' drop-target' : '')}
       onDragOver={event => { if (accepts(event, null)) { event.preventDefault(); setDropTarget('root') } }}
       onDragLeave={() => setDropTarget(value => value === 'root' ? null : value)}
@@ -183,4 +195,17 @@ export function HierarchyPanel() {
       ここに落とすと親なしにする
     </div> : <p className="hierarchy-hint">行を別の行に重ねると、その子になります（親と一緒に動きます）</p>}
   </section>
+}
+
+type Filter = 'all' | 'fixture' | 'performer' | 'setpiece' | 'venue'
+const FILTERS: Array<[Filter, string]> = [['all', 'すべて'], ['fixture', '照明'], ['performer', '役者'], ['setpiece', 'セット'], ['venue', '舞台・客席']]
+const FILTER_KINDS: Record<Exclude<Filter, 'all'>, Set<string>> = {
+  fixture: new Set(['fixture']),
+  performer: new Set(['performer']),
+  setpiece: new Set(['setpiece']),
+  venue: new Set(['stage', 'stagepart', 'audience']),
+}
+/** 木をたどって、すべての行を並べる（親が先） */
+function flatten(nodes: Node[]): Node[] {
+  return nodes.flatMap(node => [node, ...flatten(node.children)])
 }

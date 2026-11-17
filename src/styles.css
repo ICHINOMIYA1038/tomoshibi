@@ -5336,3 +5336,12 @@ input[type="color"]::-moz-color-swatch { border: 0; border-radius: 0; }
 }
 .unified-shell.phone-layout .phone-view-picker-menu button { min-height: 44px; padding: 0 12px; border: 0; background: none; color: var(--ink-primary); font-size: 15px; text-align: left; }
 .unified-shell.phone-layout .phone-view-picker-menu button[aria-pressed="true"] { color: var(--kin); font-weight: 700; }
+/* 一覧の種類の絞り込み（2026-11-18） */
+.hierarchy-filter { display: flex; flex-wrap: wrap; gap: 4px; padding: 6px 8px; border-bottom: 1px solid var(--panel-edge, rgba(255,255,255,.12)); }
+.unified-shell .hierarchy-filter button {
+  display: inline-flex; align-items: center; gap: 4px; min-height: 28px; padding: 0 9px; border: 1px solid rgba(255,255,255,.18); border-radius: 14px;
+  background: none; color: var(--ink-secondary, #cbbfb1); font: 12px var(--font-sans); cursor: pointer;
+}
+.unified-shell .hierarchy-filter button.active { border-color: var(--kin); background: rgba(224,180,92,.16); color: var(--ink-primary); }
+.hierarchy-filter small { opacity: .7; font-size: 11px; }
+.unified-shell .phone-list .hierarchy-filter button { min-height: 38px; padding: 0 12px; font-size: 14px; border-radius: 19px; }
