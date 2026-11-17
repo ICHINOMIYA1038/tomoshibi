@@ -5348,3 +5348,10 @@ input[type="color"]::-moz-color-swatch { border: 0; border-radius: 0; }
 /* 設定の欄の中の、自由形状の舞台の図（2026-11-18） */
 .stage-shape-editor { margin: 6px 0 8px; }
 .stage-shape-editor svg { display: block; width: 100%; height: auto; border: 1px solid rgba(255,255,255,.14); border-radius: 4px; touch-action: none; }
+/* スマホの客電の入・切（3D の上の列の右端）。2026-11-18 */
+.phone-house-lights { display: none; }
+.unified-shell.phone-layout .phone-house-lights {
+  display: inline-flex; align-items: center; position: fixed; z-index: 55; top: calc(var(--phone-top) + 10px); right: 12px;
+  min-height: 42px; padding: 0 10px; border: 1px solid #4c4246; background: #191619; color: var(--ink-secondary, #cbbfb1); font: 600 13px var(--font-sans);
+}
+.unified-shell.phone-layout .phone-house-lights.on { border-color: var(--kin); color: var(--kin); }

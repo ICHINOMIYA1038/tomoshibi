@@ -84,14 +84,25 @@ function SeatingBlock({ block }: { block: AudienceBlock }) {
 
 export function AudienceSeating() {
   const blocks = useStore(state => state.productionPlan.audienceBlocks ?? [])
+  const houseLights = useStore(state => !!state.settings.showHouseLights)
   if (!blocks.length) return null
   return <group>
+    {/* 客電。客席のまとまりごとに、真上から暖かい明かりを当てる。客席がどこにあっても（正面・三方・四方・変形）その場所が明るくなる。
+        以前は舞台の正面の決まった位置から当てていて、客席はほとんど明るくならなかった（2026-11-18 オーナー「客電が役割を果たしているか」） */}
+    {houseLights && blocks.map(block => {
+      const width = block.seatsPerRow * block.seatSpacing
+      const depth = block.rows * block.rowSpacing
+      const height = (block.elevation ?? 0) + 7
+      return <pointLight key={'house-' + block.id} position={[block.position[0], height, block.position[1]]}
+        color="#ffe2b8" intensity={60 + width * depth * 2.2} distance={0} decay={2} />
+    })}
     {/* 客席の床。端が見えると、床の板を置いたように見えるので、果てまで続いて見える大きさにする
         （カメラの描く距離は 600m、視点は ±150m の劇場の中なので、2km 四方なら端は描かれない。オーナー指示、2026-11-15） */}
     <mesh position={[0, -.06, 7]} rotation={[-Math.PI / 2, 0, 0]}
       onContextMenu={event => { event.stopPropagation(); recordHit(null, [event.point.x, 0, event.point.z]) }}>
       <planeGeometry args={[2000, 2000]} />
-      <meshBasicMaterial color="#211d24" toneMapped={false} />
+      {/* 客電で照らされるよう、光を受ける床にする。客電を切っても真っ黒にならない程度に、少しだけ自分で光らせる */}
+      <meshStandardMaterial color="#3a3238" roughness={.95} emissive="#141016" emissiveIntensity={1} />
     </mesh>
     {blocks.map(block => <SeatingBlock key={block.id} block={block} />)}
   </group>

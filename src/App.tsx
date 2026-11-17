@@ -442,8 +442,10 @@ export default function App() {
           <hemisphereLight args={['#3a2a20', '#1a1208', 0.2]} />
           {settings.showHouseLights && (
             <>
-              <ambientLight intensity={0.55} color={'#fde0b8'} />
-              <directionalLight position={[0, 8, 6]} intensity={0.7} color={'#fde0b8'} />
+              {/* 客電の明かりは客席の真上から当てる（AudienceSeating）。ここは舞台に回り込む分だけ */}
+              <ambientLight intensity={0.18} color={'#fde0b8'} />
+              {/* 客席を置いていないときは、これまでどおり正面から当てる */}
+              {!hasAudienceBlocks && <directionalLight position={[0, 8, 6]} intensity={0.7} color={'#fde0b8'} />}
             </>
           )}
 
