@@ -3,7 +3,8 @@ import { clampPart, resolveStageParts, type FloorFinish, type StagePart, type St
 import * as THREE from 'three'
 import { canBeParent, hierarchyContext, moveDescendants, parentOf, STAGE_ID, type ChildKind } from './hierarchy'
 import { FIXTURE_PROFILES, dimmedKelvin, kelvinToRGB } from './lighting/fixtureTypes'
-import { propagateCast, propagateRig } from './rig'
+import { propagateCast, propagateRig, SHARED_FIXTURE_KEYS } from './rig'
+import { clearChange, recordChange } from './changeLog'
 import { DEFAULT_VENUE_LAYOUT, stageLocalFootprint, THEATRE } from './venueLayout'
 import { isWorkspacePath } from './io/workspacePath'
 import type { PerformerPose } from './performerPoses'
@@ -547,12 +548,14 @@ export const useStore = create<State>((set, get) => ({
       if (typeof window !== 'undefined') alert(`装置は ${LIMITS.setPieces} 個までです`)
       return {}
     }
+    recordChange({ kind: 'setpiece', id: sp.id, op: 'add', patch: {}, name: sp.name, sceneId: s.productionPlan.activeSceneId })
     return { setPieces: [...s.setPieces, sp] }
   }),
   removeSetPiece: (id) => set(s => {
     // 子は、消したセットの親に付け替える（Unity と同じく、子まで消しはしない）
     const ctx = hierarchyContext(s.productionPlan.venueLayout, s.setPieces)
     const removed = s.setPieces.find(x => x.id === id)
+    if (removed) recordChange({ kind: 'setpiece', id, op: 'remove', patch: {}, name: removed.name, sceneId: s.productionPlan.activeSceneId })
     const parent = removed ? parentOf('setpiece', removed, ctx) : STAGE_ID
     const adopt = <T extends { parentId?: string | null }>(items: T[]) => items.map(item => item.parentId === id ? { ...item, parentId: parent } : item)
     return {
@@ -564,6 +567,7 @@ export const useStore = create<State>((set, get) => ({
   }),
   updateSetPiece: (id, patch) => set(s => {
     const before = s.setPieces.find(sp => sp.id === id)
+    if (before) recordChange({ kind: 'setpiece', id, op: 'update', patch, name: patch.name ?? before.name, sceneId: s.productionPlan.activeSceneId })
     const setPieces = s.setPieces.map(sp => sp.id === id ? { ...sp, ...patch } : sp)
     const after = setPieces.find(sp => sp.id === id)
     if (!before || !after || (!patch.position && !patch.rotation)) return { setPieces }
@@ -595,6 +599,7 @@ export const useStore = create<State>((set, get) => ({
       position: pos, rotation: [0, 0, 0], scale: 1,
     }
     set(s => ({ setPieces: [...s.setPieces, sp], selection: { kind: 'setpiece', id } }))
+    recordChange({ kind: 'setpiece', id, op: 'add', patch: {}, name: sp.name, sceneId: get().productionPlan.activeSceneId })
     return id
   },
   settings: {
@@ -644,9 +649,13 @@ export const useStore = create<State>((set, get) => ({
     fixtures: s.fixtures.filter(f => f.id !== id),
     selection: s.selection.id === id ? { kind: null, id: null } : s.selection,
   })),
-  updateFixture: (id, patch) => set(s => ({
-    fixtures: s.fixtures.map(f => f.id === id ? { ...f, ...patch } : f),
-  })),
+  updateFixture: (id, patch) => set(s => {
+    // 吊る位置・機種・名前は全シーン共通（rig.ts）。それ以外は、ほかのシーンにも当てられるよう覚えておく（changeLog.ts）
+    const fixture = s.fixtures.find(f => f.id === id)
+    const scenePatch = Object.fromEntries(Object.entries(patch).filter(([key]) => !(SHARED_FIXTURE_KEYS as readonly string[]).includes(key)))
+    if (fixture && Object.keys(scenePatch).length) recordChange({ kind: 'fixture', id, op: 'update', patch: scenePatch, name: fixture.name, sceneId: s.productionPlan.activeSceneId })
+    return { fixtures: s.fixtures.map(f => f.id === id ? { ...f, ...patch } : f) }
+  }),
   duplicateFixture: (id) => {
     const f = get().fixtures.find(x => x.id === id)
     if (!f) return
@@ -671,6 +680,7 @@ export const useStore = create<State>((set, get) => ({
     const copy = { ...piece, id: `sp${Date.now()}-${get().setPieces.length}`, name: piece.name + ' (複製)',
       position: [piece.position[0] + 0.6, piece.position[1], piece.position[2]] as typeof piece.position }
     set(s => ({ setPieces: [...s.setPieces, copy], selection: { kind: 'setpiece', id: copy.id } }))
+    recordChange({ kind: 'setpiece', id: copy.id, op: 'add', patch: {}, name: copy.name, sceneId: get().productionPlan.activeSceneId })
   },
   setParent: (kind, id, parentId) => set(s => {
     const ctx = hierarchyContext(s.productionPlan.venueLayout, s.setPieces)
@@ -706,9 +716,13 @@ export const useStore = create<State>((set, get) => ({
     performers: s.performers.filter(p => p.id !== id),
     selection: s.selection.id === id ? { kind: null, id: null } : s.selection,
   })),
-  updatePerformer: (id, patch) => set(s => ({
-    performers: s.performers.map(p => p.id === id ? { ...p, ...patch } : p),
-  })),
+  updatePerformer: (id, patch) => set(s => {
+    // 名前は全シーン共通（rig.ts）。それ以外は、ほかのシーンにも当てられるよう覚えておく
+    const performer = s.performers.find(p => p.id === id)
+    const { name: _name, ...scenePatch } = patch
+    if (performer && Object.keys(scenePatch).length) recordChange({ kind: 'performer', id, op: 'update', patch: scenePatch, name: patch.name ?? performer.name, sceneId: s.productionPlan.activeSceneId })
+    return { performers: s.performers.map(p => p.id === id ? { ...p, ...patch } : p) }
+  }),
 
   updateProductionPlan: (patch) => set(s => ({
     productionPlan: { ...s.productionPlan, ...patch },
@@ -939,6 +953,7 @@ export const useStore = create<State>((set, get) => ({
   } })),
   selectScene: (id) => set(s => {
     if (id === s.productionPlan.activeSceneId) return {}
+    clearChange()
     const plan = withStableSceneNames(ensurePlanHierarchy(captureActiveScene(s.productionPlan, s)))
     const scene = plan.scenes.find(item => item.id === id)
     if (!scene) return {}

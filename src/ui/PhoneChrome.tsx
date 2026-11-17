@@ -9,6 +9,7 @@ import { redoMockWorkspace, undoMockWorkspace, useMockWorkspaceState } from '../
 import { EFFECT_TYPES, FIXTURE_GLYPH, FIXTURE_TILES, Glyph, SET_PIECE_GLYPH, STAGE_PART_KINDS } from './AddPalette'
 import { Inspector } from './Inspector'
 import { scopeOf } from '../scope'
+import { ChangeScopeBar } from './ChangeScopeBar'
 
 // スマホ（幅 600px 以下）の編集画面。PC の道具の列・ヒエラルキー・インスペクターは出さず、
 // 舞台をいつも見せたまま、追加・シーン・設定を下からのシートで出す（2026-11-17 オーナーと決めた案 A）
@@ -59,6 +60,7 @@ export function PhoneChrome({ title, view, onView, onBack, onPlay }: {
       <button type="button" aria-pressed={view === 'plan'} onClick={() => onView('plan')}>平面図</button>
     </div>
 
+    <ChangeScopeBar phone />
     {toast ? <div className="phone-card phone-toast" role="status">
       <div className="phone-card-text"><strong>{toast.label}を足しました</strong><span>矢印の付いた物が、足した物です</span></div>
       <button type="button" className="phone-card-main" onClick={() => setSheet('inspector')}>設定</button>

@@ -1,4 +1,5 @@
 import { unifyCast, unifyRig } from '../rig'
+import { clearChange } from '../changeLog'
 import { STAGE_SIZE, THEATRE } from '../venueLayout'
 import { AUDIENCE_MAX_ELEVATION } from '../audienceLayout'
 import { getEditableState } from '../playback/editorState'
@@ -59,11 +60,12 @@ export function exportScene(name: string = '無題'): SerializedScene {
 }
 
 export function importScene(scene: SerializedScene) {
+  clearChange()
   if (scene.version !== 1 && scene.version !== 2) {
     console.warn('Unsupported scene version', scene.version)
   }
   const normalized = normalizeProductionPlan(scene.productionPlan, scene.fixtures, scene.performers, scene.setPieces ?? [])
-  // 古いプランは、シーンごとに照明の位置や機種、役者の顔ぶれや服の色が違うことがある。
+  // 古いプランは、シーンごとに照明の位置や機種、役者の顔ぶれや名前が違うことがある。
   // 違う分を別の照明・役者に分けて、仕込みとキャストを 1 つにする（rig.ts）
   const plan = { ...normalized, scenes: unifyCast(unifyRig(normalized.scenes)) }
   const active = plan.scenes.find(item => item.id === plan.activeSceneId)

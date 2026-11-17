@@ -15,6 +15,7 @@ import { InspectorSection, NumberField } from './fields'
 import { partName } from './HierarchyPanel'
 import { FixtureEditor } from './ControlPanel'
 import { scopeOf } from '../scope'
+import { clearChange } from '../changeLog'
 import * as THREE from 'three'
 
 // 右パネルの下: 選んだ物の設定（Unity のインスペクター）。
@@ -106,6 +107,7 @@ function FixtureInspector({ fixture }: { fixture: Fixture }) {
     const s = useStore.getState()
     s.duplicateFixture(fixture.id)
     s.updateFixture(fixture.id, { enabled: false })
+    clearChange()
   }
   return <>
     <div className="scope-heading shared">全シーン共通（仕込み）</div>
@@ -121,7 +123,7 @@ function FixtureInspector({ fixture }: { fixture: Fixture }) {
     </InspectorSection>
     <button type="button" className="inspector-wide-button" onClick={addForScene}>このシーン用に別の照明を吊る</button>
     <p className="scope-note">このシーンだけ別の位置から当てたいときに使います。複製した照明をこのシーンで点け、元の照明はこのシーンで消します。</p>
-    <div className="scope-heading scene">このシーンだけ（キュー）</div>
+    <div className="scope-heading scene">シーンごと（キュー）</div>
     <InspectorSection title="狙い">
       <NumberField label="X" value={fixture.target[0]} onChange={value => aim(0, value)} />
       <NumberField label="Y" value={fixture.target[1]} min={0} max={20} onChange={value => aim(1, value)} />
@@ -146,15 +148,17 @@ function PerformerInspector({ performer }: { performer: Performer }) {
     update({ position })
   }
   return <>
-    <div className="scope-heading shared">全シーン共通（キャスト）</div>
-    <p className="scope-note">名前・身長・服の色を変えると、すべてのシーンで変わります。役者を消すと、すべてのシーンから消えます。</p>
+    <div className="scope-heading shared">全シーン共通</div>
     <InspectorSection title="役者">
       <NameField value={performer.name} onChange={name => update({ name })} />
+    </InspectorSection>
+    <div className="scope-heading scene">シーンごと</div>
+    <p className="scope-note">変えたあとに、ほかのシーンにも反映できます。役者を消すと、すべてのシーンから消えます。</p>
+    <InspectorSection title="見た目">
       <NumberField label="身長" value={Math.round(performer.scale * 170)} min={100} max={220} step={1} unit="cm"
         onChange={value => update({ scale: value / 170 })} />
       <label className="inspector-text"><span>服の色</span><input type="color" value={performer.color} onChange={event => update({ color: event.target.value })} /></label>
     </InspectorSection>
-    <div className="scope-heading scene">このシーンだけ（立ち位置）</div>
     <InspectorSection title="出番">
       <label className="inspector-check"><input type="checkbox" checked={performer.onStage !== false}
         onChange={event => update({ onStage: event.target.checked })} />このシーンで舞台上にいる</label>

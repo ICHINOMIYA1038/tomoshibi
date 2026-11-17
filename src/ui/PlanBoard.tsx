@@ -1344,7 +1344,7 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
         </>}
         {mapMode === 'scene' && <div className="plan-scope-legend" aria-label="図の見方">
           <span><i className="shared" aria-hidden="true" />灰色＝全シーン共通（舞台・壁・バトン・客席・照明の吊る位置）</span>
-          <span><i className="scene" aria-hidden="true" />色付き＝このシーンだけ（役者・セット・照明の狙い）</span>
+          <span><i className="scene" aria-hidden="true" />色付き＝シーンごと（役者・セット・照明の狙い。変えたあと、ほかのシーンにも反映できます）</span>
         </div>}
         {mapMode === 'scene' && <div className="plan-map-footer">
           <div className="plan-actor-key">{performers.map((actor, index) => <div className="plan-actor-entry" key={actor.id}>
