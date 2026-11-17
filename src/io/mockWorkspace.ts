@@ -110,7 +110,8 @@ function projectContentKey(scene: SerializedScene): string {
 }
 
 export function preserveMockDraftBeforeDemo(): boolean {
-  if (!hasDeviceStorage() || getActiveCloudProject()) {
+  // ウェブでも、ログインしていないときは編集中のプロジェクトを一覧に控える（アプリと同じ。2026-11-17 から 2 件まで持てる）
+  if (getActiveCloudProject()) {
     try {
       const raw = workspaceStorage().getItem(SESSION_KEY)
       return !raw || JSON.parse(raw).cloudDirty !== true
