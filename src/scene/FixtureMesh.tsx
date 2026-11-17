@@ -215,7 +215,7 @@ function FixtureMeshSingle({ id, index }: { id: string; index: number }) {
         <meshBasicMaterial transparent opacity={0} />
       </mesh>
 
-      {/* スマホ・タッチでは、照明ごとに番号の札を画面の大きさで出す（見失わず、指でつかめるように） */}
+      {/* スマホ・タッチでは、照明のまわりに光の輪を出し、遠いときだけ番号を出す。指で受ける範囲も広げる（2026-11-18） */}
       <FixtureBadge fixture={f} index={index} selected={selection.kind === 'fixture' && selection.id === f.id} />
     </group>
   )
@@ -292,45 +292,41 @@ function useTouchScreen() {
 }
 
 const badgeTextures = new Map<string, THREE.CanvasTexture>()
-/**
- * 照明の札の絵。平面図・凡例と同じ「照明の器具の形」（胴に番号、先にゲルの色のレンズ）にし、
- * 下に光の筋を短く描く。番号の丸だけでは照明だとわからなかった（2026-11-18 オーナー指摘）。同じ見た目は使い回す
- */
+/** 遠くの照明に出す小さな番号の丸。同じ見た目は使い回す */
 function badgeTexture(label: string, gel: string, selected: boolean) {
   const key = `${label}|${gel}|${selected}`
   const cached = badgeTextures.get(key)
   if (cached) return cached
-  const w = 192, h = 128
+  const size = 96
   const canvas = document.createElement('canvas')
-  canvas.width = w; canvas.height = h
+  canvas.width = canvas.height = size
   const ctx = canvas.getContext('2d')!
-  const body = selected ? '#e0b45c' : 'rgba(24,20,24,.9)'
-  const edge = selected ? '#fff3d6' : '#f0e8da'
-  // 光の筋（レンズから下へ広がる）
-  const beam = ctx.createLinearGradient(0, 70, 0, h)
-  beam.addColorStop(0, gel + 'cc'); beam.addColorStop(1, gel + '00')
-  ctx.fillStyle = beam
-  ctx.beginPath(); ctx.moveTo(w * .62, 72); ctx.lineTo(w * .84, 72); ctx.lineTo(w * .98, h); ctx.lineTo(w * .48, h); ctx.closePath(); ctx.fill()
-  // 胴（角の丸い四角）
-  const bx = 14, by = 14, bw = 112, bh = 58, r = 12
-  ctx.beginPath()
-  ctx.moveTo(bx + r, by); ctx.lineTo(bx + bw - r, by); ctx.quadraticCurveTo(bx + bw, by, bx + bw, by + r)
-  ctx.lineTo(bx + bw, by + bh - r); ctx.quadraticCurveTo(bx + bw, by + bh, bx + bw - r, by + bh)
-  ctx.lineTo(bx + r, by + bh); ctx.quadraticCurveTo(bx, by + bh, bx, by + bh - r)
-  ctx.lineTo(bx, by + r); ctx.quadraticCurveTo(bx, by, bx + r, by); ctx.closePath()
-  ctx.fillStyle = body; ctx.fill(); ctx.lineWidth = 6; ctx.strokeStyle = edge; ctx.stroke()
-  // レンズ（ゲルの色）
-  ctx.beginPath(); ctx.moveTo(126, 18); ctx.lineTo(170, 6); ctx.lineTo(170, 80); ctx.lineTo(126, 68); ctx.closePath()
-  ctx.fillStyle = gel; ctx.fill(); ctx.lineWidth = 6; ctx.strokeStyle = edge; ctx.stroke()
-  // 番号
+  ctx.beginPath(); ctx.arc(size / 2, size / 2, size * .4, 0, Math.PI * 2)
+  ctx.fillStyle = selected ? '#e0b45c' : 'rgba(20,16,20,.8)'; ctx.fill()
+  ctx.lineWidth = size * .07; ctx.strokeStyle = gel; ctx.stroke()
   ctx.fillStyle = selected ? '#14110d' : '#fffdf8'
-  ctx.font = `700 ${label.length > 2 ? 34 : 44}px "Hiragino Sans", "Noto Sans JP", sans-serif`
+  ctx.font = `700 ${label.length > 2 ? size * .32 : size * .42}px "Hiragino Sans", "Noto Sans JP", sans-serif`
   ctx.textAlign = 'center'; ctx.textBaseline = 'middle'
-  ctx.fillText(label, bx + bw / 2, by + bh / 2 + 2)
+  ctx.fillText(label, size / 2, size / 2 + size * .02)
   const texture = new THREE.CanvasTexture(canvas)
   texture.colorSpace = THREE.SRGBColorSpace
   badgeTextures.set(key, texture)
   return texture
+}
+
+let haloTexture: THREE.CanvasTexture | null = null
+/** 照明のまわりの光の輪（白のぼかし。色はマテリアルで付ける） */
+function haloMap() {
+  if (haloTexture) return haloTexture
+  const size = 128
+  const canvas = document.createElement('canvas')
+  canvas.width = canvas.height = size
+  const ctx = canvas.getContext('2d')!
+  const g = ctx.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2)
+  g.addColorStop(0, 'rgba(255,255,255,.95)'); g.addColorStop(.35, 'rgba(255,255,255,.55)'); g.addColorStop(1, 'rgba(255,255,255,0)')
+  ctx.fillStyle = g; ctx.fillRect(0, 0, size, size)
+  haloTexture = new THREE.CanvasTexture(canvas)
+  return haloTexture
 }
 
 /**
@@ -343,12 +339,29 @@ function FixtureBadge({ fixture, index, selected }: { fixture: Fixture; index: n
   const label = (typeof fixture.number === 'string' && fixture.number.trim()) || String(index + 1)
   const gel = '#' + new THREE.Color(...fixture.color).getHexString()
   const texture = useMemo(() => touch ? badgeTexture(label.slice(0, 3), gel, selected) : null, [touch, label, gel, selected])
+  const badgeRef = useRef<THREE.Sprite>(null)
+  const world = useMemo(() => new THREE.Vector3(), [])
+  // 器具が画面の上で小さく見える（遠い）ときだけ、番号の丸を出す。近ければ器具そのものと光の輪で見せる
+  useFrame(({ camera, size }) => {
+    const badge = badgeRef.current
+    if (!badge) return
+    badge.getWorldPosition(world)
+    const distance = camera.position.distanceTo(world)
+    const fov = (camera as THREE.PerspectiveCamera).fov ?? 50
+    const pixels = .35 / (2 * distance * Math.tan(THREE.MathUtils.degToRad(fov) / 2)) * size.height
+    badge.visible = pixels < 9
+  })
   if (!touch || !texture) return null
   return <group>
-    <sprite scale={[.13, .087, 1]} renderOrder={1002} raycast={() => null}>
+    {/* 器具のまわりの光の輪（ゲルの色）。暗い吊り込みの中でも照明の場所がわかるように。選んだ照明は金色 */}
+    <sprite scale={[1.4, 1.4, 1]} renderOrder={999} raycast={() => null}>
+      <spriteMaterial map={haloMap()} color={selected ? '#e0b45c' : gel} transparent opacity={selected ? 1 : .85}
+        depthWrite={false} blending={THREE.AdditiveBlending} />
+    </sprite>
+    <sprite ref={badgeRef} scale={[.05, .05, 1]} renderOrder={1002} raycast={() => null} visible={false}>
       <spriteMaterial map={texture} sizeAttenuation={false} depthTest={false} transparent />
     </sprite>
-    {/* 指を受ける見えない球。画面の上で札より一回り大きく見えるよう、カメラからの距離に合わせて大きさを変える */}
+    {/* 指を受ける見えない球。カメラからの距離に合わせて大きさを変え、画面の上でいつも指 1 本分より大きくする */}
     <ScreenHitSphere />
   </group>
 }
