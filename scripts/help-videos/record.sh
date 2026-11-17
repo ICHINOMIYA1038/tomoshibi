@@ -5,6 +5,8 @@
 #   bash scripts/help-videos/record.sh 03         → 03 だけ録り直す
 #   node scripts/help-videos/publish.mjs          → public/help-media/ にウェブ用の mp4・表紙・videos.json を作る
 # 録った webm は scripts/help-videos/out/（git には入れない）に置く。
+# agent-browser は npx で毎回起こすと 1 操作ごとに遅れ、動画が 10 倍近く長くなる。入っている本体を AGENT_BROWSER で渡す:
+#   AGENT_BROWSER=$(ls -d ~/.npm/_npx/*/node_modules/.bin/agent-browser | head -1) bash scripts/help-videos/record.sh
 set -u
 . "$(dirname "$0")/lib.sh"
 OUT="$HERE/out"
@@ -85,7 +87,12 @@ scene_04() {
   click_el '.hierarchy-add-button'
   pause 600
   click_el '.add-tile' '客席'
-  pause 900
+  pause 700
+  # 足した客席は舞台の前の遠くに置かれ、平面図の外になるので、縮めて見えるようにする
+  click_el '.plan-map-zoom button[aria-label="縮小"]'
+  pause 300
+  click_el '.plan-map-zoom button[aria-label="縮小"]'
+  pause 700
   cap '客席は全シーン共通です。動かすと、すべてのシーンで変わります'
   local p; p=$(at '.plan-map-scroll [data-menu-kind="audience"]'); set -- $p
   drag_to "$1" "$2" $(($1 + 40)) $(($2 - 20))
@@ -145,7 +152,13 @@ scene_06() {
 
 # ---- 07 ほかのシーンにも反映する ----
 scene_07() {
-  fresh; start "$OUT/07.webm"
+  fresh
+  # 反映する先が要るので、撮る前にシーンを 1 つ足しておく
+  click_el '.plan-outline-node.scene .plan-outline-node-edit'
+  pause 500
+  click_el '.plan-context-menu button' 'この後にシーンを追加'
+  pause 900
+  start "$OUT/07.webm"
   cap '変えた物は、まずいまのシーンだけに入ります'
   pause 900
   local p; p=$(at '.plan-map-scroll [data-menu-kind="performer"]'); set -- $p
