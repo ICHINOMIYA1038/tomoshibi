@@ -5233,3 +5233,14 @@ body.embed .workspace-switch { display: none; }
   .phone-play { width: 44px; padding: 0; font-size: 16px; }
   .phone-icon:disabled { color: var(--ink-faint); border-color: #393035; }
 }
+
+/* 色の入力（服の色・照明の色・床や壁の色）を、どのブラウザでも同じ四角の色見本にする。
+   iPhone の Safari は幅と高さが違うと楕円にゆがむ（2026-11-17 オーナー「服の色のところが歪んでいる」） */
+input[type="color"] {
+  -webkit-appearance: none; appearance: none; box-sizing: border-box;
+  width: 44px !important; height: 44px !important; min-width: 44px; min-height: 44px !important;
+  padding: 3px !important; border: 1px solid #6b5d52 !important; border-radius: 0 !important; background: transparent; cursor: pointer;
+}
+input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+input[type="color"]::-webkit-color-swatch { border: 0; border-radius: 0; }
+input[type="color"]::-moz-color-swatch { border: 0; border-radius: 0; }
