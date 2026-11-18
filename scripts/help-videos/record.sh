@@ -93,7 +93,7 @@ scene_04() {
   local p; p=$(at '.plan-map-scroll [data-menu-kind="audience"]'); set -- $p
   drag_to "$1" "$2" $(($1 + 40)) $(($2 - 20))
   pause 700
-  cap '選ぶと上に出る ↻ をドラッグすると、回せます（5° ごと）'
+  cap '選ぶと上に出る丸い取っ手をドラッグすると、回せます（5° ごと）'
   pause 500
   p=$(at '.plan-map-scroll [aria-label$="を回す"] circle:nth-of-type(2)'); set -- $p
   drag_to "$1" "$2" $(($1 + 45)) $(($2 + 45))

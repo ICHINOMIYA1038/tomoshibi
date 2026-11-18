@@ -162,7 +162,7 @@ export function ControlPanel({ planOpen = false }: { planOpen?: boolean }) {
           </div>
         </div>
         {isMockPreview && <div className="panel-purpose">
-          <span>{selection.kind ? '平面図ではドラッグで動かし、↻ で回します。3D では上の道具（移動・回転・拡大）を使います' : '一覧から選ぶか、「＋ 追加」で足します'}</span>
+          <span>{selection.kind ? '平面図ではドラッグで動かし、上に出る丸い取っ手で回します。3D では上の道具（移動・回転・拡大）を使います' : '一覧から選ぶか、「＋ 追加」で足します'}</span>
           <button type="button" onClick={() => update({ panelOpen: false })}>平面図に戻る</button>
           <button type="button" className="panel-hide-desk" aria-label="舞台の編集の欄を閉じる" title="この欄を閉じる（右端のつまみか「表示」で開けます）"
             onClick={() => window.dispatchEvent(new Event('tomoshibi-inspector-hide'))}>×</button>
