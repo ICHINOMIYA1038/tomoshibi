@@ -32,12 +32,14 @@ export function useStageParts() {
 type Drag = { id: string; handle: 'body' | 'end-a' | 'end-b' | 'left' | 'right' | 'rear' | 'front'; pointerId: number; at: StagePoint; from: StagePart; moved: boolean; fixtureIds: string[] }
 
 /** 平面図の上に部品を描き、選んだ部品には取っ手を出す。座標は世界の座標（舞台の移動を含む） */
-export function StagePartsLayer({ selectedId, onSelect, tool = 'translate', toWorld, mapX, mapY, unitsPerPx, onPan, showLabels = true, partNames = true, labelLeft = -Infinity, theme }: {
+export function StagePartsLayer({ selectedId, onSelect, tool = 'translate', toWorld, mapX, mapY, unitsPerPx, onPan, showLabels = true, partNames = true, labelLeft = -Infinity, handlesWhenSelected = false, theme }: {
   showLabels?: boolean
   /** 壁・袖幕・ホリゾントの名前も書くか。false のときは、選んだ物とバトンの番号だけ */
   partNames?: boolean
   /** 図の描ける左端。バトンの番号がこれより左にはみ出すときは、内側に寄せる */
   labelLeft?: number
+  /** 選んだ部品に、道具に関係なく大きさの取っ手を出す（平面図。道具の切り替えが無いため） */
+  handlesWhenSelected?: boolean
   /** 平面図の見た目。plot は墨の線、light は暗い舞台の上のうすい線。無ければこれまでの色 */
   theme?: 'light' | 'plot'
   selectedId: string | null
@@ -85,7 +87,7 @@ export function StagePartsLayer({ selectedId, onSelect, tool = 'translate', toWo
     // 固定した部品は、ドラッグでは動かさない（図を動かす）。鍵のボタンを光らせて知らせる
     if (lockedNow('stagepart', item.id)) { nudgeLock(); if (handle === 'body' && event.button === 0) onPan?.(event); return }
     if (handle === 'body' && tool === 'rotate') { rotate(event, item); return }
-    if (handle === 'body' ? tool !== 'translate' : tool !== 'scale') { if (handle === 'body' && event.button === 0) onPan?.(event); return }
+    if (handle === 'body' ? tool !== 'translate' : tool !== 'scale' && !handlesWhenSelected) { if (handle === 'body' && event.button === 0) onPan?.(event); return }
     drag.current = { id: item.id, handle, pointerId: event.pointerId, at: toLocal(event), from: item, moved: false, fixtureIds: hungIds(item) }
     // 動きは window で受ける。押した要素で受けると、選んだときの再描画で要素が入れ替わり、ドラッグが途切れることがある
     // （2026-11-15 の「動かせない」の原因）
@@ -205,7 +207,7 @@ export function StagePartsLayer({ selectedId, onSelect, tool = 'translate', toWo
           </g>}
       </g>
     })}
-    {selectedPart && tool === 'scale' && handlesOf(selectedPart).map(handle => <g key={handle.handle} role="button"
+    {selectedPart && (tool === 'scale' || handlesWhenSelected) && handlesOf(selectedPart).map(handle => <g key={handle.handle} role="button"
       aria-label={`${PART_LABELS[selectedPart.kind]}の${handle.label}をドラッグして大きさを変える`}
       style={{ cursor: 'ew-resize', touchAction: 'none' }}
       onPointerDown={event => begin(event, selectedPart, handle.handle)}>
