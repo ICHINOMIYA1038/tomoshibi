@@ -60,12 +60,12 @@ export function ConsoleDesk({ onClose }: { onClose: () => void }) {
     if (!win) return
     win.document.write(`<!doctype html><html lang="ja"><head><meta charset="utf-8"><title>${esc(title)} キュー表</title><style>
       body{font:12px/1.5 "Hiragino Sans","Noto Sans JP",sans-serif;color:#161616;margin:16px}
-      h1{font-size:18px;margin:0 0 4px}p{margin:0 0 10px;color:#555}
+      h1{font-size:18px;margin:0 0 4px}
       table{border-collapse:collapse;width:100%}th,td{border:1px solid #999;padding:3px 4px;text-align:center;font-variant-numeric:tabular-nums}
       thead th{background:#eee}td.name{text-align:left;white-space:nowrap}td.chg{background:#fff1a8;font-weight:700}
       ul{columns:3;padding-left:16px;margin:12px 0 0}li{break-inside:avoid}
       @page{size:A4 landscape;margin:10mm}
-    </style></head><body><h1>${esc(title)}　キュー表</h1><p>数字はレベル（%）。「·」は消灯。色の付いたところは、前の場面から変わったところです。フェードは秒。</p>
+    </style></head><body><h1>${esc(title)}　キュー表</h1>
     <table><thead><tr><th>Q</th><th>場面</th><th>きっかけ</th><th>フェード</th>${head}</tr></thead><tbody>${rows}</tbody></table>
     <ul>${key}</ul>${endTag('body')}${endTag('html')}`)
     win.document.close()
@@ -135,7 +135,6 @@ export function ConsoleDesk({ onClose }: { onClose: () => void }) {
           })}
         </tbody>
       </table>
-      <p className="console-note">数字はレベル（%）。0 は消灯。黄色は前の場面から変わったところです。行の Q を押すと、その場面に切り替わります。</p>
     </div>}
   </section>
 }
