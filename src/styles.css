@@ -5169,6 +5169,8 @@ body.embed .workspace-switch { display: none; }
 .unified-shell .plan-map-layerbar .plan-style-switch button::before { content: none; }
 .unified-shell .plan-map-layerbar .plan-style-switch button + button { border-left: 1px solid #4c4246; }
 .unified-shell .plan-map-layerbar .plan-style-switch button[aria-pressed="true"] { background: var(--kin); color: #14110d; }
+/* スマホでは平面図が下まで広がり、図の上に重なる。透けたボタンだと方眼に紛れて見えなかったので、地を塗る（2026-11-18） */
+.unified-shell.phone-layout .plan-map-layerbar button:not(.active):not([aria-pressed="true"]) { background: #1c1719; color: var(--ink-secondary); }
 
 /* 変更の帯（PC）。画面の下の真ん中に、1 行の細い帯で出す（2026-11-17 オーナー「表示位置がわかりづらい」） */
 .change-scope-bar:not(.phone):not(.docked) { top: auto; bottom: 14px; flex-wrap: nowrap; gap: 6px; padding: 6px 6px 6px 14px; background: #f0e8da; border: 1px solid #14110d; box-shadow: 0 6px 20px rgba(0,0,0,.45); }
