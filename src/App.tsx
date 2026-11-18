@@ -346,8 +346,8 @@ export default function App() {
         case '5': if (s.productionPlan.audienceBlocks?.length) up({ cameraView: 'house' }); break
         // 作業画面（isMockPreview）では平面図は閉じるものではなく、表示の切り替えで出し入れする。Esc で閉じると「平面図」を押しても何も出なくなっていた（2026-11-18）
         case 'escape': if (planOpen && !isMockPreview) setPlanOpen(false); else s.select(null, null); break
-        case '?': case '/': up({ showHelp: !s.settings.showHelp }); break
-        case 'h': up({ showHelp: !s.settings.showHelp }); break
+        // 作業画面では、古い説明の重ね画面ではなく操作説明のページ（/help）を新しいタブで開く（2026-11-19。重ね画面は内容が古かった）
+        case '?': case '/': case 'h': if (isMockPreview) window.open('/help', '_blank', 'noopener'); else up({ showHelp: !s.settings.showHelp }); break
         case 'p': up({ probeMode: !s.settings.probeMode }); break
         // 道具は Unity と同じ Q/W/E/R。右ボタンで視点を動かしている間は、WASD・QE の視点移動に使う
         case 'q': if (!cameraFlying) up({ transformMode: 'select' }); break
@@ -562,7 +562,7 @@ export default function App() {
         {deskLayout && <button type="button" aria-pressed={!inspectorHidden} onClick={() => { setInspectorHidden(!inspectorHidden); setDisplayMenuOpen(false) }}>
           <span aria-hidden="true">{inspectorHidden ? '' : '✓'}</span>舞台の編集（右の欄）</button>}
         <button type="button" aria-pressed={showSceneDirections} onClick={() => { setShowSceneDirections(value => !value); setDisplayMenuOpen(false) }}>
-          <span aria-hidden="true">{showSceneDirections ? '✓' : ''}</span>役者の動きの矢印</button>
+          <span aria-hidden="true">{showSceneDirections ? '✓' : ''}</span>前の場面からの矢印</button>
       </div>}
 
       {phoneLayout && !playbackOpen && <PhoneChrome title={projectTitle ?? ''} view={mobileView}
@@ -860,7 +860,7 @@ const VIEW_CHOICES = [
 function ViewSelect({ hasHouse }: { hasHouse: boolean }) {
   const cur = useStore(s => s.settings.cameraView)
   const update = useStore(s => s.updateSettings)
-  return <label className="toolbar-view-select" title="視点（キー 1〜5）。同じ視点をもう一度選ぶと、向きを戻します">
+  return <label className="toolbar-view-select" title="視点（キー 1〜5）">
     <span>視点</span>
     <select value={cur} onChange={event => update({ cameraView: event.target.value as any })}>
       {VIEW_CHOICES.filter(([view]) => view !== 'house' || hasHouse || cur === 'house').map(([view, label, key]) =>

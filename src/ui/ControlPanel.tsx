@@ -162,13 +162,13 @@ export function ControlPanel({ planOpen = false }: { planOpen?: boolean }) {
           </div>
         </div>
         {isMockPreview && <div className="panel-purpose">
-          <span>{selection.kind ? '平面図ではドラッグで動かし、上に出る丸い取っ手で回します。3D では上の道具（移動・回転・拡大）を使います' : '一覧から選ぶか、「＋ 追加」で足します'}</span>
+          <span>{selection.kind ? '平面図ではドラッグで動かします（舞台セット・客席は上の丸い取っ手で回せます）。3D では上の道具（移動・回転・拡大）を使います' : '一覧から選ぶか、「＋ 追加」で足します'}</span>
           <button type="button" onClick={() => update({ panelOpen: false })}>平面図に戻る</button>
           <button type="button" className="panel-hide-desk" aria-label="舞台の編集の欄を閉じる" title="この欄を閉じる（右端のつまみか「表示」で開けます）"
             onClick={() => window.dispatchEvent(new Event('tomoshibi-inspector-hide'))}>×</button>
         </div>}
         <div className="panel-body unity-panel">
-          {planOpen && <p className="fixture-scope-note">舞台・客席・照明の吊る位置と役者の名前は全シーン共通です。ほかの変更はいまのシーンに入り、変えた直後に「このあとのシーンにも」「全シーンにも」で広げられます。</p>}
+          {planOpen && <p className="fixture-scope-note">舞台・客席・照明の吊る位置と役者の名前は全シーン共通です。ほかの変更はいまのシーンに入り、変えた直後の帯の「この章」「このあと」「全シーン」で、ほかのシーンにもコピーできます。</p>}
           <HierarchyPanel />
           <Inspector />
         </div>
