@@ -5396,3 +5396,35 @@ input[type="color"]::-moz-color-swatch { border: 0; border-radius: 0; }
 /* ログイン前のプロジェクトが残っているときの小さな知らせ（一覧の下） */
 .project-library-transfer-note { margin: 12px 0 0; color: #b8ab9a; font-size: 13px; line-height: 1.7; }
 .project-library-transfer-note button { margin-left: 6px; padding: 0; border: 0; background: none; color: #e0b45c; font: inherit; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+/* 「細かい表示」は PC ではボタンの真下（left は押したボタンの位置）。外を押すと閉じるので「閉じる」は出さない */
+.unified-shell:not(.phone-layout) .plan-layer-menu { min-width: 220px; }
+.unified-shell:not(.phone-layout) .plan-layer-menu-close { display: none; }
+.unified-shell.phone-layout .plan-layer-menu { left: auto !important; }
+
+/* 右の「舞台の編集」の欄を閉じたとき（PC）。2026-11-18 */
+.unified-shell.workspace-layout.inspector-hidden { --inspector-width: 0px !important; }
+.unified-shell.workspace-layout.inspector-hidden .object-panel { display: none !important; }
+.unified-shell .object-panel .panel-hide-desk { display: none; }
+@media (min-width: 961px) {
+  .unified-shell.workspace-layout .object-panel .panel-purpose { position: relative; padding-right: 40px; }
+  .unified-shell.workspace-layout .object-panel .panel-purpose .panel-hide-desk {
+    display: grid !important; place-items: center; position: absolute; top: 6px; right: 6px; width: 32px; height: 32px; padding: 0;
+    border: 1px solid transparent; border-radius: 6px; background: none; color: var(--ink-secondary, #cbbfb1); font-size: 20px; line-height: 1; cursor: pointer;
+  }
+  .unified-shell.workspace-layout .object-panel .panel-purpose .panel-hide-desk:hover { border-color: #4c4246; color: var(--ink-primary); }
+}
+.inspector-reopen {
+  position: fixed; z-index: 70; right: 0; top: calc(var(--header-height, 56px) + 80px); writing-mode: vertical-rl;
+  padding: 14px 8px; border: 1px solid #4c4246; border-right: 0; border-radius: 6px 0 0 6px; background: #191619;
+  color: var(--ink-primary); font: 600 13px var(--font-sans); letter-spacing: .1em; cursor: pointer;
+}
+.inspector-reopen:hover { border-color: var(--kin); }
+
+/* 3D と平面図を左右に並べる（PC）。平面図は右に、3D は左に。2026-11-18 */
+.unified-shell.workspace-layout.desk-split-side { --map-width: calc((100vw - var(--outline-width) - var(--inspector-width)) * .5); }
+.unified-shell.workspace-layout.desk-split-side:not(.outline-visible) { --map-width: calc((100vw - var(--inspector-width)) * .5); }
+.unified-shell.workspace-layout.desk-split-side .canvas-wrap { bottom: 0; right: calc(var(--inspector-width) + var(--map-width)); }
+.unified-shell.workspace-layout.desk-split-side .plan-board-content { top: 0; left: auto !important; right: 0; width: var(--map-width); height: auto; border-top: 0; border-left: 1px solid var(--panel-edge-strong); }
+.unified-shell.workspace-layout.desk-split-side .plan-resize-handle { display: none; }
+.unified-shell.workspace-layout.desk-split-side .toolbar { max-width: calc(100vw - var(--outline-width) - var(--inspector-width) - var(--map-width) - 24px); flex-wrap: wrap; }
+.unified-shell.workspace-layout.desk-split-side:not(.outline-visible) .toolbar { max-width: calc(100vw - var(--inspector-width) - var(--map-width) - 28px); }

@@ -97,6 +97,7 @@ function ToolItems({ kind, handle, run }: { kind: MenuTarget['kind'] | null; han
 
 function focusName() {
   useStore.getState().updateSettings({ panelOpen: true })
+  window.dispatchEvent(new Event('tomoshibi-inspector-show'))
   window.setTimeout(() => {
     const input = document.querySelector<HTMLInputElement>('.inspector .inspector-text input[type="text"]')
     input?.scrollIntoView({ block: 'center' })
@@ -165,7 +166,7 @@ function SpaceItems({ point, onStage, run, sub, setSub }: { point?: [number, num
   return <>
     {onStage && <div className="object-menu-head"><small>舞台の床</small><strong>舞台 {layout.stageWidth}m × {layout.stageDepth}m</strong></div>}
     {onStage && <ToolItems kind="stage" run={run} />}
-    {onStage && <Item label="舞台の設定を開く" onClick={run(() => { s.select('stage', 'stage'); s.updateSettings({ panelOpen: true }) })} />}
+    {onStage && <Item label="舞台の設定を開く" onClick={run(() => { s.select('stage', 'stage'); s.updateSettings({ panelOpen: true }); window.dispatchEvent(new Event('tomoshibi-inspector-show')) })} />}
     {onStage && <hr />}
     <Item label={`${here}役者を足す`} onClick={run(() => { const id = s.addPerformer(at); if (id) useStore.getState().select('performer', id) })} />
     <Item label={`${here}照明を足す（狙いをこの点に）`} disabled={!at} onClick={run(() => {

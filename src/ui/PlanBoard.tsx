@@ -273,7 +273,22 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
   const [showPerformers, setShowPerformers] = useState(true)
   // スマホでは表示の切り替えを「表示」の小窓にまとめる（2026-11-18 オーナー「スマホで照明や役者の表示を切り替えられない」）
   const [layerMenuOpen, setLayerMenuOpen] = useState(false)
+  useEffect(() => {
+    if (!layerMenuOpen) return
+    const close = (event: globalThis.PointerEvent) => {
+      const target = event.target as Element | null
+      if (layerMenuRef.current?.contains(target) || target?.closest?.('.plan-layer-menu-button')) return
+      setLayerMenuOpen(false)
+    }
+    const escape = (event: globalThis.KeyboardEvent) => { if (event.key === 'Escape') setLayerMenuOpen(false) }
+    window.addEventListener('pointerdown', close)
+    window.addEventListener('keydown', escape)
+    return () => { window.removeEventListener('pointerdown', close); window.removeEventListener('keydown', escape) }
+  }, [layerMenuOpen])
   const [showLabels, setShowLabels] = useState(true)
+  // 「細かい表示」の小窓。PC ではボタンの真下に出し、外を押したら閉じる
+  const [layerMenuLeft, setLayerMenuLeft] = useState(0)
+  const layerMenuRef = useRef<HTMLDivElement>(null)
   // 初めは仕込み図（2026-11-17 オーナー指定）
   const [planStyle, setPlanStyleState] = useState<PlanStyle>(() => { try { return localStorage.getItem(PLAN_STYLE_KEY) === 'light' ? 'light' : 'plot' } catch { return 'plot' } })
   const setPlanStyle = (next: PlanStyle) => { setPlanStyleState(next); try { localStorage.setItem(PLAN_STYLE_KEY, next) } catch { /* 覚えられなくても使える */ } }
@@ -1320,22 +1335,22 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
           {/* 細かい表示（名前・消えている照明・前のシーンからの変化）は、この小窓にまとめる（2026-11-18 オーナー「メニュー多すぎてわかりづらい」）。
               スマホは帯に何も出さないので、壁・客席などの切り替えもここに入れる */}
           <button type="button" className="plan-layer-menu-button" aria-expanded={layerMenuOpen} aria-haspopup="true"
-            onClick={() => setLayerMenuOpen(open => !open)}>細かい表示 <span aria-hidden="true">⌄</span></button>
-          {layerMenuOpen && <div className="plan-layer-menu" role="group" aria-label="平面図の細かい表示">
+            onClick={event => { setLayerMenuLeft(event.currentTarget.offsetLeft); setLayerMenuOpen(open => !open) }}>細かい表示 <span aria-hidden="true">⌄</span></button>
+          {layerMenuOpen && <div className="plan-layer-menu" ref={layerMenuRef} role="group" aria-label="平面図の細かい表示" style={{ left: layerMenuLeft }}>
             {([
               ['壁・客席', showShared, setShowShared, true],
               ['舞台セット', showSetPieces, setShowSetPieces, true],
               ['照明', showFixtures, setShowFixtures, true],
               ['役者', showPerformers, setShowPerformers, true],
               ['役者・セットの名前', showLabels, setShowLabels, false],
-              ['照明の名前を図に書く（器具表をやめる）', fixtureNamesOnPlan, setFixtureNamesOnPlan, false],
-              ['消えている照明も描く', showOffFixtures, setShowOffFixtures, false],
-              ['壁・袖幕・ホリゾントの名前', venueNamesOnPlan, setVenueNamesOnPlan, false],
+              ['照明の名前を図に書く', fixtureNamesOnPlan, setFixtureNamesOnPlan, false],
+              ['消えている照明', showOffFixtures, setShowOffFixtures, false],
+              ['壁・袖幕の名前', venueNamesOnPlan, setVenueNamesOnPlan, false],
             ] as Array<[string, boolean, (update: (value: boolean) => boolean) => void, boolean]>).map(([label, on, set, basic]) =>
               <label key={label} className={'plan-layer-menu-row' + (basic ? ' plan-layer-menu-basic' : '')}>
                 <input type="checkbox" checked={on} onChange={() => set(value => !value)} />{label}</label>)}
             {persistent && onToggleDirections && <label className="plan-layer-menu-row">
-              <input type="checkbox" checked={showDirections} onChange={onToggleDirections} />前のシーンからの変化（矢印）</label>}
+              <input type="checkbox" checked={showDirections} onChange={onToggleDirections} />前の場面からの矢印</label>}
             <button type="button" className="plan-layer-menu-close" onClick={() => setLayerMenuOpen(false)}>閉じる</button>
           </div>}
           <div className="plan-map-zoom" role="group" aria-label="平面図の縮尺">
