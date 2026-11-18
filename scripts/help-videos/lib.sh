@@ -45,6 +45,7 @@ key() { ab press "$1"; pause 250; }
 
 # 毎回まっさらな状態から始める（前の動画の操作が残らないように）
 fresh() {
+  # 録画は倍率 1。倍率 2 は録画が重く、操作が間に合わなくなった（2026-11-19）
   ab set viewport 1440 900
   ab open "$BASE_URL/studio/"
   ab eval 'localStorage.clear(); sessionStorage.clear(); 1'
@@ -54,12 +55,13 @@ fresh() {
   ab eval "localStorage.setItem('tomoshibi.helpSeen', '1'); localStorage.setItem('tomoshibi.deskView', 'both'); localStorage.setItem('tomoshibi.planStyle', 'plot'); 1"
   # 3D と平面図を並べる見え方で撮る（初めの値は 3D だけ。2026-11-17 から）。
   # 舞台は見本の公演（?demo=2）。白紙の舞台だと絵として寂しかった（2026-11-18）。セットと明かりのある「キャピュレット家の舞踏会」の場面から始める
-  ab open "$BASE_URL/studio/?demo=2"
+  ab open "$BASE_URL/studio/?demo=2&quality=high"
   pause 5000
   ab eval "(() => { const n = [...document.querySelectorAll('.plan-outline-node.scene')].find(e => e.textContent.includes('キャピュレット家の舞踏会')); n?.querySelector('button, .plan-outline-node-main')?.click(); n?.click(); return 1 })()"
   pause 1200
   ab eval "document.querySelector('[aria-label=\"ヘルプを閉じる\"], .help-overlay button')?.click(); 1"
   pause 400
 }
-start() { ab record start "$1"; pause 400; }
+# 録画は H.264（mp4）。.webm を渡されても .mp4 で録る（VP8 は画質が落ちる）
+start() { ab record start "${1%.webm}.mp4"; pause 400; }
 stop() { cap ''; pause 300; ab record stop; }
