@@ -166,7 +166,7 @@ scene_07() {
   pause 900
   cap '下に出る帯で「この章」「このあと」「全シーン」にも同じ変更を入れられます'
   pause 1600
-  click_el '.change-scope-bar button' '全シーンにも'
+  click_el '.change-scope-bar button' '全シーン'
   pause 1800
   cap '押さなければ、このシーンだけの変更のままです'
   pause 1500
