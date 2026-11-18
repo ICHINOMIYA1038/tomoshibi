@@ -327,6 +327,9 @@ export interface QualityConfig {
 // 起動時の品質を環境から推定
 function detectInitialQuality(): QualityPreset {
   if (typeof window === 'undefined' || typeof navigator === 'undefined') return 'medium'
+  // 録画用（使い方の動画・トップの映像）に、URL の ?quality=ultra などで品質を決められる（2026-11-19）
+  const forced = new URLSearchParams(window.location.search).get('quality')
+  if (forced === 'low' || forced === 'medium' || forced === 'high' || forced === 'ultra') return forced
   const ua = navigator.userAgent
   const isMobile = /iPhone|Android.+Mobile|Windows Phone/.test(ua)
   const isTablet = /iPad|Android(?!.*Mobile)/.test(ua)

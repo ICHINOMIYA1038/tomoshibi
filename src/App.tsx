@@ -27,7 +27,7 @@ import { ChangeScopeBar } from './ui/ChangeScopeBar'
 import { ControlPanel } from './ui/ControlPanel'
 import { HelpOverlay } from './ui/HelpOverlay'
 import { SettingsModal } from './ui/SettingsModal'
-import { sceneDisplayTitle, useStore } from './store'
+import { QUALITY_PRESETS, sceneDisplayTitle, useStore } from './store'
 import { refreshSession, useCloudSession } from './io/cloudSession'
 import { CloudError } from './io/cloud'
 import { ScenePanel } from './ui/ScenePanel'
@@ -421,7 +421,8 @@ export default function App() {
             powerPreference: 'high-performance',
             preserveDrawingBuffer: false,
           }}
-          dpr={[1, 1.5]}
+          // 描く細かさの上限は品質に合わせる（最高なら 2 倍。録画の 4K に使う）。2026-11-19
+          dpr={[1, QUALITY_PRESETS[settings.quality].pixelRatio]}
           shadows="soft"
           onCreated={({ gl }) => {
             gl.toneMapping = THREE.ACESFilmicToneMapping
