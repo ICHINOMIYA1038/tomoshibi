@@ -2,7 +2,7 @@ import { askConfirm } from './askConfirm'
 import { useObjectMenu } from '../objectMenu'
 import { WorkspaceNotice } from './WorkspaceNotice'
 import { createPortal } from 'react-dom'
-import { Fragment, useEffect, useRef, useState, type MouseEvent, type PointerEvent } from 'react'
+import { Fragment, useCallback, useEffect, useRef, useState, type MouseEvent, type PointerEvent } from 'react'
 import { activeSceneDirections, LIMITS, PLAN_LIMITS, SCENE_TRIGGER_LABELS, sceneDisplayTitle, useStore,
   type DirectionKind, type MoveSceneResult, type SceneTriggerType, type StagePoint } from '../store'
 import { StagePartsLayer } from './StagePartsEditor'
@@ -172,22 +172,25 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
   const [showWholeStage, setShowWholeStage] = useState(false)
   const svgRef = useRef<SVGSVGElement>(null)
   // スマホの縦長の画面では、図の枠を入れ物の縦横比に合わせる
-  const scrollRef = useRef<HTMLDivElement>(null)
+  // 入れ物は表示の切り替えで作り直されることがあるので、付くたびに測り直す（ref を関数にする）
   const [mapAspect, setMapAspect] = useState(MAP_WIDE.svgHeight / MAP_WIDE.svgWidth)
-  useEffect(() => {
-    const el = scrollRef.current
+  const scrollObserver = useRef<ResizeObserver | null>(null)
+  const scrollRef = useCallback((el: HTMLDivElement | null) => {
+    scrollObserver.current?.disconnect()
+    scrollObserver.current = null
     if (!el) return
     const measure = () => {
       const phone = window.matchMedia('(max-width: 600px)').matches
       const { width, height } = el.getBoundingClientRect()
-      const next = phone && width > 0 && height > 0 ? Math.min(1.9, Math.max(MAP_WIDE.svgHeight / MAP_WIDE.svgWidth, (height - 10) / (width - 10))) : MAP_WIDE.svgHeight / MAP_WIDE.svgWidth
+      if (width <= 0 || height <= 0) return
+      const wide = MAP_WIDE.svgHeight / MAP_WIDE.svgWidth
+      const next = phone ? Math.min(1.9, Math.max(wide, (height - 10) / (width - 10))) : wide
       setMapAspect(value => Math.abs(value - next) > .02 ? next : value)
     }
     measure()
-    const observer = new ResizeObserver(measure)
-    observer.observe(el)
-    return () => observer.disconnect()
-  }, [open])
+    scrollObserver.current = new ResizeObserver(measure)
+    scrollObserver.current.observe(el)
+  }, [])
   MAP = mapFrame(mapAspect)
   const fitBounds = equalScaleBounds(!plan.venueLayout ? { left: -8, right: 8, rear: -8, front: 2 }
     : stageLarge && !showWholeStage ? objectBounds(contentPoints, stageOutline)
