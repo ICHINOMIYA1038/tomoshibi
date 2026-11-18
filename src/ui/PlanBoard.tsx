@@ -207,6 +207,9 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
   const [fixtureNamesOnPlan, setFixtureNamesOnPlan] = useState(() => { try { return localStorage.getItem('tomoshibi.planFixtureNames') === 'plan' } catch { return false } })
   const [showOffFixtures, setShowOffFixtures] = useState(() => { try { return localStorage.getItem('tomoshibi.planShowOffFixtures') === '1' } catch { return false } })
   useEffect(() => { try { localStorage.setItem('tomoshibi.planFixtureNames', fixtureNamesOnPlan ? 'plan' : 'key') } catch { /* 覚えられなくても使える */ } }, [fixtureNamesOnPlan])
+  // 壁・袖幕・ホリゾントの名前は、形で見分けられて場面ごとにも変わらないので、初めは書かない（バトンは番号を図の外に書く）
+  const [venueNamesOnPlan, setVenueNamesOnPlan] = useState(() => { try { return localStorage.getItem('tomoshibi.planVenueNames') === '1' } catch { return false } })
+  useEffect(() => { try { localStorage.setItem('tomoshibi.planVenueNames', venueNamesOnPlan ? '1' : '0') } catch { /* 覚えられなくても使える */ } }, [venueNamesOnPlan])
   useEffect(() => { try { localStorage.setItem('tomoshibi.planShowOffFixtures', showOffFixtures ? '1' : '0') } catch { /* 覚えられなくても使える */ } }, [showOffFixtures])
   const fixtureShown = (fixture: Fixture) => showOffFixtures || fixture.enabled || (keySelection.kind === 'fixture' && keySelection.id === fixture.id)
   const fixtureNumber = (fixture: Fixture, index: number) => (typeof fixture.number === 'string' && fixture.number.trim()) || String(index + 1)
@@ -1322,6 +1325,7 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
               ['名前', showLabels, setShowLabels],
               ['照明の名前を図に書く', fixtureNamesOnPlan, setFixtureNamesOnPlan],
               ['消えている照明', showOffFixtures, setShowOffFixtures],
+              ['舞台の部品の名前', venueNamesOnPlan, setVenueNamesOnPlan],
             ] as Array<[string, boolean, (update: (value: boolean) => boolean) => void]>).map(([label, on, set]) =>
               <label key={label} className="plan-layer-menu-row">
                 <input type="checkbox" checked={on} onChange={() => set(value => !value)} />{label}</label>)}
@@ -1355,6 +1359,9 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
           {showFixtures && <button type="button" className={showOffFixtures ? 'active' : ''} aria-pressed={showOffFixtures}
             title="この場面で消えている照明も図に描きます"
             onClick={() => setShowOffFixtures(value => !value)}>消えている照明：{showOffFixtures ? '表示中' : '非表示'}</button>}
+          {showShared && <button type="button" className={venueNamesOnPlan ? 'active' : ''} aria-pressed={venueNamesOnPlan}
+            title="壁・袖幕・ホリゾントの名前を図に書きます。切っても、選んだ物の名前は出します"
+            onClick={() => setVenueNamesOnPlan(value => !value)}>舞台の部品の名前：{venueNamesOnPlan ? '表示中' : '非表示'}</button>}
           <button type="button" className="plan-save-image" onClick={saveDiagram}>画像で保存</button>
           <small>図を左右にスワイプ</small>
         </div>
@@ -1439,7 +1446,7 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
             {showShared && <StagePartsLayer selectedId={selection.kind === 'stagepart' ? selection.id : null}
               onSelect={id => select(id ? 'stagepart' : null, id)} tool={tool} onPan={mapZoom.beginPan}
               toWorld={point => rawMapPoint(point as unknown as PointerEvent<SVGSVGElement>, svgRef.current!, true, mapBounds)}
-              mapX={mapX} mapY={mapY} unitsPerPx={unitsPerPx} showLabels={showLabels} theme={planStyle} />}
+              mapX={mapX} mapY={mapY} unitsPerPx={unitsPerPx} showLabels={showLabels} partNames={venueNamesOnPlan} labelLeft={12} theme={planStyle} />}
             {showShared && audienceBlocks.map(block => {
               const seat = Math.max(3, MAP.width / (mapBounds.right - mapBounds.left) * .5)
               const active = selection.kind === 'audience' && selection.id === block.id

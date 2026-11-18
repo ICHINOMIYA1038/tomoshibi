@@ -32,8 +32,12 @@ export function useStageParts() {
 type Drag = { id: string; handle: 'body' | 'end-a' | 'end-b' | 'left' | 'right' | 'rear' | 'front'; pointerId: number; at: StagePoint; from: StagePart; moved: boolean; fixtureIds: string[] }
 
 /** 平面図の上に部品を描き、選んだ部品には取っ手を出す。座標は世界の座標（舞台の移動を含む） */
-export function StagePartsLayer({ selectedId, onSelect, tool = 'translate', toWorld, mapX, mapY, unitsPerPx, onPan, showLabels = true, theme }: {
+export function StagePartsLayer({ selectedId, onSelect, tool = 'translate', toWorld, mapX, mapY, unitsPerPx, onPan, showLabels = true, partNames = true, labelLeft = -Infinity, theme }: {
   showLabels?: boolean
+  /** 壁・袖幕・ホリゾントの名前も書くか。false のときは、選んだ物とバトンの番号だけ */
+  partNames?: boolean
+  /** 図の描ける左端。バトンの番号がこれより左にはみ出すときは、内側に寄せる */
+  labelLeft?: number
   /** 平面図の見た目。plot は墨の線、light は暗い舞台の上のうすい線。無ければこれまでの色 */
   theme?: 'light' | 'plot'
   selectedId: string | null
@@ -162,6 +166,9 @@ export function StagePartsLayer({ selectedId, onSelect, tool = 'translate', toWo
   }
   // 選んだかどうかで並びを変えない（並びが変わると、押した要素が入れ替わる）。取っ手は最後にまとめて描く
   const selectedPart = parts.find(item => item.id === selectedId) ?? null
+  // バトンの番号を書く縦の線。いちばん左の部品（壁など）よりさらに左
+  const labelFont = Math.max(11, 11 * unitsPerPx)
+  const labelMargin = Math.max(labelLeft + labelFont * 4.4, Math.min(...parts.flatMap(part => partCorners(part).map(([x]) => px(x)))) - 12 * unitsPerPx)
   const ordered = [...parts].sort((a, b) => Number(!isFlat(a.kind)) - Number(!isFlat(b.kind)))
   return <g className="stage-parts-layer">
     {ordered.map(item => {
@@ -186,10 +193,15 @@ export function StagePartsLayer({ selectedId, onSelect, tool = 'translate', toWo
               stroke={selected ? '#f2c27b' : theme === 'plot' ? '#1d1d1f' : theme === 'light' ? (item.kind === 'batten' ? '#7c8791' : '#6d6258') : item.color ?? PART_COLORS[item.kind]}
               strokeWidth={theme === 'plot' ? (item.kind === 'batten' ? 1.6 : 3) : item.kind === 'batten' ? 3 : 6}
               strokeDasharray={item.kind === 'batten' ? '10 5' : undefined} strokeLinecap="round" />
-            {/* 名前（バトン 1 など）。平面図で、どの線が何かわかるように */}
-            {(showLabels || selected) && <text x={Math.min(px(corners[0][0]), px(corners[1][0])) - 6 * unitsPerPx} y={(py(corners[0][1]) + py(corners[1][1])) / 2 + 4 * unitsPerPx} textAnchor="end" fill={theme === 'light' ? '#a39789' : '#3a332d'}
-              fontSize={Math.max(11, 11 * unitsPerPx)} fontWeight="700" paintOrder="stroke" stroke={theme === 'light' ? '#0d0b0e' : '#fffdf8'}
-              strokeWidth={3 * unitsPerPx} pointerEvents="none">{PART_LABELS[item.kind]} {parts.filter(other => other.kind === item.kind).indexOf(item) + 1}</text>}
+            {/* 名前。バトンは仕込み図のように「1バトン」と、舞台の外の左にそろえて書く。ほかの部品は、partNames か選んだときだけ */}
+            {(showLabels || selected) && (item.kind === 'batten' || partNames || selected) && (() => {
+              const batten = item.kind === 'batten' && !selected
+              const index = parts.filter(other => other.kind === item.kind).indexOf(item) + 1
+              const x = batten ? labelMargin : Math.min(px(corners[0][0]), px(corners[1][0])) - 6 * unitsPerPx
+              return <text x={x} y={(py(corners[0][1]) + py(corners[1][1])) / 2 + 4 * unitsPerPx} textAnchor="end" fill={theme === 'light' ? '#a39789' : '#3a332d'}
+                fontSize={labelFont} fontWeight="700" paintOrder="stroke" stroke={theme === 'light' ? '#0d0b0e' : '#fffdf8'}
+                strokeWidth={3 * unitsPerPx} pointerEvents="none">{item.kind === 'batten' ? `${index}バトン` : `${PART_LABELS[item.kind]} ${index}`}</text>
+            })()}
           </g>}
       </g>
     })}
