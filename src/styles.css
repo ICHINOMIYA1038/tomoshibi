@@ -5442,3 +5442,60 @@ input[type="color"]::-moz-color-swatch { border: 0; border-radius: 0; }
   .unified-shell.workspace-layout:not(.phone-layout) .plan-map-caption { display: none !important; }
   .unified-shell.workspace-layout:not(.phone-layout) .plan-map-layerbar > span:first-child { display: none; }
 }
+
+/* 卓（試作）。画面の下に出る、調光卓の盤。2026-11-19 */
+.console-desk {
+  position: fixed; z-index: 80; left: 0; right: 0; bottom: 0; height: min(380px, 48vh);
+  display: flex; flex-direction: column; background: #121012; border-top: 2px solid #4a3f33;
+  box-shadow: 0 -10px 30px rgba(0,0,0,.5); color: var(--ink-primary); font-family: var(--font-sans);
+}
+.console-desk-head { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 8px 14px; border-bottom: 1px solid #2e272a; background: #1a1619; }
+.console-desk-head > strong { font: 700 16px var(--font-sans); letter-spacing: .2em; }
+.console-desk-badge { padding: 1px 8px; border: 1px solid #c98a12; border-radius: 3px; color: #e0b45c; font-size: 12px; }
+.console-desk-tabs { display: inline-flex; border: 1px solid #4c4246; border-radius: 5px; overflow: hidden; }
+.console-desk-tabs button { min-height: 34px; padding: 0 14px; border: 0; background: transparent; color: var(--ink-secondary, #cbbfb1); font: 600 13px var(--font-sans); cursor: pointer; }
+.console-desk-tabs button + button { border-left: 1px solid #4c4246; }
+.console-desk-tabs button[aria-selected="true"] { background: var(--kin); color: #14110d; }
+.console-desk-scene { display: inline-flex; align-items: center; gap: 6px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.console-desk-scene button { width: 34px; height: 34px; border: 1px solid #4c4246; border-radius: 5px; background: transparent; color: var(--ink-primary); font-size: 18px; cursor: pointer; }
+.console-desk-scene button:disabled { opacity: .35; cursor: default; }
+.console-desk-fade { display: inline-flex; align-items: center; gap: 6px; color: var(--ink-secondary, #cbbfb1); font-size: 13px; }
+.console-desk-fade input, .console-cues input { width: 56px; min-height: 30px; padding: 0 6px; border: 1px solid #4c4246; border-radius: 4px; background: #0d0b0c; color: var(--ink-primary); font: 600 13px var(--font-sans); font-variant-numeric: tabular-nums; text-align: right; }
+.console-desk-print { margin-left: auto; min-height: 34px; padding: 0 14px; border: 1px solid #4c4246; border-radius: 5px; background: transparent; color: var(--ink-primary); font: 600 13px var(--font-sans); cursor: pointer; }
+.console-desk-close { width: 34px; height: 34px; border: 0; background: none; color: var(--ink-secondary, #cbbfb1); font-size: 22px; cursor: pointer; }
+.console-desk-print:hover, .console-desk-scene button:hover:not(:disabled) { border-color: var(--kin); }
+
+/* フェーダー：チャンネルごとに縦の帯。点いている帯は数字が琥珀色に光る */
+.console-faders { flex: 1; min-height: 0; display: flex; gap: 2px; padding: 10px 12px; overflow-x: auto; background: linear-gradient(#141113, #0e0c0d); }
+.console-empty { margin: auto; color: var(--ink-secondary, #cbbfb1); }
+.console-strip { flex: none; width: 64px; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 6px 4px; border-radius: 4px; background: #1b1719; border: 1px solid #262023; }
+.console-level { min-width: 40px; padding: 2px 0; border-radius: 3px; background: #0a0809; color: #6d625a; font: 700 15px var(--font-sans); font-variant-numeric: tabular-nums; text-align: center; }
+.console-strip.on .console-level { color: #ffc35c; text-shadow: 0 0 8px rgba(255, 170, 60, .55); }
+.console-strip input[type="range"] { flex: 1; min-height: 0; width: 28px; writing-mode: vertical-lr; direction: rtl; accent-color: var(--kin); cursor: ns-resize; }
+.console-color { width: 22px; height: 6px; border-radius: 2px; border: 1px solid rgba(255,255,255,.15); }
+.console-ch { min-width: 40px; padding: 2px 4px; border: 1px solid #4c4246; border-radius: 3px; background: #2a2427; color: var(--ink-primary); font: 700 13px var(--font-sans); cursor: pointer; }
+.console-name { width: 100%; overflow: hidden; color: var(--ink-secondary, #cbbfb1); font-size: 11px; line-height: 1.3; text-align: center; white-space: nowrap; text-overflow: ellipsis; }
+.console-quick button { min-width: 40px; min-height: 26px; border: 1px solid #4c4246; border-radius: 3px; background: transparent; color: var(--ink-secondary, #cbbfb1); font: 700 11px var(--font-sans); cursor: pointer; }
+.console-quick button:hover { border-color: var(--kin); color: var(--ink-primary); }
+
+/* キュー表：縦に場面（Q）、横にチャンネル。前の場面から変わったところは黄色 */
+.console-cues { flex: 1; min-height: 0; overflow: auto; padding: 8px 12px 12px; }
+.console-cues table { border-collapse: separate; border-spacing: 0; font-size: 13px; font-variant-numeric: tabular-nums; }
+.console-cues th, .console-cues td { padding: 3px 4px; border-bottom: 1px solid #2a2326; text-align: center; white-space: nowrap; }
+.console-cues thead th { position: sticky; top: 0; z-index: 1; background: #1a1619; color: #e0b45c; font-weight: 700; }
+.console-cues th.name, .console-cues td.name { text-align: left; position: sticky; left: 0; background: #121012; z-index: 1; }
+.console-cues thead th.name { z-index: 2; background: #1a1619; }
+.console-cues tbody th button, .console-cues td.name button { border: 0; background: none; color: var(--ink-primary); font: 600 13px var(--font-sans); cursor: pointer; padding: 2px 4px; }
+.console-cues td.name button { max-width: 180px; overflow: hidden; text-overflow: ellipsis; }
+.console-cues tr.active th, .console-cues tr.active td { background: rgba(224, 180, 92, .1); }
+.console-cues tr.active td.name { background: #2a2219; }
+.console-cues td input { width: 46px; min-height: 26px; color: #6d625a; }
+.console-cues td.on input { color: var(--ink-primary); }
+.console-cues td.chg input { border-color: #c98a12; background: #3a2e12; color: #ffd27a; }
+.console-note { margin: 8px 0 0; color: var(--ink-secondary, #cbbfb1); font-size: 12px; }
+.console-cues td:nth-child(3) input { width: 58px; }
+/* 卓を開いているあいだは、3D（と左右に並べた平面図）を盤の上に収める。舞台が盤に隠れないように */
+.unified-shell.workspace-layout.console-open.map-hidden .canvas-wrap,
+.unified-shell.workspace-layout.console-open.desk-split-side .canvas-wrap { bottom: min(380px, 48vh); }
+.unified-shell.workspace-layout.console-open.desk-split-side .plan-board-content { bottom: min(380px, 48vh); }
+.unified-shell.workspace-layout.console-open .plan-outline, .unified-shell.workspace-layout.console-open .object-panel { bottom: min(380px, 48vh); }

@@ -149,6 +149,8 @@ export interface PlanScene {
   performers: Performer[]
   setPieces: import('./types').SetPiece[]
   look?: SceneLook
+  /** この場面へ移るのにかける時間（秒）。卓（試作）のキュー表で決め、通しで見るに使う。無ければ 1.2 秒 */
+  fadeSec?: number
 }
 
 export type SceneLook = Partial<Pick<SceneSettings, 'hazeDensity' | 'ambient' | 'exposure' | 'bloom' | 'showHouseLights'>>
@@ -411,6 +413,10 @@ interface State {
   removeFixture: (id: string) => void
   updateFixture: (id: string, patch: Partial<Fixture>) => void
   duplicateFixture: (id: string) => void
+  /** 卓（試作）: ある場面の照明のレベル（0〜100）。0 は消灯。いまの場面なら画面の照明も変える */
+  setSceneFixtureLevel: (sceneId: string, fixtureId: string, level: number) => void
+  /** 卓（試作）: ある場面へ移るのにかける時間（秒） */
+  setSceneFade: (sceneId: string, sec: number | undefined) => void
   duplicatePerformer: (id: string) => void
   duplicateSetPiece: (id: string) => void
   /** 親を変える（全シーン）。親に選べないもの（自分・自分の子孫）なら何もしない */
@@ -973,6 +979,25 @@ export const useStore = create<State>((set, get) => ({
       selection: { kind: null, id: null },
     }
   }),
+  setSceneFixtureLevel: (sceneId, fixtureId, level) => set(s => {
+    const value = Math.max(0, Math.min(100, Math.round(level)))
+    const patch = (f: Fixture): Fixture => value === 0 ? { ...f, enabled: false } : { ...f, enabled: true, intensity: Math.round(value / 100 * 1.5 * 1000) / 1000 }
+    if (sceneId === s.productionPlan.activeSceneId) return { fixtures: s.fixtures.map(f => f.id === fixtureId ? patch(f) : f) }
+    return {
+      productionPlan: {
+        ...s.productionPlan,
+        scenes: s.productionPlan.scenes.map(scene => scene.id === sceneId
+          ? { ...scene, fixtures: scene.fixtures.map(f => f.id === fixtureId ? patch(f) : f) } : scene),
+      },
+    }
+  }),
+  setSceneFade: (sceneId, sec) => set(s => ({
+    productionPlan: {
+      ...s.productionPlan,
+      scenes: s.productionPlan.scenes.map(scene => scene.id === sceneId
+        ? { ...scene, fadeSec: sec === undefined ? undefined : Math.max(0, Math.min(60, Math.round(sec * 10) / 10)) } : scene),
+    },
+  })),
   updateScene: (id, patch) => set(s => ({
     productionPlan: {
       ...s.productionPlan,

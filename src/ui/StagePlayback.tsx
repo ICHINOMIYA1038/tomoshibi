@@ -59,7 +59,9 @@ export function StagePlayback({ onClose, simplified = false }: { onClose: () => 
     let lastDraw = 0
     const tick = (now: number) => {
       if (!movingRef.current) return
-      const progress = Math.min(1, (now - started) / TRANSITION_MS)
+      // 場面ごとのフェード時間（卓のキュー表で決める）。0 秒ならすぐ切り替える
+      const duration = Math.max(1, (to.fadeSec ?? TRANSITION_MS / 1000) * 1000)
+      const progress = Math.min(1, (now - started) / duration)
       if (progress >= 1) {
         showScene(nextIndex)
         if (nextIndex === plan.scenes.length - 1) setAuto(false)
