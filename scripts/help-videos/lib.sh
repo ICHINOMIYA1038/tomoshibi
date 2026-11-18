@@ -52,9 +52,12 @@ fresh() {
   pause 3500
   # 初めての人向けの案内を閉じる
   ab eval "localStorage.setItem('tomoshibi.helpSeen', '1'); localStorage.setItem('tomoshibi.deskView', 'both'); localStorage.setItem('tomoshibi.planStyle', 'plot'); 1"
-  # 3D と平面図を並べる見え方で撮る（初めの値は 3D だけ。2026-11-17 から）。いったん開き直して効かせる
-  ab open "$BASE_URL/studio/"
-  pause 3500
+  # 3D と平面図を並べる見え方で撮る（初めの値は 3D だけ。2026-11-17 から）。
+  # 舞台は見本の公演（?demo=2）。白紙の舞台だと絵として寂しかった（2026-11-18）。明かりの見える「返された本」の場面から始める
+  ab open "$BASE_URL/studio/?demo=2"
+  pause 5000
+  ab eval "(() => { const n = [...document.querySelectorAll('.plan-outline-node.scene')].find(e => e.textContent.includes('返された本')); n?.querySelector('button, .plan-outline-node-main')?.click(); n?.click(); return 1 })()"
+  pause 1200
   ab eval "document.querySelector('[aria-label=\"ヘルプを閉じる\"], .help-overlay button')?.click(); 1"
   pause 400
 }
