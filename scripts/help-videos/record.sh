@@ -38,7 +38,7 @@ scene_02() {
   fresh; start "$OUT/02.webm"
   cap '右の一覧（ヒエラルキー）に、舞台にある物がすべて並びます'
   pause 1200
-  click_el '.hierarchy-name' '平台 (下手)'
+  click_el '.hierarchy-name' '閲覧机'
   cap '行を押すと選べます。設定は一覧の下に出ます'
   pause 1600
   cap '「＋ 追加」の絵を押すと足せます。3D の画面へドラッグすると、落とした所に置けます'
@@ -48,10 +48,10 @@ scene_02() {
   pause 900
   cap '「親」を選ぶと、その物の子になります'
   local p; p=$(at '.inspector select'); set -- $p; glide "$1" "$2"; pause 300
-  ab eval "(() => { const s = [...document.querySelectorAll('.inspector select')][0]; const o = [...s.options].find(o => o.text.startsWith('平台 (下手)')); const set = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'value').set; set.call(s, o.value); s.dispatchEvent(new Event('change', { bubbles: true })); return 1 })()"
+  ab eval "(() => { const s = [...document.querySelectorAll('.inspector select')][0]; const o = [...s.options].find(o => o.text.startsWith('閲覧机')); const set = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'value').set; set.call(s, o.value); s.dispatchEvent(new Event('change', { bubbles: true })); return 1 })()"
   pause 1200
-  cap '親の平台を動かすと、子の役者も一緒に動きます'
-  p=$(at '[data-menu-kind="setpiece"]' '平台 (下手)'); [ -n "$p" ] || p=$(at '[data-menu-kind="setpiece"]'); set -- $p
+  cap '親の机を動かすと、子の役者も一緒に動きます'
+  p=$(at '[data-menu-kind="setpiece"]' '閲覧机'); [ -n "$p" ] || p=$(at '[data-menu-kind="setpiece"]'); set -- $p
   drag_to "$1" "$2" $(($1 - 60)) $(($2 + 50))
   pause 1500
   stop
@@ -71,7 +71,7 @@ scene_03() {
   click_el '.object-menu button' 'ここに役者を足す'
   pause 1300
   cap '一覧（ヒエラルキー）や平面図でも、同じメニューが出ます'
-  c=$(at '.hierarchy-name' 'Key'); set -- $c; right_at "$1" "$2"
+  c=$(at '.hierarchy-name' '机の灯り'); set -- $c; right_at "$1" "$2"
   pause 1000
   click_el '.object-menu-sub > button' '親を変える'
   pause 1800
@@ -112,7 +112,7 @@ scene_04() {
 scene_05() {
   fresh; start "$OUT/05.webm"
   cap '照明を選ぶと、道具の横に「つかむ」が出ます'
-  click_el '.hierarchy-name' 'Key'
+  click_el '.hierarchy-name' '机の灯り'
   pause 900
   local p; p=$(at '.toolbar .tool-buttons button' '狙い'); set -- $p; glide "$1" "$2"
   cap '「照明」は本体を、「狙い」は光が当たる点を動かします'
