@@ -132,11 +132,9 @@ body {
   letter-spacing: 0.02em;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
 }
-.brand-strip .brand-flame {
-  color: var(--shu);
-  font-size: 11px;
-  line-height: 1;
-  text-shadow: 0 0 8px rgba(200, 72, 45, 0.6);
+.brand-strip .brand-lantern {
+  color: #F3E9D8;
+  flex: none;
 }
 .brand-strip .brand-mark {
   font-family: var(--font-sans);
@@ -4415,8 +4413,9 @@ body.embed .workspace-switch { display: none; }
   border-bottom: 1px solid rgba(212,175,111,.22);
   background: #171316;
 }
-.project-library-brand { color: #f0e8da; font-family: 'Shippori Mincho', serif; font-size: 17px; font-weight: 700; text-decoration: none; }
-.project-library-brand span { margin-left: 3px; font-size: 12px; }
+.project-library-brand { display: inline-flex; align-items: center; gap: 8px; color: #f0e8da; font-family: 'Shippori Mincho', serif; font-size: 17px; font-weight: 700; text-decoration: none; }
+.project-library-brand span { margin-left: -5px; font-size: 12px; }
+.project-library-lantern { flex: none; }
 .project-library-storage { color: #aa9f93; font-size: 11px; }
 .project-library-header-actions { display: flex; align-items: center; gap: 12px; }
 .project-library-workspace { display: grid; grid-template-columns: minmax(300px, 340px) minmax(0, 1fr); flex: 1; min-height: 0; }
