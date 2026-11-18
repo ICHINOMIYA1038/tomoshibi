@@ -19,6 +19,7 @@ import { EmptyLibrary } from './EmptyLibrary'
 import { AdSlot, useShowAds } from './Ads'
 import { stopProjectEditor } from '../io/projectEditor'
 import { LanternMark } from './LanternMark'
+import { APP_IMPORT_EVENT, takeAppImports } from '../io/appBridge'
 
 type LibraryItem = { key: string; scene: SerializedScene; draft: boolean }
 
@@ -335,6 +336,15 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
     }
     await create(scene)
   }
+  // iOS アプリで開いた .tomoshibi のファイルを、新しいプロジェクトとして読み込む
+  const importFileRef = useRef(importFile)
+  importFileRef.current = importFile
+  useEffect(() => {
+    const receive = () => { for (const item of takeAppImports()) void importFileRef.current(new File([item.text], item.name)) }
+    receive()
+    window.addEventListener(APP_IMPORT_EVENT, receive)
+    return () => window.removeEventListener(APP_IMPORT_EVENT, receive)
+  }, [])
   const removeMemberProject = async (item: CloudProjectMeta) => {
     if (!await askConfirm(`「${item.name}」をアカウントから削除しますか？\nほかの端末からも開けなくなります。元に戻せません。`, '削除する')) return
     setMemberBusy(true)

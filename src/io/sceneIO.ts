@@ -16,6 +16,7 @@ import {
 } from '../store'
 import type { SetPiece } from '../types'
 import { isWorkspacePath } from './workspacePath'
+import { appHasFeature, postToApp } from './appBridge'
 
 export interface SerializedScene {
   version: 1 | 2
@@ -286,11 +287,18 @@ export function downloadSceneJSON(name?: string) {
 export function downloadSerializedScene(scene: SerializedScene, name = scene.productionPlan?.projectTitle?.trim() || scene.name) {
   // TOMOSHIBI 専用の拡張子 .tomoshibi（中身は JSON。2026-11-18 オーナー決定）。
   // application/json にすると、Safari が名前の後ろに .json を足すことがあるので、octet-stream で渡す
-  const blob = new Blob([JSON.stringify(scene, null, 2)], { type: 'application/octet-stream' })
+  const text = JSON.stringify(scene, null, 2)
+  const fileName = `${(name || 'TOMOSHIBI').replace(/[\\/:*?"<>|]/g, '_')}.tomoshibi`
+  // iOS アプリの中（WKWebView）ではリンクのダウンロードが効かないので、アプリに渡して共有シートで保存してもらう
+  if (appHasFeature('fileExport')) {
+    postToApp({ type: 'export', name: fileName, text })
+    return
+  }
+  const blob = new Blob([text], { type: 'application/octet-stream' })
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
-  a.download = `${(name || 'TOMOSHIBI').replace(/[\\/:*?"<>|]/g, '_')}.tomoshibi`
+  a.download = fileName
   a.click()
   window.setTimeout(() => URL.revokeObjectURL(url), 10_000)
 }
