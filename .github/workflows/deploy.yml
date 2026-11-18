@@ -64,7 +64,7 @@ jobs:
             echo "$code $path"
             [ "$code" = "200" ] || fail=1
           done
-          curl -fsS --max-time 30 https://tomoshibi.gikyokutosyokan.com/ | grep '演出プランを始める' >/dev/null || fail=1
+          curl -fsS --max-time 30 https://tomoshibi.gikyokutosyokan.com/ | grep '無料で舞台を組む' >/dev/null || fail=1
           curl -fsS --max-time 30 https://tomoshibi.gikyokutosyokan.com/simulator/ | grep '新しい演出プラン画面へ移動します' >/dev/null || fail=1
           # 存在しない URL は 404 を返す
           code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 30 "https://tomoshibi.gikyokutosyokan.com/some/deep/path")
