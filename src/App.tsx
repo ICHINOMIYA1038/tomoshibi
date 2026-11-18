@@ -26,6 +26,7 @@ import { PhoneChrome } from './ui/PhoneChrome'
 import { ChangeScopeBar } from './ui/ChangeScopeBar'
 import { ControlPanel } from './ui/ControlPanel'
 import { HelpOverlay } from './ui/HelpOverlay'
+import { ConsoleDesk } from './ui/ConsoleDesk'
 import { SettingsModal } from './ui/SettingsModal'
 import { QUALITY_PRESETS, sceneDisplayTitle, useStore } from './store'
 import { refreshSession, useCloudSession } from './io/cloudSession'
@@ -171,6 +172,8 @@ export default function App() {
   const [addDropActive, setAddDropActive] = useState(false)
   const [showSceneDirections, setShowSceneDirections] = useState(!isMockPreview)
   const [displayMenuOpen, setDisplayMenuOpen] = useState(false)
+  // 卓（試作）。PC の「表示」から開く（2026-11-19）
+  const [consoleOpen, setConsoleOpen] = useState(false)
   const [displayMenuPosition, setDisplayMenuPosition] = useState({ left: 14, top: 104 })
   const [sceneEditorOpen, setSceneEditorOpen] = useState(false)
   const displayMenuRef = useRef<HTMLDivElement>(null)
@@ -394,7 +397,7 @@ export default function App() {
       {isMockPreview && <><WorkspaceNotices /><UpdateNotice /><CloudProjectAutosave /></>}
       {isMockPreview && mockPage === 'projects'
         ? <ProjectLibrary onOpenEditor={() => navigateMock('editor')} />
-        : <div className={'unified-shell' + (planOpen ? ' plan-open' : '') + (settings.panelOpen ? ' panel-open' : '') + (playbackOpen ? ' playback-open' : '') + (isMockPreview ? ' workspace-layout mobile-view-' + mobileView : '') + (mapVisible ? '' : ' map-hidden') + (outlineVisible ? ' outline-visible' : '') + (adFooter ? ' has-ad-footer' : '') + (phoneLayout ? ' phone-layout' : '') + (deskLayout && deskView === 'plan' && mapVisible ? ' desk-plan-full' : '') + (deskLayout && deskView === 'side' && mapVisible ? ' desk-split-side' : '') + (deskLayout && inspectorHidden ? ' inspector-hidden' : '')}>
+        : <div className={'unified-shell' + (planOpen ? ' plan-open' : '') + (settings.panelOpen ? ' panel-open' : '') + (playbackOpen ? ' playback-open' : '') + (isMockPreview ? ' workspace-layout mobile-view-' + mobileView : '') + (mapVisible ? '' : ' map-hidden') + (outlineVisible ? ' outline-visible' : '') + (adFooter ? ' has-ad-footer' : '') + (phoneLayout ? ' phone-layout' : '') + (deskLayout && deskView === 'plan' && mapVisible ? ' desk-plan-full' : '') + (deskLayout && deskView === 'side' && mapVisible ? ' desk-split-side' : '') + (deskLayout && inspectorHidden ? ' inspector-hidden' : '') + (deskLayout && consoleOpen && !playbackOpen ? ' console-open' : '')}>
       {/* 右ボタンを押して離しただけのときに、右クリックのメニューを出す（ドラッグは視点の移動。objectMenu.ts） */}
       <div className={'canvas-wrap' + (addDropActive ? ' add-drop-active' : '')} onContextMenu={event => event.preventDefault()}
         onPointerDownCapture={canvasPointerDown} onPointerUpCapture={canvasPointerUp}
@@ -562,6 +565,8 @@ export default function App() {
           <span aria-hidden="true">{mapVisible ? '✓' : ''}</span>平面図</button>
         {deskLayout && <button type="button" aria-pressed={!inspectorHidden} onClick={() => { setInspectorHidden(!inspectorHidden); setDisplayMenuOpen(false) }}>
           <span aria-hidden="true">{inspectorHidden ? '' : '✓'}</span>舞台の編集（右の欄）</button>}
+        {deskLayout && <button type="button" aria-pressed={consoleOpen} onClick={() => { setConsoleOpen(!consoleOpen); setDisplayMenuOpen(false) }}>
+          <span aria-hidden="true">{consoleOpen ? '✓' : ''}</span>卓（試作）</button>}
         <button type="button" aria-pressed={showSceneDirections} onClick={() => { setShowSceneDirections(value => !value); setDisplayMenuOpen(false) }}>
           <span aria-hidden="true">{showSceneDirections ? '✓' : ''}</span>前の場面からの矢印</button>
       </div>}
@@ -570,6 +575,7 @@ export default function App() {
         onView={next => { setMobileView(next); if (next === 'plan') setMapVisible(true) }}
         onBack={() => navigateMock('projects')} onPlay={startPlayback} />}
       {!playbackOpen && <ControlPanel planOpen={planOpen} />}
+      {deskLayout && consoleOpen && !playbackOpen && <ConsoleDesk onClose={() => setConsoleOpen(false)} />}
       {deskLayout && !outlineVisible && !playbackOpen && <button type="button" className="outline-reopen" onClick={() => setOutlineVisible(true)}
         title="左の「公演の流れ」（章と場面の一覧）を開く">公演の流れ ›</button>}
       {deskLayout && inspectorHidden && !playbackOpen && <button type="button" className="inspector-reopen" onClick={() => setInspectorHidden(false)}
