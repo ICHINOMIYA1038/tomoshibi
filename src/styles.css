@@ -4958,22 +4958,24 @@ body.embed .workspace-switch { display: none; }
 
 /* プロジェクト一覧の右側。主な使い方 3 つを、写真と一緒に縦に並べる（EmptyLibrary.tsx） */
 .library-guide { max-width: 1080px; margin: 0 auto; padding: 40px 32px 56px; color: #2c2622; }
-.library-guide h2 { margin: 0 0 8px; font-size: 32px; font-weight: 700; text-wrap: balance; }
-.library-guide-lead { margin: 0 0 16px; color: #5e544b; font-size: 15px; line-height: 1.8; }
-.library-guide-list { margin: 0; padding: 0; list-style: none; border-top: 2px solid #3d342d; }
-.library-guide-list li { display: grid; grid-template-columns: minmax(220px, 300px) minmax(0, 1fr); gap: 24px; align-items: start; padding: 24px 0; border-bottom: 1px solid #d6cbb9; }
-.library-guide-text { display: grid; grid-template-columns: 36px minmax(0, 1fr); column-gap: 12px; }
-.library-guide-number { grid-row: span 2; display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; background: #b9452e; color: #fff9f0; font-weight: 700; font-variant-numeric: tabular-nums; }
-.library-guide-text h3 { margin: 2px 0 8px; font-size: 18px; line-height: 1.5; }
-.library-guide-text p { margin: 0; color: #5e544b; font-size: 14px; line-height: 1.8; }
-.library-guide-list img { display: block; width: 100%; height: auto; border: 1px solid #3d342d; background: #15110f; }
-.library-guide-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 24px; margin-top: 24px; }
-.library-guide-demo { display: inline-flex; align-items: center; min-height: 44px; padding: 0 18px; border: 1.5px solid #b9452e; border-radius: 4px; color: #a43a26; font-weight: 700; font-size: 14px; text-decoration: none; }
-.library-guide-demo:hover { background: rgba(185, 69, 46, .08); }
+.library-guide h2 { margin: 0 0 8px; font-family: 'Shippori Mincho', serif; font-size: 34px; font-weight: 700; text-wrap: balance; }
+.library-guide-lead { margin: 0 0 16px; color: #5e544b; font-size: 16px; line-height: 1.8; }
+.library-guide-list { margin: 28px 0 0; padding: 0; list-style: none; border-top: 2px solid #3d342d; }
+.library-guide-list li { display: grid; grid-template-columns: minmax(220px, 5fr) minmax(0, 7fr); gap: 32px; align-items: center; padding: 32px 0; border-bottom: 1px solid #d6cbb9; }
+/* 当日パンフの「スタッフ」欄のように、役割と中身を点線でつなぐ（トップページと同じ） */
+.library-guide-role { display: flex; align-items: baseline; gap: 12px; margin-bottom: 10px; font-family: 'Shippori Mincho', serif; font-size: 34px; font-weight: 700; line-height: 1.2; }
+.library-guide-role::after { content: ''; flex: 1; border-bottom: 2px dotted #a89a88; transform: translateY(-8px); }
+.library-guide-text h3 { margin: 0 0 8px; color: #a43a26; font-family: 'Shippori Mincho', serif; font-size: 20px; line-height: 1.5; }
+.library-guide-text p { margin: 0; color: #4a423c; font-size: 15px; line-height: 1.85; }
+.library-guide-list video { display: block; width: 100%; height: auto; border: 1px solid #3d342d; background: #15110f; }
+.library-guide-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 24px; margin-top: 20px; }
+.library-guide-demo { display: inline-flex; align-items: center; min-height: 48px; padding: 0 22px; border: 1.5px solid #b8432f; border-radius: 2px; background: transparent; color: #a43a26; font-weight: 700; font-size: 15px; text-decoration: none; }
+.library-guide-demo:hover { background: rgba(184, 67, 47, .08); }
 .library-guide-actions a:not(.library-guide-demo) { color: #5e544b; font-size: 14px; text-decoration: underline; text-underline-offset: 3px; }
 @media (max-width: 960px) {
   .library-guide { padding: 24px 16px 40px; }
   .library-guide h2 { font-size: 26px; }
+  .library-guide-role { font-size: 28px; }
   .library-guide-list li { grid-template-columns: 1fr; gap: 12px; }
 }
 
@@ -5391,3 +5393,6 @@ input[type="color"]::-moz-color-swatch { border: 0; border-radius: 0; }
 .unified-shell .plan-map-caption .plan-save-image-caption:hover { border-color: var(--kin); }
 .unified-shell.phone-layout .plan-map-caption .plan-save-image-caption { display: none !important; }
 .unified-shell .plan-map-caption .plan-save-image-caption ~ .plan-map-close { margin-left: 8px !important; }
+/* ログイン前のプロジェクトが残っているときの小さな知らせ（一覧の下） */
+.project-library-transfer-note { margin: 12px 0 0; color: #b8ab9a; font-size: 13px; line-height: 1.7; }
+.project-library-transfer-note button { margin-left: 6px; padding: 0; border: 0; background: none; color: #e0b45c; font: inherit; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }

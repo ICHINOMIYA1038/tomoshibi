@@ -976,7 +976,9 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
     const name = (persistent ? sceneDisplayTitle(plan, scene.id) : scene.title.trim() || '演出プラン')
       .replace(/[\\/:*?"<>|]/g, '_')
     const file = new File([blob], name + (persistent ? '' : '-シーン' + (activeIndex + 1)) + '-平面図.png', { type: 'image/png' })
-    if (navigator.canShare?.({ files: [file] })) {
+    // 共有の画面は、指で操作する端末（スマホ・アプリ）だけ。PC は Mac でも共有の画面が出てしまい、すぐ保存できなかった（2026-11-18 オーナー）
+    const touchDevice = window.matchMedia?.('(pointer: coarse)').matches
+    if (touchDevice && navigator.canShare?.({ files: [file] })) {
       try {
         await navigator.share({ files: [file], title: persistent ? sceneDisplayTitle(plan, scene.id) : scene.title || '演出プラン' })
         setFeedback('平面図を共有しました')
