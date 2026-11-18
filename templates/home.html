@@ -4,18 +4,18 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#171316" />
-  <title>TOMOSHIBI小屋 | 照明と演出プランをひとつの舞台で</title>
-  <meta name="description" content="照明・役者・舞台セットを配置し、章とシーンの流れを組み立てる。TOMOSHIBI小屋の演出プランをブラウザで始めましょう。" />
+  <title>TOMOSHIBI小屋 | 手元に劇場を。照明も、立ち位置も、場転も。</title>
+  <meta name="description" content="照明の吊り、役者の立ち位置、セットを、ブラウザの中の劇場に置く。場面ごとに組んで通して見られる、舞台づくりの道具です。" />
   <link rel="canonical" href="https://tomoshibi.gikyokutosyokan.com/" />
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="戯曲図書館" />
-  <meta property="og:title" content="TOMOSHIBI小屋 — 舞台の流れを、灯りとともに。" />
-  <meta property="og:description" content="照明・役者・舞台セットと、章・シーンの流れをひとつの場所で。" />
+  <meta property="og:title" content="TOMOSHIBI小屋 — 手元に劇場を" />
+  <meta property="og:description" content="照明も、立ち位置も、場転も。ブラウザの中の劇場で、場面ごとに組んで通して見る。" />
   <meta property="og:url" content="https://tomoshibi.gikyokutosyokan.com/" />
   <meta property="og:image" content="https://tomoshibi.gikyokutosyokan.com/og.png" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="TOMOSHIBI小屋 — 舞台の流れを、灯りとともに。" />
-  <meta name="twitter:description" content="照明・役者・舞台セットと、章・シーンの流れをひとつの場所で。" />
+  <meta name="twitter:title" content="TOMOSHIBI小屋 — 手元に劇場を" />
+  <meta name="twitter:description" content="照明も、立ち位置も、場転も。ブラウザの中の劇場で、場面ごとに組んで通して見る。" />
   <meta name="twitter:image" content="https://tomoshibi.gikyokutosyokan.com/og.png" />
   <link rel="icon" href="/favicon.ico" sizes="any" />
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
@@ -32,24 +32,21 @@
     }
   </script>
   <style>
-    :root { color-scheme: dark; font-family: 'Noto Sans JP', sans-serif; }
+    :root { color-scheme: dark; --ink: #0d0b0c; --paper: #f1e9db; --kin: #e0b45c; --en: #b8432f; --mute: #a59a8c; font-family: 'Noto Sans JP', sans-serif; }
     * { box-sizing: border-box; }
     html { scroll-behavior: smooth; }
-    body { margin: 0; background: #171316; color: #f5eee3; }
+    body { margin: 0; background: var(--ink); color: var(--paper); font-size: 16px; line-height: 1.85; }
     a { color: inherit; }
     a:focus-visible { outline: 2px solid #e5c18a; outline-offset: 4px; }
-    .wrap { width: min(1190px, calc(100% - 48px)); margin: auto; }
-    .site-header { position: relative; z-index: 3; border-bottom: 1px solid #554337; }
-    .site-header .wrap { display: flex; align-items: center; justify-content: space-between; min-height: 76px; gap: 24px; }
-    .brand { display: flex; align-items: baseline; gap: 7px; text-decoration: none; font-family: 'Shippori Mincho', serif; font-size: 24px; font-weight: 700; letter-spacing: .08em; white-space: nowrap; }
-    .brand span { color: #d4af6f; font-size: 16px; }
-    .brand .brand-lantern { align-self: center; flex: none; color: currentColor; }
-    .site-nav { display: flex; align-items: center; gap: clamp(18px, 3vw, 36px); }
-    .site-nav a { color: #d5c9ba; text-decoration: none; font-size: 12px; }
+    .site-header { position: absolute; inset: 0 0 auto; z-index: 4; }
+    .site-header .wrap { display: flex; align-items: center; justify-content: space-between; gap: 20px; min-height: 72px; padding: 0 clamp(16px, 4vw, 48px); }
+    .brand { display: flex; align-items: center; gap: 9px; text-decoration: none; font: 700 20px 'Shippori Mincho', serif; letter-spacing: .12em; white-space: nowrap; }
+    .brand span { color: var(--kin); font-size: 13px; }
+    .brand .brand-lantern { flex: none; color: currentColor; }
+    .site-nav { display: flex; align-items: center; gap: clamp(14px, 2.6vw, 30px); }
+    .site-nav a { color: #d8cebf; text-decoration: none; font-size: 13px; }
     .site-nav a:hover { color: #fff5e6; }
-    .site-nav .nav-login { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 10px 16px; border: 1px solid #85705a; border-radius: 6px; font-weight: 700; }
-    .site-nav .nav-start { padding: 11px 18px; border: 1px solid #d4af6f; border-radius: 6px; color: #f3d7ac; font-weight: 700; }
-    .site-nav .nav-start:hover { background: #352c27; }
+    .site-nav .nav-login { display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; border: 1px solid rgba(216,206,191,.45); border-radius: 2px; font-weight: 700; }
     /* ログイン中のアカウントのボタン（アイコンか名前の頭文字）とメニュー。演出プランの画面と同じ見せ方にする */
     .nav-account { position: relative; }
     .nav-account[hidden], .site-nav .nav-login[hidden] { display: none; }
@@ -62,68 +59,60 @@
     .nav-account-plan { margin-top: 3px; color: #b9ab98; font-size: 11px; }
     .site-nav .nav-account-menu a { display: block; padding: 12px 10px; border-radius: 6px; color: #f2e6cf; font-size: 13px; }
     .site-nav .nav-account-menu a:hover { background: rgba(212,175,111,.12); }
-    .hero { position: relative; overflow: hidden; padding: clamp(70px, 9vw, 130px) 0 90px; background: radial-gradient(ellipse at 77% 30%, #493127 0, #2a2020 32%, #171316 70%); }
-    .hero::before { position: absolute; inset: 0; content: ''; background: linear-gradient(125deg, transparent 49%, rgba(244,194,116,.07) 50%, transparent 65%); pointer-events: none; }
-    .hero-grid { position: relative; display: grid; grid-template-columns: minmax(0, .92fr) minmax(0, 1.08fr); align-items: center; gap: 54px; }
-    .eyebrow { display: inline-flex; align-items: center; gap: 9px; margin: 0 0 22px; color: #d7b987; font-size: 12px; font-weight: 700; letter-spacing: .16em; }
-    .eyebrow::before { width: 22px; height: 1px; background: #d7b987; content: ''; }
-    h1, h2, h3, p { margin-top: 0; }
-    h1, h2 { font-family: 'Shippori Mincho', serif; }
-    h1 { margin-bottom: 25px; font-size: clamp(39px, 5vw, 69px); line-height: 1.43; letter-spacing: .035em; }
-    h1 em { color: #ecc692; font-style: normal; }
-    .hero-copy { max-width: 540px; margin-bottom: 34px; color: #d3c7bc; font-size: 15px; line-height: 2.05; }
-    .hero-actions { display: flex; flex-wrap: wrap; gap: 12px; }
-    .button { display: inline-flex; align-items: center; justify-content: center; min-height: 54px; padding: 14px 22px; border-radius: 7px; font-size: 13px; font-weight: 700; text-decoration: none; transition: transform .18s, background .18s; }
-    .button:hover { transform: translateY(-2px); }
-    .button.primary { background: #bd513b; color: #fff9f0; }
-    .button.primary:hover { background: #d36149; }
-    .button.secondary { border: 1px solid #897156; background: #2c2524; color: #f0ddc2; }
-    .button.secondary:hover { background: #3a2e29; }
-    .hero-note { margin: 21px 0 0; color: #ac9e92; font-size: 11px; line-height: 1.8; }
-    .hero-note a { text-underline-offset: 3px; }
-    .preview { min-width: 0; overflow: hidden; border: 1px solid #9a7458; border-radius: 13px; background: #201b1d; box-shadow: 0 30px 100px #0b090ba8, 0 0 80px #c0733d1b; transform: rotate(1deg); }
-    .preview-header { display: flex; justify-content: space-between; align-items: center; height: 48px; padding: 0 18px; border-bottom: 1px solid #564238; color: #d4af6f; font-family: 'Shippori Mincho', serif; font-size: 14px; font-weight: 700; }
-    .preview-header span:last-child { color: #a69685; font-family: 'Noto Sans JP', sans-serif; font-size: 10px; font-weight: 400; }
-    .preview-content { display: grid; grid-template-columns: 32% 1fr; min-height: 420px; }
-    .preview-scenes { padding: 17px 10px; border-right: 1px solid #514239; background: #1a1719; }
-    .preview-scenes small { display: block; margin: 0 0 13px 9px; color: #aa9787; font-size: 10px; }
-    .preview-chapter { margin: 0 0 10px 7px; color: #d2b887; font-size: 11px; font-weight: 700; }
-    .preview-scene { display: grid; gap: 4px; margin: 5px 0; padding: 10px 10px; border: 1px solid #514038; border-radius: 6px; color: #e6d8c8; font-size: 11px; }
-    .preview-scene span { color: #ab9889; font-size: 9px; }
-    .preview-scene.active { border-color: #d4af6f; background: #403128; }
-    .preview-stage { position: relative; padding: 16px; background: #e8dfd1; color: #574a3d; }
-    .preview-stage-head { display: flex; justify-content: space-between; gap: 12px; color: #5d4e41; font-size: 11px; font-weight: 700; }
-    .preview-stage-head span:last-child { color: #8c7d6e; font-weight: 400; }
-    .preview-stage svg { display: block; width: 100%; height: auto; margin-top: 12px; }
-    .preview-caption { padding: 8px 14px; border-top: 1px solid #514239; color: #a79889; font-size: 10px; text-align: right; }
-    .features { padding: 72px 0 78px; background: #ece6da; color: #2e2925; }
-    .section-label { margin-bottom: 11px; color: #9b4d3b; font-size: 11px; font-weight: 700; letter-spacing: .13em; }
-    .features h2, .migration h2 { margin-bottom: 30px; font-size: clamp(26px, 3vw, 36px); line-height: 1.5; }
-    .feature-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
-    .feature { min-height: 170px; padding: 24px; border: 1px solid #d7cbb9; border-radius: 9px; background: #f7f2e9; }
-    .feature-number { display: block; margin-bottom: 18px; color: #b9684d; font-family: 'Shippori Mincho', serif; font-size: 13px; }
-    .feature h3 { margin-bottom: 9px; font-size: 16px; }
-    .feature p { margin: 0; color: #6f6256; font-size: 12px; line-height: 1.8; }
-    .migration { padding: 76px 0 88px; border-top: 1px solid #5d473a; background: #231c1c; }
-    .migration-grid { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 40px; }
-    .migration h2 { margin-bottom: 14px; }
-    .migration p:not(.section-label) { max-width: 700px; margin-bottom: 0; color: #c8b8aa; font-size: 13px; line-height: 1.9; }
-    .site-footer { padding: 30px 0; border-top: 1px solid #554337; color: #a7998b; font-size: 11px; }
-    .site-footer .wrap { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
-    .site-footer nav { display: flex; flex-wrap: wrap; gap: 19px; }
-    .site-footer a { text-underline-offset: 3px; }
-    @media (max-width: 960px) { .hero-grid { grid-template-columns: 1fr; gap: 55px; } .preview { width: min(700px, 100%); transform: none; } }
-    @media (max-width: 640px) { .wrap { width: min(100% - 32px, 1190px); } .site-header .wrap { min-height: 64px; } .brand { font-size: 19px; } .brand span { font-size: 12px; } .site-nav { gap: 12px; } .site-nav > a:not(.nav-login) { display: none; } .site-nav .nav-start { padding: 9px 11px; font-size: 11px; } .hero { padding: 55px 0 65px; } h1 { font-size: clamp(36px, 11vw, 52px); } .hero-copy { font-size: 13px; } .hero-actions { display: grid; } .button { width: 100%; } .preview-content { min-height: 300px; } .preview-scenes { padding: 12px 6px; } .preview-scene { padding: 8px 6px; font-size: 9px; } .preview-chapter { font-size: 9px; } .preview-stage { padding: 10px; } .preview-stage-head { font-size: 9px; } .features { padding: 55px 0; } .feature-grid { grid-template-columns: 1fr; } .feature { min-height: auto; } .migration { padding: 55px 0; } .migration-grid { grid-template-columns: 1fr; gap: 21px; } .site-footer .wrap { display: block; } .site-footer nav { margin-top: 14px; } }
-    @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } .button { transition: none; } }
+    /* 最初の画面は、幕の上がった舞台そのもの（通しで見るの映像）。右に縦書きの題 */
+    .stage { position: relative; height: min(92vh, 880px); min-height: 580px; overflow: hidden; background: var(--ink); }
+    .stage video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 40%; }
+    .stage::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(13,11,12,.55) 0, rgba(13,11,12,0) 22%, rgba(13,11,12,.1) 50%, var(--ink) 96%), linear-gradient(270deg, rgba(13,11,12,.55) 0, rgba(13,11,12,0) 35%); }
+    .title { position: absolute; z-index: 2; right: clamp(24px, 6vw, 96px); top: 96px; font: 800 clamp(64px, 8.6vw, 124px)/1 'Shippori Mincho', serif; letter-spacing: .14em; text-shadow: 0 2px 34px rgba(0,0,0,.6); }
+    .title .c { position: absolute; top: 0; right: 0; writing-mode: vertical-rl; white-space: nowrap; }
+    .title .c2 { right: 1.32em; top: 1.2em; color: var(--kin); }
+    .title .c3 { right: 12.4em; top: 6.2em; font-size: .2em; font-weight: 500; letter-spacing: .32em; color: #e8dcc8; text-shadow: none; }
+    .title .rule { position: absolute; right: 1.12em; top: 0; width: 1px; height: 2.4em; background: rgba(224,180,92,.5); }
+    .lead { position: absolute; z-index: 2; left: clamp(16px, 6vw, 90px); bottom: 56px; max-width: 600px; }
+    .lead h1 { margin: 0 0 14px; font: 700 clamp(28px, 3.6vw, 46px)/1.4 'Shippori Mincho', serif; text-wrap: balance; }
+    .lead p { margin: 0 0 22px; color: #ddd3c4; }
+    .hero-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px; }
+    .button { display: inline-flex; align-items: center; justify-content: center; min-height: 48px; padding: 0 22px; border-radius: 2px; text-decoration: none; font-weight: 700; }
+    .button.primary { background: var(--en); color: #fff8ee; }
+    .button.primary:hover { background: #c9533c; }
+    .hero-login { color: #d8cebf; font-size: 14px; }
+    .hero-note { margin-top: 14px; color: var(--mute); font-size: 13px; }
+    /* 当日パンフの「スタッフ」欄のように、役割と中身を点線でつなぐ */
+    .staff { max-width: 1120px; margin: 0 auto; padding: 40px clamp(16px, 5vw, 48px) 80px; }
+    .staff h2 { margin: 0 0 6px; font: 700 15px 'Shippori Mincho', serif; letter-spacing: .4em; color: var(--kin); }
+    .row { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: clamp(20px, 4vw, 56px); align-items: center; padding: 44px 0; border-top: 1px solid #3a3133; }
+    .row:nth-of-type(even) { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); }
+    .row:nth-of-type(even) .clip { order: -1; }
+    .role { display: flex; align-items: baseline; gap: 12px; margin: 0 0 10px; font: 700 clamp(30px, 4vw, 48px)/1.2 'Shippori Mincho', serif; }
+    .role::after { content: ''; flex: 1; border-bottom: 2px dotted #6d5f55; transform: translateY(-8px); }
+    .row h3 { margin: 0 0 8px; font: 600 20px/1.5 'Shippori Mincho', serif; color: var(--kin); }
+    .row p { margin: 0; color: #d4cabc; }
+    .clip video { display: block; width: 100%; height: auto; border: 1px solid #2c2427; background: #000; }
+    .notes { max-width: 1120px; margin: 0 auto; padding: 0 clamp(16px, 5vw, 48px) 56px; display: flex; flex-wrap: wrap; gap: 8px 28px; color: var(--mute); font-size: 14px; }
+    .migration { max-width: 1120px; margin: 0 auto; padding: 28px clamp(16px, 5vw, 48px) 56px; border-top: 1px solid #2c2427; color: #cfc4b5; font-size: 14px; }
+    .migration a { color: var(--kin); }
+    .site-footer { border-top: 1px solid #2c2427; }
+    .site-footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; padding: 22px clamp(16px, 5vw, 48px); color: var(--mute); font-size: 13px; }
+    .site-footer nav { display: flex; flex-wrap: wrap; gap: 8px 18px; }
+    @media (max-width: 640px) {
+      .stage { height: 86vh; min-height: 580px; }
+      .stage::after { background: linear-gradient(180deg, rgba(13,11,12,.5) 0, rgba(13,11,12,0) 16%, rgba(13,11,12,.3) 40%, var(--ink) 76%); }
+      .title { top: 72px; right: 14px; font-size: 50px; }
+      .lead { bottom: 28px; right: 16px; }
+      .row, .row:nth-of-type(even) { grid-template-columns: 1fr; padding: 32px 0; }
+      .row:nth-of-type(even) .clip { order: 0; }
+      .site-nav .nav-guide { display: none; }
+    }
+    @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
   </style>
 </head>
 <body>
   <header class="site-header"><div class="wrap">
     <a class="brand" href="/"><svg class="brand-lantern" width="26" height="26" viewBox="0 0 256 256" aria-hidden="true"><path fill="currentColor" d="M90 12 H146 V30 H90 Z M90 226 H146 V244 H90 Z M116.6 36 H119.4 A92 92 0 0 1 189.4 70 H46.6 A92 92 0 0 1 116.6 36 Z M38.3 82 H197.7 A92 92 0 0 1 207.3 106 H28.7 A92 92 0 0 1 38.3 82 Z M28.7 150 H207.3 A92 92 0 0 1 199.9 170 H36.1 A92 92 0 0 1 28.7 150 Z M43.5 182 H192.5 A92 92 0 0 1 119.4 220 H116.6 A92 92 0 0 1 43.5 182 Z "/><path fill="#F2B544" d="M48.5 118 H231.5 A92 92 0 0 1 231.5 138 H48.5 A92 92 0 0 1 48.5 118 Z "/></svg>TOMOSHIBI<span>小屋</span></a>
     <nav class="site-nav" aria-label="サイト内の移動">
-      <a href="#できること">できること</a>
+      <a class="nav-guide" href="#staff">できること</a>
+      <a class="nav-guide" href="/about">使い方</a>
       <a class="nav-login" href="https://id.gikyokutosyokan.com/?return_to=https%3A%2F%2Ftomoshibi.gikyokutosyokan.com%2Fstudio%2Fprojects%2F%3Fimport%3Dlocal">ログイン</a>
-      <a class="nav-start" href="/studio/projects/">演出プランを開く ↗</a>
       <details class="nav-account" hidden>
         <summary aria-label="アカウント"><span class="nav-account-avatar"></span></summary>
         <div class="nav-account-menu">
@@ -136,56 +125,27 @@
     </nav>
   </div></header>
   <main>
-    <section class="hero"><div class="wrap hero-grid">
-      <div>
-        <p class="eyebrow">照明と演出を、ひとつの舞台で</p>
-        <h1>舞台の流れを、<br /><em>灯りとともに。</em></h1>
-        <p class="hero-copy">照明・役者・舞台セットを配置しながら、章とシーンの流れを組み立てる。平面図と客席からの見え方を行き来して、演出プランを形にできます。</p>
-        <div class="hero-actions">
-          <a class="button primary" href="/studio/projects/">演出プランを始める　→</a>
-          <a class="button secondary hero-login" href="https://id.gikyokutosyokan.com/?return_to=https%3A%2F%2Ftomoshibi.gikyokutosyokan.com%2Fstudio%2Fprojects%2F%3Fimport%3Dlocal">ログインして続ける</a>
-        </div>
-        <p class="hero-note">照明だけを組みたい方も、同じ画面で始められます。以前の保存済みプランはプロジェクトに自動でまとまります。</p>
+    <section class="stage" aria-label="見本の公演「雨を待つ図書室」を通しで見ている映像">
+      <video poster="/top/play.jpg" autoplay muted loop playsinline preload="metadata"><source src="/top/play.webm" type="video/webm" /><source src="/top/play.mp4" type="video/mp4" /></video>
+      <div class="title" aria-label="手元に劇場を"><span class="c c1" aria-hidden="true">手元に</span><span class="rule"></span><span class="c c2" aria-hidden="true">劇場を</span><span class="c c3" aria-hidden="true">TOMOSHIBI 小屋</span></div>
+      <div class="lead">
+        <h1>照明も、立ち位置も、<br>場転も。</h1>
+        <p>照明の吊り、役者の立ち位置、セットを、ブラウザの中の劇場に置く。場面ごとに組んで通して見られます。</p>
+        <div class="hero-actions"><a class="button primary" href="/studio/projects/">無料で舞台を組む</a><a class="hero-login" href="https://id.gikyokutosyokan.com/?return_to=https%3A%2F%2Ftomoshibi.gikyokutosyokan.com%2Fstudio%2Fprojects%2F%3Fimport%3Dlocal">ログインして続ける</a></div>
+        <p class="hero-note">登録なしで始められます。</p>
       </div>
-      <div class="preview" aria-label="演出プラン画面のイメージ">
-        <div class="preview-header"><span>演出プラン</span><span>画面イメージ</span></div>
-        <div class="preview-content">
-          <div class="preview-scenes"><small>公演の流れ</small><div class="preview-chapter">▾　第1章</div>
-            <div class="preview-scene"><span>セリフ</span>幕開け</div>
-            <div class="preview-scene active"><span>光</span>手紙を見つける</div>
-            <div class="preview-scene"><span>音</span>夜が明ける</div>
-          </div>
-          <div class="preview-stage"><div class="preview-stage-head"><span>手紙を見つける · 平面図</span><span>照明 ON</span></div>
-            <svg viewBox="0 0 540 400" role="img" aria-label="照明、役者、舞台セットを置いた平面図">
-              <defs><radialGradient id="light"><stop stop-color="#e6c686" stop-opacity=".75"/><stop offset="1" stop-color="#e6c686" stop-opacity="0"/></radialGradient></defs>
-              <rect x="36" y="34" width="468" height="290" rx="4" fill="#f8f4ec" stroke="#776d60" stroke-width="3"/>
-              <rect x="55" y="52" width="430" height="251" fill="none" stroke="#d8cebe" stroke-dasharray="4 6"/>
-              <ellipse cx="274" cy="184" rx="164" ry="91" fill="url(#light)"/>
-              <rect x="86" y="73" width="85" height="50" rx="4" fill="#999487" stroke="#5e5a50"/><text x="128" y="103" text-anchor="middle" fill="#fff" font-size="13">机</text>
-              <rect x="375" y="201" width="65" height="44" rx="4" fill="#a6a090" stroke="#5e5a50"/><text x="407" y="228" text-anchor="middle" fill="#fff" font-size="12">扉</text>
-              <circle cx="224" cy="176" r="15" fill="#b5513d" stroke="#fff" stroke-width="4"/><text x="224" y="155" text-anchor="middle" fill="#4d4238" font-size="13">役者 A</text>
-              <circle cx="331" cy="190" r="15" fill="#b5513d" stroke="#fff" stroke-width="4"/><text x="331" y="168" text-anchor="middle" fill="#4d4238" font-size="13">役者 B</text>
-              <path d="M60 340 Q270 385 480 340" fill="none" stroke="#8e8071" stroke-width="3"/>
-              <text x="270" y="384" text-anchor="middle" fill="#8e8071" font-size="12">客席</text>
-            </svg>
-          </div>
-        </div>
-        <div class="preview-caption">章・シーン、配置、照明を同じ画面で</div>
-      </div>
-    </div></section>
-    <section class="features" id="できること"><div class="wrap">
-      <p class="section-label">できること</p><h2>組む、確かめる、通して見る。</h2>
-      <div class="feature-grid">
-        <article class="feature"><span class="feature-number">01</span><h3>照明を組む</h3><p>器具の位置や向き、明るさを調整し、客席からの見え方を確認できます。</p></article>
-        <article class="feature"><span class="feature-number">02</span><h3>場面を組み立てる</h3><p>章とシーンを並べ、役者・舞台セット・灯りの変化を場面ごとに残せます。</p></article>
-        <article class="feature"><span class="feature-number">03</span><h3>通して見る</h3><p>シーンを順に切り替え、舞台全体の流れを確かめられます。</p></article>
-      </div>
-    </div></section>
-    <section class="migration"><div class="wrap migration-grid">
-      <div><p class="section-label">以前のプランをお持ちの方へ</p><h2>保存したプランを、自動でひとつに。</h2>
-        <p>会員アカウントの旧プランは、プロジェクトにまとめて表示します。この端末の旧プランも、同じブラウザで開くと自動でまとまります。元のデータは残ります。</p></div>
-      <a class="button secondary" href="/studio/projects/">プロジェクトを見る　→</a>
-    </div></section>
+    </section>
+    <section class="staff" id="staff">
+      <h2 id="できること">スタッフ</h2>
+      <div class="row"><div><div class="role">照明</div><h3>暗転から、一灯ずつ。</h3><p>器具を吊って、狙いと色を決める。点けるたびに、客席からの見え方がその場で変わります。</p></div>
+        <div class="clip"><video poster="/top/light.jpg" autoplay muted loop playsinline preload="metadata" aria-label="暗転から照明を一灯ずつ点けていく映像"><source src="/top/light.webm" type="video/webm" /><source src="/top/light.mp4" type="video/mp4" /></video></div></div>
+      <div class="row"><div><div class="role">場割り</div><h3>場面ごとに、立ち位置と明かりを。</h3><p>章とシーンを並べ、役者・セット・明かりの変化を場面ごとに残す。平面図と 3D は同じ舞台を見ています。</p></div>
+        <div class="clip"><video poster="/top/scenes.jpg" autoplay muted loop playsinline preload="metadata" aria-label="場面を順に選び、3D と平面図の立ち位置と明かりが変わる映像"><source src="/top/scenes.webm" type="video/webm" /><source src="/top/scenes.mp4" type="video/mp4" /></video></div></div>
+      <div class="row"><div><div class="role">通し</div><h3>頭から、通してみる。</h3><p>シーンを順に送って、舞台全体の流れを確かめる。稽古の前に、座組みで同じ画を見られます。</p></div>
+        <div class="clip"><video poster="/top/play.jpg" autoplay muted loop playsinline preload="metadata" aria-label="通しで見るで場面が順に変わる映像"><source src="/top/play.webm" type="video/webm" /><source src="/top/play.mp4" type="video/mp4" /></video></div></div>
+    </section>
+    <div class="notes"><span>料金：無料（広告なしの Pro あり）</span><span>保存：ログインするとアカウントに。しないときはこのブラウザに一時保存</span><span>iPhone アプリあり</span></div>
+    <p class="migration">以前のプランをお持ちの方へ：会員アカウントの旧プランは、プロジェクトにまとめて表示します。この端末の旧プランも、同じブラウザで開くと自動でまとまります。元のデータは残ります。<a href="/studio/projects/">プロジェクトを見る</a></p>
   </main>
   <footer class="site-footer"><div class="wrap"><span>© TOMOSHIBI小屋 · by 戯曲図書館</span><nav aria-label="その他のページ">
     <a href="/about">使い方</a><a href="/pro">Pro</a><a href="/contact">お問い合わせ</a><a href="/terms">利用規約</a><a href="/privacy">プライバシー</a>
@@ -228,7 +188,7 @@
         const hero = document.querySelector('.hero-login');
         hero.textContent = user.plan === 'pro' ? 'Proプラン管理・解約' : '料金プランを見る';
         hero.href = '/pro';
-        document.querySelector('.hero-actions .primary').textContent = 'プロジェクトを開く　→';
+        document.querySelector('.hero-actions .primary').textContent = 'プロジェクトを開く';
       } catch {} finally { busy = false; }
     }
     // メニューの外を押したら閉じる
