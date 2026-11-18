@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, type MouseEvent } from 'react'
 import { focusSelection } from '../scene/focusBus'
 import { HierarchyPanel } from './HierarchyPanel'
 import { APP_RESTORE_URL, hasAppBridge } from '../io/appBridge'
@@ -296,7 +296,12 @@ function ListSheet({ onPicked }: { onPicked: () => void }) {
   const [first] = useState(selected)
   // 選んだら一覧を閉じ、3D の視点をその物に寄せる（ダブルタップと同じ動き。2026-11-18）
   useEffect(() => { if (selected && selected !== first) { onPicked(); focusSelection() } }, [selected, first, onPicked])
-  return <div className="phone-list unity-panel"><HierarchyPanel /></div>
+  // すでに選ばれている物の行を押しても選択は変わらないので、上の仕組みでは閉じなかった。行の名前を押したら必ず閉じて寄る（2026-11-18）
+  const pickSame = (event: MouseEvent) => {
+    if (!(event.target as HTMLElement).closest('.hierarchy-name')) return
+    window.setTimeout(() => { if (useStore.getState().selection.id === first && first) { onPicked(); focusSelection() } }, 0)
+  }
+  return <div className="phone-list unity-panel" onClick={pickSame}><HierarchyPanel /></div>
 }
 
 const VIEWS: Array<[string, string]> = [['audience', '客席から'], ['aerial', '上から'], ['sidewing', '袖から'], ['free', '自由']]

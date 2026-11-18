@@ -329,7 +329,8 @@ export default function App() {
         case '3': up({ cameraView: 'sidewing' }); break
         case '4': up({ cameraView: 'free' }); break
         case '5': if (s.productionPlan.audienceBlocks?.length) up({ cameraView: 'house' }); break
-        case 'escape': if (planOpen) setPlanOpen(false); else s.select(null, null); break
+        // 作業画面（isMockPreview）では平面図は閉じるものではなく、表示の切り替えで出し入れする。Esc で閉じると「平面図」を押しても何も出なくなっていた（2026-11-18）
+        case 'escape': if (planOpen && !isMockPreview) setPlanOpen(false); else s.select(null, null); break
         case '?': case '/': up({ showHelp: !s.settings.showHelp }); break
         case 'h': up({ showHelp: !s.settings.showHelp }); break
         case 'p': up({ probeMode: !s.settings.probeMode }); break
