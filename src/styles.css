@@ -5161,7 +5161,7 @@ body.embed .workspace-switch { display: none; }
 .toolbar .desk-view-switch button + button { border-left: 1px solid #4c4246; }
 .toolbar .desk-view-switch button[aria-pressed="true"] { background: var(--kin) !important; color: #14110d; font-weight: 700; }
 /* 平面図だけのときは、3D 用の道具・視点を隠す（平面図にも道具がある） */
-.unified-shell.workspace-layout.desk-plan-full .toolbar > :not(.desk-view-switch) { display: none; }
+.unified-shell.workspace-layout.desk-plan-full .toolbar > :not(.desk-view-switch):not(.workspace-display-menu-wrap) { display: none; }
 .unified-shell.workspace-layout.desk-plan-full { --map-height: calc(100dvh - var(--header-height) - 64px) !important; }
 .unified-shell.workspace-layout.desk-plan-full .canvas-wrap { visibility: hidden; pointer-events: none; }
 .unified-shell.workspace-layout.desk-plan-full .plan-resize-handle { display: none; }
@@ -5414,7 +5414,7 @@ input[type="color"]::-moz-color-swatch { border: 0; border-radius: 0; }
   .unified-shell.workspace-layout .object-panel .panel-purpose .panel-hide-desk:hover { border-color: #4c4246; color: var(--ink-primary); }
 }
 .inspector-reopen {
-  position: fixed; z-index: 70; right: 0; top: calc(var(--header-height, 56px) + 80px); writing-mode: vertical-rl;
+  position: fixed; z-index: 70; right: 0; top: 45%; writing-mode: vertical-rl;
   padding: 14px 8px; border: 1px solid #4c4246; border-right: 0; border-radius: 6px 0 0 6px; background: #191619;
   color: var(--ink-primary); font: 600 13px var(--font-sans); letter-spacing: .1em; cursor: pointer;
 }
@@ -5428,3 +5428,11 @@ input[type="color"]::-moz-color-swatch { border: 0; border-radius: 0; }
 .unified-shell.workspace-layout.desk-split-side .plan-resize-handle { display: none; }
 .unified-shell.workspace-layout.desk-split-side .toolbar { max-width: calc(100vw - var(--outline-width) - var(--inspector-width) - var(--map-width) - 24px); flex-wrap: wrap; }
 .unified-shell.workspace-layout.desk-split-side:not(.outline-visible) .toolbar { max-width: calc(100vw - var(--inspector-width) - var(--map-width) - 28px); }
+
+/* 左の「公演の流れ」を閉じたときに、左端から開き直すつまみ（右の「舞台の編集」と同じ形）。2026-11-18 */
+.outline-reopen {
+  position: fixed; z-index: 70; left: 0; top: 45%; writing-mode: vertical-rl;
+  padding: 14px 8px; border: 1px solid #4c4246; border-left: 0; border-radius: 0 6px 6px 0; background: #191619;
+  color: var(--ink-primary); font: 600 13px var(--font-sans); letter-spacing: .1em; cursor: pointer;
+}
+.outline-reopen:hover { border-color: var(--kin); }
