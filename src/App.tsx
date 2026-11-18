@@ -57,7 +57,6 @@ import { createVenueStudyPlan, VENUE_STUDY_LINKS } from './demo/createVenueStudy
 import { AudienceSeating } from './scene/AudienceSeating'
 import { isWorkspaceLibraryPath, isWorkspacePath, workspaceBasePath } from './io/workspacePath'
 import { LanternMark } from './ui/LanternMark'
-import { APP_IMPORT_EVENT, hasAppImports } from './io/appBridge'
 
 const CAMERA_VIEWS: Record<string, { pos: [number, number, number]; target: [number, number, number] }> = {
   audience: { pos: [0, 2.5, 10], target: [0, 2.5, -2] },
@@ -240,15 +239,6 @@ export default function App() {
       window.removeEventListener('keydown', closeOnEscape, true)
     }
   }, [displayMenuOpen])
-
-  // iOS アプリで .tomoshibi のファイルを開いたら、プロジェクト一覧に移って読み込む（一覧が受け取る）
-  useEffect(() => {
-    if (!isMockPreview) return
-    const goToLibrary = () => { if (hasAppImports()) navigateMock('projects') }
-    goToLibrary()
-    window.addEventListener(APP_IMPORT_EVENT, goToLibrary)
-    return () => window.removeEventListener(APP_IMPORT_EVENT, goToLibrary)
-  }, [])
 
   useEffect(() => {
     if (!isMockPreview) return
