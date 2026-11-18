@@ -5504,3 +5504,16 @@ input[type="color"]::-moz-color-swatch { border: 0; border-radius: 0; }
 .toolbar .desk-console-toggle.active { background: var(--kin) !important; border-color: var(--kin); color: #14110d; }
 /* フェーダーは、収まるときは真ん中に並べる。収まらないときは左から並べて横に動かす */
 .console-faders { justify-content: safe center; }
+
+/* アカウント（/account）。2026-11-19 */
+.account-page-who { display: flex; align-items: center; gap: 16px; margin: 8px 0 24px; }
+.account-page-avatar { width: 64px; height: 64px; border-radius: 50%; object-fit: cover; flex: none; }
+.account-page-avatar.initial { display: grid; place-items: center; background: linear-gradient(135deg, #8a6a3e, #5a4128); color: #fff3df; font-size: 26px; font-weight: 700; }
+.account-page-name { font-size: 22px; font-weight: 700; }
+.account-page-sub { margin-top: 2px; color: #8f8478; font-size: 14px; }
+.account-page-table th { width: 160px; text-align: left; }
+.account-page-note { margin-left: 6px; color: #8f8478; font-size: 14px; }
+.account-page-btn { display: inline-flex; align-items: center; min-height: 44px; margin: 4px 8px 4px 0; padding: 0 18px; border: 1px solid currentColor; border-radius: 4px; background: transparent; color: inherit; font: inherit; font-weight: 700; text-decoration: none; cursor: pointer; }
+.account-page-btn.danger { color: #b8432f; }
+.account-page-btn:disabled { opacity: .6; cursor: default; }
+.account-page-err { color: #b8432f; }

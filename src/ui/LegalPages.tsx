@@ -6,6 +6,9 @@ import {
   syncBilling,
   CloudError,
   loginUrl,
+  logoutUrl,
+  deleteAccountUrl,
+  listCloudProjects,
   isNativeApp,
   APP_STORE_SUBSCRIPTIONS_URL,
   NATIVE_PURCHASE_URL,
@@ -520,6 +523,71 @@ function ProCancelPage() {
   )
 }
 
+/**
+ * アカウント（/account）。戯曲 ID のページへ移らずに、名前・プラン・保存の件数・契約・ログアウトをここで見る（2026-11-19 オーナー
+ * 「アカウント管理から戯曲図書館のページに飛ぶの嫌だ」）。退会だけは戯曲 ID ごと消えるので、戯曲 ID の確認画面で行う
+ */
+export function AccountPage() {
+  const { user, loading } = useCloudSession()
+  const [count, setCount] = useState<number | null>(null)
+  const [portalBusy, setPortalBusy] = useState(false)
+  const [portalErr, setPortalErr] = useState('')
+  useEffect(() => {
+    if (!user) return
+    listCloudProjects().then(list => setCount(Array.isArray(list) ? list.length : null)).catch(() => setCount(null))
+  }, [user])
+  const openPortal = async () => {
+    setPortalBusy(true); setPortalErr('')
+    try {
+      const { url } = await createBillingPortal()
+      window.location.href = url
+    } catch (e) {
+      setPortalErr(e instanceof CloudError ? e.message : String(e))
+      setPortalBusy(false)
+    }
+  }
+  if (loading && !user) return <Layout title="アカウント"><p>読み込み中…</p></Layout>
+  if (!user) return <Layout title="アカウント">
+    <p>ログインしていません。ログインすると、プロジェクトをアカウントに保存して、ほかの端末からも開けます。</p>
+    <p><a className="pro-subscribe-btn account-page-btn" href={loginUrl()}>ログイン</a></p>
+  </Layout>
+  const isPro = user.plan === 'pro'
+  const until = user.planExpiresAt ? new Date(user.planExpiresAt).toLocaleDateString('ja-JP') : null
+  const initial = user.name?.trim() ? Array.from(user.name.trim())[0].toUpperCase() : '?'
+  return <Layout title="アカウント">
+    <section className="account-page-who">
+      {user.image ? <img className="account-page-avatar" src={user.image} alt="" /> : <span className="account-page-avatar initial" aria-hidden>{initial}</span>}
+      <div>
+        <div className="account-page-name">{user.name ?? '名前は未設定'}</div>
+        <div className="account-page-sub">戯曲 ID でログイン中（戯曲図書館などと共通のアカウント）</div>
+      </div>
+    </section>
+
+    <h2>プランと保存</h2>
+    <table className="legal-table account-page-table">
+      <tbody>
+        <tr><th>プラン</th><td>{isPro ? <>Pro{until && <span className="account-page-note">（{until} まで）</span>}</> : 'Free'}</td></tr>
+        <tr><th>アカウントに保存</th><td>{count === null ? '—' : `${count} 件`} / {user.maxProjects} 件まで</td></tr>
+      </tbody>
+    </table>
+
+    <h2>契約</h2>
+    {isPro && user.billing === 'app_store'
+      ? <p><a className="account-page-btn" href={APP_STORE_SUBSCRIPTIONS_URL}>契約の管理（App Store）</a></p>
+      : isPro
+        ? <p><button type="button" className="account-page-btn" onClick={openPortal} disabled={portalBusy}>{portalBusy ? '移動中…' : '契約の管理（領収書・支払い方法・解約）'}</button></p>
+        : <p>いまは Free プランです。<a className="account-page-btn" href="/pro">Pro プランを見る</a></p>}
+    {portalErr && <p className="account-page-err">{portalErr}</p>}
+
+    <h2>ログアウト</h2>
+    <p><a className="account-page-btn" href={logoutUrl()}>ログアウト</a></p>
+
+    <h2>退会</h2>
+    <p>退会すると、戯曲 ID ごと消えます。TOMOSHIBI小屋に保存したプロジェクトと、戯曲図書館などほかのサービスのアカウントも使えなくなります。</p>
+    <p><a className="account-page-btn danger" href={deleteAccountUrl()}>退会の手続きへ</a></p>
+  </Layout>
+}
+
 export function tryRenderLegalPage() {
   if (typeof window === 'undefined') return null
   const path = window.location.pathname
@@ -531,6 +599,7 @@ export function tryRenderLegalPage() {
     case '/pro/success': return <ProSuccessPage />
     case '/pro/cancel': return <ProCancelPage />
     case '/contact': return <ContactPage />
+    case '/account': return <AccountPage />
     default: return null
   }
 }

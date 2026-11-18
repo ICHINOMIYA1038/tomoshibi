@@ -8,6 +8,7 @@ const SUFFIX = ' | TOMOSHIBI小屋'
 
 const ROUTES = [
   { path: '/pro', title: 'Pro プラン', description: 'TOMOSHIBI小屋の Pro プランの料金と、Free プランとの違いをご案内します。' },
+  { path: '/account', title: 'アカウント', noindex: true },
   { path: '/contact', title: 'お問い合わせ', description: 'TOMOSHIBI小屋へのお問い合わせ窓口です。' },
   { path: '/terms', title: '利用規約', description: 'TOMOSHIBI小屋の利用規約です。' },
   { path: '/privacy', title: 'プライバシーポリシー', description: 'TOMOSHIBI小屋のプライバシーポリシーです。' },

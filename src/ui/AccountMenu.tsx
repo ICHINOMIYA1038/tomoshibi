@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { APP_STORE_SUBSCRIPTIONS_URL, CloudError, accountUrl, createBillingPortal, loginUrl, logoutUrl } from '../io/cloud'
+import { APP_STORE_SUBSCRIPTIONS_URL, CloudError, createBillingPortal, loginUrl, logoutUrl } from '../io/cloud'
 import { useCloudSession } from '../io/cloudSession'
 
 /** 名前の最初の 1 文字。アイコン画像が無い人の代わりに丸の中に出す */
@@ -89,9 +89,9 @@ export function AccountMenu({ floating = false, onOpenSettings }: { floating?: b
             </header>
 
             <div className="account-menu-section">
-              <a className="account-menu-item" role="menuitem" href={accountUrl()} onClick={() => setOpen(false)}>
+              <a className="account-menu-item" role="menuitem" href="/account" onClick={() => setOpen(false)}>
                 <span className="account-menu-icon" aria-hidden>👤</span>
-                アカウント管理
+                アカウント
               </a>
               {isPro && user.billing === 'app_store' ? (
                 // App Store で買った契約は Stripe のポータルでは扱えない。iOS の設定で管理する

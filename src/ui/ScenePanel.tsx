@@ -7,7 +7,7 @@ import {
   listSavedScenes, saveSceneLS, loadSceneLS, deleteSceneLS, makeShareURL,
 } from '../io/sceneIO'
 import {
-  loginUrl, signupUrl, logoutUrl, accountUrl,
+  loginUrl, signupUrl, logoutUrl,
   listCloudScenes, saveCloudSceneNew, updateCloudScene, loadCloudScene, deleteCloudScene,
   type CloudSceneMeta, CloudError,
 } from '../io/cloud'
@@ -419,8 +419,8 @@ function CloudScenes() {
       <footer className="scene-account">
         <span className="scene-account-name">{user.name ?? user.id}</span>
         <span className="scene-account-links">
-          <a href={accountUrl()} className="scene-account-logout" title="アカウントの管理・退会は戯曲 ID の画面で行えます">
-            アカウント管理
+          <a href="/account" className="scene-account-logout">
+            アカウント
           </a>
           <a href={logoutUrl()} className="scene-account-logout">ログアウト</a>
         </span>
