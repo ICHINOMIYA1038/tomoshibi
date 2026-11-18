@@ -18,11 +18,11 @@ const CLIPS = [
   { id: '01', title: '道具を切り替える', goal: '選択・移動・回転・拡大の違いと、キーでの切り替え方' },
   { id: '02', title: '一覧で選ぶ・足す・親子にする', goal: 'ヒエラルキーで物を選び、「＋ 追加」で足し、「親」で一緒に動かす' },
   { id: '03', title: '右クリックのメニュー', goal: '物の操作と、押した場所に役者や照明を足す方法' },
-  { id: '04', title: '舞台と客席を動かす', goal: '客席を足し、平面図で動かして回す（全シーン共通の物）' },
-  { id: '05', title: '照明の狙いを動かす', goal: '「つかむ: 照明・狙い」と、平面図の色の輪' },
+  { id: '04', title: '舞台と客席を動かす', goal: '客席を足し、平面図で動かし、丸い取っ手で回す（全シーン共通の物）' },
+  { id: '05', title: '照明の狙いを動かす', goal: '右の設定の「3D でつかむ点」と、平面図の色の輪' },
   { id: '06', title: 'シーンを組み立てる', goal: 'シーンを足し、並べ替え、通しで見る' },
   { id: '07', title: 'ほかのシーンにも反映する', goal: '変えた直後の帯で「この章・このあと・全シーン」にも入れる' },
-  { id: '08', title: '3D と平面図を切り替える', goal: '平面図を大きく出し、仕込み図と明かりの見た目を切り替える' },
+  { id: '08', title: '3D と平面図を切り替える', goal: '平面図を大きく出し、上下・左右に並べ、仕込み図と明かりの見た目を切り替える' },
 ]
 
 const sha8 = file => createHash('sha256').update(readFileSync(file)).digest('hex').slice(0, 8)
@@ -33,15 +33,16 @@ mkdirSync(OUT, { recursive: true })
 const items = []
 let total = 0
 for (const clip of CLIPS) {
-  const src = join(SRC, `${clip.id}.webm`)
+  const mp4Src = join(SRC, `${clip.id}.mp4`)
+  const src = existsSync(mp4Src) ? mp4Src : join(SRC, `${clip.id}.webm`)
   if (!existsSync(src)) throw new Error(`動画が無い: ${src}（record.sh ${clip.id} で録る）`)
   const mp4 = join(OUT, `${clip.id}.mp4`)
   const jpg = join(OUT, `${clip.id}.jpg`)
-  // 録画は 1440×900。幅 1280 に縮め、文字が読める画質（crf 26）にする。音声は無い
-  ff(['-i', src, '-vf', 'scale=1280:-2', '-c:v', 'libx264', '-crf', '26', '-preset', 'slow', '-pix_fmt', 'yuv420p', '-an', '-movflags', '+faststart', mp4])
+  // 録画は 1440×900 の H.264。縮めずに、文字がくっきり読める画質（crf 20）にする。音声は無い
+  ff(['-i', src, '-c:v', 'libx264', '-crf', '20', '-preset', 'slow', '-pix_fmt', 'yuv420p', '-an', '-movflags', '+faststart', mp4])
   const sec = Number(execFileSync('ffprobe', ['-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', mp4]).toString())
   // 表紙: 説明の帯が出たあとの、操作の途中の画面
-  ff(['-ss', (sec * 0.45).toFixed(2), '-i', mp4, '-frames:v', '1', '-vf', 'scale=640:-2', '-q:v', '4', jpg])
+  ff(['-ss', (sec * 0.45).toFixed(2), '-i', mp4, '-frames:v', '1', '-vf', 'scale=960:-2', '-q:v', '3', jpg])
   const mp4Name = `${clip.id}-${sha8(mp4)}.mp4`
   const jpgName = `${clip.id}-${sha8(jpg)}.jpg`
   renameSync(mp4, join(OUT, mp4Name))
