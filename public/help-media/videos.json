@@ -6,64 +6,64 @@
    "title": "道具を切り替える",
    "goal": "選択・移動・回転・拡大の違いと、キーでの切り替え方",
    "sec": 23,
-   "src": "/help-media/01-18b466c5.mp4",
-   "poster": "/help-media/01-7ded9e9a.jpg"
+   "src": "/help-media/01-f8feabf2.mp4",
+   "poster": "/help-media/01-66364425.jpg"
   },
   {
    "id": "02",
    "title": "一覧で選ぶ・足す・親子にする",
    "goal": "ヒエラルキーで物を選び、「＋ 追加」で足し、「親」で一緒に動かす",
    "sec": 17,
-   "src": "/help-media/02-5ec397bd.mp4",
-   "poster": "/help-media/02-d6187cbb.jpg"
+   "src": "/help-media/02-a64009bd.mp4",
+   "poster": "/help-media/02-06530886.jpg"
   },
   {
    "id": "03",
    "title": "右クリックのメニュー",
    "goal": "物の操作と、押した場所に役者や照明を足す方法",
    "sec": 17,
-   "src": "/help-media/03-33e4bb55.mp4",
-   "poster": "/help-media/03-6afa98b5.jpg"
+   "src": "/help-media/03-c2d8d893.mp4",
+   "poster": "/help-media/03-f8ba7c01.jpg"
   },
   {
    "id": "04",
    "title": "舞台と客席を動かす",
    "goal": "客席を足し、平面図で動かして回す（全シーン共通の物）",
    "sec": 22,
-   "src": "/help-media/04-996f9eaa.mp4",
-   "poster": "/help-media/04-276c476e.jpg"
+   "src": "/help-media/04-bb18c00e.mp4",
+   "poster": "/help-media/04-699505fe.jpg"
   },
   {
    "id": "05",
    "title": "照明の狙いを動かす",
    "goal": "「つかむ: 照明・狙い」と、平面図の色の輪",
    "sec": 12,
-   "src": "/help-media/05-164fbfe2.mp4",
-   "poster": "/help-media/05-b7fb812f.jpg"
+   "src": "/help-media/05-672ac998.mp4",
+   "poster": "/help-media/05-dfea7031.jpg"
   },
   {
    "id": "06",
    "title": "シーンを組み立てる",
    "goal": "シーンを足し、並べ替え、通しで見る",
    "sec": 20,
-   "src": "/help-media/06-4278e4d7.mp4",
-   "poster": "/help-media/06-c340e0a3.jpg"
+   "src": "/help-media/06-98d71603.mp4",
+   "poster": "/help-media/06-68b92b5e.jpg"
   },
   {
    "id": "07",
    "title": "ほかのシーンにも反映する",
    "goal": "変えた直後の帯で「この章・このあと・全シーン」にも入れる",
-   "sec": 13,
-   "src": "/help-media/07-7a5af6c6.mp4",
-   "poster": "/help-media/07-7d51f777.jpg"
+   "sec": 12,
+   "src": "/help-media/07-f7c1b526.mp4",
+   "poster": "/help-media/07-9b97f23e.jpg"
   },
   {
    "id": "08",
    "title": "3D と平面図を切り替える",
    "goal": "平面図を大きく出し、仕込み図と明かりの見た目を切り替える",
    "sec": 16,
-   "src": "/help-media/08-3cf2f936.mp4",
-   "poster": "/help-media/08-be22ac98.jpg"
+   "src": "/help-media/08-b60cc0fe.mp4",
+   "poster": "/help-media/08-03a6687c.jpg"
   }
  ]
 }
