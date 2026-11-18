@@ -5354,13 +5354,4 @@ input[type="color"]::-moz-color-swatch { border: 0; border-radius: 0; }
   min-height: 42px; padding: 0 10px; border: 1px solid #4c4246; background: #191619; color: var(--ink-secondary, #cbbfb1); font: 600 13px var(--font-sans);
 }
 .unified-shell.phone-layout .phone-house-lights.on { border-color: var(--kin); color: var(--kin); }
-/* プロジェクト一覧の「ファイルから読み込む」（.tomoshibi）。作るボタンの下に、枠だけのボタンで置く（2026-11-18） */
-.project-library-import-file {
-  display: flex; align-items: center; width: 100%; min-height: 44px; margin-top: 8px; padding: 0 14px; box-sizing: border-box;
-  border: 1px solid rgba(255,255,255,.22); border-radius: 7px; color: var(--ink-primary, #f0e8da); font-size: 13px; font-weight: 600; cursor: pointer;
-}
-.project-library-import-file:hover { border-color: rgba(224,180,92,.6); }
 .project-library-open-actions { display: flex; flex-direction: column; gap: 6px; align-items: stretch; }
-/* 右の詳細は生成りの紙の地なので、墨の文字と枠にする（白い文字だと読めなかった。2026-11-18） */
-.project-library-export { min-height: 40px; padding: 0 14px; border: 1px solid rgba(46,40,36,.35); border-radius: 7px; background: none; color: #2e2824; font-size: 13px; font-weight: 600; cursor: pointer; }
-.project-library-export:hover { border-color: #b94b34; color: #b94b34; }

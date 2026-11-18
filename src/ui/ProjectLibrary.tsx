@@ -3,7 +3,7 @@ import { acknowledgeTransfers, pendingTransfers, recordTransferred, transferFing
 import { hasDeviceStorage } from '../io/workspaceStorage'
 import { useEffect, useRef, useState } from 'react'
 import { useIsDirty, useStore } from '../store'
-import { deleteSceneLS, downloadSerializedScene, exportScene, listSavedScenes, loadSceneLS, type SerializedScene } from '../io/sceneIO'
+import { deleteSceneLS, exportScene, listSavedScenes, loadSceneLS, type SerializedScene } from '../io/sceneIO'
 import { getActiveCloudProject, getActiveSavedProjectName, setActiveCloudProject, setActiveSavedProjectName } from '../io/mockProjectSession'
 import { flushMockAutosave, preserveMockDraftBeforeDemo, resetMockWorkspace, useMockWorkspaceState, waitForCloudSave } from '../io/mockWorkspace'
 import { createVenueTemplatePlan, VENUE_STUDY_LINKS, type VenueStudyKind } from '../demo/createVenueStudyPlans'
@@ -323,18 +323,6 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
       else setCreateError(message)
     } finally { setCreating(false) }
   }
-  /** .tomoshibi（中身は JSON）か、以前の .json のファイルを、新しいプロジェクトとして読み込む（2026-11-18） */
-  const importFile = async (file: File) => {
-    setFeedback('')
-    if (atLimit) { setFeedback('保存できるプロジェクトの数がいっぱいです。使わないプロジェクトを一覧から削除してから、読み込んでください。'); return }
-    let scene: SerializedScene | null = null
-    try { scene = JSON.parse(await file.text()) } catch { scene = null }
-    if (!scene || typeof scene !== 'object' || !Array.isArray(scene.fixtures) || !Array.isArray(scene.performers)) {
-      setFeedback('このファイルは読み込めませんでした。TOMOSHIBI から書き出した .tomoshibi のファイルを選んでください。')
-      return
-    }
-    await create(scene)
-  }
   const removeMemberProject = async (item: CloudProjectMeta) => {
     if (!await askConfirm(`「${item.name}」をアカウントから削除しますか？\nほかの端末からも開けなくなります。元に戻せません。`, '削除する')) return
     setMemberBusy(true)
@@ -545,14 +533,6 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
       <aside className="project-library-rail" aria-label="プロジェクト一覧">
         <div className="project-library-rail-head"><h1>プロジェクト</h1><p>編集する舞台を選んでください。</p></div>
         <button className="project-library-create" onClick={openCreate}>＋ 新しいプロジェクトを作る</button>
-        <label className="project-library-import-file">
-          ファイルから読み込む
-          <input type="file" accept=".tomoshibi,.json,application/json" hidden onChange={event => {
-            const file = event.target.files?.[0]
-            event.target.value = ''
-            if (file) void importFile(file)
-          }} />
-        </label>
         {user && <>
           <div className="project-library-list-head project-library-list-head-explained">
             <strong>アカウントに保存 {memberProjects.length} / {user.maxProjects}件</strong><span>ログインすれば、ほかの端末からも開けます</span>
@@ -565,11 +545,6 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
                 disabled={memberBusy} onClick={() => openMemberProject(item)}>
                 <strong>{item.name}</strong><span>{savedDate(item.updatedAt)}<small>開く →</small></span>
               </button>
-              <button className="project-library-member-delete project-library-member-export" disabled={memberBusy}
-                aria-label={`「${item.name}」をファイルに書き出す`} title=".tomoshibi のファイルに書き出す" onClick={async () => {
-                  try { const project = await fetchCloudProject(item.id); downloadSerializedScene(project.data as SerializedScene, item.name) }
-                  catch { setMemberError('書き出せませんでした。通信状況を確かめて、もう一度お試しください。') }
-                }}>書き出す</button>
               <button className="project-library-member-delete" disabled={memberBusy}
                 aria-label={`「${item.name}」を削除`} onClick={() => removeMemberProject(item)}>削除</button>
             </div>)}
@@ -606,7 +581,6 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
                 : `最終保存 ${savedDate(selected.scene.savedAt)}`}</p></div>
             <div className="project-library-open-actions">
               <button className="project-library-open" onClick={() => open(selected)}>{selected.draft ? '編集に戻る' : 'このプロジェクトを開く'}</button>
-              <button className="project-library-export" onClick={() => downloadSerializedScene(selected.draft ? exportScene(draftTitle) : selected.scene)}>ファイルに書き出す</button>
             </div>
           </div>
           <StagePreview item={selected} />

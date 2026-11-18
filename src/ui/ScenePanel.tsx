@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { useStore, useIsDirty } from '../store'
 import { exportScene, importScene } from '../io/sceneIO'
 import {
-  listSavedScenes, saveSceneLS, loadSceneLS, deleteSceneLS, makeShareURL, downloadSceneJSON,
+  listSavedScenes, saveSceneLS, loadSceneLS, deleteSceneLS, makeShareURL,
 } from '../io/sceneIO'
 import {
   loginUrl, signupUrl, logoutUrl, accountUrl,
@@ -173,7 +173,6 @@ function LocalScenesBody({ authenticated, loading }: { authenticated: boolean; l
       {isMockPreview && <p className="scene-save-explainer">章・シーンと舞台の配置をまとめて保存します。名前を変えて保存すると、一覧に別のプロジェクトとして追加します。</p>}
       <div className="scene-actions">
         <button className="scene-cta primary" onClick={save}>{isMockPreview ? 'プロジェクトを保存' : '保存'}</button>
-        <button className="scene-cta-sub" onClick={() => downloadSceneJSON(name.trim() || projectTitle?.trim() || planTitle.trim() || '無題のプラン')}>ファイルに書き出す（.tomoshibi）</button>
       </div>
       {error && <div className="scene-error">{error}</div>}
       {success && <div className="scene-save-success" role="status" aria-live="polite">{success}</div>}
