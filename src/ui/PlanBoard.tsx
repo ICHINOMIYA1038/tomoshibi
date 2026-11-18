@@ -1376,7 +1376,7 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
               {persistent ? sceneDisplayTitle(plan, scene.id).slice(0, 40)
                 : `${sequenceSceneIndex + 1} / ${sequenceScenes.length}　${scene.title.slice(0, 32)}`}
             </text>
-            <clipPath id="plan-map-clip"><rect x="8" y="70" width="944" height="552" /></clipPath>
+            <clipPath id="plan-map-clip"><rect x="8" y={MAP.top} width={MAP.svgWidth - 16} height={MAP.svgHeight - MAP.top - 8} /></clipPath>
             <g clipPath="url(#plan-map-clip)">
             {/* 全シーン共通の物（奥行の目盛り、舞台、壁・バトン、客席）は下絵として描き、触れない（「舞台・仕込みを動かす」で動かす） */}
             {(() => {
