@@ -56,6 +56,7 @@ import { createAkaoniLightingStudyPlan } from './demo/createAkaoniLightingStudyP
 import { createVenueStudyPlan, VENUE_STUDY_LINKS } from './demo/createVenueStudyPlans'
 import { AudienceSeating } from './scene/AudienceSeating'
 import { isWorkspaceLibraryPath, isWorkspacePath, workspaceBasePath } from './io/workspacePath'
+import { LanternMark } from './ui/LanternMark'
 
 const CAMERA_VIEWS: Record<string, { pos: [number, number, number]; target: [number, number, number] }> = {
   audience: { pos: [0, 2.5, 10], target: [0, 2.5, -2] },
@@ -709,7 +710,7 @@ function BrandStrip() {
   return (
     <div className="brand-strip">
       <a href="/" className="brand-link" title="TOMOSHIBI小屋 トップへ">
-        <span className="brand-flame" aria-hidden="true">✦</span>
+        <LanternMark className="brand-lantern" size={16} />
         <span className="brand-mark">TOMOSHIBI<span className="brand-jp">小屋</span></span>
       </a>
       <span className="brand-sep" />

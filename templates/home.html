@@ -17,7 +17,8 @@
   <meta name="twitter:title" content="TOMOSHIBI小屋 — 舞台の流れを、灯りとともに。" />
   <meta name="twitter:description" content="照明・役者・舞台セットと、章・シーンの流れをひとつの場所で。" />
   <meta name="twitter:image" content="https://tomoshibi.gikyokutosyokan.com/og.png" />
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='%23171316'/><path d='M32 12C25 23 20 31 20 38a12 12 0 0024 0c0-7-5-15-12-26z' fill='%23d4af6f'/></svg>" />
+  <link rel="icon" href="/favicon.ico" sizes="any" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
   <link rel="manifest" href="/manifest.webmanifest" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -42,6 +43,7 @@
     .site-header .wrap { display: flex; align-items: center; justify-content: space-between; min-height: 76px; gap: 24px; }
     .brand { display: flex; align-items: baseline; gap: 7px; text-decoration: none; font-family: 'Shippori Mincho', serif; font-size: 24px; font-weight: 700; letter-spacing: .08em; white-space: nowrap; }
     .brand span { color: #d4af6f; font-size: 16px; }
+    .brand .brand-lantern { align-self: center; flex: none; color: currentColor; }
     .site-nav { display: flex; align-items: center; gap: clamp(18px, 3vw, 36px); }
     .site-nav a { color: #d5c9ba; text-decoration: none; font-size: 12px; }
     .site-nav a:hover { color: #fff5e6; }
@@ -117,7 +119,7 @@
 </head>
 <body>
   <header class="site-header"><div class="wrap">
-    <a class="brand" href="/">TOMOSHIBI<span>小屋</span></a>
+    <a class="brand" href="/"><svg class="brand-lantern" width="26" height="26" viewBox="0 0 256 256" aria-hidden="true"><path fill="currentColor" d="M90 12 H146 V30 H90 Z M90 226 H146 V244 H90 Z M116.6 36 H119.4 A92 92 0 0 1 189.4 70 H46.6 A92 92 0 0 1 116.6 36 Z M38.3 82 H197.7 A92 92 0 0 1 207.3 106 H28.7 A92 92 0 0 1 38.3 82 Z M28.7 150 H207.3 A92 92 0 0 1 199.9 170 H36.1 A92 92 0 0 1 28.7 150 Z M43.5 182 H192.5 A92 92 0 0 1 119.4 220 H116.6 A92 92 0 0 1 43.5 182 Z "/><path fill="#F2B544" d="M48.5 118 H231.5 A92 92 0 0 1 231.5 138 H48.5 A92 92 0 0 1 48.5 118 Z "/></svg>TOMOSHIBI<span>小屋</span></a>
     <nav class="site-nav" aria-label="サイト内の移動">
       <a href="#できること">できること</a>
       <a class="nav-login" href="https://id.gikyokutosyokan.com/?return_to=https%3A%2F%2Ftomoshibi.gikyokutosyokan.com%2Fstudio%2Fprojects%2F%3Fimport%3Dlocal">ログイン</a>

@@ -18,6 +18,7 @@ import { askConfirm } from './askConfirm'
 import { EmptyLibrary } from './EmptyLibrary'
 import { AdSlot, useShowAds } from './Ads'
 import { stopProjectEditor } from '../io/projectEditor'
+import { LanternMark } from './LanternMark'
 
 type LibraryItem = { key: string; scene: SerializedScene; draft: boolean }
 
@@ -533,7 +534,7 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
 
   return <main className="project-library">
     <header className="project-library-header">
-      <a href="/" className="project-library-brand">TOMOSHIBI<span>小屋</span></a>
+      <a href="/" className="project-library-brand"><LanternMark className="project-library-lantern" size={20} />TOMOSHIBI<span>小屋</span></a>
       <div className="project-library-header-actions">
         {/* アプリでは保存先は言わなくてもわかるので出さない（2026-11-18 オーナー）。ブラウザは消える注意を兼ねて出す */}
         {!user && !hasDeviceStorage() && <span className="project-library-storage">ブラウザに一時保存</span>}
