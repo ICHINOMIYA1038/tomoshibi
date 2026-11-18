@@ -40,13 +40,13 @@ export function ChangeScopeBar({ phone = false, docked = false }: { phone?: bool
   return <div className={'change-scope-bar' + (phone ? ' phone' : '') + (docked ? ' docked' : '')} role="status"
     onPointerEnter={() => setHold(true)} onPointerLeave={() => setHold(false)}>
     {/* 「コピー」の言い方にする（2026-11-17 オーナーが 3 案から選んだ。「入れる？」はわかりにくかった） */}
-    {!phone && <span className="change-scope-text">{describeChange(change)}<small>（このシーンだけ）</small></span>}
+    {!phone && <span className="change-scope-text">{describeChange(change)}</span>}
     <span className="change-scope-label">ほかのシーンにコピー：</span>
     <span className="change-scope-actions">
       {showChapter && <button type="button" onClick={() => apply('chapter')} title="同じ章のほかのシーンに、この変更をコピーする">この章</button>}
       {index < scenes.length - 1 && <button type="button" onClick={() => apply('after')} title="このあとのシーンに、この変更をコピーする">このあと</button>}
       <button type="button" onClick={() => apply('all')} title="ほかのすべてのシーンに、この変更をコピーする">全シーン</button>
     </span>
-    <button type="button" className="change-scope-close" aria-label="閉じる（このシーンだけの変更のまま）" title="閉じる（このシーンだけの変更のまま）" onClick={clearChange}>×</button>
+    <button type="button" className="change-scope-close" aria-label="閉じる" title="閉じる" onClick={clearChange}>×</button>
   </div>
 }

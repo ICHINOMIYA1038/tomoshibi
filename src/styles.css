@@ -5436,3 +5436,9 @@ input[type="color"]::-moz-color-swatch { border: 0; border-radius: 0; }
   color: var(--ink-primary); font: 600 13px var(--font-sans); letter-spacing: .1em; cursor: pointer;
 }
 .outline-reopen:hover { border-color: var(--kin); }
+
+/* PC の平面図: 見出しと × の行はやめた（3D／平面図の切り替えで閉じられる）。「画像で保存」は帯の右端。2026-11-18 オーナー */
+@media (min-width: 961px) {
+  .unified-shell.workspace-layout:not(.phone-layout) .plan-map-caption { display: none !important; }
+  .unified-shell.workspace-layout:not(.phone-layout) .plan-map-layerbar > span:first-child { display: none; }
+}
