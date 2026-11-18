@@ -5161,7 +5161,7 @@ body.embed .workspace-switch { display: none; }
 .toolbar .desk-view-switch button + button { border-left: 1px solid #4c4246; }
 .toolbar .desk-view-switch button[aria-pressed="true"] { background: var(--kin) !important; color: #14110d; font-weight: 700; }
 /* 平面図だけのときは、3D 用の道具・視点を隠す（平面図にも道具がある） */
-.unified-shell.workspace-layout.desk-plan-full .toolbar > :not(.desk-view-switch):not(.workspace-display-menu-wrap) { display: none; }
+.unified-shell.workspace-layout.desk-plan-full .toolbar > :not(.desk-view-switch):not(.workspace-display-menu-wrap):not(.desk-console-toggle) { display: none; }
 .unified-shell.workspace-layout.desk-plan-full { --map-height: calc(100dvh - var(--header-height) - 64px) !important; }
 .unified-shell.workspace-layout.desk-plan-full .canvas-wrap { visibility: hidden; pointer-events: none; }
 .unified-shell.workspace-layout.desk-plan-full .plan-resize-handle { display: none; }
@@ -5499,3 +5499,8 @@ input[type="color"]::-moz-color-swatch { border: 0; border-radius: 0; }
 .unified-shell.workspace-layout.console-open.desk-split-side .canvas-wrap { bottom: min(380px, 48vh); }
 .unified-shell.workspace-layout.console-open.desk-split-side .plan-board-content { bottom: min(380px, 48vh); }
 .unified-shell.workspace-layout.console-open .plan-outline, .unified-shell.workspace-layout.console-open .object-panel { bottom: min(380px, 48vh); }
+/* 上の帯の「卓」ボタン（見え方の切り替えの右）。2026-11-19 */
+.toolbar .desk-console-toggle { flex: none; margin-right: 6px; padding: 0 14px; border: 1px solid #4c4246; border-radius: 5px; background: transparent; color: var(--ink-primary); font: 700 13px var(--font-sans); letter-spacing: .1em; }
+.toolbar .desk-console-toggle.active { background: var(--kin) !important; border-color: var(--kin); color: #14110d; }
+/* フェーダーは、収まるときは真ん中に並べる。収まらないときは左から並べて横に動かす */
+.console-faders { justify-content: safe center; }

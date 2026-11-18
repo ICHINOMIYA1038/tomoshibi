@@ -536,6 +536,8 @@ export default function App() {
             <button key={key} type="button" aria-pressed={(mapVisible ? deskView : '3d') === key} title={title} aria-label={title}
               onClick={() => setDeskView(key)}>{label}</button>)}
         </div>}
+        {deskLayout && <button type="button" className={'desk-console-toggle' + (consoleOpen ? ' active' : '')} aria-pressed={consoleOpen}
+          title="卓（試作）：フェーダーとキュー表で、場面ごとの照明のレベルを組みます" onClick={() => setConsoleOpen(!consoleOpen)}>卓</button>}
         {isMockPreview && <>
           <div className="workspace-display-menu-wrap" ref={displayMenuRef}>
             <button className={'workspace-display-trigger' + (displayMenuOpen ? ' active' : '')}
@@ -565,8 +567,6 @@ export default function App() {
           <span aria-hidden="true">{mapVisible ? '✓' : ''}</span>平面図</button>
         {deskLayout && <button type="button" aria-pressed={!inspectorHidden} onClick={() => { setInspectorHidden(!inspectorHidden); setDisplayMenuOpen(false) }}>
           <span aria-hidden="true">{inspectorHidden ? '' : '✓'}</span>舞台の編集（右の欄）</button>}
-        {deskLayout && <button type="button" aria-pressed={consoleOpen} onClick={() => { setConsoleOpen(!consoleOpen); setDisplayMenuOpen(false) }}>
-          <span aria-hidden="true">{consoleOpen ? '✓' : ''}</span>卓（試作）</button>}
         <button type="button" aria-pressed={showSceneDirections} onClick={() => { setShowSceneDirections(value => !value); setDisplayMenuOpen(false) }}>
           <span aria-hidden="true">{showSceneDirections ? '✓' : ''}</span>前の場面からの矢印</button>
       </div>}
