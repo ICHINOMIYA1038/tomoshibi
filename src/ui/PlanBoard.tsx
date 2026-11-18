@@ -1281,14 +1281,13 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
     <div className="plan-board-content">
       {persistent && <PlanResizeHandle />}
       <div className="plan-map-pane">
-        <div className="plan-map-caption"><strong>平面図</strong>
+        <div className="plan-map-caption">
           <span>{stageIsEmpty
           ? 'まず舞台に置くものを選んでください'
             : selectedPerformer ? `${selectedPerformer.name}を選択中 · 丸をドラッグして立ち位置を変更`
             : selectedFixture ? `${selectedFixture.name}を選択中 · 番号をドラッグして設置位置、色の輪で光の狙いを変更`
               : selectedSetPiece ? `${selectedSetPiece.name}を選択中 · 四角をドラッグして位置を変更`
                 : '丸や四角をドラッグして移動します'}</span>
-          <button type="button" className="plan-save-image plan-save-image-caption" onClick={saveDiagram}>画像で保存</button>
           {persistent && <button type="button" className="plan-pane-close plan-map-close"
             aria-label="平面図を閉じる" title="平面図を閉じる" onClick={onCloseMap}>×</button>}
         </div>
@@ -1341,6 +1340,7 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
             <button type="button" aria-pressed={planStyle === 'plot'} onClick={() => setPlanStyle('plot')}
               title="紙と墨の線の仕込み図。画像で保存して配れます">仕込み図</button>
           </div>
+          <button type="button" className="plan-save-image" onClick={saveDiagram}>画像で保存</button>
           <small>図を左右にスワイプ</small>
         </div>
         <div className="plan-map-scroll" ref={scrollRef}>
