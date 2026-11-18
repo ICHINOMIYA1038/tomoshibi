@@ -7,6 +7,7 @@ import { deleteSceneLS, exportScene, listSavedScenes, loadSceneLS, type Serializ
 import { getActiveCloudProject, getActiveSavedProjectName, setActiveCloudProject, setActiveSavedProjectName } from '../io/mockProjectSession'
 import { flushMockAutosave, preserveMockDraftBeforeDemo, resetMockWorkspace, useMockWorkspaceState, waitForCloudSave } from '../io/mockWorkspace'
 import { createVenueTemplatePlan, VENUE_STUDY_LINKS, type VenueStudyKind } from '../demo/createVenueStudyPlans'
+import { createSampleProduction } from '../demo/createSampleProduction'
 import { audienceSeatPositions } from '../audienceLayout'
 import { DEFAULT_VENUE_LAYOUT, stageFootprint } from '../venueLayout'
 import { AccountMenu } from './AccountMenu'
@@ -140,7 +141,7 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
   const [creating, setCreating] = useState(false)
   const [createError, setCreateError] = useState('')
   const [createName, setCreateName] = useState('')
-  const [createTemplate, setCreateTemplate] = useState<'empty' | VenueStudyKind>('proscenium')
+  const [createTemplate, setCreateTemplate] = useState<'empty' | 'sample' | VenueStudyKind>('proscenium')
   const createNameRef = useRef<HTMLInputElement>(null)
   const createDialogRef = useRef<HTMLFormElement>(null)
   const detailsRef = useRef<HTMLElement>(null)
@@ -232,10 +233,10 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
     return () => window.removeEventListener('keydown', onDialogKey)
   }, [createOpen])
 
-  const openCreate = () => {
+  const openCreate = (template: 'proscenium' | 'sample' = 'proscenium') => {
     setCreateError('')
     setCreateName('')
-    setCreateTemplate('proscenium')
+    setCreateTemplate(template)
     setCreateOpen(true)
   }
 
@@ -264,6 +265,14 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
     while (taken.has(`${base} ${index}`)) index++
     return `${base} ${index}`
   }
+  const sampleProjectName = () => {
+    const taken = new Set([...memberProjects.map(item => item.name), ...projects.map(item => item.name)])
+    const base = 'ロミオとジュリエット（見本）'
+    if (!taken.has(base)) return base
+    let index = 2
+    while (taken.has(`${base} ${index}`)) index++
+    return `${base} ${index}`
+  }
   // アカウントに保存できる件数の上限に達しているか。作成の画面を開いた時点で知らせ、作成のボタンを止める
   // ログインしていないときも、ウェブ・アプリとも 2 件まで（Free と同じ。2026-11-17 オーナー決定）
   const LOCAL_MAX_PROJECTS = 2
@@ -276,7 +285,7 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
     // 名前が空なら「新しいプロジェクト」「新しいプロジェクト 2」…と、まだ無い名前を付ける
     const title = source
       ? (source.productionPlan?.projectTitle?.trim() || source.name?.trim() || defaultProjectName()).slice(0, 60)
-      : createName.trim() || defaultProjectName()
+      : createName.trim() || (createTemplate === 'sample' ? sampleProjectName() : defaultProjectName())
     if (cloudDirty) {
       if (!await askConfirm('編集中の変更がまだ保存されていません。保存が完了してから、新しいプロジェクトを作成しますか？')) return
       setCreating(true)
@@ -294,6 +303,9 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
     if (source) {
       importScene(source)
       useStore.getState().ensureScenes()
+    } else if (createTemplate === 'sample') {
+      // 見本の公演も、ほかのプロジェクトと同じく一覧の 1 件として保存する（2026-11-19 オーナー「これも一つにカウントするイメージ」）
+      createSampleProduction()
     } else if (createTemplate === 'empty') {
       loadPreset('empty')
       useStore.getState().ensureScenes()
@@ -532,7 +544,7 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
     <div className="project-library-workspace">
       <aside className="project-library-rail" aria-label="プロジェクト一覧">
         <div className="project-library-rail-head"><h1>プロジェクト</h1><p>編集する舞台を選んでください。</p></div>
-        <button className="project-library-create" onClick={openCreate}>＋ 新しいプロジェクトを作る</button>
+        <button className="project-library-create" onClick={() => openCreate()}>＋ 新しいプロジェクトを作る</button>
         {user && <>
           <div className="project-library-list-head project-library-list-head-explained">
             <strong>アカウントに保存 {memberProjects.length} / {user.maxProjects}件</strong><span>ログインすれば、ほかの端末からも開けます</span>
@@ -597,7 +609,7 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
               {!selected.draft && <button className="project-library-delete" onClick={() => remove(selected.scene.name)}>このプロジェクトを削除</button>}
             </section>
           </div>
-        </> : <EmptyLibrary />}
+        </> : <EmptyLibrary onOpenSample={() => openCreate('sample')} />}
       </section>
     </div>
     {transferOpen && user && <div className="project-create-backdrop">
@@ -638,7 +650,7 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
         </div>
         <label className="project-create-name">プロジェクト名
           <input ref={createNameRef} value={createName} onChange={event => setCreateName(event.target.value)}
-            placeholder={`空欄なら「${defaultProjectName()}」`} maxLength={80} />
+            placeholder={`空欄なら「${createTemplate === 'sample' ? sampleProjectName() : defaultProjectName()}」`} maxLength={80} />
         </label>
         <fieldset className="project-create-templates">
           <legend>舞台のひな形</legend>
@@ -647,12 +659,16 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
               <input type="radio" name="project-template" checked={createTemplate === 'empty'} onChange={() => setCreateTemplate('empty')} />
               <span><strong>白紙から始める</strong><small>客席・役者・照明を自分で配置</small></span>
             </label>
+            <label className={createTemplate === 'sample' ? 'selected' : ''}>
+              <input type="radio" name="project-template" checked={createTemplate === 'sample'} onChange={() => setCreateTemplate('sample')} />
+              <span><strong>見本：ロミオとジュリエット</strong><small>8 場面・照明 14 灯・役者 6 人の組み上がった公演</small></span>
+            </label>
             {VENUE_STUDY_LINKS.map(study => <label key={study.kind} className={createTemplate === study.kind ? 'selected' : ''}>
               <input type="radio" name="project-template" checked={createTemplate === study.kind} onChange={() => setCreateTemplate(study.kind)} />
               <span><strong>{study.label}</strong><small>{study.detail}・基本の照明・役者 2 人</small></span>
             </label>)}
           </div>
-          <p>白紙以外のひな形には、舞台と客席に加えて、基本の照明（地明かり・前明かり・サス）と役者 2 人が入ります。</p>
+          <p>額縁舞台などのひな形には、舞台と客席に加えて、基本の照明（地明かり・前明かり・サス）と役者 2 人が入ります。</p>
         </fieldset>
         {cloudDirty && <div role="status" className="project-create-save-notice">
           <p>編集中のプロジェクトに、まだクラウドに保存されていない変更があります。保存が完了すると新規作成できます。</p>
