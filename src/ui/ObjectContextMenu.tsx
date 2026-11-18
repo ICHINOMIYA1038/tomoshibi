@@ -87,6 +87,8 @@ function Sub({ id, label, sub, setSub, children }: { id: string; label: string; 
 
 function ToolItems({ kind, handle, run }: { kind: MenuTarget['kind'] | null; handle?: 'position' | 'target'; run: ItemsProps['run'] }) {
   const tool = useStore(s => s.settings.transformMode)
+  const fromPlan = useObjectMenu(s => s.menu?.from === 'plan')
+  if (fromPlan) return null
   const usable = kind ? toolsFor(kind, handle) : TOOLS.map(item => item.id)
   return <div className="object-menu-tools" role="group" aria-label="道具">
     {TOOLS.map(item => <button key={item.id} type="button" role="menuitemradio" aria-checked={tool === item.id}

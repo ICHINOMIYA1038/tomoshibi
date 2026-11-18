@@ -1,3 +1,4 @@
+import type { Tool } from '../tools'
 import { askConfirm } from './askConfirm'
 import { useObjectMenu } from '../objectMenu'
 import { WorkspaceNotice } from './WorkspaceNotice'
@@ -12,7 +13,6 @@ import { clearChange } from '../changeLog'
 import { lockedNow, nudgeLock } from '../locks'
 import { audienceSeatPositions, clampAudiencePosition } from '../audienceLayout'
 import { isFlat, partCorners, resolveStageParts } from '../stageParts'
-import { ToolButtons } from './ToolButtons'
 import { toolFor } from '../tools'
 import { DEFAULT_VENUE_LAYOUT, stageFootprint, THEATRE } from '../venueLayout'
 import { useMapZoom } from './useMapZoom'
@@ -248,7 +248,8 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
   const selection = useStore(s => s.selection)
   const select = useStore(s => s.select)
   const updateSettings = useStore(s => s.updateSettings)
-  const tool = useStore(s => s.settings.transformMode)
+  // 平面図では道具を切り替えない。ドラッグは必ず「動かす」。向きは選んだ物に出る取っ手で回す（2026-11-18 オーナー「役割がわからない」→ A 案）
+  const tool = 'translate' as Tool
   const ensureScenes = useStore(s => s.ensureScenes)
   const addScene = useStore(s => s.addScene)
   const addSceneAt = useStore(s => s.addSceneAt)
@@ -448,7 +449,6 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
     event.stopPropagation()
     // 平面図でも道具に従う。「移動」のときだけドラッグで動かし、ほかの道具では選ぶだけ
     const selectKind = kind === 'target' ? 'fixture' : kind
-    const tool = useStore.getState().settings.transformMode
     // 固定した物は動かさない。選んで、図を動かす（選んであれば鍵のボタンを光らせる）
     if (kind !== 'target' && lockedNow(kind, id)) {
       const current = useStore.getState().selection
@@ -457,32 +457,6 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
       else if (kind === 'fixture') selectFixture(id, 'position')
       else selectSetPiece(id)
       if (event.button === 0) mapZoom.beginPan(event)
-      return
-    }
-    if (tool === 'rotate' && kind === 'setpiece') {
-      selectSetPiece(id)
-      const piece = useStore.getState().setPieces.find(item => item.id === id)
-      if (piece) {
-        const from = piece.rotation
-        // 平面図は rotate(-rotation) で描くので、画面で時計回りに回すと rotation は減る
-        dragRotate(event, [piece.position[0], piece.position[2]], piece.name || '舞台セット',
-          deg => updateSetPiece(id, { rotation: [from[0], from[1] - deg * Math.PI / 180, from[2]] }))
-      }
-      return
-    }
-    if (tool === 'rotate' && (kind === 'fixture' || kind === 'target')) {
-      // 照明は、吊る位置を中心に狙いを回す（向きを変える。距離はそのまま）
-      selectFixture(id, 'position')
-      const fixture = useStore.getState().fixtures.find(item => item.id === id)
-      if (fixture) {
-        const [px, , pz] = fixture.position
-        const [tx, ty, tz] = fixture.target
-        dragRotate(event, [px, pz], fixture.name, deg => {
-          const r = deg * Math.PI / 180
-          const dx = tx - px, dz = tz - pz
-          updateFixture(id, { target: [round1(px + dx * Math.cos(r) - dz * Math.sin(r)), ty, round1(pz + dx * Math.sin(r) + dz * Math.cos(r))] })
-        })
-      }
       return
     }
     if (tool === 'select' || toolFor(tool, selectKind, kind === 'target' ? 'target' : 'position') !== 'translate') {
@@ -545,7 +519,7 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
     event.stopPropagation()
     if (lock && lockedNow(lock.kind, lock.id)) { nudgeLock(); if (event.button === 0) mapZoom.beginPan(event); return }
     const svg = svgRef.current
-    if (!svg || useStore.getState().settings.transformMode !== 'translate') { if (event.button === 0) mapZoom.beginPan(event); return }
+    if (!svg) return
     const bounds = mapBounds
     setFrozenBounds(frozenBounds ?? fitBounds)
     const start = rawMapPoint(event, svg, true, bounds)
@@ -1310,12 +1284,10 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
         <div className="plan-map-caption"><strong>平面図</strong>
           <span>{stageIsEmpty
           ? 'まず舞台に置くものを選んでください'
-          : tool === 'select' ? '選ぶだけの道具です。動かすときは「移動」を選びます'
             : selectedPerformer ? `${selectedPerformer.name}を選択中 · 丸をドラッグして立ち位置を変更`
             : selectedFixture ? `${selectedFixture.name}を選択中 · 番号をドラッグして設置位置、色の輪で光の狙いを変更`
               : selectedSetPiece ? `${selectedSetPiece.name}を選択中 · 四角をドラッグして位置を変更`
                 : '丸や四角をドラッグして移動します'}</span>
-          <ToolButtons compact />
           <button type="button" className="plan-save-image plan-save-image-caption" onClick={saveDiagram}>画像で保存</button>
           {persistent && <button type="button" className="plan-pane-close plan-map-close"
             aria-label="平面図を閉じる" title="平面図を閉じる" onClick={onCloseMap}>×</button>}
@@ -1390,7 +1362,7 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
               const [x, z] = rawMapPoint(event as unknown as PointerEvent<SVGSVGElement>, event.currentTarget, true, mapBounds)
               useObjectMenu.getState().open({ x: event.clientX, y: event.clientY,
                 target: kind && item?.dataset.menuId ? { kind, id: item.dataset.menuId } : null,
-                point: kind ? undefined : [round1(x), 0, round1(z)] })
+                point: kind ? undefined : [round1(x), 0, round1(z)], from: 'plan' })
             }}>
             <defs>
               {Object.entries(pathColors).map(([kind, color]) => <marker key={kind}
@@ -1452,7 +1424,7 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
             {showShared && <StagePartsLayer selectedId={selection.kind === 'stagepart' ? selection.id : null}
               onSelect={id => select(id ? 'stagepart' : null, id)} tool={tool} onPan={mapZoom.beginPan}
               toWorld={point => rawMapPoint(point as unknown as PointerEvent<SVGSVGElement>, svgRef.current!, true, mapBounds)}
-              mapX={mapX} mapY={mapY} unitsPerPx={unitsPerPx} showLabels={showLabels} partNames={venueNamesOnPlan} labelLeft={12} theme={planStyle} />}
+              mapX={mapX} mapY={mapY} unitsPerPx={unitsPerPx} showLabels={showLabels} partNames={venueNamesOnPlan} labelLeft={12} handlesWhenSelected theme={planStyle} />}
             {showShared && audienceBlocks.map(block => {
               const seat = Math.max(3, MAP.width / (mapBounds.right - mapBounds.left) * .5)
               const active = selection.kind === 'audience' && selection.id === block.id
@@ -1460,11 +1432,6 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
                 aria-label={`${block.name}（全シーン共通）。ドラッグで移動`} style={{ cursor: tool === 'translate' ? 'grab' : 'pointer', touchAction: 'none' }}
                 onPointerDown={event => {
                   select('audience', block.id)
-                  if (tool === 'rotate' && !lockedNow('audience', block.id)) {
-                    const fromDeg = block.rotationDeg
-                    dragRotate(event, block.position, block.name || '客席', deg => useStore.getState().updateAudienceBlock(block.id, { rotationDeg: fromDeg - deg }))
-                    return
-                  }
                   const from = block.position
                   dragShared(event, block.name || '客席', (dx, dz) => {
                     const current = useStore.getState().productionPlan.audienceBlocks?.find(item => item.id === block.id)
@@ -1736,6 +1703,42 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
                   fill={item.active ? T.labelActive : T.label} fontSize={font} fontWeight={planStyle === 'plot' ? 500 : 700} paintOrder="stroke"
                   stroke={T.halo} strokeWidth={planStyle === 'plot' ? 3 : 4} pointerEvents="none">{item.text}</text>
               })
+            })()}
+            {/* 回す取っ手。選んだ舞台セット・客席の上に出し、ドラッグで中心のまわりに回す（5° ごと） */}
+            {(() => {
+              const handle = (key: string, cx: number, topY: number, label: string, locked: boolean, onDown: (event: PointerEvent<SVGElement>) => void) => {
+                const hy = topY - 30 * unitsPerPx
+                const r = 11 * unitsPerPx
+                return <g key={key} role="button" tabIndex={-1} aria-label={label} style={{ cursor: 'grab', touchAction: 'none' }}
+                  onPointerDown={event => { if (locked) { event.stopPropagation(); nudgeLock(); return } onDown(event) }}>
+                  <line x1={cx} y1={topY} x2={cx} y2={hy + r} stroke={T.setActive} strokeWidth={1.5 * unitsPerPx} pointerEvents="none" />
+                  <circle cx={cx} cy={hy} r={22 * unitsPerPx} fill="transparent" />
+                  <circle cx={cx} cy={hy} r={r} fill="#fffdf8" stroke={T.setActive} strokeWidth={2 * unitsPerPx} />
+                  <text x={cx} y={hy + 5 * unitsPerPx} textAnchor="middle" fontSize={15 * unitsPerPx} fontWeight="700" fill={T.setActive} pointerEvents="none">↻</text>
+                </g>
+              }
+              const out: JSX.Element[] = []
+              if (showSetPieces && selectedSetPiece) {
+                const piece = selectedSetPiece
+                const cx = mapX(piece.position[0]), cy = mapY(piece.position[2])
+                const w = Math.max(28, (piece.size?.[0] ?? 1) * Math.abs(piece.scale) * MAP.width / (mapBounds.right - mapBounds.left))
+                const d = Math.max(24, (piece.size?.[2] ?? 1) * Math.abs(piece.scale) * MAP.height / (mapBounds.front - mapBounds.rear))
+                out.push(handle('rot-set', cx, cy - Math.hypot(w, d) / 2, `${piece.name || '舞台セット'}を回す`, lockedNow('setpiece', piece.id), event => {
+                  const from = piece.rotation
+                  dragRotate(event, [piece.position[0], piece.position[2]], piece.name || '舞台セット',
+                    deg => updateSetPiece(piece.id, { rotation: [from[0], from[1] - deg * Math.PI / 180, from[2]] }))
+                }))
+              }
+              const block = showShared && selection.kind === 'audience' ? audienceBlocks.find(item => item.id === selection.id) : undefined
+              if (block) {
+                const seats = audienceSeatPositions(block)
+                const top = seats.length ? Math.min(...seats.map(([, z]) => mapY(z))) - 8 * unitsPerPx : mapY(block.position[1])
+                out.push(handle('rot-aud', mapX(block.position[0]), top, `${block.name || '客席'}を回す`, lockedNow('audience', block.id), event => {
+                  const fromDeg = block.rotationDeg
+                  dragRotate(event, block.position, block.name || '客席', deg => useStore.getState().updateAudienceBlock(block.id, { rotationDeg: fromDeg - deg }))
+                }))
+              }
+              return out
             })()}
             {/* 選んだ照明の「向き」のつまみ。役者やほかの器具の下に隠れないよう最後に描く */}
             {showFixtures && selectedFixture && (() => {

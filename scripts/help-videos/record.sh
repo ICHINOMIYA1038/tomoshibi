@@ -21,15 +21,11 @@ scene_01() {
   cap 'キーでも切り替えられます：<kbd>Q</kbd> 選択・<kbd>W</kbd> 移動・<kbd>E</kbd> 回転・<kbd>R</kbd> 拡大'
   for k in q w e r; do key "$k"; pause 350; done
   click_el '.toolbar .tool-buttons button' '移動'
-  cap '「移動」のときは、平面図で役者をドラッグして動かせます'
+  pause 500
+  cap '平面図では道具を選ばずに、そのままドラッグで動かせます'
   local p; p=$(at '[data-menu-kind="performer"]')
   set -- $p; drag_to "$1" "$2" $(($1 + 90)) $(($2 - 40))
-  pause 600
-  cap '「選択」のときは、押しても動きません。選ぶだけです'
-  click_el '.plan-map-caption .tool-buttons button' '選択'
-  p=$(at '[data-menu-kind="performer"]'); set -- $p
-  drag_to "$1" "$2" $(($1 - 90)) $(($2 + 40))
-  pause 1200
+  pause 1400
   stop
 }
 
@@ -97,14 +93,11 @@ scene_04() {
   local p; p=$(at '.plan-map-scroll [data-menu-kind="audience"]'); set -- $p
   drag_to "$1" "$2" $(($1 + 40)) $(($2 - 20))
   pause 700
-  cap '「回転」の道具にすると、ドラッグで回せます（5° ごと）'
-  click_el '.plan-map-caption .tool-buttons button' '回転'
+  cap '選ぶと上に出る丸い取っ手をドラッグすると、回せます（5° ごと）'
   pause 500
-  p=$(at '.plan-map-scroll [data-menu-kind="audience"]'); set -- $p
-  drag_to $(($1 + 60)) "$2" $(($1 + 45)) $(($2 + 45))
-  pause 1200
-  click_el '.plan-map-caption .tool-buttons button' '移動'
-  pause 600
+  p=$(at '.plan-map-scroll [aria-label$="を回す"] circle:nth-of-type(2)'); set -- $p
+  drag_to "$1" "$2" $(($1 + 45)) $(($2 + 45))
+  pause 1400
   stop
 }
 

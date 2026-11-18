@@ -12,6 +12,8 @@ export type MenuState = {
   target: MenuTarget | null
   /** 床を指していたときの位置（世界の座標）。「ここに足す」に使う */
   point?: [number, number, number]
+  /** 平面図から開いたとき。平面図は道具を切り替えないので、メニューにも道具を出さない */
+  from?: 'plan'
 }
 
 export const useObjectMenu = create<{ menu: MenuState | null; open: (menu: MenuState) => void; close: () => void }>(set => ({
