@@ -194,6 +194,12 @@ export function accountUrl(): string {
   return `${PORTAL}/account?return_to=${encodeURIComponent(here())}`
 }
 
+/** 退会（戯曲 ID ごと消す）の確認画面。共通のアカウントなので、ここだけはポータルで行う */
+export function deleteAccountUrl(): string {
+  if (isNativeApp()) return `${PORTAL}/delete?return_to=${encodeURIComponent('tomoshibi://account')}`
+  return `${PORTAL}/delete`
+}
+
 /**
  * 戯曲 ID でこのサービスを使ったことをポータルに知らせる（運営の一覧用）。
  * 親ドメインの Cookie が一緒に送られる。1 日に 1 回で十分なので localStorage で間引く

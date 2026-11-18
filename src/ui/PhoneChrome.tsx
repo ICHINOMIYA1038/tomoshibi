@@ -7,7 +7,7 @@ import { addablePresets, FIXTURE_DISCLAIMER, FIXTURE_PROFILES } from '../lightin
 import { addItem, deleteSelection, SET_PIECE_TYPES, type AddItem } from '../objectActions'
 import { PART_LABELS } from '../stageParts'
 import { sceneDisplayTitle, useStore } from '../store'
-import { accountUrl, loginUrl } from '../io/cloud'
+import { loginUrl } from '../io/cloud'
 import { useCloudSession } from '../io/cloudSession'
 import { redoMockWorkspace, undoMockWorkspace, useMockWorkspaceState } from '../io/mockWorkspace'
 import { EFFECT_TYPES, FIXTURE_GLYPH, FIXTURE_TILES, Glyph, SET_PIECE_GLYPH, STAGE_PART_KINDS } from './AddPalette'
@@ -257,7 +257,7 @@ function MenuSheet({ onDone }: { onDone: () => void }) {
     <div className="phone-menu-list">
       <button type="button" onClick={() => { update({ settingsOpen: true }); onDone() }}>表示の設定</button>
       <a href="/help" target="_blank" rel="noopener" onClick={onDone}>使い方</a>
-      <a href={user ? accountUrl() : loginUrl()}>{user ? 'アカウント' : 'ログイン'}</a>
+      <a href={user ? '/account' : loginUrl()}>{user ? 'アカウント' : 'ログイン'}</a>
       {/* アプリの下の帯を広告にしたので、購入の復元はここと Pro のページから（2026-11-18） */}
       {hasAppBridge() && <a href={APP_RESTORE_URL}>購入を復元</a>}
     </div>
