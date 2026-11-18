@@ -256,7 +256,7 @@ function MenuSheet({ onDone }: { onDone: () => void }) {
     <h3 className="phone-subhead">そのほか</h3>
     <div className="phone-menu-list">
       <button type="button" onClick={() => { update({ settingsOpen: true }); onDone() }}>表示の設定</button>
-      <button type="button" onClick={() => { update({ showHelp: true }); onDone() }}>使い方</button>
+      <a href="/help" target="_blank" rel="noopener" onClick={onDone}>使い方</a>
       <a href={user ? accountUrl() : loginUrl()}>{user ? 'アカウント' : 'ログイン'}</a>
       {/* アプリの下の帯を広告にしたので、購入の復元はここと Pro のページから（2026-11-18） */}
       {hasAppBridge() && <a href={APP_RESTORE_URL}>購入を復元</a>}
