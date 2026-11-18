@@ -18,7 +18,14 @@ import { DEFAULT_VENUE_LAYOUT, stageFootprint, THEATRE } from '../venueLayout'
 import { useMapZoom } from './useMapZoom'
 
 // 図の枠。客席の上の照明（前明かりなど）も縮めずに本当の位置に描くので、枠の下端まで同じ縮尺にする
-const MAP = { left: 100, top: 70, width: 760, height: 548, svgWidth: 960, svgHeight: 630 }
+const MAP_WIDE = { left: 100, top: 70, width: 760, height: 548, svgWidth: 960, svgHeight: 630 }
+/** 図の座標の枠。スマホの縦長の画面では、枠も縦長にして画面いっぱいに描く（横長のままだと画面の 3 分の 1 ほどしか使わず、名前が重なっていた。2026-11-18） */
+let MAP = MAP_WIDE
+function mapFrame(aspect: number) {
+  if (aspect <= MAP_WIDE.svgHeight / MAP_WIDE.svgWidth + .01) return MAP_WIDE
+  const svgHeight = Math.round(960 * aspect)
+  return { left: 44, top: 64, width: 872, height: svgHeight - 64 - 20, svgWidth: 960, svgHeight }
+}
 const pathColors: Record<DirectionKind, string> = {
   move: '#d4af6f', entrance: '#78bca0', exit: '#df8f7c',
 }
@@ -164,6 +171,24 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
   // 「舞台全体」: 大きな床でも、床の全体が収まる縮尺にする
   const [showWholeStage, setShowWholeStage] = useState(false)
   const svgRef = useRef<SVGSVGElement>(null)
+  // スマホの縦長の画面では、図の枠を入れ物の縦横比に合わせる
+  const scrollRef = useRef<HTMLDivElement>(null)
+  const [mapAspect, setMapAspect] = useState(MAP_WIDE.svgHeight / MAP_WIDE.svgWidth)
+  useEffect(() => {
+    const el = scrollRef.current
+    if (!el) return
+    const measure = () => {
+      const phone = window.matchMedia('(max-width: 600px)').matches
+      const { width, height } = el.getBoundingClientRect()
+      const next = phone && width > 0 && height > 0 ? Math.min(1.9, Math.max(MAP_WIDE.svgHeight / MAP_WIDE.svgWidth, (height - 10) / (width - 10))) : MAP_WIDE.svgHeight / MAP_WIDE.svgWidth
+      setMapAspect(value => Math.abs(value - next) > .02 ? next : value)
+    }
+    measure()
+    const observer = new ResizeObserver(measure)
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [open])
+  MAP = mapFrame(mapAspect)
   const fitBounds = equalScaleBounds(!plan.venueLayout ? { left: -8, right: 8, rear: -8, front: 2 }
     : stageLarge && !showWholeStage ? objectBounds(contentPoints, stageOutline)
       : {
@@ -1300,8 +1325,8 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
           <button type="button" className="plan-save-image" onClick={saveDiagram}>画像で保存</button>
           <small>図を左右にスワイプ</small>
         </div>
-        <div className="plan-map-scroll">
-          <svg ref={svgRef} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 630"
+        <div className="plan-map-scroll" ref={scrollRef}>
+          <svg ref={svgRef} xmlns="http://www.w3.org/2000/svg" viewBox={`0 0 ${MAP.svgWidth} ${MAP.svgHeight}`}
             aria-label="舞台の平面図。役者の立ち位置と器具の狙う位置を変更できます"
             style={{ touchAction: 'none' }}
             onPointerDown={event => {
@@ -1343,8 +1368,8 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
                 <stop offset="1" stopColor={colorToHex(fixture.color)} stopOpacity="0" />
               </radialGradient>)}
             </defs>
-            <rect width="960" height="630" fill={planStyle === 'plot' ? 'url(#plan-grid)' : T.paper} />
-            {planStyle === 'plot' && <rect width="960" height="630" fill={T.paper} opacity=".55" />}
+            <rect width={MAP.svgWidth} height={MAP.svgHeight} fill={planStyle === 'plot' ? 'url(#plan-grid)' : T.paper} />
+            {planStyle === 'plot' && <rect width={MAP.svgWidth} height={MAP.svgHeight} fill={T.paper} opacity=".55" />}
             {planStyle === 'plot' && <text x="936" y="35" textAnchor="end" fill={T.title} fontSize="13" fontFamily="sans-serif">
               {(plan.projectTitle || plan.title || '').slice(0, 30)}　目盛り 1m</text>}
             <text x="24" y="35" fill={T.title} fontSize="21" fontWeight="700" fontFamily="sans-serif">
