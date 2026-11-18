@@ -176,7 +176,7 @@ scene_07() {
 # ---- 08 3D と平面図を切り替える ----
 scene_08() {
   fresh; start "$OUT/08.webm"
-  cap '左上で「3D・平面図・並べる」を切り替えます'
+  cap '左上で「3D・平面図・上下・左右」を切り替えます'
   pause 900
   click_el '.desk-view-switch button' '平面図'
   pause 1300
@@ -188,8 +188,11 @@ scene_08() {
   cap '「画像で保存」で、そのまま配れる図になります'
   local p; p=$(at '.plan-save-image'); set -- $p; glide "$1" "$2"
   pause 1500
-  click_el '.desk-view-switch button' '並べる'
-  pause 1200
+  cap '「上下」「左右」で、3D と平面図を並べて見られます'
+  click_el '.desk-view-switch button' '上下'
+  pause 1500
+  click_el '.desk-view-switch button' '左右'
+  pause 1800
   stop
 }
 
