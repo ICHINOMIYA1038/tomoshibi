@@ -2,6 +2,8 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
+  <meta name="color-scheme" content="dark" />
+  <style>html { background: #0d0b0c; }</style>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#171316" />
   <title>TOMOSHIBI小屋 | 手元に劇場を。照明も、立ち位置も、場転も。</title>
@@ -23,7 +25,10 @@
   <link rel="manifest" href="/manifest.webmanifest" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet" />
+  <!-- 書体の CSS は描画を止めないように読む（止めると、Google Fonts が遅いあいだ画面が真っ白のままになる。2026-11-18） -->
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" media="print" onload="this.media='all'" />
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" /></noscript>
   <script>
     if (location.hash.startsWith('#scene=') || new URLSearchParams(location.search).has('embed')) {
       location.replace('/studio/' + location.search + location.hash)
