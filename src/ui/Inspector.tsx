@@ -312,12 +312,10 @@ const SHAPES: Array<[StageShape, string]> = [['proscenium', '額縁'], ['round',
 
 function StageInspector() {
   const layout = useStore(s => s.productionPlan.venueLayout ?? DEFAULT_VENUE_LAYOUT)
-  const blocks = useStore(s => s.productionPlan.audienceBlocks ?? [])
   const updateVenue = useStore(s => s.updateVenueLayout)
   const moveStageTo = useStore(s => s.moveStageTo)
   const offset = layout.stageOffset ?? [0, 0]
   const round = layout.stageShape === 'round'
-  const seatCount = blocks.reduce((sum, block) => sum + block.rows * block.seatsPerRow, 0)
   const chooseShape = (shape: StageShape) => {
     // 自由形状の形は、ほかの形にしても覚えておき、戻したときはその形にする（2026-11-18 オーナー指摘）
     if (shape === 'custom' && layout.stageShape !== 'custom' && (layout.stageVertices?.length ?? 0) >= 3) updateVenue({ stageShape: shape })
@@ -348,7 +346,7 @@ function StageInspector() {
   const colorHex = (value: string | undefined, fallback: [number, number, number]) => value ?? `#${new THREE.Color(...fallback).getHexString()}`
   return <>
     <InspectorSection title="位置・大きさ">
-      <p className="inspector-note">舞台を動かすと、舞台の子（一覧で「舞台」の下にある物）が一緒に動きます。</p>
+      <p className="inspector-note">舞台を動かすと、舞台の子オブジェクト（一覧で「舞台」の下にある物）も一緒に動きます。</p>
       <NumberField label="X" value={offset[0]} min={THEATRE.minX} max={THEATRE.maxX} step={.5} onChange={value => moveStageTo([value, offset[1]])} />
       <NumberField label="Z" value={offset[1]} min={THEATRE.minZ} max={THEATRE.maxZ} step={.5} onChange={value => moveStageTo([offset[0], value])} />
       {layout.stageShape !== 'custom' && <>
@@ -375,8 +373,6 @@ function StageInspector() {
           }}>形を元に戻す</button>
         </div>
       </>}
-      {layout.stageShape === 'proscenium' && <label className="inspector-check"><input type="checkbox" checked={layout.showProsceniumFrame === true}
-        onChange={event => updateVenue({ showProsceniumFrame: event.target.checked })} />赤い舞台枠を表示</label>}
       <p className="inspector-note">形の違う床は、「＋ 追加」の「舞台」から床を足して組み合わせます。</p>
     </InspectorSection>
     <InspectorSection title="床・壁の色（舞台全体）">
@@ -394,9 +390,6 @@ function StageInspector() {
         <button type="button" onClick={() => updateVenue({ [key]: undefined })} disabled={!layout[key]}>元の色</button>
       </label>)}
       <p className="inspector-note">ここで変えた色は、色を付けていない部品すべてに効きます。壁 1 枚だけの色は、その壁を選んで変えます。</p>
-    </InspectorSection>
-    <InspectorSection title="会場">
-      <p className="inspector-note">置いた客席は {seatCount} 席です。</p>
     </InspectorSection>
   </>
 }

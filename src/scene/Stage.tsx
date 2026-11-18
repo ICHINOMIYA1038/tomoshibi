@@ -140,7 +140,8 @@ export function Stage({ onMaterialsReady }: { onMaterialsReady: (mats: THREE.Sha
           <meshBasicMaterial color="#6cf" wireframe transparent opacity={0.6} depthTest={false} />
         </mesh>
       </group>}
-      {framed && layout.showProsceniumFrame === true && <>
+      {/* 赤い舞台枠は使わないことにした（2026-11-19 オーナー「この機能いらない」）。古いプランで点けていても描かない */}
+      {false && framed && layout.showProsceniumFrame === true && <>
         <mesh position={[-layout.stageWidth / 2 + 1.5, 4, front - .5]} material={procMat}>
           <boxGeometry args={[1, 8, .4]} />
         </mesh>

@@ -5161,7 +5161,7 @@ body.embed .workspace-switch { display: none; }
 .toolbar .desk-view-switch button + button { border-left: 1px solid #4c4246; }
 .toolbar .desk-view-switch button[aria-pressed="true"] { background: var(--kin) !important; color: #14110d; font-weight: 700; }
 /* 平面図だけのときは、3D 用の道具・視点を隠す（平面図にも道具がある） */
-.unified-shell.workspace-layout.desk-plan-full .toolbar > :not(.desk-view-switch):not(.workspace-display-menu-wrap):not(.desk-console-toggle) { display: none; }
+.unified-shell.workspace-layout.desk-plan-full .toolbar > :not(.desk-view-switch):not(.workspace-display-menu-wrap) { display: none; }
 .unified-shell.workspace-layout.desk-plan-full { --map-height: calc(100dvh - var(--header-height) - 64px) !important; }
 .unified-shell.workspace-layout.desk-plan-full .canvas-wrap { visibility: hidden; pointer-events: none; }
 .unified-shell.workspace-layout.desk-plan-full .plan-resize-handle { display: none; }
@@ -5445,11 +5445,11 @@ input[type="color"]::-moz-color-swatch { border: 0; border-radius: 0; }
 
 /* 卓（試作）。画面の下に出る、調光卓の盤。2026-11-19 */
 .console-desk {
-  position: fixed; z-index: 80; left: 0; right: 0; bottom: 0; height: min(380px, 48vh);
+  position: fixed; z-index: 45; left: var(--outline-width, 0px); right: var(--inspector-width, 0px); bottom: 0;
   display: flex; flex-direction: column; background: #121012; border-top: 2px solid #4a3f33;
   box-shadow: 0 -10px 30px rgba(0,0,0,.5); color: var(--ink-primary); font-family: var(--font-sans);
 }
-.console-desk-head { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 8px 14px; border-bottom: 1px solid #2e272a; background: #1a1619; }
+.console-desk-head { display: flex; align-items: center; gap: 10px; flex-wrap: nowrap; min-width: 0; padding: 8px 14px; border-bottom: 1px solid #2e272a; background: #1a1619; }
 .console-desk-head > strong { font: 700 16px var(--font-sans); letter-spacing: .2em; }
 .console-desk-badge { padding: 1px 8px; border: 1px solid #c98a12; border-radius: 3px; color: #e0b45c; font-size: 12px; }
 .console-desk-tabs { display: inline-flex; border: 1px solid #4c4246; border-radius: 5px; overflow: hidden; }
@@ -5494,14 +5494,6 @@ input[type="color"]::-moz-color-swatch { border: 0; border-radius: 0; }
 .console-cues td.chg input { border-color: #c98a12; background: #3a2e12; color: #ffd27a; }
 .console-note { margin: 8px 0 0; color: var(--ink-secondary, #cbbfb1); font-size: 12px; }
 .console-cues td:nth-child(3) input { width: 58px; }
-/* 卓を開いているあいだは、3D（と左右に並べた平面図）を盤の上に収める。舞台が盤に隠れないように */
-.unified-shell.workspace-layout.console-open.map-hidden .canvas-wrap,
-.unified-shell.workspace-layout.console-open.desk-split-side .canvas-wrap { bottom: min(380px, 48vh); }
-.unified-shell.workspace-layout.console-open.desk-split-side .plan-board-content { bottom: min(380px, 48vh); }
-.unified-shell.workspace-layout.console-open .plan-outline, .unified-shell.workspace-layout.console-open .object-panel { bottom: min(380px, 48vh); }
-/* 上の帯の「卓」ボタン（見え方の切り替えの右）。2026-11-19 */
-.toolbar .desk-console-toggle { flex: none; margin-right: 6px; padding: 0 14px; border: 1px solid #4c4246; border-radius: 5px; background: transparent; color: var(--ink-primary); font: 700 13px var(--font-sans); letter-spacing: .1em; }
-.toolbar .desk-console-toggle.active { background: var(--kin) !important; border-color: var(--kin); color: #14110d; }
 /* フェーダーは、収まるときは真ん中に並べる。収まらないときは左から並べて横に動かす */
 .console-faders { justify-content: safe center; }
 
@@ -5520,3 +5512,28 @@ input[type="color"]::-moz-color-swatch { border: 0; border-radius: 0; }
 button.library-guide-demo { font-family: inherit; cursor: pointer; }
 /* 通しで見るのあいだは右のボタンを隠すので、アカウントのアイコンだけを右端に置く（左に詰まってずれていた。2026-11-19） */
 .unified-shell.playback-open .account-menu-root:not(.floating) { margin-left: auto; }
+
+/* 卓は「公演の流れ」と「舞台の編集」のあいだ、画面の下の端に寄せる。開いているあいだ、3D と平面図は卓の上に収める（2026-11-19）。
+   --desk-h は App が卓の高さを入れる（閉じていれば 0） */
+.unified-shell.workspace-layout:not(.outline-visible) .console-desk { left: 0; }
+.unified-shell.workspace-layout.console-open .canvas-wrap { bottom: calc(var(--map-height) + var(--desk-h)); }
+.unified-shell.workspace-layout.console-open.map-hidden .canvas-wrap,
+.unified-shell.workspace-layout.console-open.desk-split-side .canvas-wrap { bottom: var(--desk-h); }
+.unified-shell.workspace-layout.console-open .plan-board-content { bottom: var(--desk-h); }
+.unified-shell.workspace-layout.console-open.desk-plan-full .plan-board-content { height: calc(var(--map-height) - var(--desk-h)); }
+.console-desk-resize { position: absolute; top: -5px; left: 0; right: 0; height: 10px; cursor: ns-resize; z-index: 2; }
+.console-desk-resize::after { content: ''; position: absolute; left: 50%; top: 3px; width: 48px; height: 4px; margin-left: -24px; border-radius: 2px; background: #5a4d42; }
+.console-desk-resize:hover::after { background: var(--kin); }
+/* 閉じているときの、下の端の「卓」のつまみ（左右の欄のつまみと同じ形） */
+.console-reopen {
+  position: fixed; z-index: 44; bottom: 0; left: calc(var(--outline-width, 0px) + (100vw - var(--outline-width, 0px) - var(--inspector-width, 0px)) / 2); transform: translateX(-50%);
+  padding: 6px 18px 4px; border: 1px solid #4c4246; border-bottom: 0; border-radius: 6px 6px 0 0; background: #191619;
+  color: var(--ink-primary); font: 600 13px var(--font-sans); letter-spacing: .1em; cursor: pointer;
+}
+.unified-shell.workspace-layout:not(.outline-visible) .console-reopen { left: calc((100vw - var(--inspector-width, 0px)) / 2); }
+.console-reopen:hover { border-color: var(--kin); }
+.console-desk-scene span { max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* 上下に並べているときに卓を開いたら、残りの高さを 3D と平面図で半分ずつにする（平面図が上に食い込んでいた） */
+.unified-shell.workspace-layout.console-open:not(.map-hidden):not(.desk-split-side):not(.desk-plan-full) { --map-height: calc((100dvh - var(--header-height) - var(--desk-h)) * .5) !important; }
+.unified-shell.workspace-layout.console-open.has-ad-footer:not(.map-hidden):not(.desk-split-side):not(.desk-plan-full) { --map-height: calc((100dvh - var(--header-height) - 64px - var(--desk-h)) * .5) !important; }
+.unified-shell.workspace-layout.console-open .plan-resize-handle { display: none; }

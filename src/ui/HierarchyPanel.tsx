@@ -200,7 +200,7 @@ export function HierarchyPanel() {
       onDragLeave={() => setDropTarget(value => value === 'root' ? null : value)}
       onDrop={event => drop(event, null)}>
       ここに落とすと親なしにする
-    </div> : <p className="hierarchy-hint">行を別の行に重ねると、その子になります（親と一緒に動きます）</p>}
+    </div> : <p className="hierarchy-hint">行を別の行に重ねると、その子オブジェクトになります（親と一緒に動きます）</p>}
   </section>
 }
 

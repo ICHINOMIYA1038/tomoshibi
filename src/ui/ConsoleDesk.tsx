@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, type PointerEvent as ReactPointerEvent } from 'react'
 import { sceneDisplayTitle, SCENE_TRIGGER_LABELS, useStore, type Fixture, type PlanScene } from '../store'
 
 // 卓（試作）。調光卓のように、照明のレベルをフェーダーとキュー表で組む（2026-11-19 オーナー「卓みたいな機能を試作で」）。
@@ -17,7 +17,7 @@ const channelOf = (fixture: Fixture, index: number) => (typeof fixture.number ==
 
 const rgbHex = (color: [number, number, number]) => '#' + color.map(v => Math.round(Math.max(0, Math.min(1, v)) * 255).toString(16).padStart(2, '0')).join('')
 
-export function ConsoleDesk({ onClose }: { onClose: () => void }) {
+export function ConsoleDesk({ onClose, height, onResize }: { onClose: () => void; height: number; onResize: (next: number) => void }) {
   const plan = useStore(s => s.productionPlan)
   const liveFixtures = useStore(s => s.fixtures)
   const selectScene = useStore(s => s.selectScene)
@@ -74,7 +74,18 @@ export function ConsoleDesk({ onClose }: { onClose: () => void }) {
     return
   }
 
-  return <section className="console-desk" role="dialog" aria-label="卓（試作）">
+  // 上の縁をドラッグして高さを変える（舞台の編集・公演の流れと同じく、画面の端に寄せた欄）
+  const startResize = (event: ReactPointerEvent<HTMLDivElement>) => {
+    event.preventDefault()
+    const startY = event.clientY
+    const from = height
+    const move = (next: PointerEvent) => onResize(from + (startY - next.clientY))
+    const up = () => { window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', up) }
+    window.addEventListener('pointermove', move)
+    window.addEventListener('pointerup', up)
+  }
+  return <section className="console-desk" role="region" aria-label="卓（試作）" style={{ height }}>
+    <div className="console-desk-resize" role="separator" aria-orientation="horizontal" aria-label="卓の高さ。ドラッグで変える" onPointerDown={startResize} />
     <header className="console-desk-head">
       <strong>卓</strong><span className="console-desk-badge">試作</span>
       <div className="console-desk-tabs" role="tablist">
@@ -86,10 +97,10 @@ export function ConsoleDesk({ onClose }: { onClose: () => void }) {
         <span>Q{activeIndex + 1}　{active ? sceneDisplayTitle(plan, active.id) : '場面がありません'}</span>
         <button type="button" aria-label="次の場面" disabled={activeIndex < 0 || activeIndex >= scenes.length - 1} onClick={() => go(1)}>›</button>
       </div>
-      {active && <label className="console-desk-fade">この場面へのフェード
+      {active && <label className="console-desk-fade" title="この場面へ移るのにかける時間">フェード
         <input type="number" min={0} max={60} step={0.5} value={active.fadeSec ?? DEFAULT_FADE}
           onChange={event => setFade(active.id, event.target.value === '' ? undefined : Number(event.target.value))} />秒</label>}
-      <button type="button" className="console-desk-print" onClick={printSheet}>キュー表を印刷</button>
+      <button type="button" className="console-desk-print" onClick={printSheet}>印刷</button>
       <button type="button" className="console-desk-close" aria-label="卓を閉じる" onClick={onClose}>×</button>
     </header>
 

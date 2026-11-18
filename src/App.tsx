@@ -174,6 +174,13 @@ export default function App() {
   const [displayMenuOpen, setDisplayMenuOpen] = useState(false)
   // 卓（試作）。PC の「表示」から開く（2026-11-19）
   const [consoleOpen, setConsoleOpen] = useState(false)
+  // 卓の高さ（上の縁をドラッグで変える）。次に開いたときも同じ高さにする
+  const [deskHeight, setDeskHeightState] = useState(() => { try { const v = Number(localStorage.getItem('tomoshibi.deskHeight')); return v >= 160 ? v : 340 } catch { return 340 } })
+  const setDeskHeight = (next: number) => {
+    const value = Math.round(Math.max(160, Math.min(window.innerHeight * 0.7, next)))
+    setDeskHeightState(value)
+    try { localStorage.setItem('tomoshibi.deskHeight', String(value)) } catch { /* 覚えられなくても使える */ }
+  }
   const [displayMenuPosition, setDisplayMenuPosition] = useState({ left: 14, top: 104 })
   const [sceneEditorOpen, setSceneEditorOpen] = useState(false)
   const displayMenuRef = useRef<HTMLDivElement>(null)
@@ -397,7 +404,8 @@ export default function App() {
       {isMockPreview && <><WorkspaceNotices /><UpdateNotice /><CloudProjectAutosave /></>}
       {isMockPreview && mockPage === 'projects'
         ? <ProjectLibrary onOpenEditor={() => navigateMock('editor')} />
-        : <div className={'unified-shell' + (planOpen ? ' plan-open' : '') + (settings.panelOpen ? ' panel-open' : '') + (playbackOpen ? ' playback-open' : '') + (isMockPreview ? ' workspace-layout mobile-view-' + mobileView : '') + (mapVisible ? '' : ' map-hidden') + (outlineVisible ? ' outline-visible' : '') + (adFooter ? ' has-ad-footer' : '') + (phoneLayout ? ' phone-layout' : '') + (deskLayout && deskView === 'plan' && mapVisible ? ' desk-plan-full' : '') + (deskLayout && deskView === 'side' && mapVisible ? ' desk-split-side' : '') + (deskLayout && inspectorHidden ? ' inspector-hidden' : '') + (deskLayout && consoleOpen && !playbackOpen ? ' console-open' : '')}>
+        : <div className={'unified-shell' + (planOpen ? ' plan-open' : '') + (settings.panelOpen ? ' panel-open' : '') + (playbackOpen ? ' playback-open' : '') + (isMockPreview ? ' workspace-layout mobile-view-' + mobileView : '') + (mapVisible ? '' : ' map-hidden') + (outlineVisible ? ' outline-visible' : '') + (adFooter ? ' has-ad-footer' : '') + (phoneLayout ? ' phone-layout' : '') + (deskLayout && deskView === 'plan' && mapVisible ? ' desk-plan-full' : '') + (deskLayout && deskView === 'side' && mapVisible ? ' desk-split-side' : '') + (deskLayout && inspectorHidden ? ' inspector-hidden' : '') + (deskLayout && consoleOpen && !playbackOpen ? ' console-open' : '')}
+          style={{ '--desk-h': deskLayout && consoleOpen && !playbackOpen ? `${deskHeight}px` : '0px' } as React.CSSProperties}>
       {/* 右ボタンを押して離しただけのときに、右クリックのメニューを出す（ドラッグは視点の移動。objectMenu.ts） */}
       <div className={'canvas-wrap' + (addDropActive ? ' add-drop-active' : '')} onContextMenu={event => event.preventDefault()}
         onPointerDownCapture={canvasPointerDown} onPointerUpCapture={canvasPointerUp}
@@ -536,8 +544,6 @@ export default function App() {
             <button key={key} type="button" aria-pressed={(mapVisible ? deskView : '3d') === key} title={title} aria-label={title}
               onClick={() => setDeskView(key)}>{label}</button>)}
         </div>}
-        {deskLayout && <button type="button" className={'desk-console-toggle' + (consoleOpen ? ' active' : '')} aria-pressed={consoleOpen}
-          title="卓（試作）：フェーダーとキュー表で、場面ごとの照明のレベルを組みます" onClick={() => setConsoleOpen(!consoleOpen)}>卓</button>}
         {isMockPreview && <>
           <div className="workspace-display-menu-wrap" ref={displayMenuRef}>
             <button className={'workspace-display-trigger' + (displayMenuOpen ? ' active' : '')}
@@ -567,6 +573,8 @@ export default function App() {
           <span aria-hidden="true">{mapVisible ? '✓' : ''}</span>平面図</button>
         {deskLayout && <button type="button" aria-pressed={!inspectorHidden} onClick={() => { setInspectorHidden(!inspectorHidden); setDisplayMenuOpen(false) }}>
           <span aria-hidden="true">{inspectorHidden ? '' : '✓'}</span>舞台の編集（右の欄）</button>}
+        {deskLayout && <button type="button" aria-pressed={consoleOpen} onClick={() => { setConsoleOpen(!consoleOpen); setDisplayMenuOpen(false) }}>
+          <span aria-hidden="true">{consoleOpen ? '✓' : ''}</span>卓（試作）</button>}
         <button type="button" aria-pressed={showSceneDirections} onClick={() => { setShowSceneDirections(value => !value); setDisplayMenuOpen(false) }}>
           <span aria-hidden="true">{showSceneDirections ? '✓' : ''}</span>前の場面からの矢印</button>
       </div>}
@@ -575,7 +583,9 @@ export default function App() {
         onView={next => { setMobileView(next); if (next === 'plan') setMapVisible(true) }}
         onBack={() => navigateMock('projects')} onPlay={startPlayback} />}
       {!playbackOpen && <ControlPanel planOpen={planOpen} />}
-      {deskLayout && consoleOpen && !playbackOpen && <ConsoleDesk onClose={() => setConsoleOpen(false)} />}
+      {deskLayout && consoleOpen && !playbackOpen && <ConsoleDesk onClose={() => setConsoleOpen(false)} height={deskHeight} onResize={setDeskHeight} />}
+      {deskLayout && !consoleOpen && !playbackOpen && <button type="button" className="console-reopen" onClick={() => setConsoleOpen(true)}
+        title="卓（試作）：フェーダーとキュー表で、場面ごとの照明のレベルを組みます">卓 ⌃</button>}
       {deskLayout && !outlineVisible && !playbackOpen && <button type="button" className="outline-reopen" onClick={() => setOutlineVisible(true)}
         title="左の「公演の流れ」（章と場面の一覧）を開く">公演の流れ ›</button>}
       {deskLayout && inspectorHidden && !playbackOpen && <button type="button" className="inspector-reopen" onClick={() => setInspectorHidden(false)}
