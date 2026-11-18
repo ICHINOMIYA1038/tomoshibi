@@ -5517,3 +5517,6 @@ input[type="color"]::-moz-color-swatch { border: 0; border-radius: 0; }
 .account-page-btn.danger { color: #b8432f; }
 .account-page-btn:disabled { opacity: .6; cursor: default; }
 .account-page-err { color: #b8432f; }
+button.library-guide-demo { font-family: inherit; cursor: pointer; }
+/* 通しで見るのあいだは右のボタンを隠すので、アカウントのアイコンだけを右端に置く（左に詰まってずれていた。2026-11-19） */
+.unified-shell.playback-open .account-menu-root:not(.floating) { margin-left: auto; }
