@@ -111,10 +111,10 @@ scene_04() {
 # ---- 05 照明の狙いを動かす ----
 scene_05() {
   fresh; start "$OUT/05.webm"
-  cap '照明を選ぶと、道具の横に「つかむ」が出ます'
+  cap '照明を選ぶと、右の設定に「3D でつかむ点」が出ます'
   click_el '.hierarchy-name' 'ピン・特別'
   pause 900
-  local p; p=$(at '.toolbar .tool-buttons button' '狙い'); set -- $p; glide "$1" "$2"
+  local p; p=$(at '.inspector-choice[aria-label="3D でつかむ点"] button' '狙い'); set -- $p; glide "$1" "$2"
   cap '「照明」は本体を、「狙い」は光が当たる点を動かします'
   pause 700
   click_at "$1" "$2"

@@ -1,4 +1,5 @@
 import { useState, type DragEvent } from 'react'
+import { focusSelection, markListPick } from '../scene/focusBus'
 import { useObjectMenu } from '../objectMenu'
 import { useStore, type SelectionKind } from '../store'
 import { DEFAULT_VENUE_LAYOUT } from '../venueLayout'
@@ -153,7 +154,13 @@ export function HierarchyPanel() {
           onClick={() => setCollapsed(prev => { const next = new Set(prev); if (open) next.add(key); else next.delete(key); return next })}>
           <svg viewBox="0 0 10 10" width="10" height="10" aria-hidden="true" style={{ transform: open ? 'rotate(90deg)' : undefined, transition: 'transform .12s' }}>
             <path d="M3.5 2 7 5 3.5 8" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg></button> : <span className="hierarchy-toggle" aria-hidden="true" />}
-        <button type="button" className="hierarchy-name" onClick={() => select(node.kind, node.id, node.kind === 'fixture' ? 'position' : undefined)}>
+        <button type="button" className="hierarchy-name" onClick={event => {
+          // 一覧で選んだら、右の欄はスクロールせず、3D の視点をその物に寄せる（スマホの一覧は PhoneChrome が寄せる）
+          const current = useStore.getState().selection
+          if (current.kind !== node.kind || current.id !== node.id) markListPick()
+          select(node.kind, node.id, node.kind === 'fixture' ? 'position' : undefined)
+          if (!event.currentTarget.closest('.phone-list')) requestAnimationFrame(() => focusSelection())
+        }}>
           <KindIcon node={node} />
           <strong>{node.label}</strong>
           {node.detail && <small>{node.detail}</small>}

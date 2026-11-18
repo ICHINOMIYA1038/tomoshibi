@@ -1,4 +1,5 @@
 import { aimFrom, canFollow, canUseGobo, followPoint, GOBO_LABELS, goboOf, isMover, MOVEMENT_LABELS, MOVEMENT_LIMITS, movementOf, panTiltOf, type FixtureMovement, type GoboPattern, type MovementPattern } from '../lighting/movingHead'
+import { takeListPick } from '../scene/focusBus'
 import { useEffect, useRef } from 'react'
 import { useStore, type Fixture } from '../store'
 import { dimmedKelvin, FIXTURE_PROFILES, KIND_LABELS } from '../lighting/fixtureTypes'
@@ -110,9 +111,10 @@ export function ControlPanel({ planOpen = false }: { planOpen?: boolean }) {
     y: 12,
   })
 
-  // 選び直したら、設定（インスペクター）が見えるところまでスクロールする
+  // 選び直したら、設定（インスペクター）が見えるところまでスクロールする。一覧で選んだときはしない（視点を寄せるだけ）
   useEffect(() => {
     if (!selection.kind) return
+    if (takeListPick()) return
     requestAnimationFrame(() => document.querySelector('.object-panel .inspector')?.scrollIntoView({ block: 'nearest', behavior: 'smooth' }))
   }, [selection.kind, selection.id])
 
