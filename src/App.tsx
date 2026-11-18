@@ -48,7 +48,6 @@ import { WebGLErrorBoundary } from './ui/WebGLErrorBoundary'
 import { FIXTURE_PROFILES, type FixtureProfile } from './lighting/fixtureTypes'
 import { tryLoadFromHash } from './io/sceneIO'
 import { createShowcasePlan } from './demo/createShowcasePlan'
-import { createRainLibraryPlan } from './demo/createRainLibraryPlan'
 import { createRainLibraryLightingStudyPlan } from './demo/createRainLibraryLightingStudyPlan'
 import { createAkaoniPlan } from './demo/createAkaoniPlan'
 import { createAkaoniWashPlan } from './demo/createAkaoniWashPlan'
@@ -57,6 +56,7 @@ import { createVenueStudyPlan, VENUE_STUDY_LINKS } from './demo/createVenueStudy
 import { AudienceSeating } from './scene/AudienceSeating'
 import { isWorkspaceLibraryPath, isWorkspacePath, workspaceBasePath } from './io/workspacePath'
 import { LanternMark } from './ui/LanternMark'
+import { createSampleProduction } from './demo/createSampleProduction'
 
 const CAMERA_VIEWS: Record<string, { pos: [number, number, number]; target: [number, number, number] }> = {
   audience: { pos: [0, 2.5, 10], target: [0, 2.5, -2] },
@@ -272,11 +272,12 @@ export default function App() {
     const loadedFromHash = handoff !== 'imported' && tryLoadFromHash()
     const demo = !loadedFromHash ? requestedDemo() : null
     const venueStudy = VENUE_STUDY_LINKS.find(item => demo === `venue-${item.kind}`)
-    const wantsDemo = demo === '1' || demo === '2' || demo === 'rain-library-study' || demo === 'akaoni' || demo === 'akaoni-wash' || demo === 'akaoni-study' || !!venueStudy
+    const wantsDemo = demo === '1' || demo === '2' || demo === 'sample' || demo === 'rain-library-study' || demo === 'akaoni' || demo === 'akaoni-wash' || demo === 'akaoni-study' || !!venueStudy
     const loadDemo = wantsDemo && preserveMockDraftBeforeDemo()
     if (wantsDemo && !loadDemo) setWorkspaceFeedback('前のプランを保存できなかったため、デモを開きませんでした。')
     if (loadDemo && demo === '1') createShowcasePlan()
-    else if (loadDemo && demo === '2') createRainLibraryPlan()
+    // 見本の公演。2026-11-18 から作り直した createSampleProduction（'sample' は同じものの別名）
+    else if (loadDemo && (demo === '2' || demo === 'sample')) createSampleProduction()
     else if (loadDemo && demo === 'rain-library-study') createRainLibraryLightingStudyPlan()
     else if (loadDemo && demo === 'akaoni') createAkaoniPlan()
     else if (loadDemo && demo === 'akaoni-wash') createAkaoniWashPlan()
