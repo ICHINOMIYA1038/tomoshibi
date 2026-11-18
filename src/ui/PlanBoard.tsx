@@ -4,7 +4,7 @@ import { WorkspaceNotice } from './WorkspaceNotice'
 import { createPortal } from 'react-dom'
 import { Fragment, useCallback, useEffect, useRef, useState, type MouseEvent, type PointerEvent } from 'react'
 import { activeSceneDirections, LIMITS, PLAN_LIMITS, SCENE_TRIGGER_LABELS, sceneDisplayTitle, useStore,
-  type DirectionKind, type MoveSceneResult, type SceneTriggerType, type StagePoint } from '../store'
+  type DirectionKind, type Fixture, type MoveSceneResult, type SceneTriggerType, type StagePoint } from '../store'
 import { StagePartsLayer } from './StagePartsEditor'
 import { Glyph } from './AddPalette'
 import { FIXTURE_PROFILES } from '../lighting/fixtureTypes'
@@ -20,12 +20,21 @@ import { useMapZoom } from './useMapZoom'
 // 図の枠。客席の上の照明（前明かりなど）も縮めずに本当の位置に描くので、枠の下端まで同じ縮尺にする
 const MAP_WIDE = { left: 100, top: 70, width: 760, height: 548, svgWidth: 960, svgHeight: 630 }
 /** 図の座標の枠。スマホの縦長の画面では、枠も縦長にして画面いっぱいに描く（横長のままだと画面の 3 分の 1 ほどしか使わず、名前が重なっていた。2026-11-18） */
-let MAP = MAP_WIDE
-function mapFrame(aspect: number) {
-  if (aspect <= MAP_WIDE.svgHeight / MAP_WIDE.svgWidth + .01) return MAP_WIDE
+let MAP: { left: number; top: number; width: number; height: number; svgWidth: number; svgHeight: number; keyX?: number; keyY?: number; keyColumns?: number; keyScale?: number } = MAP_WIDE
+function mapFrame(aspect: number, keyRows = 0) {
+  // 器具表（照明の番号と名前）は図の外に置く。横長の画面では右の列、縦長の画面では図の下
+  if (aspect <= MAP_WIDE.svgHeight / MAP_WIDE.svgWidth + .01) {
+    if (!keyRows) return MAP_WIDE
+    return { ...MAP_WIDE, svgWidth: 960 + KEY_WIDTH, keyX: 960, keyY: MAP_WIDE.top, keyColumns: 1 }
+  }
   const svgHeight = Math.round(960 * aspect)
-  return { left: 44, top: 64, width: 872, height: svgHeight - 64 - 20, svgWidth: 960, svgHeight }
+  // スマホでは図が縮んで表示されるので、器具表の字を 2 倍にする。下の操作ボタン（表示・縮尺）に隠れないよう、下を空ける
+  const keyScale = 2, bottomReserve = 170
+  const keyHeight = keyRows ? (40 + Math.ceil(keyRows / 2) * KEY_ROW) * keyScale + bottomReserve : 0
+  return { left: 44, top: 64, width: 872, height: svgHeight - 64 - 20 - keyHeight, svgWidth: 960, svgHeight, keyX: 44, keyY: svgHeight - keyHeight + 40 * keyScale, keyColumns: 2, keyScale }
 }
+const KEY_WIDTH = 300
+const KEY_ROW = 34
 const pathColors: Record<DirectionKind, string> = {
   move: '#d4af6f', entrance: '#78bca0', exit: '#df8f7c',
 }
@@ -191,7 +200,21 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
     scrollObserver.current = new ResizeObserver(measure)
     scrollObserver.current.observe(el)
   }, [])
-  MAP = mapFrame(mapAspect)
+  const keySelection = useStore(s => s.selection)
+  const [showFixtures, setShowFixtures] = useState(true)
+  // 仕込み図のように、図には照明の番号だけを描き、名前は欄外の器具表に出す（2026-11-18 オーナー「ごちゃごちゃしてわかりづらい」）。
+  // この場面で消えている照明は、初めは描かない。どちらも「表示」から切り替えられ、次に開いたときも覚えておく
+  const [fixtureNamesOnPlan, setFixtureNamesOnPlan] = useState(() => { try { return localStorage.getItem('tomoshibi.planFixtureNames') === 'plan' } catch { return false } })
+  const [showOffFixtures, setShowOffFixtures] = useState(() => { try { return localStorage.getItem('tomoshibi.planShowOffFixtures') === '1' } catch { return false } })
+  useEffect(() => { try { localStorage.setItem('tomoshibi.planFixtureNames', fixtureNamesOnPlan ? 'plan' : 'key') } catch { /* 覚えられなくても使える */ } }, [fixtureNamesOnPlan])
+  useEffect(() => { try { localStorage.setItem('tomoshibi.planShowOffFixtures', showOffFixtures ? '1' : '0') } catch { /* 覚えられなくても使える */ } }, [showOffFixtures])
+  const fixtureShown = (fixture: Fixture) => showOffFixtures || fixture.enabled || (keySelection.kind === 'fixture' && keySelection.id === fixture.id)
+  const fixtureNumber = (fixture: Fixture, index: number) => (typeof fixture.number === 'string' && fixture.number.trim()) || String(index + 1)
+  // 器具表に載せる照明（番号は器具の並び順か、付けた番号）
+  const keyFixtures = showFixtures && !fixtureNamesOnPlan
+    ? fixtures.map((fixture, index) => ({ fixture, number: fixtureNumber(fixture, index) })).filter(({ fixture }) => fixtureShown(fixture))
+    : []
+  MAP = mapFrame(mapAspect, keyFixtures.length)
   const fitBounds = equalScaleBounds(!plan.venueLayout ? { left: -8, right: 8, rear: -8, front: 2 }
     : stageLarge && !showWholeStage ? objectBounds(contentPoints, stageOutline)
       : {
@@ -244,7 +267,6 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
   const updatePerformer = useStore(s => s.updatePerformer)
   const updateFixture = useStore(s => s.updateFixture)
   const updateSetPiece = useStore(s => s.updateSetPiece)
-  const [showFixtures, setShowFixtures] = useState(true)
   const [showPerformers, setShowPerformers] = useState(true)
   // スマホでは表示の切り替えを「表示」の小窓にまとめる（2026-11-18 オーナー「スマホで照明や役者の表示を切り替えられない」）
   const [layerMenuOpen, setLayerMenuOpen] = useState(false)
@@ -273,7 +295,7 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
   // - 押せる範囲は、隣との間の半分までにする（隣の印を押したのに、こちらが選ばれないように）
   const fixtureLayout = (() => {
     const out = new Map<string, { dx: number; dy: number; scale: number; touch: number }>()
-    const base = fixtures.map(fixture => ({ id: fixture.id, x: mapX(fixture.position[0]), y: mapY(fixture.position[2]) }))
+    const base = fixtures.filter(fixtureShown).map(fixture => ({ id: fixture.id, x: mapX(fixture.position[0]), y: mapY(fixture.position[2]) }))
     const shown = base.map(point => ({ ...point }))
     const groups = new Map<string, number[]>()
     base.forEach((point, index) => {
@@ -1298,6 +1320,8 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
               ['照明', showFixtures, setShowFixtures],
               ['役者', showPerformers, setShowPerformers],
               ['名前', showLabels, setShowLabels],
+              ['照明の名前を図に書く', fixtureNamesOnPlan, setFixtureNamesOnPlan],
+              ['消えている照明', showOffFixtures, setShowOffFixtures],
             ] as Array<[string, boolean, (update: (value: boolean) => boolean) => void]>).map(([label, on, set]) =>
               <label key={label} className="plan-layer-menu-row">
                 <input type="checkbox" checked={on} onChange={() => set(value => !value)} />{label}</label>)}
@@ -1325,6 +1349,12 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
           <button type="button" className={showLabels ? 'active' : ''} aria-pressed={showLabels}
             title="役者・舞台セット・照明・壁やバトンの名前。重なる所には出しません"
             onClick={() => setShowLabels(value => !value)}>名前：{showLabels ? '表示中' : '非表示'}</button>
+          {showFixtures && <button type="button" className={fixtureNamesOnPlan ? 'active' : ''} aria-pressed={fixtureNamesOnPlan}
+            title="照明の名前を図の上に書きます。切ると図には番号だけを描き、名前は器具表に並べます"
+            onClick={() => setFixtureNamesOnPlan(value => !value)}>照明の名前：{fixtureNamesOnPlan ? '図に書く' : '器具表'}</button>}
+          {showFixtures && <button type="button" className={showOffFixtures ? 'active' : ''} aria-pressed={showOffFixtures}
+            title="この場面で消えている照明も図に描きます"
+            onClick={() => setShowOffFixtures(value => !value)}>消えている照明：{showOffFixtures ? '表示中' : '非表示'}</button>}
           <button type="button" className="plan-save-image" onClick={saveDiagram}>画像で保存</button>
           <small>図を左右にスワイプ</small>
         </div>
@@ -1520,7 +1550,7 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
                 paintOrder="stroke" stroke="#fffdf8" strokeWidth="4">前のシーンの狙い</text>}
             </g>)}
             {/* 選んだ照明は最後に描く（隣の印の下に隠れないように） */}
-            {showFixtures && fixtures.map((fixture, index) => ({ fixture, index }))
+            {showFixtures && fixtures.map((fixture, index) => ({ fixture, index })).filter(({ fixture }) => fixtureShown(fixture))
               .sort((a, b) => Number(a.fixture.id === selectedFixture?.id) - Number(b.fixture.id === selectedFixture?.id))
               .map(({ fixture, index }) => {
               const active = selectedFixture?.id === fixture.id
@@ -1667,10 +1697,12 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
                 const name = (piece.name.trim() || '名称未設定') + (same.length > 1 ? ` ${order}` : '')
                 items.push({ key: 's' + piece.id, x, y, r: Math.max(w, d) / 2, text: short(name, 12), active: piece.id === selectedSetPiece?.id, rank: 2 })
               })
-              if (showFixtures) fixtures.forEach(fixture => {
+              if (showFixtures) fixtures.filter(fixtureShown).forEach(fixture => {
                 const { x, y, scale } = fixtureAt(fixture)
                 const r = markerSize * .75 * scale
                 obstacles.push({ key: 'f' + fixture.id, x0: x - r, y0: y - r, x1: x + r, y1: y + r })
+                // 器具表に名前を出すときは、図には選んでいる照明の名前だけを書く
+                if (!fixtureNamesOnPlan && fixture.id !== selectedFixture?.id) return
                 items.push({ key: 'f' + fixture.id, x, y, r, text: short(fixture.name, 10), active: fixture.id === selectedFixture?.id, rank: 3 })
               })
               const font = labelFont
@@ -1731,6 +1763,32 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
               </g>
             })()}
             </g>
+            {/* 器具表。図には番号だけを描き、名前はここに並べる（画像で保存にも入る）。押すとその照明を選ぶ */}
+            {keyFixtures.length > 0 && MAP.keyX !== undefined && MAP.keyY !== undefined && (() => {
+              const columns = MAP.keyColumns ?? 1
+              const k = MAP.keyScale ?? 1
+              const columnWidth = columns === 1 ? KEY_WIDTH - 20 : MAP.width / columns
+              const rows = Math.ceil(keyFixtures.length / columns)
+              return <g className="plan-fixture-key">
+                <rect x={MAP.keyX - 12} y={MAP.keyY - 40 * k} width={columns === 1 ? KEY_WIDTH - 8 : MAP.width + 24} height={(rows * KEY_ROW + 52) * k}
+                  rx="6" fill={T.paper} fillOpacity=".94" stroke={T.title} strokeOpacity=".18" />
+                <text x={MAP.keyX} y={MAP.keyY - 14 * k} fill={T.title} fontSize={16 * k} fontWeight="700" fontFamily="sans-serif">器具表</text>
+                {keyFixtures.map(({ fixture, number }, order) => {
+                  const column = Math.floor(order / rows), row = order % rows
+                  const x = MAP.keyX! + column * columnWidth, y = MAP.keyY! + row * KEY_ROW * k
+                  const active = selectedFixture?.id === fixture.id
+                  return <g key={fixture.id} role="button" tabIndex={0} aria-label={`${number} ${fixture.name}を選ぶ`} style={{ cursor: 'pointer' }}
+                    opacity={fixture.enabled ? 1 : .45}
+                    onClick={() => select('fixture', fixture.id, 'position')}
+                    onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); select('fixture', fixture.id, 'position') } }}>
+                    <rect x={x} y={y} width={36 * k} height={24 * k} rx={4 * k} fill={active ? '#b8432f' : '#4b443e'} stroke={T.title} strokeOpacity=".35" />
+                    <text x={x + 18 * k} y={y + 17 * k} textAnchor="middle" fill="#fffdf8" fontSize={14 * k} fontWeight="700" fontFamily="sans-serif">{number}</text>
+                    <text x={x + 46 * k} y={y + 17 * k} fill={T.title} fontSize={15 * k} fontWeight={active ? 700 : 500} fontFamily="sans-serif">
+                      {fixture.name.length > (k > 1 ? 9 : 14) ? fixture.name.slice(0, k > 1 ? 8 : 13) + '…' : fixture.name}{fixture.enabled ? '' : '（消灯）'}</text>
+                  </g>
+                })}
+              </g>
+            })()}
           </svg>
         </div>
         </>

@@ -3258,6 +3258,8 @@ body.embed .workspace-switch { display: none; }
 .unified-shell .plan-map-layerbar .plan-map-zoom button[aria-label] { justify-content: center; min-width: 27px; padding: 3px 0; font-size: 14px; }
 .unified-shell .plan-map-scroll { flex: 1; min-height: 0; overflow: auto; display: flex; align-items: flex-start; justify-content: flex-start; padding: 5px; }
 .unified-shell .plan-map-scroll svg { display: block; flex: none; height: 100%; width: auto; min-width: 0; margin: auto; border-radius: 4px; user-select: none; }
+/* 器具表の列で図が横に広くなっても、枠からはみ出さずに縮めて収める（2026-11-18） */
+.unified-shell .plan-map-scroll svg { max-width: 100%; }
 /* 平面図の「シーン／会場」の切り替え（PlanBoard.tsx）と、会場の図（VenueMap.tsx） */
 .unified-shell .plan-map-mode { flex: none; display: inline-flex; padding: 2px; border: 1px solid var(--panel-edge-strong); border-radius: 7px; background: rgba(0,0,0,.25); }
 .unified-shell .plan-map-mode button { min-height: 28px; padding: 3px 12px; border: 0; border-radius: 5px; background: transparent; color: var(--ink-secondary); font: 600 12px var(--font-sans); cursor: pointer; }
