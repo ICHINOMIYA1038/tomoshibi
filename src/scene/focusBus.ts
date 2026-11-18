@@ -24,7 +24,13 @@ export function focusSelection() {
   if (!kind || !id) return
   if (kind === 'fixture') {
     const fixture = s.fixtures.find(item => item.id === id)
-    if (fixture) focusOn({ center: fixture.position, radius: .6 })
+    // 灯体だけに寄ると、目の前に機材の箱があるだけで何を見ているかわからなかった。灯体と狙った所を一緒に収める（2026-11-18）
+    if (fixture) {
+      const [px, py, pz] = fixture.position
+      const [tx, ty, tz] = fixture.target
+      const half = Math.hypot(tx - px, ty - py, tz - pz) / 2
+      focusOn({ center: [(px + tx) / 2, (py + ty) / 2, (pz + tz) / 2], radius: Math.max(1.5, half) })
+    }
   } else if (kind === 'performer') {
     const performer = s.performers.find(item => item.id === id)
     if (performer) focusOn({ center: [performer.position[0], performer.position[1] + .9 * performer.scale, performer.position[2]], radius: .9 * performer.scale })

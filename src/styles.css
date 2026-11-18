@@ -4771,7 +4771,10 @@ body.embed .workspace-switch { display: none; }
 .inspector-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding-bottom: 6px; border-bottom: 1px solid var(--panel-edge); }
 .inspector-head small { display: block; color: var(--ink-secondary); font-size: 10px; }
 .inspector-head strong { font-size: 14px; }
-.inspector-actions { display: flex; gap: 4px; }
+.inspector-actions { display: flex; flex: none; gap: 4px; }
+/* 名前が長いと「複製」「削除」が 2 行に折れていた。ボタンは折らず、名前の方を … で切る（2026-11-18） */
+.inspector-actions button { white-space: nowrap; }
+.inspector-head > div:first-child { flex: 1 1 auto; min-width: 0; }
 .inspector-actions button, .inspector-choice button, .inspector-wide-button, .inspector-text button {
   padding: 5px 10px; border-radius: 5px; border: 1px solid var(--panel-edge); background: rgba(255, 255, 255, .05); color: var(--ink-primary); font: 12px var(--font-sans); cursor: pointer;
 }
