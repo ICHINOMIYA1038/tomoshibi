@@ -569,6 +569,8 @@ export default function App() {
         onView={next => { setMobileView(next); if (next === 'plan') setMapVisible(true) }}
         onBack={() => navigateMock('projects')} onPlay={startPlayback} />}
       {!playbackOpen && <ControlPanel planOpen={planOpen} />}
+      {deskLayout && !outlineVisible && !playbackOpen && <button type="button" className="outline-reopen" onClick={() => setOutlineVisible(true)}
+        title="左の「公演の流れ」（章と場面の一覧）を開く">公演の流れ ›</button>}
       {deskLayout && inspectorHidden && !playbackOpen && <button type="button" className="inspector-reopen" onClick={() => setInspectorHidden(false)}
         title="右の「舞台の編集」の欄を開く">舞台の編集 ‹</button>}
       {!playbackOpen && <ScenePanel />}
