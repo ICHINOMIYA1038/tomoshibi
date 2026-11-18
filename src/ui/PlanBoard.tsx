@@ -1299,6 +1299,7 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
               : selectedSetPiece ? `${selectedSetPiece.name}を選択中 · 四角をドラッグして位置を変更`
                 : '丸や四角をドラッグして移動します'}</span>
           <ToolButtons compact />
+          <button type="button" className="plan-save-image plan-save-image-caption" onClick={saveDiagram}>画像で保存</button>
           {persistent && <button type="button" className="plan-pane-close plan-map-close"
             aria-label="平面図を閉じる" title="平面図を閉じる" onClick={onCloseMap}>×</button>}
         </div>
@@ -1307,33 +1308,34 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
           <span>図に表示</span>
           <button type="button" className={showShared ? 'active' : ''} aria-pressed={showShared}
             title="全シーン共通の壁・バトン・客席を、灰色で下に描きます"
-            onClick={() => setShowShared(value => !value)}>壁・客席：{showShared ? '表示中' : '非表示'}</button>
+            onClick={() => setShowShared(value => !value)}>壁・客席</button>
           <button type="button" className={showSetPieces ? 'active' : ''} aria-pressed={showSetPieces}
-            onClick={() => setShowSetPieces(value => !value)}>舞台セット：{showSetPieces ? '表示中' : '非表示'}</button>
+            onClick={() => setShowSetPieces(value => !value)}>舞台セット</button>
           <button type="button" className={showFixtures ? 'active' : ''} aria-pressed={showFixtures}
-            onClick={() => setShowFixtures(value => !value)}>照明：{showFixtures ? '表示中' : '非表示'}</button>
+            onClick={() => setShowFixtures(value => !value)}>照明</button>
           <button type="button" className={showPerformers ? 'active' : ''} aria-pressed={showPerformers}
-            onClick={() => setShowPerformers(value => !value)}>役者：{showPerformers ? '表示中' : '非表示'}</button>
+            onClick={() => setShowPerformers(value => !value)}>役者</button>
+          {/* 細かい表示（名前・消えている照明・前のシーンからの変化）は、この小窓にまとめる（2026-11-18 オーナー「メニュー多すぎてわかりづらい」）。
+              スマホは帯に何も出さないので、壁・客席などの切り替えもここに入れる */}
           <button type="button" className="plan-layer-menu-button" aria-expanded={layerMenuOpen} aria-haspopup="true"
-            onClick={() => setLayerMenuOpen(open => !open)}>表示</button>
-          {layerMenuOpen && <div className="plan-layer-menu" role="group" aria-label="平面図に出すもの">
+            onClick={() => setLayerMenuOpen(open => !open)}>細かい表示 <span aria-hidden="true">⌄</span></button>
+          {layerMenuOpen && <div className="plan-layer-menu" role="group" aria-label="平面図の細かい表示">
             {([
-              ['壁・客席', showShared, setShowShared],
-              ['舞台セット', showSetPieces, setShowSetPieces],
-              ['照明', showFixtures, setShowFixtures],
-              ['役者', showPerformers, setShowPerformers],
-              ['名前', showLabels, setShowLabels],
-              ['照明の名前を図に書く', fixtureNamesOnPlan, setFixtureNamesOnPlan],
-              ['消えている照明', showOffFixtures, setShowOffFixtures],
-              ['舞台の部品の名前', venueNamesOnPlan, setVenueNamesOnPlan],
-            ] as Array<[string, boolean, (update: (value: boolean) => boolean) => void]>).map(([label, on, set]) =>
-              <label key={label} className="plan-layer-menu-row">
+              ['壁・客席', showShared, setShowShared, true],
+              ['舞台セット', showSetPieces, setShowSetPieces, true],
+              ['照明', showFixtures, setShowFixtures, true],
+              ['役者', showPerformers, setShowPerformers, true],
+              ['役者・セットの名前', showLabels, setShowLabels, false],
+              ['照明の名前を図に書く（器具表をやめる）', fixtureNamesOnPlan, setFixtureNamesOnPlan, false],
+              ['消えている照明も描く', showOffFixtures, setShowOffFixtures, false],
+              ['壁・袖幕・ホリゾントの名前', venueNamesOnPlan, setVenueNamesOnPlan, false],
+            ] as Array<[string, boolean, (update: (value: boolean) => boolean) => void, boolean]>).map(([label, on, set, basic]) =>
+              <label key={label} className={'plan-layer-menu-row' + (basic ? ' plan-layer-menu-basic' : '')}>
                 <input type="checkbox" checked={on} onChange={() => set(value => !value)} />{label}</label>)}
+            {persistent && onToggleDirections && <label className="plan-layer-menu-row">
+              <input type="checkbox" checked={showDirections} onChange={onToggleDirections} />前のシーンからの変化（矢印）</label>}
             <button type="button" className="plan-layer-menu-close" onClick={() => setLayerMenuOpen(false)}>閉じる</button>
           </div>}
-          {persistent && <button type="button" className={showDirections ? 'active' : ''} aria-pressed={showDirections}
-            title="ひとつ前のシーンから、役者がどう動いたか・照明の狙いがどう変わったかを矢印で出します"
-            onClick={onToggleDirections}>前のシーンからの変化：{showDirections ? '表示中' : '非表示'}</button>}
           <div className="plan-map-zoom" role="group" aria-label="平面図の縮尺">
             <button type="button" aria-label="縮小" title="縮小（ホイールでも変えられます）" onClick={() => mapZoom.zoomBy(1 / 1.5)}>−</button>
             <button type="button" aria-label="拡大" title="拡大（ホイールでも変えられます）" onClick={() => mapZoom.zoomBy(1.5)}>＋</button>
@@ -1350,19 +1352,6 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
             <button type="button" aria-pressed={planStyle === 'plot'} onClick={() => setPlanStyle('plot')}
               title="紙と墨の線の仕込み図。画像で保存して配れます">仕込み図</button>
           </div>
-          <button type="button" className={showLabels ? 'active' : ''} aria-pressed={showLabels}
-            title="役者・舞台セット・照明・壁やバトンの名前。重なる所には出しません"
-            onClick={() => setShowLabels(value => !value)}>名前：{showLabels ? '表示中' : '非表示'}</button>
-          {showFixtures && <button type="button" className={fixtureNamesOnPlan ? 'active' : ''} aria-pressed={fixtureNamesOnPlan}
-            title="照明の名前を図の上に書きます。切ると図には番号だけを描き、名前は器具表に並べます"
-            onClick={() => setFixtureNamesOnPlan(value => !value)}>照明の名前：{fixtureNamesOnPlan ? '図に書く' : '器具表'}</button>}
-          {showFixtures && <button type="button" className={showOffFixtures ? 'active' : ''} aria-pressed={showOffFixtures}
-            title="この場面で消えている照明も図に描きます"
-            onClick={() => setShowOffFixtures(value => !value)}>消えている照明：{showOffFixtures ? '表示中' : '非表示'}</button>}
-          {showShared && <button type="button" className={venueNamesOnPlan ? 'active' : ''} aria-pressed={venueNamesOnPlan}
-            title="壁・袖幕・ホリゾントの名前を図に書きます。切っても、選んだ物の名前は出します"
-            onClick={() => setVenueNamesOnPlan(value => !value)}>舞台の部品の名前：{venueNamesOnPlan ? '表示中' : '非表示'}</button>}
-          <button type="button" className="plan-save-image" onClick={saveDiagram}>画像で保存</button>
           <small>図を左右にスワイプ</small>
         </div>
         <div className="plan-map-scroll" ref={scrollRef}>
@@ -1686,7 +1675,7 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
               type Box = { key: string; x0: number; y0: number; x1: number; y1: number }
               const hit = (a: Box, b: Box) => a.key !== b.key && a.x0 < b.x1 && a.x1 > b.x0 && a.y0 < b.y1 && a.y1 > b.y0
               const obstacles: Box[] = []
-              const items: Array<{ key: string; x: number; y: number; r: number; text: string; active: boolean; rank: number }> = []
+              const items: Array<{ key: string; x: number; y: number; r: number; text: string; active: boolean; rank: number; own?: boolean }> = []
               const short = (text: string, max: number) => text.length > max ? text.slice(0, max - 1) + '…' : text
               if (showPerformers) performers.forEach(performer => {
                 if (performer.onStage === false) return
@@ -1710,11 +1699,11 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
                 obstacles.push({ key: 'f' + fixture.id, x0: x - r, y0: y - r, x1: x + r, y1: y + r })
                 // 器具表に名前を出すときは、図には選んでいる照明の名前だけを書く
                 if (!fixtureNamesOnPlan && fixture.id !== selectedFixture?.id) return
-                items.push({ key: 'f' + fixture.id, x, y, r, text: short(fixture.name, 10), active: fixture.id === selectedFixture?.id, rank: 3 })
+                items.push({ key: 'f' + fixture.id, x, y, r, text: short(fixture.name, 10), active: fixture.id === selectedFixture?.id, rank: 3, own: fixtureNamesOnPlan })
               })
               const font = labelFont
               const placed: Box[] = []
-              return items.filter(item => showLabels || item.active).sort((a, b) => Number(b.active) - Number(a.active) || a.rank - b.rank).map(item => {
+              return items.filter(item => showLabels || item.active || item.own).sort((a, b) => Number(b.active) - Number(a.active) || a.rank - b.rank).map(item => {
                 const w = item.text.length * font * .98 + 10, h = font * 1.35
                 const spots: Array<[number, number]> = [
                   [item.x, item.y + item.r + 4 + h / 2], [item.x, item.y - item.r - 4 - h / 2],

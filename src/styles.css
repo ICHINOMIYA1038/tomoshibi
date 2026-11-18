@@ -5307,7 +5307,6 @@ input[type="color"]::-moz-color-swatch { border: 0; border-radius: 0; }
   .unified-shell.phone-layout .plan-layer-menu-close { min-height: 40px; margin-top: 4px; border: 1px solid rgba(255,255,255,.2); border-radius: 6px; background: none; color: var(--ink-secondary, #cbbfb1); font-size: 14px; }
 }
 .plan-map-layerbar > button.plan-layer-menu-button::before, .plan-layer-menu-close::before { content: none !important; display: none !important; }
-.unified-shell .plan-map-layerbar > button.plan-layer-menu-button { display: none; }
 /* スマホの「一覧」ボタン（3D・平面図の切り替えの右）。2026-11-18 */
 .phone-list-button { display: none; }
 .unified-shell.phone-layout .phone-list-button {
@@ -5362,3 +5361,33 @@ input[type="color"]::-moz-color-swatch { border: 0; border-radius: 0; }
 }
 .unified-shell.phone-layout .phone-house-lights.on { border-color: var(--kin); color: var(--kin); }
 .project-library-open-actions { display: flex; flex-direction: column; gap: 6px; align-items: stretch; }
+
+/* 平面図の「細かい表示」（PC）。帯には壁・客席などの 4 つだけを出し、名前などはこの小窓にまとめる。2026-11-18 */
+.unified-shell:not(.phone-layout) .plan-map-layerbar { position: relative; }
+.unified-shell:not(.phone-layout) .plan-map-layerbar > button.plan-layer-menu-button { display: inline-flex; gap: 4px; }
+.unified-shell:not(.phone-layout) .plan-layer-menu {
+  display: grid; gap: 2px; position: absolute; z-index: 20; top: 100%; left: 0; margin-top: 6px; min-width: 300px; padding: 8px;
+  border: 1px solid rgba(224,180,92,.6); border-radius: 8px; background: #191619; box-shadow: 0 8px 24px rgba(0,0,0,.5);
+}
+.unified-shell:not(.phone-layout) .plan-layer-menu-basic { display: none !important; }
+.unified-shell:not(.phone-layout) .plan-layer-menu-row { display: flex; align-items: center; gap: 10px; min-height: 36px; padding: 0 6px; color: var(--ink-primary); font-size: 14px; cursor: pointer; }
+.unified-shell:not(.phone-layout) .plan-layer-menu-row input { width: 18px; height: 18px; accent-color: var(--kin); }
+.unified-shell:not(.phone-layout) .plan-layer-menu-close { min-height: 34px; margin-top: 4px; border: 1px solid rgba(255,255,255,.2); border-radius: 6px; background: none; color: var(--ink-secondary, #cbbfb1); font-size: 13px; }
+/* 広告の帯（64px）が出ているときは、平面図だけの画面をそのぶん低くする。高くすると、上の「3D／平面図／並べる」を隠してしまう */
+.unified-shell.workspace-layout.desk-plan-full.has-ad-footer { --map-height: calc(100dvh - var(--header-height) - 64px - 64px) !important; }
+/* 視点の選択欄（上の帯）。5 つのボタンの代わり。2026-11-18 */
+.toolbar .toolbar-view-select { display: inline-flex; align-items: center; gap: 8px; flex: none; padding: 0 4px; color: var(--ink-secondary, #cbbfb1); font: 500 13px var(--font-sans); }
+.toolbar .toolbar-view-select select {
+  min-height: 36px; padding: 0 28px 0 10px; border: 1px solid #4c4246; border-radius: 5px; background: #1c1719; color: var(--ink-primary);
+  font: 600 14px var(--font-sans); cursor: pointer;
+}
+@media (max-width: 600px) { .toolbar .toolbar-view-select { display: none; } }
+.unified-shell:not(.phone-layout) .plan-map-layerbar { overflow: visible; z-index: 6; }
+/* 「画像で保存」は平面図の道具の行の右に置く（帯を 1 段に収めるため）。スマホでは出さない */
+.unified-shell .plan-map-caption .plan-save-image-caption {
+  margin-left: auto; min-height: 32px; padding: 0 12px; border: 1px solid #4c4246; border-radius: 5px; background: transparent;
+  color: var(--ink-primary); font: 500 13px var(--font-sans); cursor: pointer;
+}
+.unified-shell .plan-map-caption .plan-save-image-caption:hover { border-color: var(--kin); }
+.unified-shell.phone-layout .plan-map-caption .plan-save-image-caption { display: none !important; }
+.unified-shell .plan-map-caption .plan-save-image-caption ~ .plan-map-close { margin-left: 8px !important; }

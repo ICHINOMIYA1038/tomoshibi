@@ -6,7 +6,7 @@ import { WorkspaceNotice, WorkspaceNotices } from './ui/WorkspaceNotice'
 import { UpdateNotice } from './ui/UpdateNotice'
 import { hasDeviceStorage } from './io/workspaceStorage'
 import { useEffect, useRef, useState } from 'react'
-import { FixtureHandleButtons, ToolButtons } from './ui/ToolButtons'
+import { ToolButtons } from './ui/ToolButtons'
 import { canDelete, deleteSelection, duplicateSelection } from './objectActions'
 import { Canvas, useThree } from '@react-three/fiber'
 import { OrbitControls, PerspectiveCamera } from '@react-three/drei'
@@ -530,16 +530,11 @@ export default function App() {
           </div>
           <span className="toolbar-divider" aria-hidden="true" />
         </>}
-        <span className="toolbar-label">道具</span>
+        {/* 上の帯は「見え方・表示・道具・視点」だけにする（2026-11-18 オーナー「メニューも増えすぎてよくわからん」）。
+            照明の本体／狙いの切り替えは、右の設定欄と 3D の球で行う */}
         <ToolButtons />
-        <FixtureHandleButtons />
         <span className="toolbar-divider" aria-hidden="true" />
-        <span className="toolbar-label">視点</span>
-        <ViewButton view="audience" label="客席" hint="1" />
-        <ViewButton view="aerial" label="上から" hint="2" />
-        <ViewButton view="sidewing" label="袖" hint="3" />
-        <ViewButton view="free" label="自由" hint="4" />
-        {hasAudienceBlocks && <ViewButton view="house" label="客席全体" hint="5" />}
+        <ViewSelect hasHouse={hasAudienceBlocks} />
         <HouseLightsToggle />
         {!isMockPreview && <XRButton />}
       </div>
@@ -837,20 +832,21 @@ function HouseLightsToggle() {
   )
 }
 
-function ViewButton({ view, label, hint }: { view: string; label: string; hint?: string }) {
+const VIEW_CHOICES = [
+  ['audience', '客席', '1'], ['aerial', '上から', '2'], ['sidewing', '袖', '3'], ['free', '自由', '4'], ['house', '客席全体', '5'],
+] as const
+
+/** 視点の選択。5 つのボタンを並べず、1 つの選択欄にする。数字キー 1〜5 でも切り替えられる */
+function ViewSelect({ hasHouse }: { hasHouse: boolean }) {
   const cur = useStore(s => s.settings.cameraView)
   const update = useStore(s => s.updateSettings)
-  return (
-    <button
-      onClick={() => cur === view
-        ? window.dispatchEvent(new Event('tomoshibi-reaim-camera'))
-        : update({ cameraView: view as any })}
-      style={{ background: cur === view ? 'rgba(50, 90, 160, 0.8)' : undefined }}
-      title={hint ? `キー ${hint}` : undefined}
-    >
-      {label}
-    </button>
-  )
+  return <label className="toolbar-view-select" title="視点（キー 1〜5）。同じ視点をもう一度選ぶと、向きを戻します">
+    <span>視点</span>
+    <select value={cur} onChange={event => update({ cameraView: event.target.value as any })}>
+      {VIEW_CHOICES.filter(([view]) => view !== 'house' || hasHouse || cur === 'house').map(([view, label, key]) =>
+        <option key={view} value={view}>{label}（{key}）</option>)}
+    </select>
+  </label>
 }
 
 function SelectionStatusHint() {

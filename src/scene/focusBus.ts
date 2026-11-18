@@ -51,3 +51,9 @@ export function focusSelection() {
     focusOn({ center: [offset[0], 0, offset[1] - 3], radius: Math.max(layout.stageWidth, layout.stageDepth) / 2 })
   }
 }
+
+// 一覧（ヒエラルキー）で選んだときは、右の欄を設定の所までスクロールしない（一覧が見えなくなる。2026-11-18 オーナー）。
+// 一覧が選ぶ直前に印を付け、ControlPanel のスクロールが一度だけ読む
+let pickedFromList = false
+export function markListPick() { pickedFromList = true }
+export function takeListPick() { const value = pickedFromList; pickedFromList = false; return value }
