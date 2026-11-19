@@ -46,7 +46,8 @@ export function AccountMenu({ floating = false, onOpenSettings }: { floating?: b
     return (
       <div className={rootClass}>
         {onOpenSettings && <button type="button" className="account-menu-settings" aria-label="設定" title="設定" onClick={onOpenSettings}>⚙</button>}
-        <a className="account-menu-trigger login" href={loginUrl()}>ログイン</a>
+        {/* 登録とログインは同じ画面（戯曲 ID で始める）なので、入口は 1 つにする（2026-11-19 オーナー決定） */}
+        <a className="account-menu-trigger login" href={loginUrl()}><span>新規登録</span><span className="account-menu-login-sep">・</span><span>ログイン</span></a>
       </div>
     )
   }

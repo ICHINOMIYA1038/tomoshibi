@@ -2402,6 +2402,7 @@ body.embed .panel-body h2 { font-size: 13px; }
 }
 /* ログアウト中の「ログイン」。指で押しやすいよう高さ 44px を確保する */
 .account-menu-trigger.login {
+  gap: 0;
   min-height: 44px;
   padding: 0 16px;
   border-radius: 6px;
@@ -4679,6 +4680,9 @@ body.embed .workspace-switch { display: none; }
   .unified-shell.workspace-layout .workspace-history button { min-width: 32px; }
   .unified-shell .workspace-header > .account-menu-root { margin-left: 0; }
   .unified-shell .workspace-header > .account-menu-root .account-menu-trigger.login { padding: 0 6px; font-size: 10.5px; }
+  /* 「新規登録・ログイン」は狭い幅では 2 行にする（・は消す） */
+  .unified-shell .workspace-header > .account-menu-root .account-menu-trigger.login { flex-direction: column; justify-content: center; line-height: 1.15; }
+  .unified-shell .workspace-header > .account-menu-root .account-menu-login-sep { display: none; }
 }
 
 /* アプリの中で出す確認（askConfirm）。iOS アプリの WebView はブラウザの確認を出さないため */

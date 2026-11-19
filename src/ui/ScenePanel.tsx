@@ -7,7 +7,7 @@ import {
   listSavedScenes, saveSceneLS, loadSceneLS, deleteSceneLS, makeShareURL,
 } from '../io/sceneIO'
 import {
-  loginUrl, signupUrl, logoutUrl,
+  loginUrl, logoutUrl,
   listCloudScenes, saveCloudSceneNew, updateCloudScene, loadCloudScene, deleteCloudScene,
   type CloudSceneMeta, CloudError,
 } from '../io/cloud'
@@ -62,7 +62,7 @@ function CloudProjectCreate() {
   if (loading) return null
   if (!user) return <section className="scene-section"><header className="scene-section-h"><span>アカウントに保存</span></header>
     <p className="scene-local-note">ログインすると、プロジェクトをアカウントに保存して別の端末でも開けます。</p>
-    <a href={loginUrl()}>ログインする →</a></section>
+    <a href={loginUrl()}>新規登録・ログイン</a></section>
   if (active) return <section className="scene-section"><header className="scene-section-h"><span>アカウントに保存</span></header>
     <p className="scene-local-note">「{active.name}」は編集後にクラウドへ自動保存されます。</p></section>
   const save = async () => {
@@ -261,13 +261,10 @@ function CloudScenes() {
         </p>
         <div className="scene-actions">
           <button className="scene-cta primary" onClick={() => { location.href = loginUrl() }}>
-            ログイン
-          </button>
-          <button className="scene-cta-sub" onClick={() => { location.href = signupUrl() }}>
-            新規登録
+            新規登録・ログイン
           </button>
         </div>
-        <p className="scene-login-note">戯曲 ID（戯曲図書館・戯曲パレットと共通のアカウント）でログインします</p>
+        <p className="scene-login-note">戯曲 ID（戯曲図書館・戯曲パレットと共通のアカウント）で始めます。登録とログインは同じ画面です</p>
       </div>
     )
   }
