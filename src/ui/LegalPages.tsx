@@ -212,11 +212,11 @@ export function TokushohoPage() {
           <tr><th>URL</th><td><a href={SERVICE.url}>{SERVICE.url}</a></td></tr>
           <tr><th>販売価格</th><td>Pro プラン: 月額 {SERVICE.proPriceMonthly} 円(消費税込)</td></tr>
           <tr><th>販売価格以外の必要料金</th><td>本サービス利用に必要な通信料は利用者様負担となります。</td></tr>
-          <tr><th>お支払い方法</th><td>クレジットカード決済 (Visa / Mastercard / American Express / JCB 等、決済事業者の対応範囲による)</td></tr>
-          <tr><th>お支払い時期</th><td>初回: お申し込み時にお客様のクレジットカードから即時決済<br />2回目以降: 各更新日 (毎月、お申し込み日と同日) に自動更新・自動決済</td></tr>
+          <tr><th>お支払い方法</th><td>Web 版: クレジットカード決済（Stripe。Visa / Mastercard / American Express / JCB 等、決済事業者の対応範囲による）<br />iOS アプリ: App Store のアプリ内課金（Apple ID に登録したお支払い方法）</td></tr>
+          <tr><th>お支払い時期</th><td>初回: お申し込み時に即時決済<br />2回目以降: 各更新日 (毎月、お申し込み日と同日) に自動更新・自動決済（App Store でのお申し込みは、Apple の定める時期に決済されます）</td></tr>
           <tr><th>サービスの提供時期</th><td>決済完了後、即時に有料機能をご利用いただけます。</td></tr>
-          <tr><th>返品・キャンセルについて</th><td>デジタルサービスの性質上、決済完了後の返金は原則としてお受けしておりません。ただし、当方の重大な過失または法令に基づく場合はこの限りではありません。</td></tr>
-          <tr><th>解約について</th><td>いつでも本サービス内の「Pro プラン管理」画面からご自身で解約可能です。次回更新日の前日までに解約手続きを行うことで、以降の課金は停止されます。当該課金期間の残日数分は引き続き有料機能をご利用いただけます。</td></tr>
+          <tr><th>返品・キャンセルについて</th><td>デジタルサービスの性質上、決済完了後の返金は原則としてお受けしておりません。ただし、当方の重大な過失または法令に基づく場合はこの限りではありません。App Store でのお申し込みの返金は、Apple の定める手続きでお申し出ください。</td></tr>
+          <tr><th>解約について</th><td>Web でお申し込みの方は、アカウントの画面の「契約の管理」から、App Store でお申し込みの方は、iPhone の「設定」→ 自分の名前 →「サブスクリプション」から、いつでもご自身で解約できます。次回更新日の前日までに解約手続きを行うことで、以降の課金は停止されます。当該課金期間の残日数分は引き続き有料機能をご利用いただけます。</td></tr>
           <tr><th>動作環境</th><td>WebGL 対応の最新のウェブブラウザ (Google Chrome / Safari / Firefox / Edge 等)</td></tr>
         </tbody>
       </table>
@@ -230,8 +230,8 @@ export function ProPage() {
   return (
     <Layout title="Pro プラン">
       <p className="pro-lead">{isPro
-        ? 'Proプランをご利用中です。プロジェクトを10件まで保存できます。'
-        : <>{SERVICE.name}で複数の舞台を計画する方へ。<br />クラウドに10件まで保存できるProプラン。</>}</p>
+        ? 'Proプランをご利用中です。プロジェクトを10件まで保存でき、広告は表示されません。'
+        : <>{SERVICE.name}で複数の舞台を計画する方へ。<br />アカウントに10件まで保存でき、広告が出なくなるProプラン。</>}</p>
 
       <div className="pro-price-card">
         {isPro && <h2 style={{ marginTop: 0 }}>現在のプラン：Pro <span style={{ fontSize: 14 }}>契約中</span></h2>}
@@ -250,8 +250,9 @@ export function ProPage() {
         </thead>
         <tbody>
           <tr><td>演出プランの基本機能</td><td>◯</td><td>◯</td></tr>
-          <tr><td>基本の器具プロファイル (Fresnel / PAR / LED)</td><td>◯</td><td>◯</td></tr>
-          <tr><td>クラウドへのプロジェクト保存</td><td>2件まで</td><td><strong>10件まで</strong></td></tr>
+          <tr><td>すべての照明器具</td><td>◯</td><td>◯</td></tr>
+          <tr><td>アカウントへのプロジェクト保存</td><td>2件まで</td><td><strong>10件まで</strong></td></tr>
+          <tr><td>広告</td><td>あり</td><td><strong>なし</strong></td></tr>
           <tr><td>優先サポート</td><td>—</td><td>◯</td></tr>
         </tbody>
       </table>
@@ -260,20 +261,20 @@ export function ProPage() {
       <ul>
         <li>初回課金は Pro プラン申し込み時に即時決済されます</li>
         <li>2回目以降は毎月同日に自動更新されます</li>
-        <li>解約はいつでも本サービス内の「Pro プラン管理」画面から可能です</li>
+        <li>解約はいつでもできます。Web で申し込んだ方はアカウントの画面の「契約の管理」から、App Store で申し込んだ方は iPhone の「設定」→ 自分の名前 →「サブスクリプション」から解約します</li>
         <li>解約後も、次回更新日までは Pro 機能を引き続きご利用いただけます</li>
       </ul>
 
       <h2>よくあるご質問</h2>
       <dl className="faq">
         <dt>Free プランでも使い続けられますか?</dt>
-        <dd>はい。演出プランの基本機能は Free プランでも使えます。Pro プランではクラウドに保存できるプロジェクトが 10 件になります。</dd>
+        <dd>はい。演出プランの基本機能は Free プランでも使えます。Pro プランでは、アカウントに保存できるプロジェクトが 10 件になり、広告が出なくなります。</dd>
         <dt>いつでも解約できますか?</dt>
-        <dd>はい。解約は本サービス内から数クリックで完了します。違約金等は一切かかりません。</dd>
+        <dd>はい。Web で申し込んだ方はアカウントの画面の「契約の管理」から、App Store で申し込んだ方は iPhone の「設定」から解約できます。違約金等は一切かかりません。</dd>
         <dt>Pro プランを解約した後、保存していたプロジェクトはどうなりますか?</dt>
         <dd>保存済みのプロジェクトは残り、閲覧・編集できます。Free プランの上限である 2 件を超えている場合は、新しいプロジェクトの追加はできません。</dd>
         <dt>領収書は発行されますか?</dt>
-        <dd>Stripe 決済の場合、決済完了時に自動で領収書メールが送信されます。</dd>
+        <dd>Web（Stripe）でのお申し込みは、決済完了時に領収書のメールが届きます。App Store でのお申し込みは、Apple から領収書のメールが届き、App Store の購入履歴でも確認できます。</dd>
       </dl>
 
       <p className="legal-note"><a href="/tokushoho">特定商取引法に基づく表記</a> / <a href="/terms">利用規約</a> / <a href="/privacy">プライバシーポリシー</a></p>
@@ -290,6 +291,7 @@ function ExistingWebSubscription() {
   return <details style={{ borderTop: '1px solid rgba(212,175,111,0.25)', padding: '20px 0', margin: '24px 0' }}>
     <summary style={{ cursor: 'pointer', minHeight: 44, display: 'list-item', alignContent: 'center' }}>購入済みなのにProにならない方</summary>
     <div style={{ padding: '8px 0 16px' }}>
+    {hasAppBridge() && <p>App Store で購入した方は、上の「購入を復元」を押してください。以下は Web（Stripe）で契約した方向けです。</p>}
     <BillingVerification />
     <p>契約の管理・解約だけ行う場合はこちら。</p>
     <button className="pro-subscribe-btn" disabled={busy} onClick={async () => {
@@ -354,7 +356,7 @@ function ProSubscribeButton() {
     return (
       <>
         <a href={loginUrl()} className="pro-subscribe-btn">新規登録・ログインして申し込む</a>
-        <div className="pro-subscribe-note">戯曲図書館アカウント (Google) でログインが必要です</div>
+        <div className="pro-subscribe-note">戯曲 ID（戯曲図書館と共通のアカウント）でのログインが必要です</div>
       </>
     )
   }
@@ -450,7 +452,7 @@ export function ContactPage() {
       <ul>
         <li><strong>サービス全般</strong> — 使い方・機能の質問、動作環境の相談</li>
         <li><strong>不具合報告</strong> — 表示崩れ、エラー、動作しない機能等(可能であればスクリーンショット添付)</li>
-        <li><strong>Pro プラン</strong> — 決済トラブル、領収書再発行、返金相談</li>
+        <li><strong>Pro プラン</strong> — 決済トラブル、領収書再発行、返金相談（App Store での購入の返金は Apple へ）</li>
         <li><strong>要望・提案</strong> — 新機能のリクエスト、改善案</li>
         <li><strong>その他</strong> — 上記以外の全て</li>
       </ul>
@@ -464,10 +466,10 @@ export function ContactPage() {
 
       <h2>Pro プランに関するお問い合わせ</h2>
       <p>
-        Pro プラン加入者の方は、決済・領収書・支払い方法の変更・解約について
-        <strong>Stripe カスタマーポータル</strong> から直接操作いただけます
-        (画面右上のアカウントメニューからアクセスできます)。
-        ポータルで解決しない場合のみ上記メールにご連絡ください。
+        Web でお申し込みの方は、アカウントの画面（PC は右上のアイコン、スマホは「⋯」→「アカウント」）の
+        <strong>「契約の管理」</strong>から、領収書・支払い方法の変更・解約ができます。
+        App Store でお申し込みの方は、iPhone の「設定」→ 自分の名前 →「サブスクリプション」で管理し、返金は Apple にお申し出ください。
+        それで解決しない場合は、上記のメールにご連絡ください。
       </p>
 
       <h2>特定商取引法上の表記</h2>
@@ -645,13 +647,13 @@ export function AccountPage() {
     <table className="legal-table account-page-table">
       <tbody>
         <tr><th>プラン</th><td>{isPro ? <>Pro{until && <span className="account-page-note">（{until} まで）</span>}</> : 'Free'}</td></tr>
-        <tr><th>アカウントのプロジェクト</th><td>{count === null ? '—' : `${count} 件`}（{user.maxProjects} 件まで）<a className="account-page-inline" href="/studio/projects/">一覧を見る</a></td></tr>
+        <tr><th>アカウントのプロジェクト</th><td>{count === null ? '—' : count} / {user.maxProjects} 件<a className="account-page-inline" href="/studio/projects/">一覧を見る</a></td></tr>
       </tbody>
     </table>
 
     <h2>契約</h2>
     {isPro && user.billing === 'app_store'
-      ? <p><a className="account-page-btn" href={APP_STORE_SUBSCRIPTIONS_URL}>契約の管理（App Store）</a></p>
+      ? <><p><a className="account-page-btn" href={APP_STORE_SUBSCRIPTIONS_URL}>契約の管理（App Store）</a></p><p className="account-page-sub">iPhone の「設定」→ 自分の名前 →「サブスクリプション」からも、解約・確認ができます。</p></>
       : isPro
         ? <p><button type="button" className="account-page-btn" onClick={openPortal} disabled={portalBusy}>{portalBusy ? '移動中…' : '契約の管理（領収書・支払い方法・解約）'}</button></p>
         : <p>いまは Free プランです。<a className="account-page-btn" href="/pro">Pro プランを見る</a></p>}
