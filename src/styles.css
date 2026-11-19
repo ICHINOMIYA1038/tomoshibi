@@ -5537,3 +5537,9 @@ button.library-guide-demo { font-family: inherit; cursor: pointer; }
 .unified-shell.workspace-layout.console-open:not(.map-hidden):not(.desk-split-side):not(.desk-plan-full) { --map-height: calc((100dvh - var(--header-height) - var(--desk-h)) * .5) !important; }
 .unified-shell.workspace-layout.console-open.has-ad-footer:not(.map-hidden):not(.desk-split-side):not(.desk-plan-full) { --map-height: calc((100dvh - var(--header-height) - 64px - var(--desk-h)) * .5) !important; }
 .unified-shell.workspace-layout.console-open .plan-resize-handle { display: none; }
+/* スマホの平面図：凡例の帯は図の上にかぶるので出さない。拡大・縮小は指 2 本でできるので「−」「＋」も出さない（2026-11-19） */
+@media (max-width: 600px) {
+  .unified-shell.phone-layout .plan-scope-legend { display: none !important; }
+  .unified-shell.phone-layout .plan-map-zoom button[aria-label="縮小"],
+  .unified-shell.phone-layout .plan-map-zoom button[aria-label="拡大"] { display: none !important; }
+}

@@ -214,7 +214,11 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
   const fixtureShown = (fixture: Fixture) => showOffFixtures || fixture.enabled || (keySelection.kind === 'fixture' && keySelection.id === fixture.id)
   const fixtureNumber = (fixture: Fixture, index: number) => (typeof fixture.number === 'string' && fixture.number.trim()) || String(index + 1)
   // 器具表に載せる照明（番号は器具の並び順か、付けた番号）
-  const keyFixtures = showFixtures && !fixtureNamesOnPlan
+  // スマホでは器具表が図を小さくするので、初めは出さない。「細かい表示」の「器具表」で出す（2026-11-19 オーナー「スマホの平面図がごちゃごちゃ」）
+  const phoneView = typeof window !== 'undefined' && window.matchMedia('(max-width: 600px)').matches
+  const [keyOnPhone, setKeyOnPhone] = useState(() => { try { return localStorage.getItem('tomoshibi.planKeyPhone') === '1' } catch { return false } })
+  useEffect(() => { try { localStorage.setItem('tomoshibi.planKeyPhone', keyOnPhone ? '1' : '0') } catch { /* 覚えられなくても使える */ } }, [keyOnPhone])
+  const keyFixtures = showFixtures && !fixtureNamesOnPlan && (!phoneView || keyOnPhone)
     ? fixtures.map((fixture, index) => ({ fixture, number: fixtureNumber(fixture, index) })).filter(({ fixture }) => fixtureShown(fixture))
     : []
   MAP = mapFrame(mapAspect, keyFixtures.length)
@@ -1313,6 +1317,7 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
               ['舞台セット', showSetPieces, setShowSetPieces, true],
               ['照明', showFixtures, setShowFixtures, true],
               ['役者', showPerformers, setShowPerformers, true],
+              ...(phoneView ? [['器具表', keyOnPhone, setKeyOnPhone, false] as [string, boolean, (update: (value: boolean) => boolean) => void, boolean]] : []),
               ['役者・セットの名前', showLabels, setShowLabels, false],
               ['照明の名前を図に書く', fixtureNamesOnPlan, setFixtureNamesOnPlan, false],
               ['消えている照明', showOffFixtures, setShowOffFixtures, false],
