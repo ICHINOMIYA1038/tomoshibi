@@ -1981,8 +1981,10 @@ body.embed .panel-body h2 { font-size: 13px; }
   overflow-y: auto;
   min-height: 100vh;
   background: #0f0a06;
-  color: #f2e6cf;
-  font-family: 'Shippori Mincho', 'Noto Sans JP', serif;
+  /* 暗い地のまま読みやすくする（2026-11-19 オーナー「色合いかなあ。雰囲気は保ちつつ視認性を」）。
+     本文は細い明朝だと暗い地でかすれるのでゴシックの 16px にし、見出しだけ明朝で雰囲気を残す */
+  color: #f4ece0;
+  font-family: var(--font-sans);
   line-height: 1.85;
   padding: 32px 20px 80px;
 }
@@ -1997,31 +1999,33 @@ body.embed .panel-body h2 { font-size: 13px; }
 .legal-main {
   max-width: 760px;
   margin: 0 auto;
-  background: rgba(255,255,255,0.02);
-  border: 1px solid rgba(212,175,111,0.15);
+  background: #1a1410;
+  border: 1px solid rgba(212,175,111,0.22);
   border-radius: 10px;
   padding: 40px 44px;
 }
 .legal-main h1 {
-  font-size: 26px;
+  font-family: 'Shippori Mincho', 'Noto Sans JP', serif;
+  font-size: 28px;
   margin: 0 0 24px;
   color: #ffd9a3;
   border-bottom: 1px solid rgba(212,175,111,0.25);
   padding-bottom: 12px;
 }
 .legal-main h2 {
-  font-size: 17px;
+  font-family: 'Shippori Mincho', 'Noto Sans JP', serif;
+  font-size: 20px;
   margin: 28px 0 10px;
   color: #ffd9a3;
 }
-.legal-main p, .legal-main li, .legal-main dd { font-size: 14px; }
+.legal-main p, .legal-main li, .legal-main dd { font-size: 16px; }
 .legal-main ol, .legal-main ul { padding-left: 22px; }
-.legal-main a { color: #ffd9a3; }
+.legal-main a { color: #ffd9a3; text-underline-offset: 3px; }
 .legal-table {
   width: 100%;
   border-collapse: collapse;
   margin: 16px 0;
-  font-size: 14px;
+  font-size: 15px;
 }
 .legal-table th, .legal-table td {
   padding: 10px 12px;
@@ -2036,16 +2040,16 @@ body.embed .panel-body h2 { font-size: 13px; }
   color: #ffd9a3;
 }
 .legal-note {
-  font-size: 12px;
-  opacity: 0.75;
+  font-size: 13px;
+  color: #bfb2a0;
   margin-top: 20px;
 }
 .legal-foot {
   margin-top: 40px;
   padding-top: 20px;
   border-top: 1px solid rgba(212,175,111,0.15);
-  font-size: 12px;
-  opacity: 0.7;
+  color: #bfb2a0;
+  font-size: 13px;
 }
 .legal-foot nav a { margin: 0 4px; color: #ffd9a3; }
 
@@ -2280,8 +2284,8 @@ body.embed .panel-body h2 { font-size: 13px; }
 .pro-subscribe-btn:hover { filter: brightness(1.1); }
 .pro-subscribe-note {
   margin-top: 10px;
-  font-size: 11px;
-  opacity: 0.7;
+  font-size: 13px;
+  color: #bfb2a0;
 }
 
 .pro-subscribe-error {
@@ -5508,13 +5512,20 @@ input[type="color"]::-moz-color-swatch { border: 0; border-radius: 0; }
 .account-page-avatar { width: 64px; height: 64px; border-radius: 50%; object-fit: cover; flex: none; }
 .account-page-avatar.initial { display: grid; place-items: center; background: linear-gradient(135deg, #8a6a3e, #5a4128); color: #fff3df; font-size: 26px; font-weight: 700; }
 .account-page-name { font-size: 22px; font-weight: 700; }
-.account-page-sub { margin-top: 2px; color: #8f8478; font-size: 14px; }
+.account-page-sub { margin-top: 4px; color: #bfb2a0; font-size: 14px; }
 .account-page-table th { width: 160px; text-align: left; }
-.account-page-note { margin-left: 6px; color: #8f8478; font-size: 14px; }
+.account-page-note { margin-left: 6px; color: #bfb2a0; font-size: 14px; }
 .account-page-btn { display: inline-flex; align-items: center; min-height: 44px; margin: 4px 8px 4px 0; padding: 0 18px; border: 1px solid currentColor; border-radius: 4px; background: transparent; color: inherit; font: inherit; font-weight: 700; text-decoration: none; cursor: pointer; }
-.account-page-btn.danger { color: #b8432f; }
+.account-page-btn.danger { color: #ff8a6e; }
+/* 押してほしい 1 つ（ログイン）。塗りのボタンを文字の幅で置く */
+@media (max-width: 600px) {
+  .legal-page { padding: 20px 12px 64px; }
+  .legal-main { padding: 24px 18px; }
+  .account-page-table th { width: auto; white-space: nowrap; }
+}
+.legal-main .account-page-cta { display: inline-flex; width: auto; min-height: 48px; align-items: center; padding: 0 28px; text-decoration: none; color: #1a1208; }
 .account-page-btn:disabled { opacity: .6; cursor: default; }
-.account-page-err { color: #b8432f; }
+.account-page-err { color: #ff9a7b; }
 .account-page-who { align-items: flex-start; }
 .account-page-icon { display: flex; flex-direction: column; align-items: center; gap: 2px; flex: none; }
 .account-page-who-body { min-width: 0; flex: 1; }
@@ -5524,7 +5535,7 @@ input[type="color"]::-moz-color-swatch { border: 0; border-radius: 0; }
 .account-page-name-form label { font-size: 14px; font-weight: 700; }
 .account-page-name-form input { min-height: 44px; padding: 0 10px; border: 0; border-bottom: 2px solid currentColor; background: transparent; color: inherit; font: inherit; font-size: 18px; }
 .account-page-btn.quiet { border-color: transparent; }
-.account-page-done { margin: 8px 0 0; color: #3d7a46; }
+.account-page-done { margin: 8px 0 0; color: #8fd19a; }
 @media (max-width: 600px) {
   .account-page-who { flex-direction: column; gap: 12px; }
   .account-page-icon { flex-direction: row; gap: 8px; }
