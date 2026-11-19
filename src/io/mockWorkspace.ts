@@ -181,12 +181,28 @@ function scheduleSave() {
   saveTimer = setTimeout(() => { saveTimer = null; flushMockAutosave() }, SAVE_DELAY_MS)
 }
 
+function onlySceneSwitched(previous: string, state: State): boolean {
+  const active = state.productionPlan.activeSceneId
+  let before: Snapshot
+  try { before = JSON.parse(previous) as Snapshot } catch { return false }
+  if (before.productionPlan.activeSceneId === active) return false
+  return JSON.stringify({ ...before.productionPlan, activeSceneId: active }) === JSON.stringify(state.productionPlan)
+}
+
 function record(state: State) {
   if (applyingHistory || !installed || isPlaybackPreview()) return
   const next = capture(state)
   const nextSignature = signature(state)
   if (next === history[cursor]) {
     lastSignature = nextSignature
+    return
+  }
+  // シーンを切り替えただけ（プランの中身は同じ）なら、元に戻すの 1 段にしない。今の段を、切り替えたあとの姿に置き換える。
+  // 切り替えも 1 段になっていて、元に戻すを押すと編集ではなくシーンの移動が戻った（2026-11-19 の動作確認）
+  if (cursor >= 0 && cursor === history.length - 1 && history[cursor] && onlySceneSwitched(history[cursor], state)) {
+    history[cursor] = next
+    lastSignature = nextSignature
+    scheduleSave()
     return
   }
   const now = Date.now()

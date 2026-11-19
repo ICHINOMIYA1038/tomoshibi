@@ -208,8 +208,9 @@ export function sceneDisplayTitle(plan: ProductionPlan, id: string): string {
     const entry = entries[index]
     if (!isAutomaticSceneTitle(entry.title)) continue
     let number = index + 1
-    while (used.has(`${prefix}${number}`)) number++
-    const title = `${prefix}${number}`
+    // 「第1章1」だと読みにくかったので「第1章 シーン1」にする（2026-11-19 の動作確認）
+    while (used.has(`${prefix} シーン${number}`)) number++
+    const title = `${prefix} シーン${number}`
     if (entry.id === id) return title
     used.add(title)
   }
