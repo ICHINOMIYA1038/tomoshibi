@@ -1734,6 +1734,17 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
                     deg => updateSetPiece(piece.id, { rotation: [from[0], from[1] - deg * Math.PI / 180, from[2]] }))
                 }))
               }
+              // 役者も、選ぶと上に回す取っ手を出す（2026-11-19 オーナー「役者が回転できない」）。向き（facingDeg）はシーンごと
+              if (showPerformers && selectedPerformer && selectedPerformer.onStage !== false) {
+                const performer = selectedPerformer
+                const cx = mapX(performer.position[0]), cy = mapY(performer.position[2])
+                out.push(handle('rot-actor', cx, cy - markerSize * .62 * 1.6, `${performer.name || '役者'}の向きを変える`, lockedNow('performer', performer.id), event => {
+                  const from = Number.isFinite(performer.facingDeg) ? performer.facingDeg as number : 0
+                  // 図で時計回りに回すと、facingDeg は減る（向きの三角は (sin, cos) で描いている）
+                  dragRotate(event, [performer.position[0], performer.position[2]], performer.name || '役者',
+                    deg => updatePerformer(performer.id, { facingDeg: ((from - deg + 540) % 360) - 180 }))
+                }))
+              }
               const block = showShared && selection.kind === 'audience' ? audienceBlocks.find(item => item.id === selection.id) : undefined
               if (block) {
                 const seats = audienceSeatPositions(block)

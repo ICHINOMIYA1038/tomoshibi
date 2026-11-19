@@ -242,7 +242,7 @@ function ScenesSheet({ onDone }: { onDone: () => void }) {
     <div className="phone-sheet-foot">
       <button type="button" className="phone-primary" disabled={!lastChapterId}
         onClick={() => { if (lastChapterId) s().addSceneAt(lastChapterId, null); onDone() }}>＋ 最後にシーンを足す</button>
-      <button type="button" onClick={() => { s().addChapter(); onDone() }}>＋ 章を足す</button>
+      <button type="button" onClick={() => { s().addChapter() /* 足したあとも一覧を閉じない（続けて場面を足せるように。2026-11-19） */ }}>＋ 章を足す</button>
     </div>
   </>
 }

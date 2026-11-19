@@ -5543,3 +5543,10 @@ button.library-guide-demo { font-family: inherit; cursor: pointer; }
   .unified-shell.phone-layout .plan-map-zoom button[aria-label="縮小"],
   .unified-shell.phone-layout .plan-map-zoom button[aria-label="拡大"] { display: none !important; }
 }
+/* スマホの「細かい表示」：2 列にして、図にかぶる高さを半分ほどにする（2026-11-19 オーナー「メニューが被る」） */
+@media (max-width: 600px) {
+  .unified-shell.phone-layout .plan-layer-menu { grid-template-columns: 1fr 1fr; width: min(366px, calc(100vw - 24px)); column-gap: 4px; row-gap: 0; padding: 6px; }
+  .unified-shell.phone-layout .plan-layer-menu-row { min-height: 40px; padding: 0 4px; gap: 8px; font-size: 13px; line-height: 1.3; }
+  .unified-shell.phone-layout .plan-layer-menu-row input { width: 18px; height: 18px; flex: none; }
+  .unified-shell.phone-layout .plan-layer-menu-close { grid-column: 1 / -1; min-height: 36px; }
+}
