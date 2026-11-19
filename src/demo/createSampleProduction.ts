@@ -1,17 +1,17 @@
 // 見本の公演「ロミオとジュリエット」（シェイクスピア）。トップページ・使い方の動画・「見本の公演を開く」で使う（2026-11-18）。
 // 作品は著作権が切れている。台詞は翻訳の著作権を避けるため引かず、場面の名前と説明は自分の言葉で書く。
 // 実際の劇場の仕込みに近い組み方にしている（雨を待つ図書室で作った吊りを引き継ぐ）:
-// - 客席の吊り位置（FOH）から前明かり 3 灯、1 番バトンから舞台奥の地明かり 2 灯。実測の配光で演技の場所をむらなく覆う
-// - 4 番バトンから逆光 2 灯。ホリゾントは上から左右 2 灯（1 台だと中央だけ明るい）
+// - 客席の上のバトンから前明かり 3 灯、1 番バトンから中の地明かり 3 灯。実測の配光で演技の場所をむらなく覆う
+// - 4 番バトンから逆光 2 灯。ホリゾントは 3 番バトンから左右 2 灯を広く
 // - 芯の明かり: ピンの特別（場面ごとに狙いを変える。舞踏会のジュリエット、バルコニー、霊廟の棺台）、
 //   月明かり（木漏れ日のゴボ）、窓明かり（窓枠のゴボ）、下手・上手の横明かり
-// 器具は 14 灯（上限 16）。見本を開いた人が 2 灯は足せるようにしておく。
+// 器具は 15 灯（上限 16）。見本を開いた人が 1 灯は足せるようにしておく。
 import { useStore, type AudienceBlock, type Fixture, type SceneTriggerType } from '../store'
 import type { SetPiece } from '../types'
 import { MEASURED_FRESNEL_KEY } from '../photometric/measuredFresnel'
 import { MEASURED_CYC_KEY } from '../photometric/measuredCyc'
 import type { GoboPattern } from '../lighting/movingHead'
-import { templateParts } from '../stageParts'
+import { templateParts, type StagePart } from '../stageParts'
 
 type Vec3 = [number, number, number]
 type RGB = [number, number, number]
@@ -44,21 +44,26 @@ type Light = {
 }
 
 const LIGHTS: Light[] = [
-  { key: 'fohL', name: '前明かり・下手', number: '1', preset: 'Fresnel10', measured: 'fresnel', position: [-4.4, 8.6, 6.8], target: [-3.2, 1.4, -1.0], beam: 34, barnDoorAngles: { top: 3, left: 6 } },
-  { key: 'fohC', name: '前明かり・中央', number: '2', preset: 'Fresnel10', measured: 'fresnel', position: [0, 8.6, 6.8], target: [0, 1.4, -1.6], beam: 34, barnDoorAngles: { top: 3 } },
-  { key: 'fohR', name: '前明かり・上手', number: '3', preset: 'Fresnel10', measured: 'fresnel', position: [4.4, 8.6, 6.8], target: [3.2, 1.4, -1.0], beam: 34, barnDoorAngles: { top: 3, right: 6 } },
-  { key: 'usL', name: '奥の地明かり・下手', number: '4', preset: 'Fresnel10', measured: 'fresnel', position: [-3.4, 8, 0.8], target: [-3.4, 1.5, -5.0], beam: 40, barnDoorAngles: { top: 4 } },
-  { key: 'usR', name: '奥の地明かり・上手', number: '5', preset: 'Fresnel10', measured: 'fresnel', position: [3.4, 8, 0.8], target: [3.0, 1.5, -5.0], beam: 40, barnDoorAngles: { top: 4 } },
-  { key: 'backL', name: '逆光・下手', number: '6', preset: 'Fresnel10', measured: 'fresnel', position: [-3, 8, -5.2], target: [-2.4, 0, -1.4], beam: 44 },
-  { key: 'backR', name: '逆光・上手', number: '7', preset: 'Fresnel10', measured: 'fresnel', position: [3, 8, -5.2], target: [2.4, 0, -1.4], beam: 44 },
-  { key: 'cycL', name: 'ホリゾント・下手', number: '8', preset: 'CycWashStudy', measured: 'cyc', position: [-3.2, 7.2, -4.2], target: [-3.2, 3.6, -7.4], beam: 40 },
-  { key: 'cycR', name: 'ホリゾント・上手', number: '9', preset: 'CycWashStudy', measured: 'cyc', position: [3.2, 7.2, -4.2], target: [3.2, 3.6, -7.4], beam: 40 },
+  // 前明かり（客席の上のバトン）：舞台の前の方を下手・中央・上手の 3 つに分け、隣どうしを重ねてむらなく覆う
+  { key: 'fohL', name: '前明かり・下手', number: '1', preset: 'Fresnel10', measured: 'fresnel', position: [-4.2, 8.6, 6.8], target: [-4.0, 1.5, 0.2], beam: 44, barnDoorAngles: { top: 3, left: 3 } },
+  { key: 'fohC', name: '前明かり・中央', number: '2', preset: 'Fresnel10', measured: 'fresnel', position: [0, 8.6, 6.8], target: [0, 1.5, 0.0], beam: 44, barnDoorAngles: { top: 3 } },
+  { key: 'fohR', name: '前明かり・上手', number: '3', preset: 'Fresnel10', measured: 'fresnel', position: [4.2, 8.6, 6.8], target: [4.0, 1.5, 0.2], beam: 44, barnDoorAngles: { top: 3, right: 3 } },
+  // 中の地明かり（1 番バトン）：舞台の中ほどを 3 つに分けて真上寄りから。前明かりと重ねて、真ん中だけ明るいたまりを作らない
+  { key: 'usL', name: '中の地明かり・下手', number: '4', preset: 'Fresnel10', measured: 'fresnel', position: [-4.2, 8, 0.8], target: [-4.2, 1.5, -3.6], beam: 46, barnDoorAngles: { top: 4 } },
+  { key: 'usC', name: '中の地明かり・中央', number: '5', preset: 'Fresnel10', measured: 'fresnel', position: [0, 8, 0.8], target: [0, 1.5, -3.8], beam: 46, barnDoorAngles: { top: 4 } },
+  { key: 'usR', name: '中の地明かり・上手', number: '6', preset: 'Fresnel10', measured: 'fresnel', position: [4.2, 8, 0.8], target: [4.2, 1.5, -3.6], beam: 46, barnDoorAngles: { top: 4 } },
+  { key: 'backL', name: '逆光・下手', number: '7', preset: 'Fresnel10', measured: 'fresnel', position: [-3, 8, -5.2], target: [-2.4, 0, -1.4], beam: 44 },
+  { key: 'backR', name: '逆光・上手', number: '8', preset: 'Fresnel10', measured: 'fresnel', position: [3, 8, -5.2], target: [2.4, 0, -1.4], beam: 44 },
+  // ホリゾント：幕から 4m 離した 3 番バトンから広く当てる。近くから当てると上だけ山なりに明るく、下が暗い帯になっていた
+  { key: 'cycL', name: 'ホリゾント・下手', number: '9', preset: 'CycWashStudy', measured: 'cyc', position: [-3.4, 8, -2.7], target: [-3.4, 2.6, -7.0], beam: 60 },
+  { key: 'cycR', name: 'ホリゾント・上手', number: '10', preset: 'CycWashStudy', measured: 'cyc', position: [3.4, 8, -2.7], target: [3.4, 2.6, -7.0], beam: 60 },
   // ピンの特別。狙いは場面ごとに変える
-  { key: 'pin', name: 'ピン・特別', number: '10', preset: 'Source4_19', position: [0.6, 8, -0.95], target: [0, 1.2, -2.2], beam: 19 },
-  { key: 'moon', name: '月明かり', number: '11', preset: 'Source4_26', position: [5.6, 7.6, -5.6], target: [0.6, 0, -2.4], beam: 26, gobo: 'leaves' },
-  { key: 'window', name: '窓明かり', number: '12', preset: 'Source4_26', position: [-4.6, 5.0, -6.9], target: [-0.6, 0, -2.6], beam: 26, gobo: 'window' },
-  { key: 'sideL', name: '横明かり・下手', number: '13', preset: 'Source4_26', position: [-6.6, 4.6, -2.4], target: [-0.6, 0.4, -2.4], beam: 26 },
-  { key: 'sideR', name: '横明かり・上手', number: '14', preset: 'Source4_26', position: [6.6, 4.6, -2.0], target: [0.6, 0.4, -2.0], beam: 26 },
+  { key: 'pin', name: 'ピン・特別', number: '11', preset: 'Source4_19', position: [0.6, 8, -0.95], target: [0, 1.2, -2.2], beam: 19 },
+  { key: 'moon', name: '月明かり', number: '12', preset: 'Source4_26', position: [5.6, 7.6, -5.6], target: [0.6, 0, -2.4], beam: 26, gobo: 'leaves' },
+  { key: 'window', name: '窓明かり', number: '13', preset: 'Source4_26', position: [-4.6, 5.0, -6.9], target: [-0.6, 0, -2.6], beam: 26, gobo: 'window' },
+  // 横明かり：袖のタワーからエリスポで、向こう側の床へ落とす（光は壁を抜けるので、高く狙うと舞台の外のスモークが光った）。床の真ん中を狙っていた時は、2 灯が交わって細長い強いたまりになっていた（フレネルだと外への漏れでホリゾントに丸い明るみが出た）
+  { key: 'sideL', name: '横明かり・下手', number: '14', preset: 'Source4_36', position: [-7.6, 5.0, -3.1], target: [3.0, 0.2, -2.6], beam: 30 },
+  { key: 'sideR', name: '横明かり・上手', number: '15', preset: 'Source4_36', position: [7.6, 5.0, -3.1], target: [-3.0, 0.2, -2.4], beam: 30 },
 ]
 
 type Cue = { level: number; color?: RGB; target?: Vec3; position?: Vec3 }
@@ -136,7 +141,7 @@ const SCENES: Scene[] = [
       fohL: { level: 0.05, color: C.night }, fohC: { level: 0.07, color: C.night }, fohR: { level: 0.1, color: C.night },
       backL: { level: 0.16, color: C.steel }, backR: { level: 0.2, color: C.steel },
       cycL: { level: 0.12, color: C.skyNight }, cycR: { level: 0.12, color: C.skyNight },
-      pin: { level: 0.6, color: C.pale, position: [3.0, 8, -2.7], target: [3.2, 2.6, -5.0] }, moon: { level: 0.85, color: C.moon }, sideR: { level: 0.2, color: C.moon, target: [3.0, 1.2, -4.2] },
+      pin: { level: 0.5, color: C.pale, position: [3.2, 8, -3.9], target: [3.2, 2.4, -5.0] }, moon: { level: 0.85, color: C.moon }, sideR: { level: 0.2, color: C.moon },
     },
   },
   {
@@ -159,7 +164,7 @@ const SCENES: Scene[] = [
       fohL: { level: 0.1, color: C.amber }, fohC: { level: 0.12, color: C.amber }, fohR: { level: 0.1, color: C.amber },
       backL: { level: 0.3, color: C.red }, backR: { level: 0.3, color: C.red },
       cycL: { level: 0.4, color: C.skyRed }, cycR: { level: 0.4, color: C.skyRed },
-      sideL: { level: 0.7, color: C.amber }, sideR: { level: 0.7, color: C.red },
+      sideL: { level: 0.45, color: C.amber }, sideR: { level: 0.45, color: C.red },
     },
   },
   {
@@ -197,21 +202,59 @@ const SCENES: Scene[] = [
   },
 ]
 
-const block = (id: string, name: string, x: number, z: number, rows: number, columns: number): AudienceBlock => ({
+const block = (id: string, name: string, x: number, z: number, rows: number, columns: number, elevation = 0): AudienceBlock => ({
   id: `sample-${id}`, name, position: [x, z], rows, seatsPerRow: columns, rowSpacing: 0.9, seatSpacing: 0.62, rotationDeg: 0,
+  ...(elevation ? { elevation } : {}),
 })
+
+/**
+ * 劇場の作り（2026-11-19 オーナー「壁とかもちゃんと。舞台のイメージで客席とか導線とか」）
+ * - 額縁：舞台の前の端（z 2.3）に左右の袖壁と上の垂れ壁。口は幅 12m・高さ 6.5m
+ * - 客席：前の平場（6 列）と後ろの段床（2 列ずつ 3 段）。中央通路・左右の通路、あいだに横の通路。264 席
+ * - 客席の両脇と後ろの壁。横の通路の両端を出入口として空ける。前明かりを吊る客席の上のバトン
+ */
+const HOUSE_WALL = '#0f0d0c'
+const PROSCENIUM = '#151313'
+const RISER = '#2a2321'
+const housePart = (id: string, kind: StagePart['kind'], fields: Partial<StagePart>): StagePart =>
+  ({ id: `house-${id}`, kind, x: 0, z: 0, width: 1, depth: 0, height: 0, elevation: 0, rotationDeg: 0, edited: true, ...fields })
+const HOUSE_PARTS: StagePart[] = [
+  housePart('prosc-left', 'wall', { x: -7.8, z: 2.3, width: 3.6, height: 9, color: PROSCENIUM }),
+  housePart('prosc-right', 'wall', { x: 7.8, z: 2.3, width: 3.6, height: 9, color: PROSCENIUM }),
+  housePart('prosc-header', 'wall', { x: 0, z: 2.3, width: 12, height: 2.5, elevation: 6.5, color: PROSCENIUM }),
+  housePart('wall-left-front', 'wall', { x: -9.6, z: 6.65, width: 8.7, height: 9, rotationDeg: 90, color: HOUSE_WALL }),
+  housePart('wall-left-rear', 'wall', { x: -9.6, z: 14.8, width: 5.2, height: 9, rotationDeg: 90, color: HOUSE_WALL }),
+  housePart('wall-right-front', 'wall', { x: 9.6, z: 6.65, width: 8.7, height: 9, rotationDeg: -90, color: HOUSE_WALL }),
+  housePart('wall-right-rear', 'wall', { x: 9.6, z: 14.8, width: 5.2, height: 9, rotationDeg: -90, color: HOUSE_WALL }),
+  // 後ろの壁は低くする。高いと「客席全体」の視点（客席の後ろの上）から、後ろの段の客席が隠れた
+  housePart('wall-rear', 'wall', { x: 0, z: 17.4, width: 19.2, height: 3.2, color: HOUSE_WALL }),
+  ...[0.4, 0.8, 1.2].map((height, index) => housePart(`riser-${index + 1}`, 'platform', { x: 0, z: 12.45 + index * 1.8, width: 15.6, depth: 1.8, height, color: RISER })),
+  housePart('foh-batten', 'batten', { x: 0, z: 6.8, width: 12, elevation: 8.8 }),
+]
+const HOUSE_BLOCKS: AudienceBlock[] = [
+  block('front-left', '客席・前・下手', -4.3, 7.9, 6, 11),
+  block('front-right', '客席・前・上手', 4.3, 7.9, 6, 11),
+  ...[0.4, 0.8, 1.2].flatMap((elevation, index) => [
+    block(`rear-left-${index + 1}`, `客席・後ろ ${index + 1} 段・下手`, -4.3, 12.45 + index * 1.8, 2, 11, elevation),
+    block(`rear-right-${index + 1}`, `客席・後ろ ${index + 1} 段・上手`, 4.3, 12.45 + index * 1.8, 2, 11, elevation),
+  ]),
+]
 
 export function createSampleProduction() {
   const store = useStore.getState()
   store.loadPreset('empty')
   store.ensureScenes()
   store.updateProductionPlan({ projectTitle: 'ロミオとジュリエット' })
-  const venue = { stageShape: 'proscenium' as const, stageWidth: 14, stageDepth: 10, targetCapacity: 192, stageTemplate: 'proscenium' as const }
+  const venue = { stageShape: 'proscenium' as const, stageWidth: 14, stageDepth: 10, targetCapacity: 264, stageTemplate: 'proscenium' as const, wallColor: '#121010' }
   // 額縁舞台のひな形から、いちばん手前の袖幕だけ外す。客席からの前明かりを受けて、灰色の箱のように見えていた
-  store.updateVenueLayout({ ...venue, stageParts: templateParts('proscenium', venue).filter(part => !/^wing-(left|right)-1$/.test(part.id)) })
+  store.updateVenueLayout({ ...venue, stageParts: [
+    // 舞台の壁は黒く塗る（本物の劇場と同じ）。明るい色だと、横明かりが向こうの壁に当たって明るい面になっていた
+    ...templateParts('proscenium', venue).filter(part => !/^wing-(left|right)-1$/.test(part.id)).map(part => part.kind === 'wall' ? { ...part, color: '#121010', edited: true } : part),
+    ...HOUSE_PARTS,
+  ] })
   store.updateSettings({ showHouseLights: false, cameraView: 'audience', ambient: 0.07, hazeDensity: 0.07, exposure: 1.3, bloom: 0.25 })
   useStore.setState(state => ({
-    productionPlan: { ...state.productionPlan, audienceBlocks: [block('left', '客席・下手', -3.6, 10, 8, 12), block('right', '客席・上手', 3.6, 10, 8, 12)] },
+    productionPlan: { ...state.productionPlan, audienceBlocks: HOUSE_BLOCKS },
   }))
   const chapterIds = [useStore.getState().productionPlan.chapters![0].id]
   store.updateChapter(chapterIds[0], CHAPTERS[0])
@@ -257,10 +300,19 @@ export function createSampleProduction() {
       store.updateSetPiece(piece, { ...fields, position: want.at, ...(rotationY ? { rotation: [0, rotationY, 0] as Vec3 } : {}) })
       placed[key] = piece
     }
+    // 中の地明かりの中央は、下手・上手の平均で点ける（場面の look には書いていない）
+    const look: Look = { ...scene.look }
+    if (look.usC === undefined && (look.usL !== undefined || look.usR !== undefined)) {
+      const cueOf = (raw: number | Cue | undefined): Cue => typeof raw === 'number' ? { level: raw } : raw ?? { level: 0 }
+      const l = cueOf(look.usL), r = cueOf(look.usR)
+      look.usC = { level: (l.level + r.level) / 2, color: l.color ?? r.color }
+    }
     LIGHTS.forEach((light, index) => {
-      const raw = scene.look[light.key]
+      const raw = look[light.key]
       const cue: Cue = typeof raw === 'number' ? { level: raw } : raw ?? { level: 0 }
-      const level = Math.min(1, cue.level * (light.measured === 'fresnel' ? FRESNEL_GAIN : 1))
+      // 中の地明かりは舞台に近い真上寄りから当てるので、同じ値だと前明かりより強く、床の真ん中にたまりができる。距離の差を見込んで弱め、前明かりを少し足す
+      const balance = /^us/.test(light.key) ? 0.62 : /^foh/.test(light.key) ? 1.15 : 1
+      const level = Math.min(1, cue.level * balance * (light.measured === 'fresnel' ? FRESNEL_GAIN : 1))
       store.updateFixture(lightIds[index], {
         intensity: level, enabled: level > 0,
         ...(cue.color ? { color: cue.color } : {}),
