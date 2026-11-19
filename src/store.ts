@@ -608,7 +608,8 @@ export const useStore = create<State>((set, get) => ({
     const ox = ((cur % 5) - 2) * 0.9
     const oz = -1 + Math.floor(cur / 5) * 0.7
     const pos = atPos ?? [ox, size[1] / 2, oz]
-    const id = `sp${Date.now()}-${cur}`
+    // 「作った時刻＋いまの数」だと、同じミリ秒に消して足すと前の物と同じ id になり、3D に消えた物が残った（2026-11-19）
+    const id = groupId('sp')
     const sp: import('./types').SetPiece = {
       id, name: NAMES[kind], kind, size,
       color: '#876040',
@@ -693,7 +694,7 @@ export const useStore = create<State>((set, get) => ({
   duplicateSetPiece: (id) => {
     const piece = get().setPieces.find(x => x.id === id)
     if (!piece || get().setPieces.length >= LIMITS.setPieces) return
-    const copy = { ...piece, id: `sp${Date.now()}-${get().setPieces.length}`, name: piece.name + ' (複製)',
+    const copy = { ...piece, id: groupId('sp'), name: piece.name + ' (複製)',
       position: [piece.position[0] + 0.6, piece.position[1], piece.position[2]] as typeof piece.position }
     set(s => ({ setPieces: [...s.setPieces, copy], selection: { kind: 'setpiece', id: copy.id } }))
     recordChange({ kind: 'setpiece', id: copy.id, op: 'add', patch: {}, name: copy.name, sceneId: get().productionPlan.activeSceneId })
