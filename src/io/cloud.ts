@@ -181,9 +181,6 @@ export function logoutUrl(): string {
   if (isNativeApp()) return `${BASE}/api/tomoshibi/logout?callbackUrl=${encodeURIComponent(here())}`
   return `${PORTAL}/logout?return_to=${encodeURIComponent(here())}`
 }
-export function signupUrl(): string {
-  return loginUrl()
-}
 /**
  * アカウント設定と退会は戯曲 ID のポータルで行う（TOMOSHIBI 固有のアカウントは無い）。
  * iOS アプリ（1.0.4〜）はこの URL をログイン用のシートで開き、閉じると tomoshibi://account でアプリに戻る。

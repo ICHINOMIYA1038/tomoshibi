@@ -6,7 +6,7 @@ import {
   downloadSceneJSON, uploadSceneJSON, makeShareURL,
 } from '../io/sceneIO'
 import {
-  loginUrl, signupUrl, logoutUrl,
+  loginUrl, logoutUrl,
   listCloudScenes, saveCloudSceneNew, updateCloudScene, loadCloudScene, deleteCloudScene,
   type CloudSceneMeta, CloudError,
 } from '../io/cloud'
@@ -89,8 +89,7 @@ function CloudSection_DEPRECATED() {
         <span style={{ color: '#998468' }}>戯曲図書館アカウント(Google認証)を共通利用します。</span>
       </div>
       <div className="row" style={{ marginTop: 6 }}>
-        <button className="primary" onClick={() => { location.href = loginUrl() }}>ログイン</button>
-        <button onClick={() => { location.href = signupUrl() }}>新規登録</button>
+        <button className="primary" onClick={() => { location.href = loginUrl() }}>新規登録・ログイン</button>
       </div>
     </>)
   }

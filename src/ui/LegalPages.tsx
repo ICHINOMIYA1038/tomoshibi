@@ -352,7 +352,7 @@ function ProSubscribeButton() {
     }
     return (
       <>
-        <a href={loginUrl()} className="pro-subscribe-btn">ログインして申し込む</a>
+        <a href={loginUrl()} className="pro-subscribe-btn">新規登録・ログインして申し込む</a>
         <div className="pro-subscribe-note">戯曲図書館アカウント (Google) でログインが必要です</div>
       </>
     )
@@ -549,7 +549,7 @@ export function AccountPage() {
   if (loading && !user) return <Layout title="アカウント"><p>読み込み中…</p></Layout>
   if (!user) return <Layout title="アカウント">
     <p>ログインしていません。ログインすると、プロジェクトをアカウントに保存して、ほかの端末からも開けます。</p>
-    <p><a className="pro-subscribe-btn account-page-btn" href={loginUrl()}>ログイン</a></p>
+    <p><a className="pro-subscribe-btn account-page-btn" href={loginUrl()}>新規登録・ログイン</a></p>
   </Layout>
   const isPro = user.plan === 'pro'
   const until = user.planExpiresAt ? new Date(user.planExpiresAt).toLocaleDateString('ja-JP') : null
