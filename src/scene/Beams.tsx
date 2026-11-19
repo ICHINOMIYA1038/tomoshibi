@@ -81,20 +81,6 @@ export function Beams() {
     .sort((a, b) => Number(hasMeasuredFresnel(b)) - Number(hasMeasuredFresnel(a)))
     .slice(0, shadowLimit)
     .map(f => f.id))
-  // 投影画像（ゴボ・ホリゾントの模様）や影を使う照明の組が変わったら、マテリアルを組み直す。
-  // three は照明ごとの投影画像を番号で覚えていて、組が変わってもすぐには描き直さず、消した照明（窓明かり）の窓の模様が
-  // 別の照明（ホリゾント）に残って見えた（2026-11-19 の動作確認）
-  const scene = useThree(s => s.scene)
-  const invalidate = useThree(s => s.invalidate)
-  const lightSet = active.map(f => `${f.id}:${mapped.has(f.id) ? 'm' : ''}${shadowed.has(f.id) ? 's' : ''}:${goboOf(f) ?? ''}`).join('|')
-  useEffect(() => {
-    scene.traverse(object => {
-      const material = (object as THREE.Mesh).material as THREE.Material | THREE.Material[] | undefined
-      if (!material) return
-      for (const m of Array.isArray(material) ? material : [material]) m.needsUpdate = true
-    })
-    invalidate()
-  }, [lightSet, scene, invalidate])
   return (
     <group>
       {active.map(f => (
