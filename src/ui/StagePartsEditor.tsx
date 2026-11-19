@@ -85,6 +85,7 @@ export function StagePartsLayer({ selectedId, onSelect, tool = 'translate', toWo
     window.addEventListener('pointercancel', stop)
   }
   const begin = (event: PointerEvent<SVGElement>, item: StagePart, handle: Drag['handle']) => {
+    if (event.button !== 0) return
     event.preventDefault()
     event.stopPropagation()
     onSelect(item.id)

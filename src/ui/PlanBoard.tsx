@@ -458,6 +458,9 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
     select('setpiece', id)
   }
   const beginDrag = (event: PointerEvent<SVGElement>, kind: DragStart['kind'], id: string, from: StagePoint) => {
+    // 右ボタン（と中ボタン）では掴まない。掴むと図全体がポインタを捕まえ、右クリックの宛先が図になって、
+    // 物のメニューではなく「ここに役者を足す」などのメニューが出ていた（2026-11-19 の動作確認）
+    if (event.button !== 0) return
     event.preventDefault()
     event.stopPropagation()
     // 平面図でも道具に従う。「移動」のときだけドラッグで動かし、ほかの道具では選ぶだけ
@@ -496,6 +499,7 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
    * center は世界の (x, z)。onTurn には、押したときからの回転（度。画面で時計回りが正）を渡す。5° ごとに止まる
    */
   const dragRotate = (event: PointerEvent<SVGElement>, center: StagePoint, label: string, onTurn: (deg: number) => void) => {
+    if (event.button !== 0) return
     event.preventDefault()
     event.stopPropagation()
     const svg = svgRef.current
@@ -530,6 +534,7 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
   }
   // 全シーン共通の物（舞台・客席）をドラッグで動かす。動きは window で受ける（StagePartsLayer と同じ）
   const dragShared = (event: PointerEvent<SVGElement>, label: string, onMove: (dx: number, dz: number) => void, lock?: { kind: 'stage' | 'audience'; id: string }) => {
+    if (event.button !== 0) return
     event.preventDefault()
     event.stopPropagation()
     if (lock && lockedNow(lock.kind, lock.id)) { nudgeLock(); if (event.button === 0) mapZoom.beginPan(event); return }

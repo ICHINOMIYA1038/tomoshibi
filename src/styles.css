@@ -5593,3 +5593,31 @@ button.library-guide-demo { font-family: inherit; cursor: pointer; }
   .change-scope-bar.phone .change-scope-text { flex-basis: 100%; font-size: 12px; color: var(--ink-secondary, #cbbfb1); }
   .change-scope-bar.phone { flex-wrap: wrap; row-gap: 2px; }
 }
+
+/* スマホで押しにくかった小さいボタンを、44px 前後に広げる（2026-11-19 の動作確認で、一覧の行 26px・追加 25px・色の見本 30px などだった） */
+@media (max-width: 600px) {
+  .unified-shell.phone-layout .unity-panel .hierarchy-row, .unified-shell.phone-layout .unity-panel button.hierarchy-name, .unified-shell.phone-layout .unity-panel button.hierarchy-toggle { height: 40px; }
+  .unified-shell.phone-layout .unity-panel button.hierarchy-toggle { min-width: 32px; }
+  .unified-shell.phone-layout .unity-panel button.hierarchy-add-button { min-height: 40px; padding: 0 14px; }
+  .unified-shell .hierarchy-row button[aria-pressed] { min-width: 40px; min-height: 40px; }
+  .unified-shell .lock-button, .unified-shell .inspector-actions button { min-height: 44px; }
+  .unified-shell .gel-swatch-group > div { gap: 6px; }
+  .unified-shell .gel-swatch-group > div > button, .unified-shell .gel-swatch-free { width: 40px; height: 40px; min-width: 40px; }
+  .unified-shell .panel input[type="range"], .unified-shell input[type="range"] { height: 36px; }
+  .unified-shell input[type="checkbox"] { width: 22px; height: 22px; }
+  .unified-shell .stage-playback-controls button { min-height: 44px; }
+  .unified-shell.workspace-layout .mobile-workspace-views { padding: 2px 8px; }
+}
+/* PC で両脇の欄を開くと、上の道具の欄が 15〜45px はみ出して「客電」が切れた（2026-11-19 の動作確認）。狭いときは「視点」の字を消し、選ぶ欄を縮める */
+@media (min-width: 601px) and (max-width: 1500px) {
+  .toolbar .toolbar-view-select { gap: 4px; padding: 0 2px; }
+  .toolbar .toolbar-view-select select { max-width: 128px; }
+}
+@media (min-width: 601px) and (max-width: 1400px) {
+  .toolbar .toolbar-view-select > span:first-child { display: none; }
+}
+/* 卓のフェーダーの名前は 2 行まで出す（「前明かり・下」で切れて、どの照明か分からなかった。2026-11-19 の動作確認） */
+.console-name { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; min-height: 2.6em; word-break: break-all; }
+/* 設定の欄の見出しで、名前を切らずに折り返す（固定・複製・削除が並ぶと「フレネ…」になった。2026-11-19 の動作確認） */
+.inspector-head { flex-wrap: wrap; }
+.inspector-head strong { display: block; white-space: normal; overflow-wrap: anywhere; text-overflow: clip; overflow: visible; }

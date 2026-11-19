@@ -53,3 +53,12 @@ export function canvasPointerUp(event: PointerEvent | React.PointerEvent) {
     useObjectMenu.getState().open({ x, y, target: hit?.target ?? null, point: hit?.point })
   }, 40)
 }
+
+/** 長押しなどで、3D の画面に右クリックを送ったあとに開く（指していた物は recordHit で届く） */
+export function openFromPendingHit(x: number, y: number) {
+  window.setTimeout(() => {
+    const hit = pending && performance.now() - pending.at < 1500 ? pending : null
+    pending = null
+    useObjectMenu.getState().open({ x, y, target: hit?.target ?? null, point: hit?.point })
+  }, 40)
+}
