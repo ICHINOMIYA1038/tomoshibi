@@ -253,7 +253,6 @@ export function ProPage() {
           <tr><td>すべての照明器具</td><td>◯</td><td>◯</td></tr>
           <tr><td>アカウントへのプロジェクト保存</td><td>2件まで</td><td><strong>10件まで</strong></td></tr>
           <tr><td>広告</td><td>あり</td><td><strong>なし</strong></td></tr>
-          <tr><td>優先サポート</td><td>—</td><td>◯</td></tr>
         </tbody>
       </table>
 

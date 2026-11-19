@@ -662,7 +662,7 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
             </label>
             <label className={createTemplate === 'sample' ? 'selected' : ''}>
               <input type="radio" name="project-template" checked={createTemplate === 'sample'} onChange={() => setCreateTemplate('sample')} />
-              <span><strong>見本：ロミオとジュリエット</strong><small>8 場面・照明 15 灯・役者 6 人の組み上がった公演</small></span>
+              <span><strong>見本：ロミオとジュリエット</strong><small>8 シーン・照明 15 灯・役者 6 人の組み上がった公演</small></span>
             </label>
             {VENUE_STUDY_LINKS.map(study => <label key={study.kind} className={createTemplate === study.kind ? 'selected' : ''}>
               <input type="radio" name="project-template" checked={createTemplate === study.kind} onChange={() => setCreateTemplate(study.kind)} />

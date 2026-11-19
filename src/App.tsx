@@ -576,7 +576,7 @@ export default function App() {
         {deskLayout && <button type="button" aria-pressed={consoleOpen} onClick={() => { setConsoleOpen(!consoleOpen); setDisplayMenuOpen(false) }}>
           <span aria-hidden="true">{consoleOpen ? '✓' : ''}</span>卓（試作）</button>}
         <button type="button" aria-pressed={showSceneDirections} onClick={() => { setShowSceneDirections(value => !value); setDisplayMenuOpen(false) }}>
-          <span aria-hidden="true">{showSceneDirections ? '✓' : ''}</span>前の場面からの矢印</button>
+          <span aria-hidden="true">{showSceneDirections ? '✓' : ''}</span>前のシーンからの矢印</button>
       </div>}
 
       {phoneLayout && !playbackOpen && <PhoneChrome title={projectTitle ?? ''} view={mobileView}
@@ -585,9 +585,9 @@ export default function App() {
       {!playbackOpen && <ControlPanel planOpen={planOpen} />}
       {deskLayout && consoleOpen && !playbackOpen && <ConsoleDesk onClose={() => setConsoleOpen(false)} height={deskHeight} onResize={setDeskHeight} />}
       {deskLayout && !consoleOpen && !playbackOpen && <button type="button" className="console-reopen" onClick={() => setConsoleOpen(true)}
-        title="卓（試作）：フェーダーとキュー表で、場面ごとの照明のレベルを組みます">卓 ⌃</button>}
+        title="卓（試作）：フェーダーとキュー表で、シーンごとの照明のレベルを組みます">卓 ⌃</button>}
       {deskLayout && !outlineVisible && !playbackOpen && <button type="button" className="outline-reopen" onClick={() => setOutlineVisible(true)}
-        title="左の「公演の流れ」（章と場面の一覧）を開く">公演の流れ ›</button>}
+        title="左の「公演の流れ」（章とシーンの一覧）を開く">公演の流れ ›</button>}
       {deskLayout && inspectorHidden && !playbackOpen && <button type="button" className="inspector-reopen" onClick={() => setInspectorHidden(false)}
         title="右の「舞台の編集」の欄を開く">舞台の編集 ‹</button>}
       {!playbackOpen && <ScenePanel />}

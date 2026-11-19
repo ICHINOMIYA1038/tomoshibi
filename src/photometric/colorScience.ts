@@ -110,7 +110,7 @@ export interface IlluminanceRef {
 }
 export const STAGE_ILLUMINANCE_REFERENCES: IlluminanceRef[] = [
   { level: '暗転後', min: 0, max: 10, description: '客電消灯直後の最小視認' },
-  { level: '月夜の場面', min: 10, max: 50, description: '夜のシーン演出' },
+  { level: '月夜のシーン', min: 10, max: 50, description: '夜のシーン演出' },
   { level: '夕景', min: 50, max: 200, description: '夕方〜屋内薄明' },
   { level: '通常室内', min: 200, max: 500, description: '室内シーン標準' },
   { level: '主役顔ピン', min: 500, max: 1500, description: 'スポットライトの主光源' },
