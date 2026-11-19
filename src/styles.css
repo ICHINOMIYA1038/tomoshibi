@@ -5515,6 +5515,20 @@ input[type="color"]::-moz-color-swatch { border: 0; border-radius: 0; }
 .account-page-btn.danger { color: #b8432f; }
 .account-page-btn:disabled { opacity: .6; cursor: default; }
 .account-page-err { color: #b8432f; }
+.account-page-who { align-items: flex-start; }
+.account-page-icon { display: flex; flex-direction: column; align-items: center; gap: 2px; flex: none; }
+.account-page-who-body { min-width: 0; flex: 1; }
+.account-page-link { min-height: 32px; padding: 0 4px; border: 0; background: none; color: inherit; font: inherit; font-size: 14px; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.account-page-link:disabled { opacity: .6; cursor: default; }
+.account-page-name-form { display: grid; gap: 6px; max-width: 420px; }
+.account-page-name-form label { font-size: 14px; font-weight: 700; }
+.account-page-name-form input { min-height: 44px; padding: 0 10px; border: 0; border-bottom: 2px solid currentColor; background: transparent; color: inherit; font: inherit; font-size: 18px; }
+.account-page-btn.quiet { border-color: transparent; }
+.account-page-done { margin: 8px 0 0; color: #3d7a46; }
+@media (max-width: 600px) {
+  .account-page-who { flex-direction: column; gap: 12px; }
+  .account-page-icon { flex-direction: row; gap: 8px; }
+}
 button.library-guide-demo { font-family: inherit; cursor: pointer; }
 /* 通しで見るのあいだは右のボタンを隠すので、アカウントのアイコンだけを右端に置く（左に詰まってずれていた。2026-11-19） */
 .unified-shell.playback-open .account-menu-root:not(.floating) { margin-left: auto; }

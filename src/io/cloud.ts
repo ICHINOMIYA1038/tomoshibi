@@ -289,6 +289,13 @@ export async function createProCheckout(): Promise<{ url: string }> {
 }
 
 /** Stripe Customer Portal (解約・支払い方法変更) の URL を返す。 */
+/**
+ * 表示名とアイコンを変える（戯曲 ID 共通。戯曲図書館などの表示も変わる）。
+ * avatar は 256px 四方に縮めた画像の base64。null ならアイコンを外す
+ */
+export async function updateProfile(change: { displayName?: string; avatar?: { contentType: string; data: string } | null }): Promise<{ name: string | null; image: string | null }> {
+  return req<{ name: string | null; image: string | null }>('/profile', { method: 'POST', body: JSON.stringify(change) })
+}
 export async function createBillingPortal(): Promise<{ url: string }> {
   return req<{ url: string }>('/billing-portal', { method: 'POST', body: '{}' })
 }
