@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { APP_RESTORE_URL, hasAppBridge } from '../io/appBridge'
 import {
   createProCheckout,
@@ -12,6 +12,7 @@ import {
   isNativeApp,
   APP_STORE_SUBSCRIPTIONS_URL,
   NATIVE_PURCHASE_URL,
+  updateProfile,
 } from '../io/cloud'
 import { refreshSession, useCloudSession } from '../io/cloudSession'
 
@@ -527,6 +528,84 @@ function ProCancelPage() {
  * アカウント（/account）。戯曲 ID のページへ移らずに、名前・プラン・保存の件数・契約・ログアウトをここで見る（2026-11-19 オーナー
  * 「アカウント管理から戯曲図書館のページに飛ぶの嫌だ」）。退会だけは戯曲 ID ごと消えるので、戯曲 ID の確認画面で行う
  */
+/** 画像を真ん中で正方形に切り、256px 四方の JPEG にする（送る量を小さくする） */
+async function squareAvatar(file: File): Promise<{ contentType: string; data: string }> {
+  const url = URL.createObjectURL(file)
+  try {
+    const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+      const el = new Image()
+      el.onload = () => resolve(el)
+      el.onerror = () => reject(new Error('画像を読み込めませんでした。JPEG・PNG・WebP の画像を選んでください'))
+      el.src = url
+    })
+    const side = Math.min(img.naturalWidth, img.naturalHeight)
+    const canvas = document.createElement('canvas')
+    canvas.width = canvas.height = 256
+    const ctx = canvas.getContext('2d')
+    if (!ctx || !side) throw new Error('画像を読み込めませんでした')
+    ctx.drawImage(img, (img.naturalWidth - side) / 2, (img.naturalHeight - side) / 2, side, side, 0, 0, 256, 256)
+    const dataUrl = canvas.toDataURL('image/jpeg', .88)
+    return { contentType: 'image/jpeg', data: dataUrl.slice(dataUrl.indexOf(',') + 1) }
+  } finally {
+    URL.revokeObjectURL(url)
+  }
+}
+
+/** 名前とアイコン。戯曲 ID のもので、戯曲図書館などでも同じ名前・アイコンで出る（2026-11-19 オーナー「する」） */
+function ProfileEditor({ name, image }: { name: string | null; image: string | null }) {
+  const [editing, setEditing] = useState(false)
+  const [draft, setDraft] = useState(name ?? '')
+  const [busy, setBusy] = useState<'' | 'name' | 'icon'>('')
+  const [err, setErr] = useState('')
+  const [done, setDone] = useState('')
+  const fileRef = useRef<HTMLInputElement>(null)
+  const initial = name?.trim() ? Array.from(name.trim())[0].toUpperCase() : '?'
+  const run = async (kind: 'name' | 'icon', change: Parameters<typeof updateProfile>[0], message: string) => {
+    setBusy(kind); setErr(''); setDone('')
+    try {
+      await updateProfile(change)
+      await refreshSession()
+      setDone(message)
+      if (kind === 'name') setEditing(false)
+    } catch (e) {
+      setErr(e instanceof CloudError ? e.message : e instanceof Error ? e.message : String(e))
+    } finally {
+      setBusy('')
+    }
+  }
+  const pickIcon = async (file: File | undefined) => {
+    if (!file) return
+    try { await run('icon', { avatar: await squareAvatar(file) }, 'アイコンを変えました') } catch (e) { setErr(e instanceof Error ? e.message : String(e)) }
+    if (fileRef.current) fileRef.current.value = ''
+  }
+  return <section className="account-page-who">
+    <div className="account-page-icon">
+      {image ? <img className="account-page-avatar" src={image} alt="" /> : <span className="account-page-avatar initial" aria-hidden>{initial}</span>}
+      <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" hidden onChange={event => void pickIcon(event.target.files?.[0])} />
+      <button type="button" className="account-page-link" disabled={!!busy} onClick={() => fileRef.current?.click()}>{busy === 'icon' ? '保存中…' : 'アイコンを変える'}</button>
+      {image && <button type="button" className="account-page-link" disabled={!!busy} onClick={() => void run('icon', { avatar: null }, 'アイコンを外しました')}>外す</button>}
+    </div>
+    <div className="account-page-who-body">
+      {editing
+        ? <form className="account-page-name-form" onSubmit={event => { event.preventDefault(); void run('name', { displayName: draft }, '名前を変えました') }}>
+          <label htmlFor="account-name">名前</label>
+          <input id="account-name" value={draft} maxLength={50} autoFocus onChange={event => setDraft(event.target.value)} />
+          <div>
+            <button type="submit" className="account-page-btn" disabled={!!busy}>{busy === 'name' ? '保存中…' : '保存する'}</button>
+            <button type="button" className="account-page-btn quiet" disabled={!!busy} onClick={() => { setEditing(false); setDraft(name ?? '') }}>やめる</button>
+          </div>
+        </form>
+        : <>
+          <div className="account-page-name">{name ?? '名前は未設定'}</div>
+          <button type="button" className="account-page-link" onClick={() => { setDraft(name ?? ''); setEditing(true); setDone('') }}>名前を変える</button>
+        </>}
+      <div className="account-page-sub">戯曲 ID でログイン中です。名前とアイコンは、戯曲図書館などほかのサービスでも同じものが出ます。</div>
+      {done && <p className="account-page-done" role="status">{done}</p>}
+      {err && <p className="account-page-err" role="alert">{err}</p>}
+    </div>
+  </section>
+}
+
 export function AccountPage() {
   const { user, loading } = useCloudSession()
   const [count, setCount] = useState<number | null>(null)
@@ -553,15 +632,8 @@ export function AccountPage() {
   </Layout>
   const isPro = user.plan === 'pro'
   const until = user.planExpiresAt ? new Date(user.planExpiresAt).toLocaleDateString('ja-JP') : null
-  const initial = user.name?.trim() ? Array.from(user.name.trim())[0].toUpperCase() : '?'
   return <Layout title="アカウント">
-    <section className="account-page-who">
-      {user.image ? <img className="account-page-avatar" src={user.image} alt="" /> : <span className="account-page-avatar initial" aria-hidden>{initial}</span>}
-      <div>
-        <div className="account-page-name">{user.name ?? '名前は未設定'}</div>
-        <div className="account-page-sub">戯曲 ID でログイン中（戯曲図書館などと共通のアカウント）</div>
-      </div>
-    </section>
+    <ProfileEditor name={user.name} image={user.image} />
 
     <h2>プランと保存</h2>
     <table className="legal-table account-page-table">
