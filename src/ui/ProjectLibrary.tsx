@@ -581,12 +581,8 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
           </button>)}
         </div> : <div className="project-library-list-empty">まだプロジェクトがありません。上のボタンから作成できます。</div>}
         </>}
-        {/* ログイン前にこのブラウザ（アプリ）で作ったプロジェクトが残っているときだけ、小さく知らせる。
-            大きなボタンにしていたら「いらなくね？」と言われた（2026-11-18 オーナー） */}
-        {user && projects.length > 0 && <p className="project-library-transfer-note">
-          {hasDeviceStorage() ? 'このアプリ' : 'このブラウザ'}に、ログイン前のプロジェクトが {projects.length} 件残っています。
-          <button type="button" onClick={() => { setTransferKeys([]); setReplaceIds([]); setTransferMessage(''); setTransferOpen(true) }}>アカウントに移す</button>
-        </p>}
+        {/* ログイン前のプロジェクトの知らせは出さない（2026-11-19 オーナー「ログイン前のプロジェクトとして出すのも嫌」）。
+            アカウントへ移す画面は、ログインした直後（?import=local）に 1 度だけ開く */}
         {feedback && <div className="project-library-feedback" role="status">{feedback}</div>}
         {showAds && <AdSlot width="100%" height={100} className="ad-slot-library" />}
       </aside>
