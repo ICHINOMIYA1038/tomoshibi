@@ -436,7 +436,7 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
       ...(replacementNames.length ? [`上書きするプロジェクト\n${replacementNames.map(name => `・${name}`).join('\n')}`] : []),
       `保存したあと、${place}のプロジェクト${removeCount}件をすべて削除します。`,
       ...(left.length ? [`アカウントに引き継がなかった${left.length}件は、元に戻せません。\n${left.map(scene => `・${scene.name}`).join('\n')}`] : []),
-      ...(overLimit ? [`${user.plan === 'pro' ? '今のプラン' : 'Free プラン'}では、アカウントに保存できるのは${user.maxProjects}件までのため、すべては引き継げません。${user.plan === 'pro' ? '' : '残したい場合は、キャンセルして有料プランにするか、アカウントのプロジェクトと入れ替えてください。'}`] : []),
+      ...(overLimit ? [`${user.plan === 'pro' ? '今のプラン' : 'Free プラン'}では、アカウントに保存できるのは${user.maxProjects}件までのため、すべては引き継げません。${user.plan === 'pro' ? '' : '残したい場合は、キャンセルしてPro プランにするか、アカウントのプロジェクトと入れ替えてください。'}`] : []),
       `キャンセルすると、何も保存・削除しません。${place}のプロジェクトはそのまま残ります。`,
     ].join('\n\n')
     if (!await askConfirm(warning, '保存して削除する')) return
@@ -617,7 +617,7 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
       <section className="project-create-dialog" role="dialog" aria-modal="true" aria-labelledby="project-transfer-title">
         <div className="project-create-head"><div><h2 id="project-transfer-title">アカウントに残すプロジェクトを選ぶ</h2>
           <p>上限{user.maxProjects}件・現在{memberProjects.length}件。保存済みの選択を外すと、新しいものと入れ替えられます。</p></div></div>
-        {user.plan !== 'pro' && <p className="project-library-feedback">有料プランなら10件まで保存できます。<a href="/pro">有料プランを見る →</a></p>}
+        {user.plan !== 'pro' && <p className="project-library-feedback">Pro プランなら10件まで保存できます。<a href="/pro">Pro プランを見る →</a></p>}
         <h3>アカウントに保存済み</h3>
         <div className="project-create-template-grid">{memberProjects.map(item => <label key={item.id} className={!replaceIds.includes(item.id) ? 'selected' : ''}>
           <input type="checkbox" checked={!replaceIds.includes(item.id)} disabled={transferBusy}
@@ -662,7 +662,7 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
             </label>
             <label className={createTemplate === 'sample' ? 'selected' : ''}>
               <input type="radio" name="project-template" checked={createTemplate === 'sample'} onChange={() => setCreateTemplate('sample')} />
-              <span><strong>見本：ロミオとジュリエット</strong><small>8 場面・照明 14 灯・役者 6 人の組み上がった公演</small></span>
+              <span><strong>見本：ロミオとジュリエット</strong><small>8 場面・照明 15 灯・役者 6 人の組み上がった公演</small></span>
             </label>
             {VENUE_STUDY_LINKS.map(study => <label key={study.kind} className={createTemplate === study.kind ? 'selected' : ''}>
               <input type="radio" name="project-template" checked={createTemplate === study.kind} onChange={() => setCreateTemplate(study.kind)} />
@@ -677,11 +677,11 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
         </div>}
         {atLimit && !user && <div role="alert" className="project-create-error">
           <strong>{hasDeviceStorage() ? 'このアプリ' : 'このブラウザ'}に保存できるのは {LOCAL_MAX_PROJECTS} 件までで、いま {localCount} 件あります。</strong>
-          <p>使わないプロジェクトを一覧から削除すると、新しく作れます。ログインして有料プランにすると、10 件まで保存でき、ほかの端末からも開けます。<a href="/pro">有料プランを見る</a></p>
+          <p>使わないプロジェクトを一覧から削除すると、新しく作れます。ログインしてPro プランにすると、10 件まで保存でき、ほかの端末からも開けます。<a href="/pro">Pro プランを見る</a></p>
         </div>}
         {atLimit && user && <div role="alert" className="project-create-error">
           <strong>アカウントに保存できるのは {user.maxProjects} 件までで、いま {memberProjects.length} 件あります。</strong>
-          <p>使わないプロジェクトを一覧から削除すると、新しく作れます。{user.plan !== 'pro' && <>有料プランなら 10 件まで保存できます。<a href="/pro">有料プランを見る</a></>}</p>
+          <p>使わないプロジェクトを一覧から削除すると、新しく作れます。{user.plan !== 'pro' && <>Pro プランなら 10 件まで保存できます。<a href="/pro">Pro プランを見る</a></>}</p>
         </div>}
         {createError && <div role="alert" className="project-create-error"><strong>{createError}</strong></div>}
         <div className="project-create-actions">
