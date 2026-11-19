@@ -14,7 +14,7 @@ import {
   NATIVE_PURCHASE_URL,
   updateProfile,
 } from '../io/cloud'
-import { refreshSession, useCloudSession } from '../io/cloudSession'
+import { patchSessionUser, refreshSession, useCloudSession } from '../io/cloudSession'
 
 const OPERATOR = {
   name: '一ノ宮 綾平',
@@ -563,8 +563,8 @@ function ProfileEditor({ name, image }: { name: string | null; image: string | n
   const run = async (kind: 'name' | 'icon', change: Parameters<typeof updateProfile>[0], message: string) => {
     setBusy(kind); setErr(''); setDone('')
     try {
-      await updateProfile(change)
-      await refreshSession()
+      const updated = await updateProfile(change)
+      patchSessionUser({ name: updated.name, image: updated.image })
       setDone(message)
       if (kind === 'name') setEditing(false)
     } catch (e) {

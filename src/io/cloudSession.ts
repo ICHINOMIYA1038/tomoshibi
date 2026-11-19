@@ -21,6 +21,13 @@ export function refreshSession(): Promise<void> {
   return pendingRefresh
 }
 
+/** 名前・アイコンを変えた直後に、サーバーが返した値をそのまま画面に入れる（読み直すと、キャッシュで 1 分ほど古い値が返ることがあった） */
+export function patchSessionUser(patch: Partial<Pick<CloudUser, 'name' | 'image'>>) {
+  if (!state.user) return
+  state = { ...state, user: { ...state.user, ...patch } }
+  emit()
+}
+
 export function useCloudSession(): State {
   const snap = useSyncExternalStore(
     (cb) => { listeners.add(cb); return () => listeners.delete(cb) },
