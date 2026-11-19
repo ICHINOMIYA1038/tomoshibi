@@ -551,7 +551,8 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
         <button className="project-library-create" onClick={() => openCreate()}>＋ 新しいプロジェクトを作る</button>
         {user && <>
           <div className="project-library-list-head project-library-list-head-explained">
-            <strong>アカウントに保存 {memberProjects.length} / {user.maxProjects}件</strong><span>ログインすれば、ほかの端末からも開けます</span>
+            {/* 「アカウントに保存」だと、端末に保存した数と取り違えた（2026-11-19 オーナー） */}
+            <strong>アカウントのプロジェクト {memberProjects.length} / {user.maxProjects} 件</strong><span>どの端末からでも開けます</span>
           </div>
           {memberBusy && <p className="project-library-list-empty">読み込み中…</p>}
           {memberError && <p className="project-library-feedback" role="status">{memberError}</p>}

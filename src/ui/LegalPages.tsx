@@ -639,7 +639,7 @@ export function AccountPage() {
     <table className="legal-table account-page-table">
       <tbody>
         <tr><th>プラン</th><td>{isPro ? <>Pro{until && <span className="account-page-note">（{until} まで）</span>}</> : 'Free'}</td></tr>
-        <tr><th>アカウントに保存</th><td>{count === null ? '—' : `${count} 件`} / {user.maxProjects} 件まで</td></tr>
+        <tr><th>アカウントのプロジェクト</th><td>{count === null ? '—' : `${count} 件`}（{user.maxProjects} 件まで）<a className="account-page-inline" href="/studio/projects/">一覧を見る</a></td></tr>
       </tbody>
     </table>
 
