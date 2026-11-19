@@ -394,6 +394,12 @@ function ProSubscribeButton() {
     )
   }
 
+  // アプリの中では、ログインしていても初めから Apple の購入に入る。Stripe の購入画面を作ってからアプリに横取りさせると、
+  // 「Stripe へ移動中…」が一瞬出て、使わない Stripe の購入画面も残った（2026-11-19 オーナー報告）
+  if (isNativeApp()) {
+    return <a href={NATIVE_PURCHASE_URL} className="pro-subscribe-btn">Pro プランに申し込む</a>
+  }
+
   return (
     <>
       <button
