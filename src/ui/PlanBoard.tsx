@@ -1367,7 +1367,7 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
               <label key={label} className={'plan-layer-menu-row' + (basic ? ' plan-layer-menu-basic' : '')}>
                 <input type="checkbox" checked={on} onChange={() => set(value => !value)} />{label}</label>)}
             {persistent && onToggleDirections && <label className="plan-layer-menu-row">
-              <input type="checkbox" checked={showDirections} onChange={onToggleDirections} />前の場面からの矢印</label>}
+              <input type="checkbox" checked={showDirections} onChange={onToggleDirections} />前のシーンからの矢印</label>}
             <button type="button" className="plan-layer-menu-close" onClick={() => setLayerMenuOpen(false)}>閉じる</button>
           </div>}
           <div className="plan-map-zoom" role="group" aria-label="平面図の縮尺">

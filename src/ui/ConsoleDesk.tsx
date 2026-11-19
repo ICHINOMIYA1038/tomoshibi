@@ -66,7 +66,7 @@ export function ConsoleDesk({ onClose, height, onResize }: { onClose: () => void
       ul{columns:3;padding-left:16px;margin:12px 0 0}li{break-inside:avoid}
       @page{size:A4 landscape;margin:10mm}
     </style></head><body><h1>${esc(title)}　キュー表</h1>
-    <table><thead><tr><th>Q</th><th>場面</th><th>きっかけ</th><th>フェード</th>${head}</tr></thead><tbody>${rows}</tbody></table>
+    <table><thead><tr><th>Q</th><th>シーン</th><th>きっかけ</th><th>フェード</th>${head}</tr></thead><tbody>${rows}</tbody></table>
     <ul>${key}</ul>${endTag('body')}${endTag('html')}`)
     win.document.close()
     win.focus()
@@ -93,11 +93,11 @@ export function ConsoleDesk({ onClose, height, onResize }: { onClose: () => void
         <button type="button" role="tab" aria-selected={tab === 'cues'} onClick={() => setTab('cues')}>キュー表</button>
       </div>
       <div className="console-desk-scene">
-        <button type="button" aria-label="前の場面" disabled={activeIndex <= 0} onClick={() => go(-1)}>‹</button>
-        <span>Q{activeIndex + 1}　{active ? sceneDisplayTitle(plan, active.id) : '場面がありません'}</span>
-        <button type="button" aria-label="次の場面" disabled={activeIndex < 0 || activeIndex >= scenes.length - 1} onClick={() => go(1)}>›</button>
+        <button type="button" aria-label="前のシーン" disabled={activeIndex <= 0} onClick={() => go(-1)}>‹</button>
+        <span>Q{activeIndex + 1}　{active ? sceneDisplayTitle(plan, active.id) : 'シーンがありません'}</span>
+        <button type="button" aria-label="次のシーン" disabled={activeIndex < 0 || activeIndex >= scenes.length - 1} onClick={() => go(1)}>›</button>
       </div>
-      {active && <label className="console-desk-fade" title="この場面へ移るのにかける時間">フェード
+      {active && <label className="console-desk-fade" title="このシーンへ移るのにかける時間">フェード
         <input type="number" min={0} max={60} step={0.5} value={active.fadeSec ?? DEFAULT_FADE}
           onChange={event => setFade(active.id, event.target.value === '' ? undefined : Number(event.target.value))} />秒</label>}
       <button type="button" className="console-desk-print" onClick={printSheet}>印刷</button>
@@ -124,7 +124,7 @@ export function ConsoleDesk({ onClose, height, onResize }: { onClose: () => void
 
     {tab === 'cues' && <div className="console-cues">
       <table>
-        <thead><tr><th>Q</th><th className="name">場面</th><th>フェード</th>{channels.map(c => <th key={c.id} title={c.name}>{c.ch}</th>)}</tr></thead>
+        <thead><tr><th>Q</th><th className="name">シーン</th><th>フェード</th>{channels.map(c => <th key={c.id} title={c.name}>{c.ch}</th>)}</tr></thead>
         <tbody>
           {scenes.map((scene, index) => {
             const fixtures = fixturesOf(scene)
