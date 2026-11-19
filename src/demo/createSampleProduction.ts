@@ -45,9 +45,9 @@ type Light = {
 
 const LIGHTS: Light[] = [
   // 前明かり（客席の上のバトン）：舞台の前の方を下手・中央・上手の 3 つに分け、隣どうしを重ねてむらなく覆う
-  { key: 'fohL', name: '前明かり・下手', number: '1', preset: 'Fresnel10', measured: 'fresnel', position: [-4.2, 8.6, 6.8], target: [-4.0, 1.5, 0.2], beam: 44, barnDoorAngles: { top: 3, left: 3 } },
-  { key: 'fohC', name: '前明かり・中央', number: '2', preset: 'Fresnel10', measured: 'fresnel', position: [0, 8.6, 6.8], target: [0, 1.5, 0.0], beam: 44, barnDoorAngles: { top: 3 } },
-  { key: 'fohR', name: '前明かり・上手', number: '3', preset: 'Fresnel10', measured: 'fresnel', position: [4.2, 8.6, 6.8], target: [4.0, 1.5, 0.2], beam: 44, barnDoorAngles: { top: 3, right: 3 } },
+  { key: 'fohL', name: '前明かり・下手', number: '1', preset: 'Fresnel10', measured: 'fresnel', position: [-4.2, 8.6, 6.8], target: [-4.0, 1.5, 0.2], beam: 44, barnDoorAngles: { top: 3, left: 3, right: 30 } },
+  { key: 'fohC', name: '前明かり・中央', number: '2', preset: 'Fresnel10', measured: 'fresnel', position: [0, 8.6, 6.8], target: [0, 1.5, 0.0], beam: 44, barnDoorAngles: { top: 3, left: 30, right: 30 } },
+  { key: 'fohR', name: '前明かり・上手', number: '3', preset: 'Fresnel10', measured: 'fresnel', position: [4.2, 8.6, 6.8], target: [4.0, 1.5, 0.2], beam: 44, barnDoorAngles: { top: 3, right: 3, left: 30 } },
   // 中の地明かり（1 番バトン）：舞台の中ほどを 3 つに分けて真上寄りから。前明かりと重ねて、真ん中だけ明るいたまりを作らない
   { key: 'usL', name: '中の地明かり・下手', number: '4', preset: 'Fresnel10', measured: 'fresnel', position: [-4.2, 8, 0.8], target: [-4.2, 1.5, -3.6], beam: 46, barnDoorAngles: { top: 4 } },
   { key: 'usC', name: '中の地明かり・中央', number: '5', preset: 'Fresnel10', measured: 'fresnel', position: [0, 8, 0.8], target: [0, 1.5, -3.8], beam: 46, barnDoorAngles: { top: 4 } },
@@ -62,8 +62,9 @@ const LIGHTS: Light[] = [
   { key: 'moon', name: '月明かり', number: '12', preset: 'Source4_26', position: [5.6, 7.6, -5.6], target: [0.6, 0, -2.4], beam: 26, gobo: 'leaves' },
   { key: 'window', name: '窓明かり', number: '13', preset: 'Source4_26', position: [-4.6, 5.0, -6.9], target: [-0.6, 0, -2.6], beam: 26, gobo: 'window' },
   // 横明かり：袖のタワーからエリスポで、向こう側の床へ落とす（光は壁を抜けるので、高く狙うと舞台の外のスモークが光った）。床の真ん中を狙っていた時は、2 灯が交わって細長い強いたまりになっていた（フレネルだと外への漏れでホリゾントに丸い明るみが出た）
-  { key: 'sideL', name: '横明かり・下手', number: '14', preset: 'Source4_36', position: [-7.6, 5.0, -3.1], target: [3.0, 0.2, -2.6], beam: 30 },
-  { key: 'sideR', name: '横明かり・上手', number: '15', preset: 'Source4_36', position: [7.6, 5.0, -3.1], target: [-3.0, 0.2, -2.4], beam: 30 },
+  // 横明かりは向かいの床に落とし切る。浅く狙うと、光が床を越えて向かいの袖の壁に当たり、画面の両端が茶色く光った（2026-11-19）
+  { key: 'sideL', name: '横明かり・下手', number: '14', preset: 'Source4_36', position: [-7.6, 5.0, -3.1], target: [1.5, 0.2, -2.6], beam: 24 },
+  { key: 'sideR', name: '横明かり・上手', number: '15', preset: 'Source4_36', position: [7.6, 5.0, -3.1], target: [-1.5, 0.2, -2.4], beam: 24 },
 ]
 
 type Cue = { level: number; color?: RGB; target?: Vec3; position?: Vec3 }
@@ -172,7 +173,7 @@ const SCENES: Scene[] = [
     cast: { 'ロミオ': { position: [-0.4, 0, -2.4], facingDeg: 70 }, 'ジュリエット': { position: [0.8, 0, -2.4], facingDeg: -70 } },
     props: { bed: { at: [-2.6, 0.25, -3.6] }, roomWindow: { at: [1.6, 1.8, -6.7] } },
     look: {
-      fohL: { level: 0.06, color: C.lavender }, fohC: { level: 0.12, color: C.lavender }, fohR: { level: 0.06, color: C.lavender },
+      fohL: { level: 0.1, color: C.lavender }, fohC: { level: 0.18, color: C.lavender }, fohR: { level: 0.1, color: C.lavender },
       backL: { level: 0.14, color: C.lavender }, backR: { level: 0.14, color: C.lavender },
       cycL: { level: 0.22, color: C.skyDawn, target: [-3.2, 1.8, -7.4] }, cycR: { level: 0.22, color: C.skyDawn, target: [3.2, 1.8, -7.4] },
       window: { level: 0.55, color: C.lavender, position: [2.4, 5.0, -6.9], target: [-0.2, 0, -2.4] },

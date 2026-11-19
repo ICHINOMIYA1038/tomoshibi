@@ -6,6 +6,8 @@ import { DEFAULT_VENUE_LAYOUT } from '../venueLayout'
 import {
   clampPart, isHungOn, isFlat, PART_LABELS, partCorners, resolveStageParts, snapValue, type StagePart, type StagePartKind,
 } from '../stageParts'
+/** 仕込み図の見た目で、台（段床）を床と同じ白にすると、上に並べた客席の白い四角が埋もれる。薄い灰色にして段を見分ける（2026-11-19） */
+const PLOT_PLATFORM_FILL = '#e2ded5'
 export const PART_COLORS: Record<StagePartKind, string> = {
   floor: '#6d625a', platform: '#9b7650', wall: '#1d1a1d', cyc: '#d9dbe4', wing: '#3a2f37', batten: '#7f8fa3',
 }
@@ -197,7 +199,7 @@ export function StagePartsLayer({ selectedId, onSelect, tool = 'translate', toWo
       return <g key={item.id}>
         {isFlat(item.kind)
           ? <polygon {...common} points={corners.map(([x, z]) => `${px(x)},${py(z)}`).join(' ')}
-            fill={theme === 'plot' ? '#fbfaf6' : item.color ?? PART_COLORS[item.kind]} fillOpacity={theme === 'plot' ? .9 : item.kind === 'floor' ? .55 : .85}
+            fill={theme === 'plot' ? (item.kind === 'platform' ? PLOT_PLATFORM_FILL : '#fbfaf6') : item.color ?? PART_COLORS[item.kind]} fillOpacity={theme === 'plot' ? .9 : item.kind === 'floor' ? .55 : .85}
             stroke={selected ? '#f2c27b' : theme === 'plot' ? '#1d1d1f' : '#c9b9a3'} strokeWidth={selected ? 4 : 1.5} strokeDasharray={item.kind === 'floor' ? '6 4' : undefined} />
           : <g {...common}>
             <line x1={px(corners[0][0])} y1={py(corners[0][1])} x2={px(corners[1][0])} y2={py(corners[1][1])}

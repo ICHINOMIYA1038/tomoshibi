@@ -5513,7 +5513,7 @@ input[type="color"]::-moz-color-swatch { border: 0; border-radius: 0; }
 .account-page-avatar.initial { display: grid; place-items: center; background: linear-gradient(135deg, #8a6a3e, #5a4128); color: #fff3df; font-size: 26px; font-weight: 700; }
 .account-page-name { font-size: 22px; font-weight: 700; }
 .account-page-sub { margin-top: 4px; color: #bfb2a0; font-size: 14px; }
-.account-page-table th { width: 160px; text-align: left; }
+.account-page-table th { width: 210px; text-align: left; }
 .account-page-note { margin-left: 6px; color: #bfb2a0; font-size: 14px; }
 .account-page-btn { display: inline-flex; align-items: center; min-height: 44px; margin: 4px 8px 4px 0; padding: 0 18px; border: 1px solid currentColor; border-radius: 4px; background: transparent; color: inherit; font: inherit; font-weight: 700; text-decoration: none; cursor: pointer; }
 .account-page-btn.danger { color: #ff8a6e; }
@@ -5535,6 +5535,7 @@ input[type="color"]::-moz-color-swatch { border: 0; border-radius: 0; }
 .account-page-name-form label { font-size: 14px; font-weight: 700; }
 .account-page-name-form input { min-height: 44px; padding: 0 10px; border: 0; border-bottom: 2px solid currentColor; background: transparent; color: inherit; font: inherit; font-size: 18px; }
 .account-page-btn.quiet { border-color: transparent; }
+.account-page-inline { margin-left: 12px; font-size: 14px; white-space: nowrap; }
 .account-page-done { margin: 8px 0 0; color: #8fd19a; }
 @media (max-width: 600px) {
   .account-page-who { flex-direction: column; gap: 12px; }
