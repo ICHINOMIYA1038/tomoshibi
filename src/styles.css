@@ -5550,3 +5550,14 @@ button.library-guide-demo { font-family: inherit; cursor: pointer; }
   .unified-shell.phone-layout .plan-layer-menu-row input { width: 18px; height: 18px; flex: none; }
   .unified-shell.phone-layout .plan-layer-menu-close { grid-column: 1 / -1; min-height: 36px; }
 }
+/* スマホで「通しで見る」を平面図の表示から始めても、3D を出す（平面図のときは 3D を隠していて、真っ黒になっていた。2026-11-19） */
+.unified-shell.workspace-layout.mobile-view-plan.playback-open .canvas-wrap { visibility: visible !important; pointer-events: auto !important; }
+.unified-shell.phone-layout.playback-open .plan-board { display: none !important; }
+/* スマホの上の帯は 1 行に収める（プロジェクト名・一覧の帯が 2 行に折り返していた） */
+@media (max-width: 600px) {
+  .unified-shell.phone-layout .phone-title, .unified-shell.phone-layout button.phone-title .project-title-text { -webkit-line-clamp: 1 !important; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; display: block; }
+  .project-library-header .project-library-storage { display: none; }
+  .project-library-header .project-library-brand { white-space: nowrap; }
+  .change-scope-bar.phone .change-scope-text { flex-basis: 100%; font-size: 12px; color: var(--ink-secondary, #cbbfb1); }
+  .change-scope-bar.phone { flex-wrap: wrap; row-gap: 2px; }
+}

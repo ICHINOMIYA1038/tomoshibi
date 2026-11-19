@@ -171,6 +171,13 @@ export function StagePartsLayer({ selectedId, onSelect, tool = 'translate', toWo
   // バトンの番号を書く縦の線。いちばん左の部品（壁など）よりさらに左
   const labelFont = Math.max(11, 11 * unitsPerPx)
   const labelMargin = Math.max(labelLeft + labelFont * 4.4, Math.min(...parts.flatMap(part => partCorners(part).map(([x]) => px(x)))) - 12 * unitsPerPx)
+  // バトンの番号の高さ。バトンどうしが近いと文字が重なるので、上から順に、前の文字と近すぎたら下へずらす（2026-11-19）
+  const battenLabelY = new Map<string, number>()
+  {
+    const rows = parts.filter(part => part.kind === 'batten').map(part => { const c = partCorners(part); return { id: part.id, y: (py(c[0][1]) + py(c[1][1])) / 2 } }).sort((a, b) => a.y - b.y)
+    let previous = -Infinity
+    for (const row of rows) { const y = Math.max(row.y, previous + labelFont * 1.15); battenLabelY.set(row.id, y); previous = y }
+  }
   const ordered = [...parts].sort((a, b) => Number(!isFlat(a.kind)) - Number(!isFlat(b.kind)))
   return <g className="stage-parts-layer">
     {ordered.map(item => {
@@ -200,7 +207,8 @@ export function StagePartsLayer({ selectedId, onSelect, tool = 'translate', toWo
               const batten = item.kind === 'batten' && !selected
               const index = parts.filter(other => other.kind === item.kind).indexOf(item) + 1
               const x = batten ? labelMargin : Math.min(px(corners[0][0]), px(corners[1][0])) - 6 * unitsPerPx
-              return <text x={x} y={(py(corners[0][1]) + py(corners[1][1])) / 2 + 4 * unitsPerPx} textAnchor="end" fill={theme === 'light' ? '#a39789' : '#3a332d'}
+              const y = batten ? battenLabelY.get(item.id) ?? (py(corners[0][1]) + py(corners[1][1])) / 2 : (py(corners[0][1]) + py(corners[1][1])) / 2
+              return <text x={x} y={y + 4 * unitsPerPx} textAnchor="end" fill={theme === 'light' ? '#a39789' : '#3a332d'}
                 fontSize={labelFont} fontWeight="700" paintOrder="stroke" stroke={theme === 'light' ? '#0d0b0e' : '#fffdf8'}
                 strokeWidth={3 * unitsPerPx} pointerEvents="none">{item.kind === 'batten' ? `${index}バトン` : `${PART_LABELS[item.kind]} ${index}`}</text>
             })()}
