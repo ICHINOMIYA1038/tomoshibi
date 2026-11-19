@@ -28,10 +28,10 @@ const GUIDES = [
 export function EmptyLibrary({ onOpenSample }: { onOpenSample?: () => void }) {
   return <div className="library-guide">
     <h2>舞台を組む流れ</h2>
-    <p className="library-guide-lead">見本の公演「ロミオとジュリエット」をプロジェクトにすると、組み上がった舞台をそのまま触って、直して残せます。</p>
+    <p className="library-guide-lead">見本の公演「ロミオとジュリエット」から始めると、組み上がった舞台をそのまま触って、直して残せます。</p>
     <div className="library-guide-actions">
       {onOpenSample
-        ? <button type="button" className="library-guide-demo" onClick={onOpenSample}>見本の公演をプロジェクトにする</button>
+        ? <button type="button" className="library-guide-demo" onClick={onOpenSample}>見本から始める</button>
         : <a className="library-guide-demo" href="/studio/?demo=2">見本の公演を開く</a>}
       <a href="/help">操作の説明を読む（動画つき）</a>
     </div>

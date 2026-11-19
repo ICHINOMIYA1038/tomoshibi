@@ -109,6 +109,17 @@ function projectContentKey(scene: SerializedScene): string {
   })
 }
 
+/** いま開いているのが、見本を開いただけで何も変えていない状態か。一覧には出さず、プロジェクトとして残さない */
+export function isUntouchedDemo(): boolean {
+  try {
+    const raw = workspaceStorage().getItem(SESSION_KEY)
+    if (!raw) return false
+    const session = JSON.parse(raw) as { scene?: SerializedScene; demoBaseline?: string | null; activeSavedName?: string | null; activeCloudProject?: unknown }
+    if (!session.demoBaseline || !session.scene || session.activeSavedName || session.activeCloudProject) return false
+    return projectContentKey(session.scene) === session.demoBaseline
+  } catch { return false }
+}
+
 export function preserveMockDraftBeforeDemo(): boolean {
   // ウェブでも、ログインしていないときは編集中のプロジェクトを一覧に控える（アプリと同じ。2026-11-17 から 2 件まで持てる）
   if (getActiveCloudProject()) {
