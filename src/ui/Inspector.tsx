@@ -111,7 +111,10 @@ function FixtureInspector({ fixture }: { fixture: Fixture }) {
     s.updateFixture(fixture.id, { enabled: false })
     clearChange()
   }
+  // スマホでは、よく使う明るさ・色（照明の欄）をいちばん上に出す。数字の欄の下で、1 画面半スクロールしないと届かなかった（2026-11-19）
+  const phone = typeof window !== 'undefined' && window.matchMedia('(max-width: 600px)').matches
   return <>
+    {phone && <InspectorSection title="明るさと色（このシーン）"><FixtureEditor fixture={fixture} /></InspectorSection>}
     <div className="scope-heading shared">全シーン共通（仕込み）</div>
     <p className="scope-note">名前・親・吊る位置を変えると、すべてのシーンで変わります。</p>
     <InspectorSection title="名前と親">
@@ -141,7 +144,7 @@ function FixtureInspector({ fixture }: { fixture: Fixture }) {
           onClick={() => select('fixture', fixture.id, 'target')}>狙い</button>
       </div>
     </InspectorSection>
-    <InspectorSection title="照明"><FixtureEditor fixture={fixture} /></InspectorSection>
+    {!phone && <InspectorSection title="照明"><FixtureEditor fixture={fixture} /></InspectorSection>}
   </>
 }
 

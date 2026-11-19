@@ -40,8 +40,9 @@ export function ChangeScopeBar({ phone = false, docked = false }: { phone?: bool
   return <div className={'change-scope-bar' + (phone ? ' phone' : '') + (docked ? ' docked' : '')} role="status"
     onPointerEnter={() => setHold(true)} onPointerLeave={() => setHold(false)}>
     {/* 「コピー」の言い方にする（2026-11-17 オーナーが 3 案から選んだ。「入れる？」はわかりにくかった） */}
-    {!phone && <span className="change-scope-text">{describeChange(change)}</span>}
-    <span className="change-scope-label">ほかのシーンにコピー：</span>
+    {/* スマホでも何を変えたかを出す（出さないと、何をコピーするのかわからなかった。2026-11-19） */}
+    <span className="change-scope-text">{describeChange(change)}</span>
+    <span className="change-scope-label">{phone ? 'コピー：' : 'ほかのシーンにコピー：'}</span>
     <span className="change-scope-actions">
       {showChapter && <button type="button" onClick={() => apply('chapter')} title="同じ章のほかのシーンに、この変更をコピーする">この章</button>}
       {index < scenes.length - 1 && <button type="button" onClick={() => apply('after')} title="このあとのシーンに、この変更をコピーする">このあと</button>}
