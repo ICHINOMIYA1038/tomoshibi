@@ -1,4 +1,5 @@
 import { useRef, type PointerEvent, type KeyboardEvent } from 'react'
+import { multiTouch } from './touchCount'
 import { lockedNow, nudgeLock } from '../locks'
 import { useStore, type StagePoint } from '../store'
 import { DEFAULT_VENUE_LAYOUT } from '../venueLayout'
@@ -67,6 +68,7 @@ export function StagePartsLayer({ selectedId, onSelect, tool = 'translate', toWo
     const start = angleOf(event)
     const move = (next: globalThis.PointerEvent) => {
       if (next.pointerId !== event.pointerId) return
+      if (multiTouch()) { stop(next); return }
       const deg = Math.round((((angleOf(next) - start) + 540) % 360 - 180) / 5) * 5
       change(item.id, { rotationDeg: ((item.rotationDeg - deg) % 360 + 360) % 360 })
     }
@@ -105,6 +107,8 @@ export function StagePartsLayer({ selectedId, onSelect, tool = 'translate', toWo
   const move = (event: globalThis.PointerEvent) => {
     const current = drag.current
     if (!current || current.pointerId !== event.pointerId) return
+    // 2 本目の指が触れたら拡大のつもり。動かすのをやめる
+    if (multiTouch()) { drag.current = null; return }
     const fine = event.shiftKey
     const [x, z] = toLocal(event)
     const from = current.from

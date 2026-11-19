@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type RefObject } from 'react'
 import type { StagePoint } from '../store'
+import { multiTouch } from './touchCount'
 
 /** 図（平面図の「シーン」と「会場」）の拡大と、図を動かす量。どちらも「最初の縮尺」からの差で持つ */
 export type MapZoom = { zoom: number; pan: StagePoint }
@@ -19,6 +20,9 @@ export function useMapZoom(svgRef: RefObject<SVGSVGElement | null>, view: () => 
   viewRef.current = view
   const stateRef = useRef(state)
   stateRef.current = state
+  // 2 本指の間の長さ。下の useEffect は描き直すたびに付け直すので、指の途中の値はここに持つ。
+  // 関数の中の変数にすると、拡大して描き直すたびに消え、1 回の操作で 1 段しか大きくならなかった（2026-11-19）
+  const pinchRef = useRef<number | null>(null)
 
   /** anchor（世界の座標）を画面上で動かさずに、拡大率を factor 倍する */
   const zoomBy = useCallback((factor: number, anchor?: StagePoint) => {
@@ -45,10 +49,10 @@ export function useMapZoom(svgRef: RefObject<SVGSVGElement | null>, view: () => 
     }
     svg.addEventListener('wheel', onWheel, { passive: false })
     // 2 本指で広げる・つまむと拡大・縮小する（スマホ・タブレット。2026-11-17 オーナー指摘）。2 本の指の真ん中を動かさない
-    let pinch: number | null = null
     const spread = (touches: TouchList) => Math.hypot(touches[0].clientX - touches[1].clientX, touches[0].clientY - touches[1].clientY)
-    const onTouchStart = (event: TouchEvent) => { if (event.touches.length === 2) pinch = spread(event.touches) }
+    const onTouchStart = (event: TouchEvent) => { if (event.touches.length === 2) pinchRef.current = spread(event.touches) }
     const onTouchMove = (event: TouchEvent) => {
+      const pinch = pinchRef.current
       if (event.touches.length !== 2 || pinch === null) return
       event.preventDefault()
       const now = spread(event.touches)
@@ -56,9 +60,9 @@ export function useMapZoom(svgRef: RefObject<SVGSVGElement | null>, view: () => 
       const midX = (event.touches[0].clientX + event.touches[1].clientX) / 2
       const midY = (event.touches[0].clientY + event.touches[1].clientY) / 2
       zoomBy(now / pinch, viewRef.current().toWorld(midX, midY))
-      pinch = now
+      pinchRef.current = now
     }
-    const onTouchEnd = (event: TouchEvent) => { if (event.touches.length < 2) pinch = null }
+    const onTouchEnd = (event: TouchEvent) => { if (event.touches.length < 2) pinchRef.current = null }
     svg.addEventListener('touchstart', onTouchStart, { passive: true })
     svg.addEventListener('touchmove', onTouchMove, { passive: false })
     svg.addEventListener('touchend', onTouchEnd)
@@ -80,6 +84,8 @@ export function useMapZoom(svgRef: RefObject<SVGSVGElement | null>, view: () => 
     let moved = false
     const move = (next: PointerEvent) => {
       if (next.pointerId !== event.pointerId) return
+      // 2 本目の指が触れたら、図を動かすのはやめて拡大に任せる
+      if (multiTouch()) { finish(); return }
       if (!moved && Math.hypot(next.clientX - startClient[0], next.clientY - startClient[1]) < 4) return
       moved = true
       // いまの図は、押したときから shift だけ動いている。測った点から shift を引いて、押したときの図の点に直す
@@ -88,12 +94,15 @@ export function useMapZoom(svgRef: RefObject<SVGSVGElement | null>, view: () => 
       const before: StagePoint = [here[0] - shift[0], here[1] - shift[1]]
       setState(current => ({ ...current, pan: [from[0] - (before[0] - start[0]), from[1] - (before[1] - start[1])] }))
     }
-    const stop = (up: PointerEvent) => {
-      if (up.pointerId !== event.pointerId) return
+    const finish = () => {
       window.removeEventListener('pointermove', move)
       window.removeEventListener('pointerup', stop)
       window.removeEventListener('pointercancel', stop)
-      if (!moved) onTap?.()
+    }
+    const stop = (up: PointerEvent) => {
+      if (up.pointerId !== event.pointerId) return
+      finish()
+      if (!moved && !multiTouch()) onTap?.()
     }
     window.addEventListener('pointermove', move)
     window.addEventListener('pointerup', stop)
