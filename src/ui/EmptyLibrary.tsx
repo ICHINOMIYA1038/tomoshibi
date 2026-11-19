@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react'
 // プロジェクト一覧の右側。トップページと同じ「照明・場割り・通し」の 3 段で、見本の公演を動かした映像を並べる。
 // 映像はトップと同じ public/top/ のもの（見本の公演「ロミオとジュリエット」）。2026-11-18 に写真から作り直した
 
@@ -42,11 +43,35 @@ export function EmptyLibrary({ onOpenSample }: { onOpenSample?: () => void }) {
           <h3>{item.title}</h3>
           <p>{item.text}</p>
         </div>
-        <video poster={`/top/${item.clip}.jpg`} autoPlay muted loop playsInline preload="metadata" aria-label={item.label}>
-          <source src={`/top/${item.clip}.webm`} type="video/webm" />
-          <source src={`/top/${item.clip}.mp4`} type="video/mp4" />
-        </video>
+        <LoopClip clip={item.clip} label={item.label} />
       </li>)}
     </ol>
   </div>
+}
+
+/**
+ * 音の無い、くり返しの映像。見える位置に来たら再生し、外れたら止める。
+ * autoPlay だけだと、内側でスクロールする欄では画面外で始まった映像が止まったままになっていた（2026-11-19）。
+ * React は muted を属性として書かないので、自動再生の条件を満たすよう属性も付ける
+ */
+function LoopClip({ clip, label }: { clip: string; label: string }) {
+  const ref = useRef<HTMLVideoElement>(null)
+  useEffect(() => {
+    const video = ref.current
+    if (!video) return
+    video.muted = true
+    video.setAttribute('muted', '')
+    const observer = new IntersectionObserver(entries => {
+      for (const entry of entries) {
+        if (entry.isIntersecting) video.play().catch(() => { /* 再生できなくても表紙の絵は出ている */ })
+        else video.pause()
+      }
+    }, { threshold: 0.2 })
+    observer.observe(video)
+    return () => observer.disconnect()
+  }, [])
+  return <video ref={ref} poster={`/top/${clip}.jpg`} muted loop playsInline preload="auto" aria-label={label}>
+    <source src={`/top/${clip}.webm`} type="video/webm" />
+    <source src={`/top/${clip}.mp4`} type="video/mp4" />
+  </video>
 }
