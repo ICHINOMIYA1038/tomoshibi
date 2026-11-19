@@ -35,7 +35,7 @@ const SERVICE = {
 
 const UPDATED = '2026年11月16日'
 
-function Layout({ title, children }: { title: string; children: ReactNode }) {
+function Layout({ title, children, showUpdated = true }: { title: string; children: ReactNode; showUpdated?: boolean }) {
   return (
     <div className="legal-page">
       <header className="legal-header">
@@ -45,7 +45,7 @@ function Layout({ title, children }: { title: string; children: ReactNode }) {
         <h1>{title}</h1>
         {children}
         <footer className="legal-foot">
-          <p>最終更新日: {UPDATED}</p>
+          {showUpdated && <p>最終更新日: {UPDATED}</p>}
           <nav>
             <a href="/terms">利用規約</a> ・
             <a href="/privacy">プライバシーポリシー</a> ・
@@ -625,14 +625,14 @@ export function AccountPage() {
       setPortalBusy(false)
     }
   }
-  if (loading && !user) return <Layout title="アカウント"><p>読み込み中…</p></Layout>
-  if (!user) return <Layout title="アカウント">
-    <p>ログインしていません。ログインすると、プロジェクトをアカウントに保存して、ほかの端末からも開けます。</p>
-    <p><a className="pro-subscribe-btn account-page-btn" href={loginUrl()}>新規登録・ログイン</a></p>
+  if (loading && !user) return <Layout title="アカウント" showUpdated={false}><p>読み込み中…</p></Layout>
+  if (!user) return <Layout title="アカウント" showUpdated={false}>
+    <p>ログインすると、プロジェクトをアカウントに保存して、ほかの端末からも開けます。</p>
+    <p><a className="pro-subscribe-btn account-page-cta" href={loginUrl()}>新規登録・ログイン</a></p>
   </Layout>
   const isPro = user.plan === 'pro'
   const until = user.planExpiresAt ? new Date(user.planExpiresAt).toLocaleDateString('ja-JP') : null
-  return <Layout title="アカウント">
+  return <Layout title="アカウント" showUpdated={false}>
     <ProfileEditor name={user.name} image={user.image} />
 
     <h2>プランと保存</h2>
