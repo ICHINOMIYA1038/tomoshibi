@@ -4,12 +4,12 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#0a0805" />
-    <title>操作説明 | TOMOSHIBI小屋</title>
+    <title>使い方 | TOMOSHIBI小屋</title>
     <meta name="description" content="TOMOSHIBI小屋の操作を、20 秒ほどの短い動画で説明します。道具の切り替え、一覧（ヒエラルキー）、右クリックのメニュー、会場の配置、照明の狙い、シーンの組み立て方。" />
     <link rel="canonical" href="https://tomoshibi.gikyokutosyokan.com/help" />
     <meta property="og:type" content="article" />
     <meta property="og:site_name" content="戯曲図書館" />
-    <meta property="og:title" content="操作説明 | TOMOSHIBI小屋" />
+    <meta property="og:title" content="使い方 | TOMOSHIBI小屋" />
     <meta property="og:description" content="TOMOSHIBI小屋の操作を、短い動画で説明します。" />
     <meta property="og:url" content="https://tomoshibi.gikyokutosyokan.com/help" />
     <meta property="og:image" content="https://tomoshibi.gikyokutosyokan.com/og.png" />
@@ -81,26 +81,45 @@
       th, td { padding: 8px 10px; border-bottom: 1px solid #3a2e24; text-align: left; vertical-align: top; }
       th { color: #f0c98a; font-weight: 700; white-space: nowrap; }
       @media (max-width: 560px) { .toc ol { columns: 1; } th { white-space: normal; } }
+      .steps { list-style: none; counter-reset: step; margin: 0; padding: 0; }
+      .steps > li { counter-increment: step; position: relative; margin: 0 0 28px; padding: 0 0 0 48px; }
+      .steps > li::before { content: counter(step); position: absolute; left: 0; top: 2px; width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; background: #d4905a; color: #1a1410; font-weight: 800; }
+      .steps h3 { margin: 4px 0 6px; }
+      .step-clip video { display: block; width: 100%; margin-top: 10px; border: 1px solid #3a2e24; border-radius: 8px; background: #000; }
+      .ref-head { margin: 56px 0 0; padding-top: 18px; border-top: 2px solid #3a2e24; color: #b8a690; font-size: .9rem; letter-spacing: .2em; }
     </style>
   </head>
   <body>
     <main>
-      <h1>操作説明</h1>
-      <p class="lead">TOMOSHIBI小屋の操作を、短い動画と文章で説明します。まず動画で流れをつかみ、細かいことは下の説明やキーの一覧で確かめてください。</p>
+      <h1>使い方</h1>
+      <p class="lead">初めての方は、上から順に 5 つの手順で、最初の舞台を組んでみてください。細かい操作は、下の「くわしい説明」で確かめられます。</p>
       <a class="cta" href="/studio/projects/">プロジェクトを開く</a>
-      <nav class="toc" aria-label="目次"><b>目次</b><ol><li><a href="#videos">動画で見る</a></li><li><a href="#s1">はじめに（3 ステップ）</a></li><li><a href="#s2">画面の見方（PC）</a></li><li><a href="#s3">3D の操作（PC のマウス・キー）</a></li><li><a href="#s4">平面図の操作</a></li><li><a href="#s5">場面（シーン）を作る・ほかの場面にコピーする</a></li><li><a href="#s6">通しで見る</a></li><li><a href="#s7">スマホでの操作</a></li><li><a href="#s8">保存とログイン</a></li><li><a href="#s9">設定</a></li><li><a href="#s10">困ったとき</a></li><li><a href="#s11">キー操作の一覧（PC）</a></li></ol></nav>
+      <nav class="toc" aria-label="目次"><b>目次</b><ol><li><a href="#steps">はじめての舞台づくり（5 つの手順）</a></li><li><a href="#videos">動画の一覧</a></li><li><a href="#s2">画面の見方（PC）</a></li><li><a href="#s3">3D の操作（PC のマウス・キー）</a></li><li><a href="#s4">平面図の操作</a></li><li><a href="#s5">場面（シーン）を作る・ほかの場面にコピーする</a></li><li><a href="#s6">通しで見る</a></li><li><a href="#s7">スマホでの操作</a></li><li><a href="#s8">保存とログイン</a></li><li><a href="#s9">設定</a></li><li><a href="#s10">困ったとき</a></li><li><a href="#s11">キー操作の一覧（PC）</a></li></ol></nav>
 
-      <h2 id="videos">動画で見る</h2>
+      <h2 id="steps">はじめての舞台づくり（5 つの手順）</h2>
+      <ol class="steps">
+        <li><h3>プロジェクトを作る</h3>
+          <p><a href="/studio/projects/">プロジェクト一覧</a>で「＋ 新しいプロジェクトを作る」を押し、舞台のひな形を選びます。初めてなら「見本：ロミオとジュリエット」を選ぶと、照明も役者も組み上がった舞台から始められます。</p></li>
+        <li><h3>照明・役者・舞台セットを置く</h3>
+          <p>右の「舞台の編集」の「＋ 追加」から選びます。3D の画面へドラッグすると、落とした所に置けます。照明をバトンに重ねて落とすと、そのバトンに吊ります。</p>
+          <div class="step-clip" data-clip="02"></div></li>
+        <li><h3>平面図で、立ち位置と照明の狙いを決める</h3>
+          <p>上の帯の「上下」で、3D と平面図を並べます。平面図で役者や舞台セットをドラッグすると動きます。照明は、色の輪（向き）をドラッグすると狙いが動きます。</p>
+          <div class="step-clip" data-clip="05"></div></li>
+        <li><h3>場面を足して、変えたところをほかの場面にもコピーする</h3>
+          <p>左の「公演の流れ」の「＋」で場面を足します。新しい場面には、直前の場面の舞台がそのまま写ります。何かを変えた直後に出る帯の「この章」「このあと」「全シーン」で、同じ変更をほかの場面にも入れられます。</p>
+          <div class="step-clip" data-clip="07"></div></li>
+        <li><h3>通しで見て、残す</h3>
+          <p>右上の「▶ 通しで見る」で、最初の場面から順に見られます。ログインしないときは、このブラウザに一時保存されます（タブを閉じると消えます）。ログインすると、アカウントに自動で保存され、ほかの端末からも開けます。</p>
+          <div class="step-clip" data-clip="06"></div></li>
+      </ol>
+
+      <h2 id="videos">動画の一覧</h2>
       <p>見たい項目を押すと、その場で動画が流れます。音は出ません。</p>
       <ol class="clips" id="clips"><li>読み込んでいます…</li></ol>
       <noscript><p>動画の一覧を出すには、JavaScript を有効にしてください。</p></noscript>
 
-      <h2 id="s1">はじめに（3 ステップ）</h2>
-      <ol>
-      <li><strong>プロジェクトを作る</strong><br>プロジェクトの一覧で「＋ 新しいプロジェクトを作る」を押します。<br>名前と「舞台のひな形」を選び、「プロジェクトを作成」を押します。<br>ひな形は「白紙から始める」「額縁舞台」「円形舞台」「張り出し舞台」「自由配置」です。<br>白紙以外には、舞台・客席・基本の照明・役者 2 人が入っています。</li>
-      <li><strong>舞台に物を置く</strong><br>右の「舞台の編集」の欄で「＋ 追加」を押し、照明・役者・舞台セットを選びます。<br>押すと舞台の中央に置きます。3D の画面へドラッグすると、落とした所に置きます。<br>照明をバトンに重ねて落とすと、そのバトンに吊ります。<br>置いた物は、平面図でドラッグして動かします。</li>
-      <li><strong>場面を足して、通しで見る</strong><br>左の「公演の流れ」で、行と行のあいだの「＋」を押すと、場面（シーン）が増えます。<br>新しい場面には、直前の場面の舞台がそのまま写ります。<br>場面ごとに役者の位置や照明を変え、右上の「▶ 通しで見る」で順に見ます。</li>
-        </ol>
+      <p class="ref-head" id="reference">くわしい説明</p>
       <h2 id="s2">画面の見方（PC）</h2>
       <ul>
       <li><strong>上の帯（左から）</strong></li>
@@ -426,7 +445,7 @@
       <tr><td>⌘D</td><td>選んでいる物を複製する</td></tr>
       <tr><td>Delete／Backspace</td><td>選んでいる物を削除する</td></tr>
       <tr><td>Esc</td><td>選ぶのをやめる。メニューを閉じる</td></tr>
-      <tr><td>H／?</td><td>この操作説明を新しいタブで開く</td></tr>
+      <tr><td>H／?</td><td>この使い方のページを新しいタブで開く</td></tr>
       <tr><td>F2</td><td>「公演の流れ」で、選んだ章・場面の名前を変える</td></tr>
       <tr><td>↑・↓（「⠿」を選んだとき）</td><td>章・場面を 1 つ上・下へ動かす</td></tr>
       <tr><td>Shift／⌘＋場面をクリック</td><td>場面をまとめて選ぶ（まとめて削除）</td></tr>
@@ -508,6 +527,12 @@
           }).join('')
           list.querySelectorAll('.clip').forEach(function (button) {
             button.onclick = function () { open(Number(button.dataset.index)) }
+          })
+          // 手順の中の動画（data-clip の番号の動画を、表紙つきで置く。押すと再生）
+          document.querySelectorAll('.step-clip').forEach(function (box) {
+            var item = items.find(function (it) { return it.id === box.dataset.clip })
+            if (!item) return
+            box.innerHTML = '<video controls muted playsinline preload="none" poster="' + esc(item.poster) + '" src="' + esc(item.src) + '" aria-label="' + esc(item.title) + 'の動画"></video>'
           })
           // /help#3 のように番号を付けると、その動画を開く
           var hash = Number(location.hash.slice(1))

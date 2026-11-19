@@ -34,7 +34,7 @@ export function EmptyLibrary({ onOpenSample }: { onOpenSample?: () => void }) {
       {onOpenSample
         ? <button type="button" className="library-guide-demo" onClick={onOpenSample}>見本から始める</button>
         : <a className="library-guide-demo" href="/studio/?demo=2">見本の公演を開く</a>}
-      <a href="/help">操作の説明を読む（動画つき）</a>
+      <a href="/help">使い方を見る</a>
     </div>
     <ol className="library-guide-list">
       {GUIDES.map(item => <li key={item.clip}>
