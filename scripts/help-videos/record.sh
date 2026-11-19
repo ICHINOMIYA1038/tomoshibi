@@ -78,19 +78,20 @@ scene_03() {
 # ---- 04 舞台と客席を平面図で動かす（全シーン共通の物） ----
 scene_04() {
   fresh; start "$OUT/04.webm"
+  # 平面図を大きく見せる（並べた見え方だと、字幕が客席に重なる）
+  click_el '.desk-view-switch button' '平面図'
+  pause 700
   cap '平面図では、舞台・壁・バトン・客席も、そのままドラッグで動かせます'
   pause 900
-  click_el '.hierarchy-add-button'
+  # 見本の客席（前・上手）の席を押して選ぶ。ブロックの真ん中は通路で、つかめない
+  local p; p=$(at '.plan-map-scroll [data-menu-kind="audience"][aria-label^="客席・前・上手"] rect:nth-of-type(4)'); set -- $p
+  click_at "$1" "$2"
   pause 600
-  click_el '.add-tile' '客席'
-  pause 700
-  # 足した客席は舞台の前の遠くに置かれ、平面図の外になるので、縮めて見えるようにする
-  click_el '.plan-map-zoom button[aria-label="縮小"]'
-  pause 300
-  click_el '.plan-map-zoom button[aria-label="縮小"]'
+  cap '見本の客席は固定してあります。「固定中」を押すと動かせます'
+  pause 600
+  click_el 'button' '固定中'
   pause 700
   cap '客席は全シーン共通です。動かすと、すべてのシーンで変わります'
-  local p; p=$(at '.plan-map-scroll [data-menu-kind="audience"]'); set -- $p
   drag_to "$1" "$2" $(($1 + 40)) $(($2 - 20))
   pause 700
   cap '選ぶと上に出る丸い取っ手をドラッグすると、回せます（5° ごと）'
