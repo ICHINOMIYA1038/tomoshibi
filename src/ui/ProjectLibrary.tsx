@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useIsDirty, useStore } from '../store'
 import { deleteSceneLS, exportScene, listSavedScenes, loadSceneLS, type SerializedScene } from '../io/sceneIO'
 import { getActiveCloudProject, getActiveSavedProjectName, setActiveCloudProject, setActiveSavedProjectName } from '../io/mockProjectSession'
-import { flushMockAutosave, preserveMockDraftBeforeDemo, resetMockWorkspace, useMockWorkspaceState, waitForCloudSave } from '../io/mockWorkspace'
+import { flushMockAutosave, isUntouchedDemo, preserveMockDraftBeforeDemo, resetMockWorkspace, useMockWorkspaceState, waitForCloudSave } from '../io/mockWorkspace'
 import { createVenueTemplatePlan, VENUE_STUDY_LINKS, type VenueStudyKind } from '../demo/createVenueStudyPlans'
 import { createSampleProduction } from '../demo/createSampleProduction'
 import { audienceSeatPositions } from '../audienceLayout'
@@ -208,7 +208,8 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
   useEffect(() => {
     if (selectedKey === null && savedName) setSelectedKey(savedName)
   }, [plan.activeSceneId, savedName, selectedKey])
-  const hasDraft = plan.scenes.length > 0 && (dirty || cloudDirty || !savedName)
+  // 見本を開いただけのときは、編集中のプロジェクトとして出さない（件数にも数えない）
+  const hasDraft = plan.scenes.length > 0 && (dirty || cloudDirty || !savedName) && !isUntouchedDemo()
   const draftTitle = plan.projectTitle?.trim() || '名称未設定のプロジェクト'
   const items: LibraryItem[] = [
     ...(!user && hasDraft ? [{ key: '__draft', scene: exportScene(draftTitle), draft: true }] : []),
@@ -248,8 +249,10 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
   }
   const open = async (item: LibraryItem) => {
     if (item.draft) { onOpenEditor(); return }
-    if (!flushMockAutosave() && !await askConfirm('現在の変更を保存できませんでした。別のプロジェクトを開きますか？')) return
+    // 見本を開いただけかどうかは、保存し直す前に確かめる。一覧の画面で保存し直すと、見本の見た目の設定が外れて
+    // 「変えた」と見なされ、開いただけの見本がプロジェクトとして残っていた（2026-11-19）
     if (!preserveMockDraftBeforeDemo()) { setFeedback('現在の変更を端末に控えられませんでした。'); return }
+    if (!flushMockAutosave() && !await askConfirm('現在の変更を保存できませんでした。別のプロジェクトを開きますか？')) return
     loadSceneLS(item.scene.name)
     setActiveCloudProject(null)
     setActiveSavedProjectName(item.scene.name)
@@ -293,8 +296,9 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
       catch (error) { setCreateError(error instanceof Error ? error.message : '保存状態を確認できませんでした。'); setCreating(false); return }
       setCreating(false)
     }
-    if (!flushMockAutosave() && !await askConfirm('現在の変更を保存できませんでした。新しいプロジェクトを作りますか？')) return
+    // 見本を開いただけかどうかは、保存し直す前に確かめる（open と同じ理由）
     if (!user && !preserveMockDraftBeforeDemo()) { setCreateError('現在の変更を保存できませんでした。'); return }
+    if (!flushMockAutosave() && !await askConfirm('現在の変更を保存できませんでした。新しいプロジェクトを作りますか？')) return
     const previous = exportScene()
     const previousCloud = getActiveCloudProject()
     const previousName = getActiveSavedProjectName()
