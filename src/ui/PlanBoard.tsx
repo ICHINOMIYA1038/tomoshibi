@@ -16,6 +16,7 @@ import { isFlat, partCorners, resolveStageParts } from '../stageParts'
 import { toolFor } from '../tools'
 import { DEFAULT_VENUE_LAYOUT, stageFootprint, THEATRE } from '../venueLayout'
 import { useMapZoom } from './useMapZoom'
+import { multiTouch } from './touchCount'
 
 // 図の枠。客席の上の照明（前明かりなど）も縮めずに本当の位置に描くので、枠の下端まで同じ縮尺にする
 const MAP_WIDE = { left: 100, top: 70, width: 760, height: 548, svgWidth: 960, svgHeight: 630 }
@@ -222,13 +223,21 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
     ? fixtures.map((fixture, index) => ({ fixture, number: fixtureNumber(fixture, index) })).filter(({ fixture }) => fixtureShown(fixture))
     : []
   MAP = mapFrame(mapAspect, keyFixtures.length)
+  // 劇場の壁と客席。最初の縮尺に入れ、後ろの段の客席まで見えるようにする（2026-11-19 オーナー「入れる」。その分、舞台は小さく描かれる）
+  const houseOutline: StagePoint[] = []
+  {
+    const layout = plan.venueLayout ?? DEFAULT_VENUE_LAYOUT
+    const offset = layout.stageOffset ?? [0, 0]
+    for (const part of resolveStageParts(layout)) for (const [x, z] of partCorners(part)) houseOutline.push([x + offset[0], z + offset[1]])
+    for (const block of plan.audienceBlocks ?? []) houseOutline.push(...audienceSeatPositions(block))
+  }
   const fitBounds = equalScaleBounds(!plan.venueLayout ? { left: -8, right: 8, rear: -8, front: 2 }
     : stageLarge && !showWholeStage ? objectBounds(contentPoints, stageOutline)
       : {
-        left: Math.min(-8, ...[...stageOutline, ...contentPoints].map(point => point[0] - 2)),
-        right: Math.max(8, ...[...stageOutline, ...contentPoints].map(point => point[0] + 2)),
-        rear: Math.min(-8, ...[...stageOutline, ...contentPoints].map(point => point[1] - 2)),
-        front: Math.max(2, ...[...stageOutline, ...contentPoints].map(point => point[1] + 2)),
+        left: Math.min(-8, ...[...stageOutline, ...contentPoints].map(point => point[0] - 2), ...houseOutline.map(point => point[0] - .5)),
+        right: Math.max(8, ...[...stageOutline, ...contentPoints].map(point => point[0] + 2), ...houseOutline.map(point => point[0] + .5)),
+        rear: Math.min(-8, ...[...stageOutline, ...contentPoints].map(point => point[1] - 2), ...houseOutline.map(point => point[1] - .5)),
+        front: Math.max(2, ...[...stageOutline, ...contentPoints].map(point => point[1] + 2), ...houseOutline.map(point => point[1] + .5)),
       })
   // ドラッグの間は縮尺を変えない。物を動かすと収める範囲も変わり、つかんだ物が指から逃げる
   const [frozenBounds, setFrozenBounds] = useState<MapBounds | null>(null)
@@ -501,6 +510,8 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
     let turned = 0
     const move = (next: globalThis.PointerEvent) => {
       if (next.pointerId !== event.pointerId) return
+      // 2 本目の指が触れたら拡大のつもり。動かすのをやめる
+      if (multiTouch()) { up(next); return }
       let deg = angleOf(next) - start
       deg = ((deg + 540) % 360) - 180
       turned = Math.round(deg / 5) * 5
@@ -530,6 +541,8 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
     let moved = false
     const move = (next: globalThis.PointerEvent) => {
       if (next.pointerId !== event.pointerId) return
+      // 2 本目の指が触れたら拡大のつもり。動かすのをやめる
+      if (multiTouch()) { up(next); return }
       const [x, z] = rawMapPoint(next as unknown as PointerEvent<SVGSVGElement>, svg, true, bounds)
       moved = true
       onMove(round1(x - start[0]), round1(z - start[1]))
@@ -558,6 +571,8 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
     const start = stageFootprint(layout)
     const move = (next: globalThis.PointerEvent) => {
       if (next.pointerId !== event.pointerId) return
+      // 2 本目の指が触れたら拡大のつもり。動かすのをやめる
+      if (multiTouch()) { up(next); return }
       const [x, z] = rawMapPoint(next as unknown as PointerEvent<SVGSVGElement>, svg, true, bounds)
       const vertices = start.map((point, at) => at === index ? [round1(x), round1(z)] as StagePoint : point)
       useStore.getState().updateVenueLayout({ stageVertices: vertices.map(([px, pz]) => [round1(px - offset[0]), round1(pz - offset[1])] as StagePoint) })
@@ -576,6 +591,27 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
   const moveDrag = (event: PointerEvent<SVGSVGElement>) => {
     const start = dragStart.current
     if (!start || start.sceneId !== scene.id) return
+    // 2 本目の指が触れたら拡大のつもり。ドラッグをやめる（もう動かしていたら元に戻す）
+    if (multiTouch()) {
+      dragStart.current = null
+      setActiveDrag(null)
+      setFrozenBounds(null)
+      if (start.moved) {
+        if (start.kind === 'performer') {
+          const actor = useStore.getState().performers.find(item => item.id === start.id)
+          if (actor) updatePerformer(actor.id, { position: [start.from[0], actor.position[1], start.from[1]] })
+        } else if (start.kind === 'fixture' || start.kind === 'target') {
+          const fixture = useStore.getState().fixtures.find(item => item.id === start.id)
+          if (fixture && start.kind === 'target') updateFixture(fixture.id, { target: [start.from[0], fixture.target[1], start.from[1]] })
+          else if (fixture) updateFixture(fixture.id, { position: [start.from[0], fixture.position[1], start.from[1]],
+            ...(start.fromTarget ? { target: [start.fromTarget[0], fixture.target[1], start.fromTarget[1]] as [number, number, number] } : {}) })
+        } else {
+          const piece = useStore.getState().setPieces.find(item => item.id === start.id)
+          if (piece) updateSetPiece(piece.id, { position: [start.from[0], piece.position[1], start.from[1]] })
+        }
+      }
+      return
+    }
     // 押しただけ（指が数 px ぶれただけ）では動かさない。選ぶつもりで触れた照明が動いてしまうのを防ぐ
     if (!start.moved && start.client && Math.hypot(event.clientX - start.client[0], event.clientY - start.client[1]) < 6) return
     start.moved = true
