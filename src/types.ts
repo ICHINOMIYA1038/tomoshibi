@@ -1,7 +1,8 @@
 // 共通型 (循環参照を避けるため別ファイル)
 
 export type SetPieceKind = 'box' | 'platform' | 'riser' | 'gltf'
-export type SetPieceAppearance = 'basic' | 'bench' | 'door' | 'suitcase' | 'table' | 'bookshelf' | 'window' | 'smoke' | 'dryice'
+// backing: 窓や戸の外に置く、光る背景幕（照明ではなく装置として、自分で光る面。2026-11-20）
+export type SetPieceAppearance = 'basic' | 'bench' | 'door' | 'suitcase' | 'table' | 'bookshelf' | 'window' | 'smoke' | 'dryice' | 'backing'
 
 export interface SetPiece {
   id: string

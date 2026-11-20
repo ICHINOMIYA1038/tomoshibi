@@ -1,3 +1,4 @@
+import * as THREE from 'three'
 import { useGLTF } from '@react-three/drei'
 import { hitsHandle, useFloorDrag } from './floorDrag'
 import { recordHit } from '../objectMenu'
@@ -133,6 +134,13 @@ function SetPieceShape({ piece, size: [w, h, d] }: { piece: SetPiece; size: [num
       </mesh>
       <SmokeCloud piece={piece} size={[w, h, d]} />
     </>
+  }
+  // 光る背景幕：窓や戸の外の空・部屋の明かり。舞台の照明を受けず、色そのままに光る（本物では背景幕を裏から照らす）
+  if (piece.appearance === 'backing') {
+    return <mesh>
+      <planeGeometry args={[w, h]} />
+      <meshBasicMaterial color={color} side={THREE.DoubleSide} />
+    </mesh>
   }
   if (piece.appearance === 'window') {
     return <>

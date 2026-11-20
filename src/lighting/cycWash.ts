@@ -66,9 +66,10 @@ vec3 cycWash(vec3 p) {
     if (i >= uCycCount) break;
     vec2 rel = p.xz - uCycPos[i].xz;
     float depth = dot(rel, uCycDir[i]);
-    if (depth < 0.2) continue;
+    if (depth < 0.1) continue;
     float lateral = abs(dot(rel, vec2(-uCycDir[i].y, uCycDir[i].x)));
-    float halfWidth = 1.4 + 1.1 * depth;
+    // ロアーホリは横長の器具（地がすりの裏に床置きで並べるもの）として、1 灯で幕の幅を覆う
+    float halfWidth = uCycShape[i].x > 0.5 ? 7.5 : 1.4 + 1.1 * depth;
     float across = exp(-pow(lateral / halfWidth, 4.0));
     float reach = uCycShape[i].y;
     float v;
