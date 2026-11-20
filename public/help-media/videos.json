@@ -5,65 +5,65 @@
    "id": "01",
    "title": "道具を切り替える",
    "goal": "選択・移動・回転・拡大の違いと、キーでの切り替え方",
-   "sec": 19,
-   "src": "/help-media/01-8b541a63.mp4",
-   "poster": "/help-media/01-d384e570.jpg"
+   "sec": 20,
+   "src": "/help-media/01-f2b6b144.mp4",
+   "poster": "/help-media/01-fb5713f5.jpg"
   },
   {
    "id": "02",
    "title": "一覧で選ぶ・足す・親子にする",
    "goal": "一覧で物を選び、「＋ 追加」で足し、行を重ねて親子にして一緒に動かす",
    "sec": 17,
-   "src": "/help-media/02-ed4b01ab.mp4",
-   "poster": "/help-media/02-7685f7fc.jpg"
+   "src": "/help-media/02-f671a1f8.mp4",
+   "poster": "/help-media/02-d6b473ac.jpg"
   },
   {
    "id": "03",
    "title": "右クリックのメニュー",
    "goal": "物の操作と、押した場所に役者や照明を足す方法",
    "sec": 16,
-   "src": "/help-media/03-c80b6c27.mp4",
-   "poster": "/help-media/03-795bfec5.jpg"
+   "src": "/help-media/03-56ae8264.mp4",
+   "poster": "/help-media/03-eb764e41.jpg"
   },
   {
    "id": "04",
    "title": "舞台と客席を動かす",
    "goal": "見本の客席の固定を外し、平面図で動かし、丸い取っ手で回す（全シーン共通の物）",
-   "sec": 18,
-   "src": "/help-media/04-719bab35.mp4",
-   "poster": "/help-media/04-ae39ea03.jpg"
+   "sec": 19,
+   "src": "/help-media/04-7d8d42e7.mp4",
+   "poster": "/help-media/04-a797c2dd.jpg"
   },
   {
    "id": "05",
    "title": "照明の狙いを動かす",
    "goal": "右の設定の「3D でつかむ点」と、平面図の色の輪",
    "sec": 12,
-   "src": "/help-media/05-5149c751.mp4",
-   "poster": "/help-media/05-93cc79c8.jpg"
+   "src": "/help-media/05-11d0d2cc.mp4",
+   "poster": "/help-media/05-ce7c29f2.jpg"
   },
   {
    "id": "06",
    "title": "シーンを組み立てる",
    "goal": "シーンを足し、並べ替え、通しで見る",
    "sec": 19,
-   "src": "/help-media/06-909872fc.mp4",
-   "poster": "/help-media/06-09096ea1.jpg"
+   "src": "/help-media/06-ea59f5e0.mp4",
+   "poster": "/help-media/06-fcf94ae6.jpg"
   },
   {
    "id": "07",
    "title": "ほかのシーンにもコピーする",
    "goal": "変えた直後の帯で「この章・このあと・全シーン」にも入れる",
    "sec": 12,
-   "src": "/help-media/07-b7026faa.mp4",
-   "poster": "/help-media/07-7a853806.jpg"
+   "src": "/help-media/07-6961e27c.mp4",
+   "poster": "/help-media/07-ffe191e8.jpg"
   },
   {
    "id": "08",
    "title": "3D と平面図を切り替える",
    "goal": "平面図を大きく出し、上下・左右に並べ、仕込み図と明かりの見た目を切り替える",
    "sec": 19,
-   "src": "/help-media/08-fff30e90.mp4",
-   "poster": "/help-media/08-5a77e5f8.jpg"
+   "src": "/help-media/08-00981a77.mp4",
+   "poster": "/help-media/08-8a93ddc1.jpg"
   }
  ]
 }
