@@ -1,3 +1,4 @@
+import type { SetPiece } from '../types'
 import { useMemo, useRef, useEffect } from 'react'
 import * as THREE from 'three'
 import { useFrame, useThree } from '@react-three/fiber'
@@ -60,7 +61,27 @@ void main() {
 }
 `
 
-function shadowPriority(fixture: Fixture) {
+/** 光の通り道（器具から狙う点まで）に、窓の装置があるか。窓を通す光は、窓枠と壁の影で形が決まる */
+function passesWindow(fixture: Fixture, setPieces: SetPiece[]) {
+  const [px, py, pz] = fixture.position
+  const dx = fixture.target[0] - px, dy = fixture.target[1] - py, dz = fixture.target[2] - pz
+  const len2 = dx * dx + dy * dy + dz * dz
+  if (len2 < 1e-6) return false
+  return setPieces.some(piece => {
+    if (piece.appearance !== 'window' || !piece.size) return false
+    const [wx, wy, wz] = piece.position
+    const t = ((wx - px) * dx + (wy - py) * dy + (wz - pz) * dz) / len2
+    if (t <= 0 || t >= 1) return false
+    const cx = px + dx * t - wx, cy = py + dy * t - wy, cz = pz + dz * t - wz
+    const reach = Math.max(piece.size[0], piece.size[1]) * (piece.scale || 1) * 0.6
+    return cx * cx + cy * cy + cz * cz < reach * reach
+  })
+}
+
+// 影の枠は端末ごとに少ないので、影が見た目を決める器具から回す。
+// 窓を通す光は、窓枠と壁の影が無いと、壁をすり抜けて窓の形にならない（2026-11-20。前はゴボの模様で窓の形を出していたが、器具を動かすと模様だけが動いた）
+function shadowPriority(fixture: Fixture, setPieces: SetPiece[]) {
+  if (passesWindow(fixture, setPieces)) return 3
   if (FIXTURE_PROFILES[fixture.presetKey]?.kind === 'FollowSpot') return 2
   return hasMeasuredFresnel(fixture) ? 1 : 0
 }
@@ -90,19 +111,19 @@ export function Beams() {
     .filter(f => FIXTURE_PROFILES[f.presetKey]?.beamShape !== 'cyc')
     // 影の枠は少ないので、影がいちばん目立つピン（狭く強い光）に先に回す。ピンに影が無いと、
     // 役者の後ろの幕や窓に、役者の形の影ではなく丸い光がそのまま出た（2026-11-20）
-    .sort((a, b) => shadowPriority(b) - shadowPriority(a))
+    .sort((a, b) => shadowPriority(b, setPieces) - shadowPriority(a, setPieces))
     .slice(0, shadowLimit)
     .map(f => f.id))
   return (
     <group>
       {active.map(f => (
-        <Beam key={f.id} fixture={f} hazeDensity={hazeDensity} allowMap={mapped.has(f.id)} castShadow={shadowed.has(f.id)} />
+        <Beam key={f.id} fixture={f} hazeDensity={hazeDensity} allowMap={mapped.has(f.id)} castShadow={shadowed.has(f.id)} fineShadow={shadowed.has(f.id) && passesWindow(f, setPieces)} />
       ))}
     </group>
   )
 }
 
-function Beam({ fixture, hazeDensity, allowMap, castShadow }: { fixture: Fixture; hazeDensity: number; allowMap: boolean; castShadow: boolean }) {
+function Beam({ fixture, hazeDensity, allowMap, castShadow, fineShadow }: { fixture: Fixture; hazeDensity: number; allowMap: boolean; castShadow: boolean; fineShadow: boolean }) {
   const targetRef = useRef<THREE.Object3D>(new THREE.Object3D())
   const lightRef = useRef<THREE.SpotLight>(null)
   const coneRef = useRef<THREE.Mesh>(null)
@@ -179,9 +200,10 @@ function Beam({ fixture, hazeDensity, allowMap, castShadow }: { fixture: Fixture
         distance={0}
         decay={spotlight.decay}
         castShadow={castShadow}
-        shadow-mapSize-width={1024}
-        shadow-mapSize-height={1024}
-        shadow-bias={-0.0005}
+        // 窓を通す光は、細い桟の影と床に低い角度で落ちる形を出すため、影を細かく計算する
+        shadow-mapSize-width={fineShadow ? 2048 : 1024}
+        shadow-mapSize-height={fineShadow ? 2048 : 1024}
+        shadow-bias={fineShadow ? -0.0002 : -0.0005}
         shadow-normalBias={0.04}
       />
       <mesh
