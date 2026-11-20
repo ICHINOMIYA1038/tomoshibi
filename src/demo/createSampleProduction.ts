@@ -47,6 +47,7 @@ const C = {
   skyDawn: [0.9, 0.62, 0.7] as RGB,
   skyRed: [0.9, 0.36, 0.22] as RGB,
   skyGrey: [0.62, 0.66, 0.78] as RGB,
+  skyHot: [1, 0.94, 0.78] as RGB,
 }
 
 type Light = {
@@ -56,9 +57,9 @@ type Light = {
 
 const LIGHTS: Light[] = [
   // 前明かり（客席の上のバトン）：舞台の前の方を下手・中央・上手の 3 つに分け、隣どうしを重ねてむらなく覆う。仰角は約 45°
-  { key: 'fohL', name: '前明かり・下手', number: '1', preset: 'Fresnel10', measured: 'fresnel', position: [-4.2, 8.6, 6.8], target: [-4.0, 1.5, 0.2], beam: 44, barnDoorAngles: { top: 3, left: 3, right: 30 } },
+  { key: 'fohL', name: '前明かり・下手', number: '1', preset: 'Fresnel10', measured: 'fresnel', position: [-4.2, 8.6, 6.8], target: [-4.0, 1.5, 0.2], beam: 44, barnDoorAngles: { top: 3, left: 3, right: 16 } },
   { key: 'fohC', name: '前明かり・中央', number: '2', preset: 'Fresnel10', measured: 'fresnel', position: [0, 8.6, 6.8], target: [0, 1.5, 0.0], beam: 44, barnDoorAngles: { top: 3, left: 30, right: 30 } },
-  { key: 'fohR', name: '前明かり・上手', number: '3', preset: 'Fresnel10', measured: 'fresnel', position: [4.2, 8.6, 6.8], target: [4.0, 1.5, 0.2], beam: 44, barnDoorAngles: { top: 3, right: 3, left: 30 } },
+  { key: 'fohR', name: '前明かり・上手', number: '3', preset: 'Fresnel10', measured: 'fresnel', position: [4.2, 8.6, 6.8], target: [4.0, 1.5, 0.2], beam: 44, barnDoorAngles: { top: 3, right: 3, left: 16 } },
   // サス（1 番バトン）：舞台の奥のエリアを 3 つに分けて真上寄りから。ホリの手前で切り、幕に当てない。両端のサスは外側（袖幕の側）も切る
   { key: 'usL', name: 'サス・下手', number: '4', preset: 'Fresnel10', measured: 'fresnel', position: [-4.2, 8, 0.8], target: [-4.2, 1.5, -3.6], beam: 46, barnDoorAngles: { top: 4, right: 14 } },
   { key: 'usC', name: 'サス・中央', number: '5', preset: 'Fresnel10', measured: 'fresnel', position: [0, 8, 0.8], target: [0, 1.5, -3.8], beam: 46, barnDoorAngles: { top: 4 } },
@@ -106,19 +107,20 @@ const PROPS: Record<string, Prop> = {
   benchT: { name: '宴の長椅子', appearance: 'bench', size: [2.6, 0.45, 0.45], color: '#5c4232' },
   // バルコニー：ジュリエットの部屋の壁（建物の正面）に窓、手前に張り出した床と石の手すり。
   // 壁が無いと窓が夜空に浮いて見え、手すりが無いと灰色の箱の上に立っているだけに見えた（2026-11-20）
-  balcony: { name: 'バルコニー', size: [2.6, 2.0, 1.4], color: '#8f8679' },
+  balcony: { name: 'バルコニー', size: [2.6, 2.0, 1.4], color: '#5f584f' },
   balconyRail: { name: 'バルコニーの手すり', size: [2.7, 0.8, 0.14], color: '#8a8173' },
   balconyWall: { name: 'ジュリエットの部屋の壁', size: [4.0, 6.4, 0.25], color: '#a39a8c' },
   balconyWindow: { name: 'ジュリエットの部屋の窓', appearance: 'window', size: [1.6, 2.2, 0.14], color: '#3a4250' },
   cellTable: { name: '神父の机', appearance: 'table', size: [1.6, 0.78, 0.9], color: '#6b4f3e' },
   herbs: { name: '薬草の棚', appearance: 'bookshelf', size: [2.0, 2.4, 0.45], color: '#4b3833' },
   bed: { name: 'ジュリエットの寝台', size: [2.2, 0.5, 1.3], color: '#7a5b5b' },
-  roomWindow: { name: '寝室の窓', appearance: 'window', size: [2.4, 2.6, 0.16], color: '#5b6877' },
+  // 家の窓の大きさ（幅 1.6m・高さ 2.0m）。2.4×2.6m では人の大きさに対して大きすぎた（2026-11-20）
+  roomWindow: { name: '部屋の窓', appearance: 'window', size: [1.6, 2.0, 0.14], color: '#4a4038' },
   // 寝室の壁。窓のまわりを 4 枚の板で囲み、窓明かりが窓の穴だけを通るようにする（壁の板は光をさえぎる）
-  roomWallBelow: { name: '寝室の壁（窓の下）', size: [2.4, 1.4, 0.15], color: '#6a6159' },
-  roomWallAbove: { name: '寝室の壁（窓の上）', size: [2.4, 1.6, 0.15], color: '#6a6159' },
-  roomWallL: { name: '寝室の壁（窓の奥側）', size: [1.3, 5.6, 0.15], color: '#6a6159' },
-  roomWallR: { name: '寝室の壁（窓の手前側）', size: [1.3, 5.6, 0.15], color: '#6a6159' },
+  roomWallBelow: { name: '部屋の壁（窓の下）', size: [1.6, 1.7, 0.15], color: '#6a6159' },
+  roomWallAbove: { name: '部屋の壁（窓の上）', size: [1.6, 1.9, 0.15], color: '#6a6159' },
+  roomWallL: { name: '部屋の壁（窓の奥側）', size: [1.4, 5.6, 0.15], color: '#6a6159' },
+  roomWallR: { name: '部屋の壁（窓の手前側）', size: [1.4, 5.6, 0.15], color: '#6a6159' },
   bier: { kind: 'platform', name: '霊廟の棺台', size: [2.4, 0.7, 1.1], color: '#55504c' },
 }
 type PropPlace = { at: Vec3; rotationY?: number }
@@ -186,7 +188,7 @@ const SCENES: Scene[] = [
       usL: { level: 0.16, color: C.gold }, usC: { level: 0.14, color: C.gold }, usR: { level: 0.16, color: C.gold },
       backL: { level: 0.3, color: C.rose }, backR: { level: 0.3, color: C.rose },
       cycL: { level: 0.24, color: C.skyBall }, cycR: { level: 0.24, color: C.skyBall },
-      pin: { level: 0.008, color: C.warm, follow: 'ジュリエット' }, sideL: { level: 0.3, color: C.amber }, sideR: { level: 0.26, color: C.rose },
+      pin: { level: 0.004, color: C.warm, target: [-0.05, 1.2, -0.65], beam: 6 }, sideL: { level: 0.3, color: C.amber }, sideR: { level: 0.26, color: C.rose },
     },
   },
   {
@@ -198,39 +200,41 @@ const SCENES: Scene[] = [
       usL: { level: 0.06, color: C.n78 }, usC: { level: 0.06, color: C.n78 }, usR: { level: 0.06, color: C.n78 },
       backL: { level: 0.16, color: C.steel }, backR: { level: 0.2, color: C.steel },
       cycL: { level: 0.14, color: C.skyNight }, cycR: { level: 0.14, color: C.skyNight },
-      balconySp: { level: 0.2, color: C.moonDeep }, moon: { level: 0.6, color: C.moon }, sideR: { level: 0.26, color: C.moon },
+      balconySp: { level: 0.12, color: C.moonDeep }, moon: { level: 0.3, color: C.lavender }, sideR: { level: 0.26, color: C.moon },
     },
   },
   {
-    chapter: 1, title: 'ロレンス神父の庵', triggerType: 'light', trigger: '朝の光', note: '朝の庵。ひそかな婚礼。窓枠の形の光が床に入り、二人と神父を結ぶ。',
-    cast: { 'ロレンス神父': { position: [0, 0, -3.2], facingDeg: 0 }, 'ロミオ': { position: [-1.0, 0, -2.0], facingDeg: 60 }, 'ジュリエット': { position: [1.0, 0, -2.0], facingDeg: -60 } },
-    props: { cellTable: { at: [-2.6, 0.39, -4.2] }, herbs: { at: [3.8, 1.2, -6.2] } },
+    chapter: 1, title: 'ロレンス神父の庵', triggerType: 'light', trigger: '朝の光', note: '朝の庵。ひそかな婚礼。上手の窓から朝の光が低く差し込み、神父を照らす。二人は光の縁に立つ。',
+    // 神父は窓の光の中に、二人は光の縁に。横一列に並べない
+    cast: { 'ロレンス神父': { position: [0.4, 0, -2.7], facingDeg: -20 }, 'ロミオ': { position: [-1.3, 0, -1.6], facingDeg: 55 }, 'ジュリエット': { position: [1.4, 0, -1.3], facingDeg: -110 } },
+    props: { cellTable: { at: [-2.6, 0.39, -4.2] }, herbs: { at: [-0.8, 1.2, -6.2] }, roomWindow: { at: [4.9, 2.7, -4.5], rotationY: -1.18 }, roomWallBelow: { at: [4.9, 0.85, -4.5], rotationY: -1.18 }, roomWallAbove: { at: [4.9, 4.65, -4.5], rotationY: -1.18 }, roomWallL: { at: [4.33, 2.8, -5.89], rotationY: -1.18 }, roomWallR: { at: [5.47, 2.8, -3.11], rotationY: -1.18 } },
     look: {
       fohL: { level: 0.12, color: C.c64 }, fohC: { level: 0.16, color: C.c64 }, fohR: { level: 0.12, color: C.c64 },
       usL: { level: 0.08, color: C.warm }, usC: { level: 0.08, color: C.warm }, usR: { level: 0.08, color: C.warm },
       backL: { level: 0.12, color: C.amber }, backR: { level: 0.12, color: C.amber },
-      cycL: { level: 0.12, color: C.skyDawn }, cycR: { level: 0.12, color: C.skyDawn },
+      // 室内なのでホリは落とす
       window: { level: 0.8, color: C.amber }, sideR: { level: 0.16, color: C.amber },
     },
   },
   {
-    chapter: 2, title: '広場の決闘', triggerType: 'other', trigger: '剣が抜かれる', note: '照りつける午後。マキューシオが倒れ、ロミオがティボルトを討つ。赤は空と逆光にだけ入れ、顔は琥珀で見せる。',
-    cast: { 'ロミオ': { position: [-1.2, 0, -1.8], facingDeg: 80 }, 'ティボルト': { position: [1.4, 0, -1.9], facingDeg: -80 }, 'マキューシオ': { position: [-3.4, 0, -2.8], facingDeg: 40, pose: 'kneeling' } },
+    chapter: 2, title: '広場の決闘', triggerType: 'other', trigger: '剣が抜かれる', note: '照りつける真夏の午後。マキューシオが倒れ、ロミオがティボルトを討つ。白い空、強い日差しで短く濃い影。',
+    cast: { 'ロミオ': { position: [-1.0, 0, -0.6], facingDeg: 75 }, 'ティボルト': { position: [1.2, 0, -0.9], facingDeg: -95 }, 'マキューシオ': { position: [-3.2, 0, -2.0], facingDeg: 40, pose: 'kneeling' } },
     props: { fountain: { at: [0, 0.4, -4.2] }, benchL: { at: [-4.2, 0.225, -4.6] } },
     look: {
-      fohL: { level: 0.14, color: C.amber }, fohC: { level: 0.16, color: C.amber }, fohR: { level: 0.14, color: C.amber },
-      usL: { level: 0.1, color: C.amber }, usC: { level: 0.1, color: C.amber }, usR: { level: 0.1, color: C.amber },
-      backL: { level: 0.32, color: C.red }, backR: { level: 0.32, color: C.red },
-      cycL: { level: 0.42, color: C.skyRed }, cycR: { level: 0.42, color: C.skyRed },
+      // 真夏の照りつける午後：空は白に近い黄、地明かりは強く、トップ寄りのサスを強めて影を短く濃く
+      fohL: { level: 0.3, color: C.pale }, fohC: { level: 0.32, color: C.pale }, fohR: { level: 0.3, color: C.pale },
+      usL: { level: 0.4, color: C.day }, usC: { level: 0.4, color: C.day }, usR: { level: 0.4, color: C.day },
+      backL: { level: 0.34, color: C.amber }, backR: { level: 0.34, color: C.amber },
+      cycL: { level: 0.6, color: C.skyHot }, cycR: { level: 0.6, color: C.skyHot },
       sideL: { level: 0.36, color: C.amber }, sideR: { level: 0.36, color: C.amber },
     },
   },
   {
     chapter: 2, title: '夜明けの別れ', triggerType: 'sound', trigger: '鳥の声', note: '寝室の夜明け。窓の外がしらむ。追放されるロミオとジュリエットの別れ。',
     cast: { 'ロミオ': { position: [-0.4, 0, -2.4], facingDeg: 70 }, 'ジュリエット': { position: [0.8, 0, -2.4], facingDeg: -70 } },
-    props: { bed: { at: [-2.6, 0.25, -3.6] }, roomWindow: { at: [4.9, 2.7, -4.5], rotationY: -1.18 }, roomWallBelow: { at: [4.9, 0.7, -4.5], rotationY: -1.18 }, roomWallAbove: { at: [4.9, 4.8, -4.5], rotationY: -1.18 }, roomWallL: { at: [4.2, 2.8, -6.21], rotationY: -1.18 }, roomWallR: { at: [5.6, 2.8, -2.79], rotationY: -1.18 } },
+    props: { bed: { at: [-2.6, 0.25, -3.6] }, roomWindow: { at: [4.9, 2.7, -4.5], rotationY: -1.18 }, roomWallBelow: { at: [4.9, 0.85, -4.5], rotationY: -1.18 }, roomWallAbove: { at: [4.9, 4.65, -4.5], rotationY: -1.18 }, roomWallL: { at: [4.33, 2.8, -5.89], rotationY: -1.18 }, roomWallR: { at: [5.47, 2.8, -3.11], rotationY: -1.18 } },
     look: {
-      fohL: { level: 0.1, color: C.c64 }, fohC: { level: 0.16, color: C.c64 }, fohR: { level: 0.1, color: C.c64 },
+      fohL: { level: 0.14, color: C.c64 }, fohC: { level: 0.22, color: C.c64 }, fohR: { level: 0.14, color: C.c64 },
       usL: { level: 0.06, color: C.lavender }, usC: { level: 0.06, color: C.lavender }, usR: { level: 0.06, color: C.lavender },
       backL: { level: 0.14, color: C.lavender }, backR: { level: 0.14, color: C.lavender },
       cycL: { level: 0.22, color: C.skyDawn, target: [-3.4, 1.8, -7.0] }, cycR: { level: 0.22, color: C.skyDawn, target: [3.4, 1.8, -7.0] },
@@ -238,19 +242,22 @@ const SCENES: Scene[] = [
     },
   },
   {
-    chapter: 3, title: '霊廟', triggerType: 'other', trigger: '暗闇', note: '冷たい霊廟。棺台に眠るジュリエット。たいまつの暖色をピンで一つだけ、あとは青い闇。暗くても、顔は薄い前明かりで読めるようにする。',
-    cast: { 'ジュリエット': { position: [0, 0.7, -3.4], facingDeg: 90, pose: 'lying' }, 'ロミオ': { position: [-1.5, 0, -2.7], facingDeg: 70, pose: 'kneeling' } },
+    chapter: 3, title: '霊廟', triggerType: 'other', trigger: '暗闇', note: '冷たい霊廟。棺台に眠るジュリエットに、上から青白い光が一つ。あとは青い闇。暗くても、顔は前明かりで読めるようにする。',
+    cast: { 'ジュリエット': { position: [0, 0.7, -3.4], facingDeg: 90, pose: 'lying' }, 'ロミオ': { position: [-1.5, 0, -2.5], facingDeg: 70, pose: 'kneeling' } },
     props: { bier: { at: [0, 0.35, -3.4] } },
     look: {
-      fohL: { level: 0.05, color: C.c64 }, fohC: { level: 0.07, color: C.c64 },
-      backL: { level: 0.22, color: C.steel }, backR: { level: 0.22, color: C.steel },
-      cycL: { level: 0.06, color: C.skyDeep, target: [-3.4, 3.6, -7.0] }, cycR: { level: 0.06, color: C.skyDeep, target: [3.4, 3.6, -7.0] },
-      pin: { level: 0.008, color: C.torch, follow: 'ジュリエット' }, sideL: { level: 0.3, color: C.torch },
+      // 暗くても顔が読めるよう、前明かりを地明かりより明るく残す。ジュリエットには上から弱い青白い光（サス・中央を細く）
+      fohL: { level: 0.1, color: C.c64 }, fohC: { level: 0.12, color: C.c64 },
+      usC: { level: 0.07, color: C.steel },
+      backL: { level: 0.18, color: C.steel }, backR: { level: 0.18, color: C.steel },
+      cycL: { level: 0.05, color: C.skyDeep, target: [-3.4, 3.6, -7.0] }, cycR: { level: 0.05, color: C.skyDeep, target: [3.4, 3.6, -7.0] },
+      pin: { level: 0.0008, color: C.c64, follow: 'ジュリエット' },
     },
   },
   {
     chapter: 3, title: '両家の和解', triggerType: 'light', trigger: '夜が明ける', note: '灰色の夜明け。両家が棺台を囲み、手を取り合う。空がゆっくり白み、舞台全体を静かに見せて終える。',
-    cast: { 'ロレンス神父': { position: [0, 0, -1.6], facingDeg: 0 }, '乳母': { position: [-2.4, 0, -2.2], facingDeg: 50 }, 'ジュリエット': { position: [0, 0.7, -3.4], facingDeg: 90, pose: 'lying' }, 'ロミオ': { position: [-1.5, 0, -2.7], facingDeg: 70, pose: 'kneeling' } },
+    // ジュリエットの前に人を立てない。ロミオは息絶えて棺台の脇に横たわる
+    cast: { 'ロレンス神父': { position: [1.9, 0, -2.5], facingDeg: -70 }, '乳母': { position: [-2.3, 0, -2.4], facingDeg: 60 }, 'ジュリエット': { position: [0, 0.7, -3.4], facingDeg: 90, pose: 'lying' }, 'ロミオ': { position: [-1.75, 0, -3.3], facingDeg: 0, pose: 'lying' } },
     props: { bier: { at: [0, 0.35, -3.4] } },
     fadeSec: 8,
     look: {
@@ -258,7 +265,7 @@ const SCENES: Scene[] = [
       usL: { level: 0.12, color: C.pale }, usC: { level: 0.12, color: C.pale }, usR: { level: 0.12, color: C.pale },
       backL: { level: 0.16, color: C.lavender }, backR: { level: 0.16, color: C.lavender },
       cycL: { level: 0.4, color: C.skyGrey, target: [-3.4, 2.4, -7.0] }, cycR: { level: 0.4, color: C.skyGrey, target: [3.4, 2.4, -7.0] },
-      pin: { level: 0.004, color: C.pale, follow: 'ジュリエット' },
+      pin: { level: 0.0012, color: C.pale, follow: 'ジュリエット' },
     },
   },
 ]
@@ -377,7 +384,8 @@ export function createSampleProduction() {
       const raw = look[light.key]
       const cue: Cue = typeof raw === 'number' ? { level: raw } : raw ?? { level: 0 }
       // 中の地明かりは舞台に近い真上寄りから当てるので、同じ値だと前明かりより強く、床の真ん中にたまりができる。距離の差を見込んで弱め、前明かりを少し足す
-      const balance = /^us/.test(light.key) ? 0.62 : /^foh/.test(light.key) ? 1.15 : 1
+      // 顔を床より明るく：前明かりを強め、真上寄りのサスを抑える（2026-11-20 講評「床が人物より明るい」）
+      const balance = /^us/.test(light.key) ? 0.5 : /^foh/.test(light.key) ? 1.5 : 1
       const level = Math.min(1, cue.level * balance * (light.measured === 'fresnel' ? FRESNEL_GAIN : 1))
       store.updateFixture(lightIds[index], {
         intensity: level, enabled: level > 0,
