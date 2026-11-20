@@ -5,10 +5,10 @@
 // - 地明かりは、客席の上のバトンの前明かり 3 灯と、1 番バトンのサス 3 灯で、間口 3 × 奥行き 2 のエリアを覆う。どの場面も前明かりを残して顔を見せる
 // - 逆光は 4 番バトンから 2 灯。濃い色（赤・濃い青）は逆光とホリにだけ入れ、顔には当てない
 // - ホリゾントは 4 番バトン（幕から約 2.5m）から 2 灯。離しすぎると幕の上に暗い波ができた
-// - ピンは客席の後ろから追う。場面ごとに追う役者と絞りを決める（バルコニーは窓の前なので、上半身だけに絞る）（吊った器具は場面の途中で向きを変えられないので、狙いを変えるのはピンだけ）
+// - ピンは客席の後ろから追う。場面ごとに追う役者と絞りを決める（バルコニーはピンを使わず、バルコニーの特別で照らす）（吊った器具は場面の途中で向きを変えられないので、狙いを変えるのはピンだけ）
 // - 月明かり（木漏れ日のゴボ）は木のある庭の場面だけ。窓明かり（窓枠のゴボ）は朝の室内の 2 場面
 // - 横明かりは、袖幕のすき間（2 番の袖の手前）から人の高さを狙う。袖幕の奥から当てると、幕のひだの影が床に並んだ
-// - 器具は 15 灯（上限 16）。見本を開いた人が 1 灯は足せるようにしておく
+// - 器具は 16 灯（上限 16）。バルコニーの特別を足して、上限まで使う（2026-11-20、リアルさを優先）
 // - セットが替わる場面は暗転で転換する（通しで見るでは、明かりを消し切ってからセットと役者を入れ替える）
 import { useStore, type AudienceBlock, type Fixture, type SceneTriggerType } from '../store'
 import type { SetPiece } from '../types'
@@ -28,6 +28,8 @@ const C = {
   night: [0.8, 0.84, 1] as RGB,
   steel: [0.6, 0.72, 1] as RGB,
   moon: [0.62, 0.74, 1] as RGB,
+  // 白熱の器具に掛ける濃い青（月明かり用の濃い青）。薄い青だと白熱の黄みで中和されて、月の光が暖かい白に見えた
+  moonDeep: [0.2, 0.34, 1] as RGB,
   lavender: [0.8, 0.72, 1] as RGB,
   red: [1, 0.42, 0.3] as RGB,
   amber: [1, 0.72, 0.45] as RGB,
@@ -75,6 +77,9 @@ const LIGHTS: Light[] = [
   { key: 'window', name: '窓明かり', number: '13', preset: 'Source4_26', position: [6.6, 3.6, -5.2], target: [-0.2, 0, -2.4], beam: 26, gobo: 'window' },
   // 横明かり：2 番の袖幕の手前のすき間に立てたタワーから、向かいの役者の胸の高さを狙う。
   // 光軸より上はシャッターで切る（切らないと、役者を越えた光が向かいの壁を茶色く照らした）
+  // バルコニーの特別：2 番バトンから、バルコニーと部屋の壁をまとめて柔らかく。ピンで追うと、壁に丸い光が残った（2026-11-20）。
+  // 下手側（ホリの側）はシャッターで切る
+  { key: 'balconySp', name: 'バルコニーの特別', number: '16', preset: 'Source4_36', position: [2.6, 8.0, -0.65], target: [3.2, 3.0, -5.6], beam: 44, barnDoorAngles: { left: 9 } },
   { key: 'sideL', name: '横明かり・下手', number: '14', preset: 'Source4_36', position: [-7.6, 3.2, -0.7], target: [2.0, 1.2, -1.8], beam: 26, barnDoorAngles: { top: 3 } },
   { key: 'sideR', name: '横明かり・上手', number: '15', preset: 'Source4_36', position: [7.6, 3.2, -0.7], target: [-2.0, 1.2, -1.8], beam: 26, barnDoorAngles: { top: 3 } },
 ]
@@ -99,12 +104,21 @@ const PROPS: Record<string, Prop> = {
   col3: { name: '柱 3', size: [0.42, 7.2, 0.42], color: '#8c8273' },
   col4: { name: '柱 4', size: [0.42, 7.2, 0.42], color: '#8c8273' },
   benchT: { name: '宴の長椅子', appearance: 'bench', size: [2.6, 0.45, 0.45], color: '#5c4232' },
-  balcony: { name: 'バルコニー', size: [2.6, 2.0, 1.4], color: '#9a8c7c' },
+  // バルコニー：ジュリエットの部屋の壁（建物の正面）に窓、手前に張り出した床と石の手すり。
+  // 壁が無いと窓が夜空に浮いて見え、手すりが無いと灰色の箱の上に立っているだけに見えた（2026-11-20）
+  balcony: { name: 'バルコニー', size: [2.6, 2.0, 1.4], color: '#8f8679' },
+  balconyRail: { name: 'バルコニーの手すり', size: [2.7, 0.8, 0.14], color: '#8a8173' },
+  balconyWall: { name: 'ジュリエットの部屋の壁', size: [4.0, 6.4, 0.25], color: '#a39a8c' },
   balconyWindow: { name: 'ジュリエットの部屋の窓', appearance: 'window', size: [1.6, 2.2, 0.14], color: '#3a4250' },
   cellTable: { name: '神父の机', appearance: 'table', size: [1.6, 0.78, 0.9], color: '#6b4f3e' },
   herbs: { name: '薬草の棚', appearance: 'bookshelf', size: [2.0, 2.4, 0.45], color: '#4b3833' },
   bed: { name: 'ジュリエットの寝台', size: [2.2, 0.5, 1.3], color: '#7a5b5b' },
   roomWindow: { name: '寝室の窓', appearance: 'window', size: [2.4, 2.6, 0.16], color: '#5b6877' },
+  // 寝室の壁。窓のまわりを 4 枚の板で囲み、窓明かりが窓の穴だけを通るようにする（壁の板は光をさえぎる）
+  roomWallBelow: { name: '寝室の壁（窓の下）', size: [2.4, 1.4, 0.15], color: '#6a6159' },
+  roomWallAbove: { name: '寝室の壁（窓の上）', size: [2.4, 1.6, 0.15], color: '#6a6159' },
+  roomWallL: { name: '寝室の壁（窓の奥側）', size: [1.3, 5.6, 0.15], color: '#6a6159' },
+  roomWallR: { name: '寝室の壁（窓の手前側）', size: [1.3, 5.6, 0.15], color: '#6a6159' },
   bier: { kind: 'platform', name: '霊廟の棺台', size: [2.4, 0.7, 1.1], color: '#55504c' },
 }
 type PropPlace = { at: Vec3; rotationY?: number }
@@ -178,13 +192,13 @@ const SCENES: Scene[] = [
   {
     chapter: 1, title: 'バルコニー', triggerType: 'other', trigger: '夜の庭', note: '月夜の庭。上手のバルコニーにジュリエット、下の木陰にロミオ。月明かりが木漏れ日の形で落ちる。顔は薄い前明かりで残す。',
     cast: { 'ジュリエット': { position: [3.2, 2.0, -5.0], facingDeg: -30 }, 'ロミオ': { position: [0.6, 0, -2.6], facingDeg: 150 } },
-    props: { balcony: { at: [3.2, 1.0, -5.0] }, balconyWindow: { at: [3.2, 3.1, -5.75] }, benchL: { at: [-2.6, 0.225, -3.2] } },
+    props: { balcony: { at: [3.2, 1.0, -5.0] }, balconyRail: { at: [3.2, 2.4, -4.35] }, balconyWall: { at: [3.2, 3.2, -5.95] }, balconyWindow: { at: [3.2, 3.1, -5.75] }, benchL: { at: [-2.6, 0.225, -3.2] } },
     look: {
       fohL: { level: 0.06, color: C.c64 }, fohC: { level: 0.08, color: C.c64 }, fohR: { level: 0.08, color: C.c64 },
       usL: { level: 0.06, color: C.n78 }, usC: { level: 0.06, color: C.n78 }, usR: { level: 0.06, color: C.n78 },
       backL: { level: 0.16, color: C.steel }, backR: { level: 0.2, color: C.steel },
       cycL: { level: 0.14, color: C.skyNight }, cycR: { level: 0.14, color: C.skyNight },
-      pin: { level: 0.003, color: C.c64, follow: 'ジュリエット', beam: 2 }, moon: { level: 0.6, color: C.moon }, sideR: { level: 0.26, color: C.moon },
+      balconySp: { level: 0.2, color: C.moonDeep }, moon: { level: 0.6, color: C.moon }, sideR: { level: 0.26, color: C.moon },
     },
   },
   {
@@ -214,7 +228,7 @@ const SCENES: Scene[] = [
   {
     chapter: 2, title: '夜明けの別れ', triggerType: 'sound', trigger: '鳥の声', note: '寝室の夜明け。窓の外がしらむ。追放されるロミオとジュリエットの別れ。',
     cast: { 'ロミオ': { position: [-0.4, 0, -2.4], facingDeg: 70 }, 'ジュリエット': { position: [0.8, 0, -2.4], facingDeg: -70 } },
-    props: { bed: { at: [-2.6, 0.25, -3.6] }, roomWindow: { at: [4.9, 2.7, -4.5], rotationY: -1.18 } },
+    props: { bed: { at: [-2.6, 0.25, -3.6] }, roomWindow: { at: [4.9, 2.7, -4.5], rotationY: -1.18 }, roomWallBelow: { at: [4.9, 0.7, -4.5], rotationY: -1.18 }, roomWallAbove: { at: [4.9, 4.8, -4.5], rotationY: -1.18 }, roomWallL: { at: [4.2, 2.8, -6.21], rotationY: -1.18 }, roomWallR: { at: [5.6, 2.8, -2.79], rotationY: -1.18 } },
     look: {
       fohL: { level: 0.1, color: C.c64 }, fohC: { level: 0.16, color: C.c64 }, fohR: { level: 0.1, color: C.c64 },
       usL: { level: 0.06, color: C.lavender }, usC: { level: 0.06, color: C.lavender }, usR: { level: 0.06, color: C.lavender },
