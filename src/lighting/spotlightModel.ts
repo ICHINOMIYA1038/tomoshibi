@@ -13,6 +13,14 @@ function smoothEdge(value: number, start: number) {
   return t * t * (3 - 2 * t)
 }
 
+// エリスポとピンは、レンズで光の縁をくっきり結ぶ器具。どの器具も同じぼけ（0.6）で描くと、ピンの丸が白いもやに見えた。
+// 縁のぼけは、ビーム角とフィールド角の差の分にする（エリスポ 26° なら約 0.17、ピンなら約 0.25。2026-11-20）
+const HARD_EDGE_KINDS = new Set(['Profile', 'LED_Profile', 'FollowSpot'])
+function hardEdgePenumbra(profile: (typeof FIXTURE_PROFILES)[string] | undefined): number | undefined {
+  if (!profile || !HARD_EDGE_KINDS.has(profile.kind)) return undefined
+  return Math.min(0.6, Math.max(0.08, 1 - profile.beamAngleDeg / profile.fieldAngleDeg + 0.05))
+}
+
 export function cycBeamAttenuation(horizontal: number, vertical: number) {
   return smoothEdge(horizontal, 0.46) * smoothEdge(vertical, 0.7)
 }
@@ -68,7 +76,7 @@ export function fixtureSpotlightModel(fixture: Fixture) {
     color: fixtureSpotlightColor(fixture),
     fieldAngleRad,
     halfAngle,
-    penumbra: SPOT_PENUMBRA,
+    penumbra: hardEdgePenumbra(profile) ?? SPOT_PENUMBRA,
     decay: SPOT_DECAY,
     beamShape: profile?.beamShape,
     map: (hasProfileShutter(fixture) ? profileShutterMap(fixture, halfAngle) : null) as THREE.Texture | null,

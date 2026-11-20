@@ -38,6 +38,8 @@ const C = {
   c64: [0.92, 0.95, 1] as RGB,
   skyDay: [0.55, 0.75, 1] as RGB,
   skyGold: [1, 0.66, 0.36] as RGB,
+  // 夜の宴の窓の外。舞台の金色と対比させる
+  skyBall: [0.12, 0.2, 0.62] as RGB,
   skyNight: [0.1, 0.16, 0.48] as RGB,
   skyDeep: [0.06, 0.08, 0.3] as RGB,
   skyDawn: [0.9, 0.62, 0.7] as RGB,
@@ -59,8 +61,9 @@ const LIGHTS: Light[] = [
   { key: 'usL', name: 'サス・下手', number: '4', preset: 'Fresnel10', measured: 'fresnel', position: [-4.2, 8, 0.8], target: [-4.2, 1.5, -3.6], beam: 46, barnDoorAngles: { top: 4 } },
   { key: 'usC', name: 'サス・中央', number: '5', preset: 'Fresnel10', measured: 'fresnel', position: [0, 8, 0.8], target: [0, 1.5, -3.8], beam: 46, barnDoorAngles: { top: 4 } },
   { key: 'usR', name: 'サス・上手', number: '6', preset: 'Fresnel10', measured: 'fresnel', position: [4.2, 8, 0.8], target: [4.2, 1.5, -3.6], beam: 46, barnDoorAngles: { top: 4 } },
-  { key: 'backL', name: '逆光・下手', number: '7', preset: 'Fresnel10', measured: 'fresnel', position: [-3, 8, -4.15], target: [-2.4, 0, -0.8], beam: 44 },
-  { key: 'backR', name: '逆光・上手', number: '8', preset: 'Fresnel10', measured: 'fresnel', position: [3, 8, -4.15], target: [2.4, 0, -0.8], beam: 44 },
+  // 逆光は奥側（前へ下向きに当てるので、バンドアの「下側」）を切る。切らないと、外側の弱い光がホリに当たって波形が出た（2026-11-20）
+  { key: 'backL', name: '逆光・下手', number: '7', preset: 'Fresnel10', measured: 'fresnel', position: [-3, 8, -4.15], target: [-2.4, 0, -0.8], beam: 44, barnDoorAngles: { bottom: 12 } },
+  { key: 'backR', name: '逆光・上手', number: '8', preset: 'Fresnel10', measured: 'fresnel', position: [3, 8, -4.15], target: [2.4, 0, -0.8], beam: 44, barnDoorAngles: { bottom: 12 } },
   { key: 'cycL', name: 'ホリゾント・下手', number: '9', preset: 'CycWashStudy', measured: 'cyc', position: [-3.4, 8, -4.15], target: [-3.4, 2.6, -7.0], beam: 60 },
   { key: 'cycR', name: 'ホリゾント・上手', number: '10', preset: 'CycWashStudy', measured: 'cyc', position: [3.4, 8, -4.15], target: [3.4, 2.6, -7.0], beam: 60 },
   // ピン：客席の後ろの高い投光室から（低いと光が役者を越えてホリに丸く当たる）。場面ごとに追う役者を変える。
@@ -133,14 +136,14 @@ const SCENES: Scene[] = [
     },
   },
   {
-    chapter: 0, title: 'キャピュレット家の舞踏会', triggerType: 'sound', trigger: '舞曲が始まる', note: '金色の宴の間。人の輪から離れた所で、ロミオとジュリエットが出会う。ピンでジュリエットを追う。',
+    chapter: 0, title: 'キャピュレット家の舞踏会', triggerType: 'sound', trigger: '舞曲が始まる', note: '金色の宴の間、窓の外は夜の青。人の輪から離れた所で、ロミオとジュリエットが出会う。ピンでジュリエットを追う。',
     cast: { 'ロミオ': { position: [-0.9, 0, -1.4], facingDeg: 70 }, 'ジュリエット': { position: [0.7, 0, -1.4], facingDeg: -70 }, 'ティボルト': { position: [3.8, 0, -3.8], facingDeg: -110 }, '乳母': { position: [-3.8, 0, -3.6], facingDeg: 40 } },
     props: { table: { at: [0, 0.39, -4.4] }, benchT: { at: [0, 0.225, -5.2] } },
     look: {
       fohL: { level: 0.12, color: C.warm }, fohC: { level: 0.1, color: C.warm }, fohR: { level: 0.12, color: C.warm },
       usL: { level: 0.14, color: C.gold }, usC: { level: 0.14, color: C.gold }, usR: { level: 0.14, color: C.gold },
       backL: { level: 0.22, color: C.rose }, backR: { level: 0.22, color: C.rose },
-      cycL: { level: 0.16, color: C.skyGold }, cycR: { level: 0.16, color: C.skyGold },
+      cycL: { level: 0.2, color: C.skyBall }, cycR: { level: 0.2, color: C.skyBall },
       pin: { level: 0.006, color: C.warm, follow: 'ジュリエット' }, sideL: { level: 0.2, color: C.amber }, sideR: { level: 0.2, color: C.amber },
     },
   },
