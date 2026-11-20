@@ -1621,7 +1621,7 @@ export function PlanBoard({ open, onClose, onPlay, persistent = false, onNavigat
                     })
                     clearChange()
                   }}>
-                  <title>{fixture.name}{fixture.position[2] > 2 ? `・舞台前から ${(fixture.position[2] - 2).toFixed(1)}m` : ''}</title>
+                  <title>{fixture.name}{fixture.position[2] > 2 ? `・舞台の前の縁から客席側へ ${(fixture.position[2] - 2).toFixed(1)}m` : ''}</title>
                   <circle cx={px} cy={py} r={at.touch} fill="transparent" />
                   {/* ずらして見せている照明は、本当の吊る位置に点と線を残す */}
                   {(px !== trueX || py !== trueY) && <g pointerEvents="none">

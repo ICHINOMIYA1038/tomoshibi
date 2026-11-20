@@ -4962,6 +4962,7 @@ body.embed .workspace-switch { display: none; }
 .scope-heading.shared { border-color: #8fb3d9; background: rgba(143, 179, 217, .1); color: #b9d1ea; }
 .scope-heading.scene { border-color: #e8b262; background: rgba(232, 178, 98, .1); color: #f2d3a2; }
 .scope-note { margin: 2px 0 8px; font-size: 11px; line-height: 1.5; color: var(--ink-muted); }
+.scope-note.scope-done { padding: 8px 10px; border-left: 2px solid #d9a75e; background: rgba(242, 194, 123, .08); color: var(--ink-secondary); }
 
 /* 新しいプロジェクトの画面の誤り（上限に達したときなど） */
 .project-create-error { margin: 16px 0 0; padding: 12px 14px; border-left: 4px solid #e0674c; background: rgba(224, 103, 76, .14); color: #ffd9cf; }

@@ -189,12 +189,12 @@ export function FixtureEditor({ fixture }: { fixture: Fixture }) {
     <>
       <div className="callout">
         <div style={{ fontSize: 10, color: '#998468', marginTop: 2, fontFamily: 'var(--font-sans)' }}>
-          {isMeasured ? 'フレネルの配光表で計算中（公称値をもとにした近似）'
-            : isMeasuredCyc ? 'ホリゾントの配光表で計算中（公称値をもとにした近似）'
+          {isMeasured ? '明るさの計算：フレネルの光の広がり方（メーカーの公表値から作った近似）'
+            : isMeasuredCyc ? '明るさの計算：ホリゾント用の器具の光の広がり方（メーカーの公表値から作った近似）'
             : `${KIND_LABELS[profile.kind]} / ${profile.fluxLumens.toLocaleString()} lm`}
         </div>
         {fixture.position[2] > 2 && <div style={{ fontSize: 11, color: 'var(--kin)', marginTop: 5 }}>
-          客席側・舞台前から {(fixture.position[2] - 2).toFixed(1)}m・高さ {fixture.position[1].toFixed(1)}m
+          吊る位置：舞台の前の縁から客席側へ {(fixture.position[2] - 2).toFixed(1)}m、床から {fixture.position[1].toFixed(1)}m
         </div>}
       </div>
 
