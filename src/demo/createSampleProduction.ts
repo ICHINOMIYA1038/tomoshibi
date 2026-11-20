@@ -68,9 +68,10 @@ const LIGHTS: Light[] = [
   { key: 'pin', name: 'ピン', number: '11', preset: 'FollowSpotXenon2k', position: [0, 9.5, 15.5], target: [0, 1.2, -1.4], beam: 4 },
   { key: 'moon', name: '月明かり', number: '12', preset: 'Source4_26', position: [5.6, 7.6, -5.6], target: [0.6, 0, -2.4], beam: 26, gobo: 'leaves' },
   { key: 'window', name: '窓明かり', number: '13', preset: 'Source4_26', position: [2.6, 5.0, -6.2], target: [-0.2, 0, -2.4], beam: 26, gobo: 'window' },
-  // 横明かり：2 番の袖幕の手前のすき間に立てたタワーから、向かいの役者の胸の高さを狙う
-  { key: 'sideL', name: '横明かり・下手', number: '14', preset: 'Source4_36', position: [-7.6, 3.2, -0.7], target: [2.0, 1.2, -1.8], beam: 26 },
-  { key: 'sideR', name: '横明かり・上手', number: '15', preset: 'Source4_36', position: [7.6, 3.2, -0.7], target: [-2.0, 1.2, -1.8], beam: 26 },
+  // 横明かり：2 番の袖幕の手前のすき間に立てたタワーから、向かいの役者の胸の高さを狙う。
+  // 光軸より上はシャッターで切る（切らないと、役者を越えた光が向かいの壁を茶色く照らした）
+  { key: 'sideL', name: '横明かり・下手', number: '14', preset: 'Source4_36', position: [-7.6, 3.2, -0.7], target: [2.0, 1.2, -1.8], beam: 26, barnDoorAngles: { top: 3 } },
+  { key: 'sideR', name: '横明かり・上手', number: '15', preset: 'Source4_36', position: [7.6, 3.2, -0.7], target: [-2.0, 1.2, -1.8], beam: 26, barnDoorAngles: { top: 3 } },
 ]
 
 type Cue = { level: number; color?: RGB; target?: Vec3; follow?: Name }
