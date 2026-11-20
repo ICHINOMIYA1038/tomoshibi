@@ -36,6 +36,7 @@ import { PlanBoard } from './ui/PlanBoard'
 import { ProjectLibrary } from './ui/ProjectLibrary'
 import { useReportAdsToApp } from './ui/Ads'
 import { DoubleTapFocus } from './scene/DoubleTapFocus'
+import { BounceLight } from './scene/BounceLight'
 import { ProjectTitleEdit } from './ui/ProjectTitleEdit'
 import { AccountMenu } from './ui/AccountMenu'
 import { getActiveCloudProject, getActiveSavedProjectName, setActiveCloudProject } from './io/mockProjectSession'
@@ -468,7 +469,8 @@ export default function App() {
           <TouchTwist />
 
           <ambientLight intensity={settings.ambient ?? 0.05} color={'#3a2a20'} />
-          <hemisphereLight args={['#3a2a20', '#1a1208', 0.2]} />
+          {/* 光の跳ね返り（点いている器具から見積もる。BounceLight.tsx）。前はどの明かりでも同じ弱い光だった */}
+          <BounceLight />
           {settings.showHouseLights && (
             <>
               {/* 客電の明かりは客席の真上から当てる（AudienceSeating）。ここは舞台に回り込む分だけ */}
