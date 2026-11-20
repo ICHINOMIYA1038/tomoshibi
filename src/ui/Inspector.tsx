@@ -233,7 +233,7 @@ function PerformerInspector({ performer }: { performer: Performer }) {
 
 const APPEARANCE_LABELS: Array<[SetPieceAppearance, string]> = [
   ['basic', '基本形'], ['bench', 'ベンチ'], ['door', '扉'], ['suitcase', '鞄'], ['table', '机'], ['bookshelf', '書架'], ['window', '窓'],
-  ['smoke', 'スモークマシン'], ['dryice', 'ドライアイス'], ['backing', '光る背景幕'],
+  ['smoke', 'スモークマシン'], ['dryice', 'ドライアイス'],
 ]
 
 /** スモークマシン・ドライアイスの量と、このシーンの会場全体のヘイズ */

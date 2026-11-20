@@ -17,7 +17,9 @@ const genPid = () => `p${nextPid++}`
 
 // オブジェクト数の上限 (フロント側ガード。サーバー側にも同等のチェック有り)
 export const LIMITS = {
-  fixtures: 16, // WebGL MAX_TEXTURE_IMAGE_UNITS の制約由来
+  // 影と投影画像のテクスチャ枠は、端末の上限に合わせて Beams.tsx で配る（枠を超えた器具は影を落とさない）。
+  // 上限は、描く光の数による重さで決める（2026-11-20 に 16 から 24 へ）
+  fixtures: 24,
   performers: 30,
   setPieces: 30,
 } as const
@@ -653,11 +655,10 @@ export const useStore = create<State>((set, get) => ({
 
   addFixture: (presetKey, atPos) => {
     const cur = get().fixtures.length
-    // WebGL の MAX_TEXTURE_IMAGE_UNITS = 16 を超えると影シェーダーが壊れるため上限
     if (cur >= LIMITS.fixtures) {
       console.warn(`[TOMOSHIBI] フィクスチャ上限 (${LIMITS.fixtures}台) に達しました`)
       if (typeof window !== 'undefined') {
-        alert(`フィクスチャは ${LIMITS.fixtures} 台までです (WebGL の制限により影が破綻するため)`)
+        alert(`器具は ${LIMITS.fixtures} 台までです（描く光が多いと、画面が重くなるため）`)
       }
       return ''
     }
