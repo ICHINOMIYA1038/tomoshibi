@@ -9,6 +9,7 @@ import { FIXTURE_PROFILES } from '../lighting/fixtureTypes'
 import { hasMeasuredFresnel } from '../photometric/measuredFresnel'
 import { hasProfileShutter } from '../photometric/profileShutter'
 import { hasMeasuredCyc } from '../photometric/measuredCyc'
+import { isCycWash, updateCycWash } from '../lighting/cycWash'
 
 const cycMap = new THREE.DataTexture(new Uint8Array(Array.from({ length: 64 * 64 }, (_, index) => {
   const x = ((index % 64) + 0.5) / 32 - 1
@@ -59,6 +60,11 @@ void main() {
 }
 `
 
+function shadowPriority(fixture: Fixture) {
+  if (FIXTURE_PROFILES[fixture.presetKey]?.kind === 'FollowSpot') return 2
+  return hasMeasuredFresnel(fixture) ? 1 : 0
+}
+
 export function Beams() {
   const stored = useStore(s => s.fixtures)
   const performers = useStore(s => s.performers)
@@ -69,7 +75,10 @@ export function Beams() {
   // 置いたスモークマシンの煙が、会場の空気を濃くする
   const hazeDensity = Math.min(1, sceneHaze + smokeHaze(setPieces))
   const maxTextures = useThree(s => s.gl.capabilities.maxTextures)
-  const active = fixtures.filter(f => f.enabled)
+  // ホリ用の器具は、スポットの光ではなく幕の材質で描く（cycWash.ts）
+  const invalidate = useThree(s => s.invalidate)
+  useEffect(() => { updateCycWash(fixtures); invalidate() }, [fixtures, invalidate])
+  const active = fixtures.filter(f => f.enabled && !isCycWash(f))
   // 投影画像と影は同じフラグメントシェーダーのテクスチャ枠を使うため、端末の上限に収める。
   const textureBudget = Math.max(0, maxTextures - 4)
   const mapped = new Set(active
@@ -79,7 +88,9 @@ export function Beams() {
   const shadowLimit = Math.max(0, textureBudget - mapped.size)
   const shadowed = new Set(active
     .filter(f => FIXTURE_PROFILES[f.presetKey]?.beamShape !== 'cyc')
-    .sort((a, b) => Number(hasMeasuredFresnel(b)) - Number(hasMeasuredFresnel(a)))
+    // 影の枠は少ないので、影がいちばん目立つピン（狭く強い光）に先に回す。ピンに影が無いと、
+    // 役者の後ろの幕や窓に、役者の形の影ではなく丸い光がそのまま出た（2026-11-20）
+    .sort((a, b) => shadowPriority(b) - shadowPriority(a))
     .slice(0, shadowLimit)
     .map(f => f.id))
   return (
