@@ -67,7 +67,7 @@ scene_03() {
   click_el '.object-menu button' 'ここに役者を足す'
   pause 1300
   cap '一覧（ヒエラルキー）や平面図でも、同じメニューが出ます'
-  c=$(at '.hierarchy-name' 'ピン・特別'); set -- $c; right_at "$1" "$2"
+  c=$(at '.hierarchy-name' 'サス・中央'); set -- $c; right_at "$1" "$2"
   pause 1000
   click_el '.object-menu-sub > button' '親を変える'
   pause 1800
@@ -106,7 +106,7 @@ scene_04() {
 scene_05() {
   fresh; start "$OUT/05.webm"
   cap '照明を選ぶと、右の設定に「3D でつかむ点」が出ます'
-  click_el '.hierarchy-name' 'ピン・特別'
+  click_el '.hierarchy-name' 'サス・中央'
   pause 900
   local p; p=$(at '.inspector-choice[aria-label="3D でつかむ点"] button' '狙い'); set -- $p; glide "$1" "$2"
   cap '「照明」は本体を、「狙い」は光が当たる点を動かします'

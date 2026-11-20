@@ -7,6 +7,7 @@ import { useStore, type Fixture } from '../store'
 import { cycBeamAttenuation, fixtureSpotlightModel } from '../lighting/spotlightModel'
 import { FIXTURE_PROFILES } from '../lighting/fixtureTypes'
 import { hasMeasuredFresnel } from '../photometric/measuredFresnel'
+import { hasProfileShutter } from '../photometric/profileShutter'
 import { hasMeasuredCyc } from '../photometric/measuredCyc'
 
 const cycMap = new THREE.DataTexture(new Uint8Array(Array.from({ length: 64 * 64 }, (_, index) => {
@@ -72,7 +73,7 @@ export function Beams() {
   // 投影画像と影は同じフラグメントシェーダーのテクスチャ枠を使うため、端末の上限に収める。
   const textureBudget = Math.max(0, maxTextures - 4)
   const mapped = new Set(active
-    .filter(f => hasMeasuredFresnel(f) || hasMeasuredCyc(f) || FIXTURE_PROFILES[f.presetKey]?.beamShape === 'cyc' || goboOf(f))
+    .filter(f => hasMeasuredFresnel(f) || hasMeasuredCyc(f) || hasProfileShutter(f) || FIXTURE_PROFILES[f.presetKey]?.beamShape === 'cyc' || goboOf(f))
     .slice(0, textureBudget)
     .map(f => f.id))
   const shadowLimit = Math.max(0, textureBudget - mapped.size)
@@ -103,7 +104,10 @@ function Beam({ fixture, hazeDensity, allowMap, castShadow }: { fixture: Fixture
   const { color, fieldAngleRad, halfAngle } = spotlight
 
   // 客席側からの長い照射でも、可視化する光束を狙いの先まで届かせる。
-  const beamLength = Math.max(14, new THREE.Vector3(...fixture.position).distanceTo(new THREE.Vector3(...fixture.target)) + 4)
+  // ホリゾントの器具は、幕の面で光が止まる。筋を幕の向こうまで伸ばすと、ロアーホリの光が幕を突き抜けた白い扇に見えた（2026-11-20）
+  const cycWash = FIXTURE_PROFILES[fixture.presetKey]?.kind === 'Cyc'
+  const throwM = new THREE.Vector3(...fixture.position).distanceTo(new THREE.Vector3(...fixture.target))
+  const beamLength = cycWash ? Math.max(0.5, throwM) : Math.max(14, throwM + 4)
   const baseRadius = beamLength * Math.tan(fieldAngleRad * 0.5)
 
   // ターゲット位置を target prop に追従させる
@@ -145,7 +149,8 @@ function Beam({ fixture, hazeDensity, allowMap, castShadow }: { fixture: Fixture
   // 書き換えないと、ヘイズの量や照明の色・強さを変えても、描き直されるまで光の筋に映らなかった（2026-11-17）
   useEffect(() => {
     beamUniforms.uColor.value = color
-    beamUniforms.uIntensity.value = fixture.intensity
+    // ホリの器具は幕のすぐ近くを広く照らすので、スモークに映る筋は本物でもごく薄い
+    beamUniforms.uIntensity.value = fixture.intensity * (FIXTURE_PROFILES[fixture.presetKey]?.kind === 'Cyc' ? 0.25 : 1)
     beamUniforms.uHaze.value = hazeDensity
     invalidateBeam()
   }, [beamUniforms, color, fixture.intensity, hazeDensity, invalidateBeam])
