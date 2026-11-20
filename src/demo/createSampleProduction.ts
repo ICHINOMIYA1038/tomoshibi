@@ -54,10 +54,9 @@ type Light = {
 
 const LIGHTS: Light[] = [
   // 前明かり（客席の上のバトン）：舞台の前の方を下手・中央・上手の 3 つに分け、隣どうしを重ねてむらなく覆う。仰角は約 45°
-  // 外側（袖幕の側）をバンドアで切る。客席から舞台へ向けた器具では、下手の器具の外側がバンドアの「右側」にあたる（逆にしていて袖幕が茶色く光っていた）
-  { key: 'fohL', name: '前明かり・下手', number: '1', preset: 'Fresnel10', measured: 'fresnel', position: [-4.2, 8.6, 6.8], target: [-4.0, 1.5, 0.2], beam: 44, barnDoorAngles: { top: 3, right: 3, left: 30 } },
+  { key: 'fohL', name: '前明かり・下手', number: '1', preset: 'Fresnel10', measured: 'fresnel', position: [-4.2, 8.6, 6.8], target: [-4.0, 1.5, 0.2], beam: 44, barnDoorAngles: { top: 3, left: 3, right: 30 } },
   { key: 'fohC', name: '前明かり・中央', number: '2', preset: 'Fresnel10', measured: 'fresnel', position: [0, 8.6, 6.8], target: [0, 1.5, 0.0], beam: 44, barnDoorAngles: { top: 3, left: 30, right: 30 } },
-  { key: 'fohR', name: '前明かり・上手', number: '3', preset: 'Fresnel10', measured: 'fresnel', position: [4.2, 8.6, 6.8], target: [4.0, 1.5, 0.2], beam: 44, barnDoorAngles: { top: 3, left: 3, right: 30 } },
+  { key: 'fohR', name: '前明かり・上手', number: '3', preset: 'Fresnel10', measured: 'fresnel', position: [4.2, 8.6, 6.8], target: [4.0, 1.5, 0.2], beam: 44, barnDoorAngles: { top: 3, right: 3, left: 30 } },
   // サス（1 番バトン）：舞台の奥のエリアを 3 つに分けて真上寄りから。ホリの手前で切り、幕に当てない。両端のサスは外側（袖幕の側）も切る
   { key: 'usL', name: 'サス・下手', number: '4', preset: 'Fresnel10', measured: 'fresnel', position: [-4.2, 8, 0.8], target: [-4.2, 1.5, -3.6], beam: 46, barnDoorAngles: { top: 4, right: 14 } },
   { key: 'usC', name: 'サス・中央', number: '5', preset: 'Fresnel10', measured: 'fresnel', position: [0, 8, 0.8], target: [0, 1.5, -3.8], beam: 46, barnDoorAngles: { top: 4 } },
