@@ -262,7 +262,7 @@ const SCENES: Scene[] = [
   {
     chapter: 2, title: '夜明けの別れ', triggerType: 'sound', trigger: '鳥の声', note: '寝室の夜明け。窓の外がしらむ。追放されるロミオとジュリエットの別れ。',
     // 二人は窓の光の中（窓の下半分を通った光）で別れる。影が足もとから床に長く伸びる
-    cast: { 'ロミオ': { position: [0.4, 0, -2.1], facingDeg: 70 }, 'ジュリエット': { position: [1.3, 0, -2.5], facingDeg: -110 } },
+    cast: { 'ロミオ': { position: [0.4, 0, -2.1], facingDeg: 70 }, 'ジュリエット': { position: [1.3, 0, -2.5], facingDeg: -70 } },
     props: { bed: { at: [-2.6, 0.25, -3.6] }, roomWindow: { at: [3.39, 1.90, -3.88], rotationY: -1.18 }, roomBacking: { at: [3.71, 2.0, -5.4] }, roomWallBelow: { at: [3.39, 0.30, -3.88], rotationY: -1.18 }, roomWallAbove: { at: [3.39, 3.85, -3.88], rotationY: -1.18 }, roomWallL: { at: [2.82, 2.25, -5.27], rotationY: -1.18 }, roomWallR: { at: [3.96, 2.25, -2.49], rotationY: -1.18 } },
     look: {
       backingLight: { level: 0.5, color: C.skyDawn },
