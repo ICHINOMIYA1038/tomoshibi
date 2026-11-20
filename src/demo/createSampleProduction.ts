@@ -235,7 +235,8 @@ const SCENES: Scene[] = [
 
   {
     chapter: 1, title: 'ロレンス神父の庵', triggerType: 'light', trigger: '朝の光', note: '朝の庵。ひそかな婚礼。窓枠の形の光が床に入り、二人と神父を結ぶ。',
-    cast: { 'ロレンス神父': { position: [0, 0, -3.2], facingDeg: 0 }, 'ロミオ': { position: [-1.0, 0, -2.0], facingDeg: 60 }, 'ジュリエット': { position: [1.0, 0, -2.0], facingDeg: -60 } },
+    // 神父は窓の光の中（窓の下半分を通った光）に、二人は光の縁に。朝の低い光で、影が床に長く伸びる
+    cast: { 'ロレンス神父': { position: [0.9, 0, -2.5], facingDeg: 0 }, 'ロミオ': { position: [-0.4, 0, -1.7], facingDeg: 60 }, 'ジュリエット': { position: [1.6, 0, -1.8], facingDeg: -60 } },
     props: { cellTable: { at: [-2.6, 0.39, -4.2] }, cellWindow: { at: [3.97, 2.20, -4.12], rotationY: -1.18 }, cellBacking: { at: [4.28, 2.4, -5.38] }, cellWallBelow: { at: [3.97, 0.80, -4.12], rotationY: -1.18 }, cellWallAbove: { at: [3.97, 3.65, -4.12], rotationY: -1.18 }, cellWallL: { at: [3.49, 2.25, -5.28], rotationY: -1.18 }, cellWallR: { at: [4.45, 2.25, -2.96], rotationY: -1.18 } },
     look: {
       backingLight: { level: 0.5, color: C.amber },
@@ -260,7 +261,8 @@ const SCENES: Scene[] = [
   },
   {
     chapter: 2, title: '夜明けの別れ', triggerType: 'sound', trigger: '鳥の声', note: '寝室の夜明け。窓の外がしらむ。追放されるロミオとジュリエットの別れ。',
-    cast: { 'ロミオ': { position: [-0.4, 0, -2.4], facingDeg: 70 }, 'ジュリエット': { position: [0.8, 0, -2.4], facingDeg: -70 } },
+    // 二人は窓の光の中（窓の下半分を通った光）で別れる。影が足もとから床に長く伸びる
+    cast: { 'ロミオ': { position: [0.4, 0, -2.1], facingDeg: 70 }, 'ジュリエット': { position: [1.3, 0, -2.5], facingDeg: -110 } },
     props: { bed: { at: [-2.6, 0.25, -3.6] }, roomWindow: { at: [3.39, 1.90, -3.88], rotationY: -1.18 }, roomBacking: { at: [3.71, 2.0, -5.4] }, roomWallBelow: { at: [3.39, 0.30, -3.88], rotationY: -1.18 }, roomWallAbove: { at: [3.39, 3.85, -3.88], rotationY: -1.18 }, roomWallL: { at: [2.82, 2.25, -5.27], rotationY: -1.18 }, roomWallR: { at: [3.96, 2.25, -2.49], rotationY: -1.18 } },
     look: {
       backingLight: { level: 0.5, color: C.skyDawn },
