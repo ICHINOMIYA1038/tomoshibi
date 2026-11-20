@@ -71,8 +71,9 @@ const LIGHTS: Light[] = [
   // 2kW のクセノンを 4° に絞るので、ほかの器具よりずっと小さい値で同じくらいの明るさになる
   { key: 'pin', name: 'ピン', number: '11', preset: 'FollowSpotXenon2k', position: [0, 9.5, 15.5], target: [0, 1.2, -1.4], beam: 4 },
   { key: 'moon', name: '月明かり', number: '12', preset: 'Source4_26', position: [5.6, 7.6, -5.6], target: [0.6, 0, -2.4], beam: 26, gobo: 'leaves' },
-  // 窓明かりは上手の袖の奥のタワーから。ホリの前に吊ると、器具が客席から見えた
-  { key: 'window', name: '窓明かり', number: '13', preset: 'Source4_26', position: [6.6, 5.0, -5.2], target: [-0.2, 0, -2.4], beam: 26, gobo: 'window' },
+  // 窓明かりは上手の袖の奥のタワーから、低い朝の日差しとして。ホリの前に吊ると、器具が客席から見えた。
+  // 窓の装置を置く場面では、窓をこの光の線の上（上手側の壁）に立てて、光が窓を抜けて床に落ちるようにする
+  { key: 'window', name: '窓明かり', number: '13', preset: 'Source4_26', position: [6.6, 3.6, -5.2], target: [-0.2, 0, -2.4], beam: 26, gobo: 'window' },
   // 横明かり：2 番の袖幕の手前のすき間に立てたタワーから、向かいの役者の胸の高さを狙う。
   // 光軸より上はシャッターで切る（切らないと、役者を越えた光が向かいの壁を茶色く照らした）
   { key: 'sideL', name: '横明かり・下手', number: '14', preset: 'Source4_36', position: [-7.6, 3.2, -0.7], target: [2.0, 1.2, -1.8], beam: 26, barnDoorAngles: { top: 3 } },
@@ -214,7 +215,7 @@ const SCENES: Scene[] = [
   {
     chapter: 2, title: '夜明けの別れ', triggerType: 'sound', trigger: '鳥の声', note: '寝室の夜明け。窓の外がしらむ。追放されるロミオとジュリエットの別れ。',
     cast: { 'ロミオ': { position: [-0.4, 0, -2.4], facingDeg: 70 }, 'ジュリエット': { position: [0.8, 0, -2.4], facingDeg: -70 } },
-    props: { bed: { at: [-2.6, 0.25, -3.6] }, roomWindow: { at: [1.6, 1.8, -6.4] } },
+    props: { bed: { at: [-2.6, 0.25, -3.6] }, roomWindow: { at: [4.9, 2.7, -4.5], rotationY: -1.18 } },
     look: {
       fohL: { level: 0.1, color: C.c64 }, fohC: { level: 0.16, color: C.c64 }, fohR: { level: 0.1, color: C.c64 },
       usL: { level: 0.06, color: C.lavender }, usC: { level: 0.06, color: C.lavender }, usR: { level: 0.06, color: C.lavender },
