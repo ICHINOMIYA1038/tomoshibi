@@ -4861,15 +4861,19 @@ body.embed .workspace-switch { display: none; }
 .unified-shell .unity-panel button.hierarchy-name strong { min-width: 0; font-weight: 400; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .unity-panel .hierarchy-row.selected .hierarchy-name strong { font-weight: 600; }
 .unified-shell .unity-panel button.hierarchy-name small { flex: none; margin-left: auto; padding-left: 6px; color: var(--ink-muted); font-size: 10px; white-space: nowrap; }
-.unified-shell .unity-panel button.hierarchy-lamp { flex: none; width: 22px; height: 22px; min-height: 0; padding: 0; border: 0; border-radius: 4px; background: none; color: #5d5148; font-size: 10px; cursor: pointer; }
-.unified-shell .unity-panel button.hierarchy-lamp:hover { background: rgba(255, 255, 255, .06); border: 0; }
-.unified-shell .unity-panel button.hierarchy-lamp.on { color: #f2c27b; }
+/* 器具の点灯・消灯のスイッチ。字と丸の両方で状態を出す（色だけに頼らない） */
+.unified-shell .unity-panel button.hierarchy-lamp { flex: none; display: inline-flex; align-items: center; gap: 4px; height: 20px; min-height: 0; margin-right: 4px; padding: 0 7px; border: 1px solid #4a3f36; border-radius: 10px; background: none; color: #9a8c7e; font-size: 10px; line-height: 1; white-space: nowrap; cursor: pointer; }
+.unified-shell .unity-panel button.hierarchy-lamp:hover { border-color: #8a7560; background: rgba(255, 255, 255, .05); }
+.unified-shell .unity-panel button.hierarchy-lamp.on { border-color: #d9a75e; background: rgba(242, 194, 123, .16); color: #f6d9a8; }
+.unified-shell .unity-panel button.hierarchy-lamp.on:hover { background: rgba(242, 194, 123, .26); }
+.unity-panel .hierarchy-lamp-dot { width: 6px; height: 6px; border: 1px solid currentColor; border-radius: 50%; }
+.unity-panel .hierarchy-lamp.on .hierarchy-lamp-dot { border-color: #ffd28a; background: #ffd28a; box-shadow: 0 0 4px rgba(255, 210, 138, .8); }
 .unity-panel .hierarchy-hint { margin: 0; padding: 6px 10px; border-top: 1px solid var(--panel-edge); color: var(--ink-muted); font-size: 10px; line-height: 1.5; }
 .unity-panel .hierarchy-root-drop { margin: 6px; padding: 8px; border: 1px dashed rgba(102, 204, 255, .5); border-radius: 6px; color: var(--ink-secondary); font-size: 11px; text-align: center; }
 .unity-panel .hierarchy-root-drop.drop-target { border-color: #6cf; background: rgba(102, 204, 255, .08); color: var(--ink-primary); }
 @media (pointer: coarse) {
   .unity-panel .hierarchy-row, .unified-shell .unity-panel button.hierarchy-name, .unified-shell .unity-panel button.hierarchy-toggle { height: 36px; }
-  .unified-shell .unity-panel button.hierarchy-lamp { width: 36px; height: 36px; }
+  .unified-shell .unity-panel button.hierarchy-lamp { height: 30px; padding: 0 10px; font-size: 12px; }
 }
 .unity-panel span.hierarchy-toggle { display: inline-block; width: 16px; flex: none; }
 /* ログインしていないときは、アカウントのアイコンの代わりに「設定」と「ログイン」を並べる（AccountMenu.tsx） */
@@ -4958,6 +4962,7 @@ body.embed .workspace-switch { display: none; }
 .scope-heading.shared { border-color: #8fb3d9; background: rgba(143, 179, 217, .1); color: #b9d1ea; }
 .scope-heading.scene { border-color: #e8b262; background: rgba(232, 178, 98, .1); color: #f2d3a2; }
 .scope-note { margin: 2px 0 8px; font-size: 11px; line-height: 1.5; color: var(--ink-muted); }
+.scope-note.scope-done { padding: 8px 10px; border-left: 2px solid #d9a75e; background: rgba(242, 194, 123, .08); color: var(--ink-secondary); }
 
 /* 新しいプロジェクトの画面の誤り（上限に達したときなど） */
 .project-create-error { margin: 16px 0 0; padding: 12px 14px; border-left: 4px solid #e0674c; background: rgba(224, 103, 76, .14); color: #ffd9cf; }

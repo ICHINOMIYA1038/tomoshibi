@@ -87,6 +87,10 @@ function ParentField({ kind, id, item }: { kind: ChildKind; id: string; item: { 
   </label>
 }
 
+/** 「このシーンだけ、別の位置から当てる」で吊った 2 台目。押したあとに何が起きたかを、2 台目の設定の欄に出す
+ * （前は何も出ず、名前も「(複製)」で、何のための 1 台かわからなかった。2026-11-20 オーナー） */
+let lastAddedForScene: { id: string; from: string } | null = null
+
 function FixtureInspector({ fixture }: { fixture: Fixture }) {
   const update = (patch: Partial<Fixture>) => useStore.getState().updateFixture(fixture.id, patch)
   const select = useStore(s => s.select)
@@ -106,9 +110,15 @@ function FixtureInspector({ fixture }: { fixture: Fixture }) {
     update({ target })
   }
   // 別の位置から当てたいシーンのために、2 台目を吊る（本物と同じく、仕込みに 1 台足す）
+  const added = lastAddedForScene
   const addForScene = () => {
     const s = useStore.getState()
+    const before = new Set(s.fixtures.map(item => item.id))
     s.duplicateFixture(fixture.id)
+    const copy = useStore.getState().fixtures.find(item => !before.has(item.id))
+    // 2 台目が選ばれると設定の欄は作り直される（Inspector の key）ので、知らせは欄の外に覚えておく
+    if (copy) lastAddedForScene = { id: copy.id, from: fixture.name }
+    if (copy) s.updateFixture(copy.id, { name: `${fixture.name}（2 台目）` })
     s.updateFixture(fixture.id, { enabled: false })
     clearChange()
   }
@@ -130,8 +140,12 @@ function FixtureInspector({ fixture }: { fixture: Fixture }) {
       <NumberField label="Y" value={fixture.position[1]} min={0.3} max={20} onChange={value => move(1, value)} />
       <NumberField label="Z" value={fixture.position[2]} onChange={value => move(2, value)} />
     </InspectorSection>
-    <button type="button" className="inspector-wide-button" onClick={addForScene}>このシーン用に別の照明を吊る</button>
-    <p className="scope-note">このシーンだけ別の位置から当てたいときに使います。複製した照明をこのシーンで点け、元の照明はこのシーンで消します。</p>
+    {added?.id === fixture.id
+      ? <p className="scope-note scope-done" role="status">2 台目を吊りました。このシーンでは 2 台目を点け、元の「{added.from}」は消しています。ほかのシーンでは 2 台目は消えています。上の「吊る位置」で、当てたい位置へ動かしてください。</p>
+      : <>
+        <p className="scope-note">吊った照明は本番中に動かせないので、吊る位置は全シーン共通です。このシーンだけ別の位置から当てたいときは、もう 1 台吊ります。</p>
+        <button type="button" className="inspector-wide-button" onClick={addForScene}>このシーンだけ、別の位置から当てる（1 台吊り足す）</button>
+      </>}
     <div className="scope-heading scene">シーンごと（キュー）</div>
     <InspectorSection title="狙い">
       <NumberField label="X" value={fixture.target[0]} onChange={value => aim(0, value)} />

@@ -167,7 +167,9 @@ export function HierarchyPanel() {
         </button>
         {node.kind === 'fixture' && <button type="button" className={'hierarchy-lamp' + (node.enabled ? ' on' : '')}
           aria-pressed={node.enabled} aria-label={`${node.label}を${node.enabled ? '消灯' : '点灯'}`} title={node.enabled ? '点灯中' : '消灯中'}
-          onClick={() => updateFixture(node.id, { enabled: !node.enabled })}>●</button>}
+          onClick={() => updateFixture(node.id, { enabled: !node.enabled })}>
+          {/* 丸だけだと、点いているかと押せることが伝わらなかった（2026-11-20 オーナー）。字で今の状態を出す */}
+          <span className="hierarchy-lamp-dot" aria-hidden="true" />{node.enabled ? '点灯' : '消灯'}</button>}
       </div>
       {node.children.length > 0 && open && <ul role="group" className="hierarchy-children" style={{ ['--guide-x' as string]: `${12 + depth * 16}px` }}>{node.children.map(child => row(child, depth + 1))}</ul>}
     </li>
