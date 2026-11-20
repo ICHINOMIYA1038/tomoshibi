@@ -3,6 +3,7 @@ import { recordHit } from '../objectMenu'
 import type { ThreeEvent } from '@react-three/fiber'
 import * as THREE from 'three'
 import { createStageMaterial } from '../lighting/StageMaterial'
+import { applyCycWash } from '../lighting/cycWash'
 import { useStore } from '../store'
 import { DEFAULT_VENUE_LAYOUT, stageLocalFootprint } from '../venueLayout'
 import { DEFAULT_CYC_COLOR, DEFAULT_WALL_COLOR, FLOOR_FINISHES, resolveStageParts, type StagePart } from '../stageParts'
@@ -48,10 +49,11 @@ export function Stage({ onMaterialsReady }: { onMaterialsReady: (mats: THREE.Sha
     baseColor: layout.wallColor ? new THREE.Color(layout.wallColor) : new THREE.Color(...DEFAULT_WALL_COLOR),
     roughness: 0.98,
   }), [layout.wallColor])
-  const cycMat = useMemo(() => createStageMaterial({
+  // ホリ用の器具の明かりは、幕の材質に直接足す（cycWash.ts）
+  const cycMat = useMemo(() => applyCycWash(createStageMaterial({
     baseColor: layout.cycColor ? new THREE.Color(layout.cycColor) : new THREE.Color(...DEFAULT_CYC_COLOR),
     roughness: 1.0,
-  }), [layout.cycColor])
+  }) as unknown as THREE.MeshStandardMaterial) as unknown as THREE.ShaderMaterial, [layout.cycColor])
   const wingMat = useMemo(() => createStageMaterial({
     // 袖幕: 黒のベロア
     baseColor: new THREE.Color(0.02, 0.019, 0.021),
@@ -86,6 +88,7 @@ export function Stage({ onMaterialsReady }: { onMaterialsReady: (mats: THREE.Sha
       const roughness = item.kind === 'floor' ? finish.roughness : item.kind === 'platform' ? 0.7 : item.kind === 'wall' ? 0.98 : 1.0
       const material = createStageMaterial({ baseColor: new THREE.Color(item.color), roughness }) as unknown as THREE.MeshStandardMaterial
       if (item.kind !== 'floor' && item.kind !== 'platform') material.side = THREE.DoubleSide
+      if (item.kind === 'cyc') applyCycWash(material)
       map.set(key, material)
     }
     return map

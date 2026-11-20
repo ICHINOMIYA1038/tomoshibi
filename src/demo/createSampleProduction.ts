@@ -5,7 +5,7 @@
 // - 地明かりは、客席の上のバトンの前明かり 3 灯と、1 番バトンのサス 3 灯で、間口 3 × 奥行き 2 のエリアを覆う。どの場面も前明かりを残して顔を見せる
 // - 逆光は 4 番バトンから 2 灯。濃い色（赤・濃い青）は逆光とホリにだけ入れ、顔には当てない
 // - ホリゾントは 4 番バトン（幕から約 2.5m）から 2 灯。離しすぎると幕の上に暗い波ができた
-// - ピンは客席の後ろから追う。場面ごとに追う役者を決める（吊った器具は場面の途中で向きを変えられないので、狙いを変えるのはピンだけ）
+// - ピンは客席の後ろから追う。場面ごとに追う役者と絞りを決める（バルコニーは窓の前なので、上半身だけに絞る）（吊った器具は場面の途中で向きを変えられないので、狙いを変えるのはピンだけ）
 // - 月明かり（木漏れ日のゴボ）は木のある庭の場面だけ。窓明かり（窓枠のゴボ）は朝の室内の 2 場面
 // - 横明かりは、袖幕のすき間（2 番の袖の手前）から人の高さを狙う。袖幕の奥から当てると、幕のひだの影が床に並んだ
 // - 器具は 15 灯（上限 16）。見本を開いた人が 1 灯は足せるようにしておく
@@ -67,14 +67,15 @@ const LIGHTS: Light[] = [
   // 2kW のクセノンを 4° に絞るので、ほかの器具よりずっと小さい値で同じくらいの明るさになる
   { key: 'pin', name: 'ピン', number: '11', preset: 'FollowSpotXenon2k', position: [0, 9.5, 15.5], target: [0, 1.2, -1.4], beam: 4 },
   { key: 'moon', name: '月明かり', number: '12', preset: 'Source4_26', position: [5.6, 7.6, -5.6], target: [0.6, 0, -2.4], beam: 26, gobo: 'leaves' },
-  { key: 'window', name: '窓明かり', number: '13', preset: 'Source4_26', position: [2.6, 5.0, -6.2], target: [-0.2, 0, -2.4], beam: 26, gobo: 'window' },
+  // 窓明かりは上手の袖の奥のタワーから。ホリの前に吊ると、器具が客席から見えた
+  { key: 'window', name: '窓明かり', number: '13', preset: 'Source4_26', position: [6.6, 5.0, -5.2], target: [-0.2, 0, -2.4], beam: 26, gobo: 'window' },
   // 横明かり：2 番の袖幕の手前のすき間に立てたタワーから、向かいの役者の胸の高さを狙う。
   // 光軸より上はシャッターで切る（切らないと、役者を越えた光が向かいの壁を茶色く照らした）
   { key: 'sideL', name: '横明かり・下手', number: '14', preset: 'Source4_36', position: [-7.6, 3.2, -0.7], target: [2.0, 1.2, -1.8], beam: 26, barnDoorAngles: { top: 3 } },
   { key: 'sideR', name: '横明かり・上手', number: '15', preset: 'Source4_36', position: [7.6, 3.2, -0.7], target: [-2.0, 1.2, -1.8], beam: 26, barnDoorAngles: { top: 3 } },
 ]
 
-type Cue = { level: number; color?: RGB; target?: Vec3; follow?: Name }
+type Cue = { level: number; color?: RGB; target?: Vec3; follow?: Name; /** ピンの絞り（度）。書かなければ吊ったときの値 */ beam?: number }
 type Look = Partial<Record<string, number | Cue>>
 type Place = Vec3 | { position: Vec3; facingDeg?: number; pose?: 'standing' | 'sitting' | 'kneeling' | 'lying' }
 
@@ -136,11 +137,11 @@ const SCENES: Scene[] = [
     cast: { 'ロミオ': { position: [-0.9, 0, -1.4], facingDeg: 70 }, 'ジュリエット': { position: [0.7, 0, -1.4], facingDeg: -70 }, 'ティボルト': { position: [3.8, 0, -3.8], facingDeg: -110 }, '乳母': { position: [-3.8, 0, -3.6], facingDeg: 40 } },
     props: { table: { at: [0, 0.39, -4.4] }, benchT: { at: [0, 0.225, -5.2] } },
     look: {
-      fohL: { level: 0.16, color: C.warm }, fohC: { level: 0.14, color: C.warm }, fohR: { level: 0.16, color: C.warm },
-      usL: { level: 0.2, color: C.gold }, usC: { level: 0.2, color: C.gold }, usR: { level: 0.2, color: C.gold },
+      fohL: { level: 0.12, color: C.warm }, fohC: { level: 0.1, color: C.warm }, fohR: { level: 0.12, color: C.warm },
+      usL: { level: 0.14, color: C.gold }, usC: { level: 0.14, color: C.gold }, usR: { level: 0.14, color: C.gold },
       backL: { level: 0.22, color: C.rose }, backR: { level: 0.22, color: C.rose },
-      cycL: { level: 0.22, color: C.skyGold }, cycR: { level: 0.22, color: C.skyGold },
-      pin: { level: 0.012, color: C.pale, follow: 'ジュリエット' }, sideL: { level: 0.2, color: C.amber }, sideR: { level: 0.2, color: C.amber },
+      cycL: { level: 0.16, color: C.skyGold }, cycR: { level: 0.16, color: C.skyGold },
+      pin: { level: 0.006, color: C.warm, follow: 'ジュリエット' }, sideL: { level: 0.2, color: C.amber }, sideR: { level: 0.2, color: C.amber },
     },
   },
   {
@@ -152,7 +153,7 @@ const SCENES: Scene[] = [
       usL: { level: 0.06, color: C.n78 }, usC: { level: 0.06, color: C.n78 }, usR: { level: 0.06, color: C.n78 },
       backL: { level: 0.16, color: C.steel }, backR: { level: 0.2, color: C.steel },
       cycL: { level: 0.14, color: C.skyNight }, cycR: { level: 0.14, color: C.skyNight },
-      pin: { level: 0.004, color: C.c64, follow: 'ジュリエット' }, moon: { level: 0.6, color: C.moon }, sideR: { level: 0.16, color: C.moon },
+      pin: { level: 0.003, color: C.c64, follow: 'ジュリエット', beam: 2 }, moon: { level: 0.6, color: C.moon }, sideR: { level: 0.26, color: C.moon },
     },
   },
   {
@@ -199,7 +200,7 @@ const SCENES: Scene[] = [
       fohL: { level: 0.05, color: C.c64 }, fohC: { level: 0.07, color: C.c64 },
       backL: { level: 0.22, color: C.steel }, backR: { level: 0.22, color: C.steel },
       cycL: { level: 0.06, color: C.skyDeep, target: [-3.4, 3.6, -7.0] }, cycR: { level: 0.06, color: C.skyDeep, target: [3.4, 3.6, -7.0] },
-      pin: { level: 0.005, color: C.torch, follow: 'ジュリエット' }, sideL: { level: 0.2, color: C.torch },
+      pin: { level: 0.008, color: C.torch, follow: 'ジュリエット' }, sideL: { level: 0.3, color: C.torch },
     },
   },
   {
@@ -212,6 +213,7 @@ const SCENES: Scene[] = [
       usL: { level: 0.12, color: C.pale }, usC: { level: 0.12, color: C.pale }, usR: { level: 0.12, color: C.pale },
       backL: { level: 0.16, color: C.lavender }, backR: { level: 0.16, color: C.lavender },
       cycL: { level: 0.4, color: C.skyGrey, target: [-3.4, 2.4, -7.0] }, cycR: { level: 0.4, color: C.skyGrey, target: [3.4, 2.4, -7.0] },
+      pin: { level: 0.004, color: C.pale, follow: 'ジュリエット' },
     },
   },
 ]
@@ -244,6 +246,10 @@ const HOUSE_PARTS: StagePart[] = [
   housePart('wall-rear', 'wall', { x: 0, z: 17.4, width: 19.2, height: 3.2, color: HOUSE_WALL }),
   ...[0.4, 0.8, 1.2].map((height, index) => housePart(`riser-${index + 1}`, 'platform', { x: 0, z: 12.45 + index * 1.8, width: 15.6, depth: 1.8, height, color: RISER })),
   housePart('foh-batten', 'batten', { x: 0, z: 6.8, width: 12, elevation: 8.8 }),
+  // 一文字幕（舞台の上に吊る横長の黒幕）。吊った器具と、ホリゾント幕の上の縁を客席から隠す。
+  // 無いと、ホリの上の縁がくっきり見えて映写用のスクリーンのようだった（2026-11-20）
+  // 手前（1 番バトンの奥）にも吊ると、サスの光が幕に当たって明るい斑点になったので、奥の 1 枚だけにする
+  housePart('border', 'wall', { x: 0, z: -3.9, width: 14, height: 2.4, elevation: 6.3, color: '#0b0a0a' }),
 ]
 const HOUSE_BLOCKS: AudienceBlock[] = [
   block('front-left', '客席・前・下手', -4.3, 7.9, 6, 11),
@@ -333,6 +339,7 @@ export function createSampleProduction() {
         ...(cue.color ? { color: cue.color } : {}),
         target: cue.target ?? light.target,
         followPerformerId: cue.follow ? castIds[cue.follow] : undefined,
+        beamAngleDeg: cue.beam ?? light.beam,
       })
     })
     const changeover = previous !== null && JSON.stringify(Object.keys(previous.props).sort()) !== JSON.stringify(Object.keys(scene.props).sort())
