@@ -54,13 +54,14 @@ type Light = {
 
 const LIGHTS: Light[] = [
   // 前明かり（客席の上のバトン）：舞台の前の方を下手・中央・上手の 3 つに分け、隣どうしを重ねてむらなく覆う。仰角は約 45°
-  { key: 'fohL', name: '前明かり・下手', number: '1', preset: 'Fresnel10', measured: 'fresnel', position: [-4.2, 8.6, 6.8], target: [-4.0, 1.5, 0.2], beam: 44, barnDoorAngles: { top: 3, left: 3, right: 30 } },
+  // 外側（袖幕の側）をバンドアで切る。客席から舞台へ向けた器具では、下手の器具の外側がバンドアの「右側」にあたる（逆にしていて袖幕が茶色く光っていた）
+  { key: 'fohL', name: '前明かり・下手', number: '1', preset: 'Fresnel10', measured: 'fresnel', position: [-4.2, 8.6, 6.8], target: [-4.0, 1.5, 0.2], beam: 44, barnDoorAngles: { top: 3, right: 3, left: 30 } },
   { key: 'fohC', name: '前明かり・中央', number: '2', preset: 'Fresnel10', measured: 'fresnel', position: [0, 8.6, 6.8], target: [0, 1.5, 0.0], beam: 44, barnDoorAngles: { top: 3, left: 30, right: 30 } },
-  { key: 'fohR', name: '前明かり・上手', number: '3', preset: 'Fresnel10', measured: 'fresnel', position: [4.2, 8.6, 6.8], target: [4.0, 1.5, 0.2], beam: 44, barnDoorAngles: { top: 3, right: 3, left: 30 } },
-  // サス（1 番バトン）：舞台の奥のエリアを 3 つに分けて真上寄りから。ホリの手前で切り、幕に当てない
-  { key: 'usL', name: 'サス・下手', number: '4', preset: 'Fresnel10', measured: 'fresnel', position: [-4.2, 8, 0.8], target: [-4.2, 1.5, -3.6], beam: 46, barnDoorAngles: { top: 4 } },
+  { key: 'fohR', name: '前明かり・上手', number: '3', preset: 'Fresnel10', measured: 'fresnel', position: [4.2, 8.6, 6.8], target: [4.0, 1.5, 0.2], beam: 44, barnDoorAngles: { top: 3, left: 3, right: 30 } },
+  // サス（1 番バトン）：舞台の奥のエリアを 3 つに分けて真上寄りから。ホリの手前で切り、幕に当てない。両端のサスは外側（袖幕の側）も切る
+  { key: 'usL', name: 'サス・下手', number: '4', preset: 'Fresnel10', measured: 'fresnel', position: [-4.2, 8, 0.8], target: [-4.2, 1.5, -3.6], beam: 46, barnDoorAngles: { top: 4, right: 14 } },
   { key: 'usC', name: 'サス・中央', number: '5', preset: 'Fresnel10', measured: 'fresnel', position: [0, 8, 0.8], target: [0, 1.5, -3.8], beam: 46, barnDoorAngles: { top: 4 } },
-  { key: 'usR', name: 'サス・上手', number: '6', preset: 'Fresnel10', measured: 'fresnel', position: [4.2, 8, 0.8], target: [4.2, 1.5, -3.6], beam: 46, barnDoorAngles: { top: 4 } },
+  { key: 'usR', name: 'サス・上手', number: '6', preset: 'Fresnel10', measured: 'fresnel', position: [4.2, 8, 0.8], target: [4.2, 1.5, -3.6], beam: 46, barnDoorAngles: { top: 4, left: 14 } },
   // 逆光は奥側（前へ下向きに当てるので、バンドアの「下側」）を切る。切らないと、外側の弱い光がホリに当たって波形が出た（2026-11-20）
   { key: 'backL', name: '逆光・下手', number: '7', preset: 'Fresnel10', measured: 'fresnel', position: [-3, 8, -4.15], target: [-2.4, 0, -0.8], beam: 44, barnDoorAngles: { bottom: 12 } },
   { key: 'backR', name: '逆光・上手', number: '8', preset: 'Fresnel10', measured: 'fresnel', position: [3, 8, -4.15], target: [2.4, 0, -0.8], beam: 44, barnDoorAngles: { bottom: 12 } },
@@ -89,7 +90,14 @@ type Prop = Pick<SetPiece, 'name' | 'size' | 'color'> & { kind?: 'box' | 'platfo
 const PROPS: Record<string, Prop> = {
   fountain: { name: '広場の噴水', size: [1.8, 0.8, 1.8], color: '#6f6a62' },
   benchL: { name: '広場のベンチ', appearance: 'bench', size: [1.8, 0.45, 0.5], color: '#6a5040' },
-  table: { name: '宴の卓', appearance: 'table', size: [3.0, 0.78, 1.0], color: '#6b4a36' },
+  table: { name: '宴の卓', appearance: 'table', size: [2.4, 0.78, 0.9], color: '#6b4a36' },
+  // 舞踏会の広間：奥に高さ 0.6m の段と前の階段、夜空（ホリ）を背にした柱廊。柱のシルエットで奥行きを出す（上に梁を渡すと鳥居に見えたので、柱だけ。上の端は一文字幕の裏に隠して、天井まで伸びて見せる）
+  dais: { kind: 'platform', name: '広間の段', size: [9.0, 0.6, 2.4], color: '#2e221c' },
+  steps: { kind: 'platform', name: '段の階段', size: [3.2, 0.3, 0.7], color: '#3a2c24' },
+  col1: { name: '柱 1', size: [0.42, 7.2, 0.42], color: '#8c8273' },
+  col2: { name: '柱 2', size: [0.42, 7.2, 0.42], color: '#8c8273' },
+  col3: { name: '柱 3', size: [0.42, 7.2, 0.42], color: '#8c8273' },
+  col4: { name: '柱 4', size: [0.42, 7.2, 0.42], color: '#8c8273' },
   benchT: { name: '宴の長椅子', appearance: 'bench', size: [2.6, 0.45, 0.45], color: '#5c4232' },
   balcony: { name: 'バルコニー', size: [2.6, 2.0, 1.4], color: '#9a8c7c' },
   balconyWindow: { name: 'ジュリエットの部屋の窓', appearance: 'window', size: [1.6, 2.2, 0.14], color: '#3a4250' },
@@ -101,10 +109,14 @@ const PROPS: Record<string, Prop> = {
 }
 type PropPlace = { at: Vec3; rotationY?: number }
 
-const CAST = ['ロミオ', 'ジュリエット', 'マキューシオ', 'ティボルト', '乳母', 'ロレンス神父'] as const
+const CAST = ['ロミオ', 'ジュリエット', 'マキューシオ', 'ティボルト', '乳母', 'ロレンス神父',
+  '踊り手 1', '踊り手 2', '踊り手 3', '踊り手 4', '踊り手 5', '踊り手 6', '踊り手 7', '踊り手 8'] as const
 type Name = typeof CAST[number]
 const CAST_COLOR: Record<Name, string> = {
   'ロミオ': '#5d6f8a', 'ジュリエット': '#b08a8a', 'マキューシオ': '#7c8a5d', 'ティボルト': '#8a3f3a', '乳母': '#8a7a62', 'ロレンス神父': '#6b5a48',
+  // 舞踏会の仮面の踊り手。ワイン・金・青緑・象牙を組ごとに
+  '踊り手 1': '#6e2b3a', '踊り手 2': '#a8873e', '踊り手 3': '#2f5d62', '踊り手 4': '#cbbfa6',
+  '踊り手 5': '#a8873e', '踊り手 6': '#6e2b3a', '踊り手 7': '#cbbfa6', '踊り手 8': '#2f5d62',
 }
 
 type Scene = {
@@ -115,6 +127,8 @@ type Scene = {
   note: string
   cast: Partial<Record<Name, Place>>
   props: Partial<Record<keyof typeof PROPS, PropPlace>>
+  /** スモークの濃さ（書かなければ 0.07）。光の筋を見せたい場面だけ濃くする */
+  haze?: number
   /** この場面に入るときのフェード（秒）。書かなければ、セットが替わる場面は 4 秒の暗転、ほかはアプリの既定 */
   fadeSec?: number
   look: Look
@@ -136,15 +150,29 @@ const SCENES: Scene[] = [
     },
   },
   {
-    chapter: 0, title: 'キャピュレット家の舞踏会', triggerType: 'sound', trigger: '舞曲が始まる', note: '金色の宴の間、窓の外は夜の青。人の輪から離れた所で、ロミオとジュリエットが出会う。ピンでジュリエットを追う。',
-    cast: { 'ロミオ': { position: [-0.9, 0, -1.4], facingDeg: 70 }, 'ジュリエット': { position: [0.7, 0, -1.4], facingDeg: -70 }, 'ティボルト': { position: [3.8, 0, -3.8], facingDeg: -110 }, '乳母': { position: [-3.8, 0, -3.6], facingDeg: 40 } },
-    props: { table: { at: [0, 0.39, -4.4] }, benchT: { at: [0, 0.225, -5.2] } },
+    chapter: 0, title: 'キャピュレット家の舞踏会', triggerType: 'sound', trigger: '舞曲が始まる',
+    note: '夜の宴。奥の段と柱廊に仮面の踊り手たち、柱の向こうは夜空の青。人の輪から離れた手前で、ロミオとジュリエットが出会う。ピンでジュリエットを追う。',
+    cast: {
+      'ロミオ': { position: [-0.7, 0, -0.6], facingDeg: 65 }, 'ジュリエット': { position: [0.6, 0, -0.7], facingDeg: -70 },
+      'ティボルト': { position: [4.6, 0, -1.6], facingDeg: -115 }, '乳母': { position: [-4.7, 0, -1.2], facingDeg: 50 },
+      // 段の上で踊る 2 組と、中ほどで踊る 2 組。組は向かい合わせ
+      '踊り手 1': { position: [-3.3, 0.6, -5.0], facingDeg: 90 }, '踊り手 2': { position: [-2.6, 0.6, -5.0], facingDeg: -90 },
+      '踊り手 3': { position: [2.6, 0.6, -5.2], facingDeg: 90 }, '踊り手 4': { position: [3.3, 0.6, -5.2], facingDeg: -90 },
+      '踊り手 5': { position: [-3.7, 0, -2.9], facingDeg: 70 }, '踊り手 6': { position: [-3.0, 0, -2.6], facingDeg: -110 },
+      '踊り手 7': { position: [3.0, 0, -2.7], facingDeg: 110 }, '踊り手 8': { position: [3.7, 0, -3.0], facingDeg: -70 },
+    },
+    props: {
+      dais: { at: [0, 0.3, -5.3] }, steps: { at: [0, 0.15, -3.75] },
+      col1: { at: [-3.9, 4.2, -6.1] }, col2: { at: [-1.3, 4.2, -6.1] }, col3: { at: [1.3, 4.2, -6.1] }, col4: { at: [3.9, 4.2, -6.1] },
+      table: { at: [0, 0.99, -5.3] },
+    },
+    haze: 0.11,
     look: {
-      fohL: { level: 0.12, color: C.warm }, fohC: { level: 0.1, color: C.warm }, fohR: { level: 0.12, color: C.warm },
-      usL: { level: 0.14, color: C.gold }, usC: { level: 0.14, color: C.gold }, usR: { level: 0.14, color: C.gold },
-      backL: { level: 0.22, color: C.rose }, backR: { level: 0.22, color: C.rose },
-      cycL: { level: 0.2, color: C.skyBall }, cycR: { level: 0.2, color: C.skyBall },
-      pin: { level: 0.006, color: C.warm, follow: 'ジュリエット' }, sideL: { level: 0.2, color: C.amber }, sideR: { level: 0.2, color: C.amber },
+      fohL: { level: 0.1, color: C.warm }, fohC: { level: 0.08, color: C.warm }, fohR: { level: 0.1, color: C.warm },
+      usL: { level: 0.16, color: C.gold }, usC: { level: 0.14, color: C.gold }, usR: { level: 0.16, color: C.gold },
+      backL: { level: 0.3, color: C.rose }, backR: { level: 0.3, color: C.rose },
+      cycL: { level: 0.24, color: C.skyBall }, cycR: { level: 0.24, color: C.skyBall },
+      pin: { level: 0.008, color: C.warm, follow: 'ジュリエット' }, sideL: { level: 0.3, color: C.amber }, sideR: { level: 0.26, color: C.rose },
     },
   },
   {
@@ -349,6 +377,7 @@ export function createSampleProduction() {
     const fade = scene.fadeSec ?? (changeover ? 4 : undefined)
     if (fade !== undefined) store.setSceneFade(sceneId, fade)
     previous = scene
+    store.updateSettings({ hazeDensity: scene.haze ?? 0.07 })
     store.updateScene(sceneId, { title: scene.title, triggerType: scene.triggerType ?? 'other', trigger: scene.trigger ?? '', note: scene.note })
   }
 
