@@ -1,11 +1,15 @@
 // 見本の公演「ロミオとジュリエット」（シェイクスピア）。トップページ・使い方の動画・「見本の公演を開く」で使う（2026-11-18）。
 // 作品は著作権が切れている。台詞は翻訳の著作権を避けるため引かず、場面の名前と説明は自分の言葉で書く。
-// 実際の劇場の仕込みに近い組み方にしている（雨を待つ図書室で作った吊りを引き継ぐ）:
-// - 客席の上のバトンから前明かり 3 灯、1 番バトンから中の地明かり 3 灯。実測の配光で演技の場所をむらなく覆う
-// - 4 番バトンから逆光 2 灯。ホリゾントは 3 番バトンから左右 2 灯を広く
-// - 芯の明かり: ピンの特別（場面ごとに狙いを変える。舞踏会のジュリエット、バルコニー、霊廟の棺台）、
-//   月明かり（木漏れ日のゴボ）、窓明かり（窓枠のゴボ）、下手・上手の横明かり
-// 器具は 15 灯（上限 16）。見本を開いた人が 1 灯は足せるようにしておく。
+// 実際の劇場の仕込みに近い組み方にしている。2026-11-20 に、日本の照明家・照明会社の資料をもとに組み直した
+// （調べた決まりは reports/2026-11-20-tomoshibi-lighting-study/research.md。ここでは要点だけ書く）:
+// - 地明かりは、客席の上のバトンの前明かり 3 灯と、1 番バトンのサス 3 灯で、間口 3 × 奥行き 2 のエリアを覆う。どの場面も前明かりを残して顔を見せる
+// - 逆光は 4 番バトンから 2 灯。濃い色（赤・濃い青）は逆光とホリにだけ入れ、顔には当てない
+// - ホリゾントは 4 番バトン（幕から約 2.5m）から 2 灯。離しすぎると幕の上に暗い波ができた
+// - ピンは客席の後ろから追う。場面ごとに追う役者を決める（吊った器具は場面の途中で向きを変えられないので、狙いを変えるのはピンだけ）
+// - 月明かり（木漏れ日のゴボ）は木のある庭の場面だけ。窓明かり（窓枠のゴボ）は朝の室内の 2 場面
+// - 横明かりは、袖幕のすき間（2 番の袖の手前）から人の高さを狙う。袖幕の奥から当てると、幕のひだの影が床に並んだ
+// - 器具は 15 灯（上限 16）。見本を開いた人が 1 灯は足せるようにしておく
+// - セットが替わる場面は暗転で転換する（通しで見るでは、明かりを消し切ってからセットと役者を入れ替える）
 import { useStore, type AudienceBlock, type Fixture, type SceneTriggerType } from '../store'
 import type { SetPiece } from '../types'
 import { MEASURED_FRESNEL_KEY } from '../photometric/measuredFresnel'
@@ -29,6 +33,9 @@ const C = {
   amber: [1, 0.72, 0.45] as RGB,
   torch: [1, 0.6, 0.32] as RGB,
   pale: [1, 0.95, 0.9] as RGB,
+  // #78 相当（夜の地明かり）と #64 相当（白熱の黄みを抜く、顔に当てる薄い青）
+  n78: [0.74, 0.8, 1] as RGB,
+  c64: [0.92, 0.95, 1] as RGB,
   skyDay: [0.55, 0.75, 1] as RGB,
   skyGold: [1, 0.66, 0.36] as RGB,
   skyNight: [0.1, 0.16, 0.48] as RGB,
@@ -44,30 +51,29 @@ type Light = {
 }
 
 const LIGHTS: Light[] = [
-  // 前明かり（客席の上のバトン）：舞台の前の方を下手・中央・上手の 3 つに分け、隣どうしを重ねてむらなく覆う
+  // 前明かり（客席の上のバトン）：舞台の前の方を下手・中央・上手の 3 つに分け、隣どうしを重ねてむらなく覆う。仰角は約 45°
   { key: 'fohL', name: '前明かり・下手', number: '1', preset: 'Fresnel10', measured: 'fresnel', position: [-4.2, 8.6, 6.8], target: [-4.0, 1.5, 0.2], beam: 44, barnDoorAngles: { top: 3, left: 3, right: 30 } },
   { key: 'fohC', name: '前明かり・中央', number: '2', preset: 'Fresnel10', measured: 'fresnel', position: [0, 8.6, 6.8], target: [0, 1.5, 0.0], beam: 44, barnDoorAngles: { top: 3, left: 30, right: 30 } },
   { key: 'fohR', name: '前明かり・上手', number: '3', preset: 'Fresnel10', measured: 'fresnel', position: [4.2, 8.6, 6.8], target: [4.0, 1.5, 0.2], beam: 44, barnDoorAngles: { top: 3, right: 3, left: 30 } },
-  // 中の地明かり（1 番バトン）：舞台の中ほどを 3 つに分けて真上寄りから。前明かりと重ねて、真ん中だけ明るいたまりを作らない
-  { key: 'usL', name: '中の地明かり・下手', number: '4', preset: 'Fresnel10', measured: 'fresnel', position: [-4.2, 8, 0.8], target: [-4.2, 1.5, -3.6], beam: 46, barnDoorAngles: { top: 4 } },
-  { key: 'usC', name: '中の地明かり・中央', number: '5', preset: 'Fresnel10', measured: 'fresnel', position: [0, 8, 0.8], target: [0, 1.5, -3.8], beam: 46, barnDoorAngles: { top: 4 } },
-  { key: 'usR', name: '中の地明かり・上手', number: '6', preset: 'Fresnel10', measured: 'fresnel', position: [4.2, 8, 0.8], target: [4.2, 1.5, -3.6], beam: 46, barnDoorAngles: { top: 4 } },
-  { key: 'backL', name: '逆光・下手', number: '7', preset: 'Fresnel10', measured: 'fresnel', position: [-3, 8, -5.2], target: [-2.4, 0, -1.4], beam: 44 },
-  { key: 'backR', name: '逆光・上手', number: '8', preset: 'Fresnel10', measured: 'fresnel', position: [3, 8, -5.2], target: [2.4, 0, -1.4], beam: 44 },
-  // ホリゾント：幕から 4m 離した 3 番バトンから広く当てる。近くから当てると上だけ山なりに明るく、下が暗い帯になっていた
-  { key: 'cycL', name: 'ホリゾント・下手', number: '9', preset: 'CycWashStudy', measured: 'cyc', position: [-3.4, 8, -2.7], target: [-3.4, 2.6, -7.0], beam: 60 },
-  { key: 'cycR', name: 'ホリゾント・上手', number: '10', preset: 'CycWashStudy', measured: 'cyc', position: [3.4, 8, -2.7], target: [3.4, 2.6, -7.0], beam: 60 },
-  // ピンの特別。狙いは場面ごとに変える
-  { key: 'pin', name: 'ピン・特別', number: '11', preset: 'Source4_19', position: [0.6, 8, -0.95], target: [0, 1.2, -2.2], beam: 19 },
+  // サス（1 番バトン）：舞台の奥のエリアを 3 つに分けて真上寄りから。ホリの手前で切り、幕に当てない
+  { key: 'usL', name: 'サス・下手', number: '4', preset: 'Fresnel10', measured: 'fresnel', position: [-4.2, 8, 0.8], target: [-4.2, 1.5, -3.6], beam: 46, barnDoorAngles: { top: 4 } },
+  { key: 'usC', name: 'サス・中央', number: '5', preset: 'Fresnel10', measured: 'fresnel', position: [0, 8, 0.8], target: [0, 1.5, -3.8], beam: 46, barnDoorAngles: { top: 4 } },
+  { key: 'usR', name: 'サス・上手', number: '6', preset: 'Fresnel10', measured: 'fresnel', position: [4.2, 8, 0.8], target: [4.2, 1.5, -3.6], beam: 46, barnDoorAngles: { top: 4 } },
+  { key: 'backL', name: '逆光・下手', number: '7', preset: 'Fresnel10', measured: 'fresnel', position: [-3, 8, -4.15], target: [-2.4, 0, -0.8], beam: 44 },
+  { key: 'backR', name: '逆光・上手', number: '8', preset: 'Fresnel10', measured: 'fresnel', position: [3, 8, -4.15], target: [2.4, 0, -0.8], beam: 44 },
+  { key: 'cycL', name: 'ホリゾント・下手', number: '9', preset: 'CycWashStudy', measured: 'cyc', position: [-3.4, 8, -4.15], target: [-3.4, 2.6, -7.0], beam: 60 },
+  { key: 'cycR', name: 'ホリゾント・上手', number: '10', preset: 'CycWashStudy', measured: 'cyc', position: [3.4, 8, -4.15], target: [3.4, 2.6, -7.0], beam: 60 },
+  // ピン：客席の後ろの高い投光室から（低いと光が役者を越えてホリに丸く当たる）。場面ごとに追う役者を変える。
+  // 2kW のクセノンを 4° に絞るので、ほかの器具よりずっと小さい値で同じくらいの明るさになる
+  { key: 'pin', name: 'ピン', number: '11', preset: 'FollowSpotXenon2k', position: [0, 9.5, 15.5], target: [0, 1.2, -1.4], beam: 4 },
   { key: 'moon', name: '月明かり', number: '12', preset: 'Source4_26', position: [5.6, 7.6, -5.6], target: [0.6, 0, -2.4], beam: 26, gobo: 'leaves' },
-  { key: 'window', name: '窓明かり', number: '13', preset: 'Source4_26', position: [-4.6, 5.0, -6.9], target: [-0.6, 0, -2.6], beam: 26, gobo: 'window' },
-  // 横明かり：袖のタワーからエリスポで、向こう側の床へ落とす（光は壁を抜けるので、高く狙うと舞台の外のスモークが光った）。床の真ん中を狙っていた時は、2 灯が交わって細長い強いたまりになっていた（フレネルだと外への漏れでホリゾントに丸い明るみが出た）
-  // 横明かりは向かいの床に落とし切る。浅く狙うと、光が床を越えて向かいの袖の壁に当たり、画面の両端が茶色く光った（2026-11-19）
-  { key: 'sideL', name: '横明かり・下手', number: '14', preset: 'Source4_36', position: [-7.6, 5.0, -3.1], target: [1.5, 0.2, -2.6], beam: 24 },
-  { key: 'sideR', name: '横明かり・上手', number: '15', preset: 'Source4_36', position: [7.6, 5.0, -3.1], target: [-1.5, 0.2, -2.4], beam: 24 },
+  { key: 'window', name: '窓明かり', number: '13', preset: 'Source4_26', position: [2.6, 5.0, -6.2], target: [-0.2, 0, -2.4], beam: 26, gobo: 'window' },
+  // 横明かり：2 番の袖幕の手前のすき間に立てたタワーから、向かいの役者の胸の高さを狙う
+  { key: 'sideL', name: '横明かり・下手', number: '14', preset: 'Source4_36', position: [-7.6, 3.2, -0.7], target: [2.0, 1.2, -1.8], beam: 26 },
+  { key: 'sideR', name: '横明かり・上手', number: '15', preset: 'Source4_36', position: [7.6, 3.2, -0.7], target: [-2.0, 1.2, -1.8], beam: 26 },
 ]
 
-type Cue = { level: number; color?: RGB; target?: Vec3; position?: Vec3 }
+type Cue = { level: number; color?: RGB; target?: Vec3; follow?: Name }
 type Look = Partial<Record<string, number | Cue>>
 type Place = Vec3 | { position: Vec3; facingDeg?: number; pose?: 'standing' | 'sitting' | 'kneeling' | 'lying' }
 
@@ -104,6 +110,8 @@ type Scene = {
   note: string
   cast: Partial<Record<Name, Place>>
   props: Partial<Record<keyof typeof PROPS, PropPlace>>
+  /** この場面に入るときのフェード（秒）。書かなければ、セットが替わる場面は 4 秒の暗転、ほかはアプリの既定 */
+  fadeSec?: number
   look: Look
 }
 
@@ -115,34 +123,35 @@ const SCENES: Scene[] = [
     cast: { 'マキューシオ': { position: [-2.6, 0, -1.2], facingDeg: 60 }, 'ティボルト': { position: [2.2, 0, -1.6], facingDeg: -60 }, 'ロミオ': { position: [-4.6, 0, -3.6], facingDeg: 30 } },
     props: { fountain: { at: [0, 0.4, -4.2] }, benchL: { at: [-4.2, 0.225, -4.6] } },
     look: {
-      fohL: { level: 0.32, color: C.day }, fohC: { level: 0.32, color: C.day }, fohR: { level: 0.32, color: C.day },
-      usL: { level: 0.26, color: C.day }, usR: { level: 0.26, color: C.day },
+      fohL: { level: 0.32, color: C.pale }, fohC: { level: 0.32, color: C.pale }, fohR: { level: 0.32, color: C.pale },
+      usL: { level: 0.26, color: C.day }, usC: { level: 0.26, color: C.day }, usR: { level: 0.26, color: C.day },
       backL: { level: 0.2, color: C.amber }, backR: { level: 0.2, color: C.amber },
       cycL: { level: 0.5, color: C.skyDay }, cycR: { level: 0.5, color: C.skyDay },
-      sideL: { level: 0.3, color: C.day }, sideR: { level: 0.3, color: C.day },
+      sideL: { level: 0.22, color: C.day }, sideR: { level: 0.22, color: C.day },
     },
   },
   {
-    chapter: 0, title: 'キャピュレット家の舞踏会', triggerType: 'sound', trigger: '舞曲が始まる', note: '金色の宴の間。人の輪から離れた所で、ロミオとジュリエットが出会う。二人にだけピンを足す。',
+    chapter: 0, title: 'キャピュレット家の舞踏会', triggerType: 'sound', trigger: '舞曲が始まる', note: '金色の宴の間。人の輪から離れた所で、ロミオとジュリエットが出会う。ピンでジュリエットを追う。',
     cast: { 'ロミオ': { position: [-0.9, 0, -1.4], facingDeg: 70 }, 'ジュリエット': { position: [0.7, 0, -1.4], facingDeg: -70 }, 'ティボルト': { position: [3.8, 0, -3.8], facingDeg: -110 }, '乳母': { position: [-3.8, 0, -3.6], facingDeg: 40 } },
     props: { table: { at: [0, 0.39, -4.4] }, benchT: { at: [0, 0.225, -5.2] } },
     look: {
-      fohL: { level: 0.16, color: C.gold }, fohC: { level: 0.12, color: C.gold }, fohR: { level: 0.16, color: C.gold },
-      usL: { level: 0.22, color: C.gold }, usR: { level: 0.22, color: C.gold },
+      fohL: { level: 0.16, color: C.warm }, fohC: { level: 0.14, color: C.warm }, fohR: { level: 0.16, color: C.warm },
+      usL: { level: 0.2, color: C.gold }, usC: { level: 0.2, color: C.gold }, usR: { level: 0.2, color: C.gold },
       backL: { level: 0.22, color: C.rose }, backR: { level: 0.22, color: C.rose },
-      cycL: { level: 0.3, color: C.skyGold }, cycR: { level: 0.3, color: C.skyGold },
-      pin: { level: 0.9, color: C.pale, target: [-0.1, 1.2, -1.4] }, sideL: { level: 0.25, color: C.amber }, sideR: { level: 0.25, color: C.rose },
+      cycL: { level: 0.22, color: C.skyGold }, cycR: { level: 0.22, color: C.skyGold },
+      pin: { level: 0.012, color: C.pale, follow: 'ジュリエット' }, sideL: { level: 0.2, color: C.amber }, sideR: { level: 0.2, color: C.amber },
     },
   },
   {
-    chapter: 1, title: 'バルコニー', triggerType: 'other', trigger: '夜の庭', note: '月夜の庭。上手のバルコニーにジュリエット、下の木陰にロミオ。月明かりが木漏れ日の形で落ちる。',
+    chapter: 1, title: 'バルコニー', triggerType: 'other', trigger: '夜の庭', note: '月夜の庭。上手のバルコニーにジュリエット、下の木陰にロミオ。月明かりが木漏れ日の形で落ちる。顔は薄い前明かりで残す。',
     cast: { 'ジュリエット': { position: [3.2, 2.0, -5.0], facingDeg: -30 }, 'ロミオ': { position: [0.6, 0, -2.6], facingDeg: 150 } },
     props: { balcony: { at: [3.2, 1.0, -5.0] }, balconyWindow: { at: [3.2, 3.1, -5.75] }, benchL: { at: [-2.6, 0.225, -3.2] } },
     look: {
-      fohL: { level: 0.05, color: C.night }, fohC: { level: 0.07, color: C.night }, fohR: { level: 0.1, color: C.night },
+      fohL: { level: 0.06, color: C.c64 }, fohC: { level: 0.08, color: C.c64 }, fohR: { level: 0.08, color: C.c64 },
+      usL: { level: 0.06, color: C.n78 }, usC: { level: 0.06, color: C.n78 }, usR: { level: 0.06, color: C.n78 },
       backL: { level: 0.16, color: C.steel }, backR: { level: 0.2, color: C.steel },
-      cycL: { level: 0.12, color: C.skyNight }, cycR: { level: 0.12, color: C.skyNight },
-      pin: { level: 0.5, color: C.pale, position: [3.2, 8, -3.9], target: [3.2, 2.4, -5.0] }, moon: { level: 0.85, color: C.moon }, sideR: { level: 0.2, color: C.moon },
+      cycL: { level: 0.14, color: C.skyNight }, cycR: { level: 0.14, color: C.skyNight },
+      pin: { level: 0.004, color: C.c64, follow: 'ジュリエット' }, moon: { level: 0.6, color: C.moon }, sideR: { level: 0.16, color: C.moon },
     },
   },
   {
@@ -150,55 +159,58 @@ const SCENES: Scene[] = [
     cast: { 'ロレンス神父': { position: [0, 0, -3.2], facingDeg: 0 }, 'ロミオ': { position: [-1.0, 0, -2.0], facingDeg: 60 }, 'ジュリエット': { position: [1.0, 0, -2.0], facingDeg: -60 } },
     props: { cellTable: { at: [-2.6, 0.39, -4.2] }, herbs: { at: [3.8, 1.2, -6.2] } },
     look: {
-      fohL: { level: 0.12, color: C.warm }, fohC: { level: 0.16, color: C.warm }, fohR: { level: 0.1, color: C.warm },
-      usL: { level: 0.08, color: C.warm }, usR: { level: 0.08, color: C.warm },
+      fohL: { level: 0.12, color: C.c64 }, fohC: { level: 0.16, color: C.c64 }, fohR: { level: 0.12, color: C.c64 },
+      usL: { level: 0.08, color: C.warm }, usC: { level: 0.08, color: C.warm }, usR: { level: 0.08, color: C.warm },
       backL: { level: 0.12, color: C.amber }, backR: { level: 0.12, color: C.amber },
       cycL: { level: 0.12, color: C.skyDawn }, cycR: { level: 0.12, color: C.skyDawn },
-      window: { level: 0.9, color: C.amber }, sideL: { level: 0.2, color: C.amber },
+      window: { level: 0.8, color: C.amber }, sideR: { level: 0.16, color: C.amber },
     },
   },
   {
-    chapter: 2, title: '広場の決闘', triggerType: 'other', trigger: '剣が抜かれる', note: '照りつける午後。マキューシオが倒れ、ロミオがティボルトを討つ。空と横明かりを赤く、影を濃く。',
+    chapter: 2, title: '広場の決闘', triggerType: 'other', trigger: '剣が抜かれる', note: '照りつける午後。マキューシオが倒れ、ロミオがティボルトを討つ。赤は空と逆光にだけ入れ、顔は琥珀で見せる。',
     cast: { 'ロミオ': { position: [-1.2, 0, -1.8], facingDeg: 80 }, 'ティボルト': { position: [1.4, 0, -1.9], facingDeg: -80 }, 'マキューシオ': { position: [-3.4, 0, -2.8], facingDeg: 40, pose: 'kneeling' } },
     props: { fountain: { at: [0, 0.4, -4.2] }, benchL: { at: [-4.2, 0.225, -4.6] } },
     look: {
-      fohL: { level: 0.1, color: C.amber }, fohC: { level: 0.12, color: C.amber }, fohR: { level: 0.1, color: C.amber },
-      backL: { level: 0.3, color: C.red }, backR: { level: 0.3, color: C.red },
-      cycL: { level: 0.4, color: C.skyRed }, cycR: { level: 0.4, color: C.skyRed },
-      sideL: { level: 0.45, color: C.amber }, sideR: { level: 0.45, color: C.red },
+      fohL: { level: 0.14, color: C.amber }, fohC: { level: 0.16, color: C.amber }, fohR: { level: 0.14, color: C.amber },
+      usL: { level: 0.1, color: C.amber }, usC: { level: 0.1, color: C.amber }, usR: { level: 0.1, color: C.amber },
+      backL: { level: 0.32, color: C.red }, backR: { level: 0.32, color: C.red },
+      cycL: { level: 0.42, color: C.skyRed }, cycR: { level: 0.42, color: C.skyRed },
+      sideL: { level: 0.36, color: C.amber }, sideR: { level: 0.36, color: C.amber },
     },
   },
   {
     chapter: 2, title: '夜明けの別れ', triggerType: 'sound', trigger: '鳥の声', note: '寝室の夜明け。窓の外がしらむ。追放されるロミオとジュリエットの別れ。',
     cast: { 'ロミオ': { position: [-0.4, 0, -2.4], facingDeg: 70 }, 'ジュリエット': { position: [0.8, 0, -2.4], facingDeg: -70 } },
-    props: { bed: { at: [-2.6, 0.25, -3.6] }, roomWindow: { at: [1.6, 1.8, -6.7] } },
+    props: { bed: { at: [-2.6, 0.25, -3.6] }, roomWindow: { at: [1.6, 1.8, -6.4] } },
     look: {
-      fohL: { level: 0.1, color: C.lavender }, fohC: { level: 0.18, color: C.lavender }, fohR: { level: 0.1, color: C.lavender },
+      fohL: { level: 0.1, color: C.c64 }, fohC: { level: 0.16, color: C.c64 }, fohR: { level: 0.1, color: C.c64 },
+      usL: { level: 0.06, color: C.lavender }, usC: { level: 0.06, color: C.lavender }, usR: { level: 0.06, color: C.lavender },
       backL: { level: 0.14, color: C.lavender }, backR: { level: 0.14, color: C.lavender },
-      cycL: { level: 0.22, color: C.skyDawn, target: [-3.2, 1.8, -7.4] }, cycR: { level: 0.22, color: C.skyDawn, target: [3.2, 1.8, -7.4] },
-      window: { level: 0.55, color: C.lavender, position: [2.4, 5.0, -6.9], target: [-0.2, 0, -2.4] },
+      cycL: { level: 0.22, color: C.skyDawn, target: [-3.4, 1.8, -7.0] }, cycR: { level: 0.22, color: C.skyDawn, target: [3.4, 1.8, -7.0] },
+      window: { level: 0.55, color: C.lavender },
     },
   },
   {
-    chapter: 3, title: '霊廟', triggerType: 'other', trigger: '暗闇', note: '冷たい霊廟。棺台に眠るジュリエット。たいまつの暖色を一つだけ、あとは青い闇と冷気。',
+    chapter: 3, title: '霊廟', triggerType: 'other', trigger: '暗闇', note: '冷たい霊廟。棺台に眠るジュリエット。たいまつの暖色をピンで一つだけ、あとは青い闇。暗くても、顔は薄い前明かりで読めるようにする。',
     cast: { 'ジュリエット': { position: [0, 0.7, -3.4], facingDeg: 90, pose: 'lying' }, 'ロミオ': { position: [-1.5, 0, -2.7], facingDeg: 70, pose: 'kneeling' } },
     props: { bier: { at: [0, 0.35, -3.4] } },
     look: {
+      fohL: { level: 0.05, color: C.c64 }, fohC: { level: 0.07, color: C.c64 },
       backL: { level: 0.22, color: C.steel }, backR: { level: 0.22, color: C.steel },
-      cycL: { level: 0.06, color: C.skyDeep, target: [-3.2, 3.6, -7.4] }, cycR: { level: 0.06, color: C.skyDeep, target: [3.2, 3.6, -7.4] },
-      pin: { level: 0.8, color: C.torch, position: [0.6, 8, -0.95], target: [-0.6, 0.9, -3.2] }, sideL: { level: 0.25, color: C.torch },
+      cycL: { level: 0.06, color: C.skyDeep, target: [-3.4, 3.6, -7.0] }, cycR: { level: 0.06, color: C.skyDeep, target: [3.4, 3.6, -7.0] },
+      pin: { level: 0.005, color: C.torch, follow: 'ジュリエット' }, sideL: { level: 0.2, color: C.torch },
     },
   },
   {
     chapter: 3, title: '両家の和解', triggerType: 'light', trigger: '夜が明ける', note: '灰色の夜明け。両家が棺台を囲み、手を取り合う。空がゆっくり白み、舞台全体を静かに見せて終える。',
-    cast: { 'ロレンス神父': { position: [0, 0, -1.6], facingDeg: 0 }, '乳母': { position: [-2.4, 0, -2.2], facingDeg: 50 }, 'ジュリエット': { position: [0, 0.7, -3.4], facingDeg: 90, pose: 'lying' }, 'ロミオ': { position: [1.7, 0, -3.0], facingDeg: -40, pose: 'kneeling' } },
+    cast: { 'ロレンス神父': { position: [0, 0, -1.6], facingDeg: 0 }, '乳母': { position: [-2.4, 0, -2.2], facingDeg: 50 }, 'ジュリエット': { position: [0, 0.7, -3.4], facingDeg: 90, pose: 'lying' }, 'ロミオ': { position: [-1.5, 0, -2.7], facingDeg: 70, pose: 'kneeling' } },
     props: { bier: { at: [0, 0.35, -3.4] } },
+    fadeSec: 8,
     look: {
       fohL: { level: 0.16, color: C.pale }, fohC: { level: 0.2, color: C.pale }, fohR: { level: 0.16, color: C.pale },
-      usL: { level: 0.12, color: C.pale }, usR: { level: 0.12, color: C.pale },
+      usL: { level: 0.12, color: C.pale }, usC: { level: 0.12, color: C.pale }, usR: { level: 0.12, color: C.pale },
       backL: { level: 0.16, color: C.lavender }, backR: { level: 0.16, color: C.lavender },
-      cycL: { level: 0.4, color: C.skyGrey, target: [-3.2, 2.4, -7.4] }, cycR: { level: 0.4, color: C.skyGrey, target: [3.2, 2.4, -7.4] },
-      pin: { level: 0.4, color: C.pale, target: [0, 1.0, -3.4] },
+      cycL: { level: 0.4, color: C.skyGrey, target: [-3.4, 2.4, -7.0] }, cycR: { level: 0.4, color: C.skyGrey, target: [3.4, 2.4, -7.0] },
     },
   },
 ]
@@ -281,6 +293,7 @@ export function createSampleProduction() {
 
   // 場面ごとに要るセットだけを置く（前の場面の物は外す）
   const placed: Partial<Record<keyof typeof PROPS, string>> = {}
+  let previous: Scene | null = null
   const apply = (scene: Scene, sceneId: string) => {
     for (const name of CAST) {
       const place = scene.cast[name]
@@ -317,10 +330,14 @@ export function createSampleProduction() {
       store.updateFixture(lightIds[index], {
         intensity: level, enabled: level > 0,
         ...(cue.color ? { color: cue.color } : {}),
-        ...(cue.target ? { target: cue.target } : {}),
-        ...(cue.position ? { position: cue.position } : {}),
+        target: cue.target ?? light.target,
+        followPerformerId: cue.follow ? castIds[cue.follow] : undefined,
       })
     })
+    const changeover = previous !== null && JSON.stringify(Object.keys(previous.props).sort()) !== JSON.stringify(Object.keys(scene.props).sort())
+    const fade = scene.fadeSec ?? (changeover ? 4 : undefined)
+    if (fade !== undefined) store.setSceneFade(sceneId, fade)
+    previous = scene
     store.updateScene(sceneId, { title: scene.title, triggerType: scene.triggerType ?? 'other', trigger: scene.trigger ?? '', note: scene.note })
   }
 

@@ -3,6 +3,7 @@ import type { Fixture } from '../store'
 import { dimmedKelvin, FIXTURE_PROFILES, kelvinToRGB } from './fixtureTypes'
 import { hasMeasuredFresnel, measuredFresnelSpotlight } from '../photometric/measuredFresnel'
 import { hasMeasuredCyc, measuredCycSpotlight } from '../photometric/measuredCyc'
+import { hasProfileShutter, profileShutterMap } from '../photometric/profileShutter'
 
 export const SPOT_PENUMBRA = 0.6
 export const SPOT_DECAY = 2
@@ -70,7 +71,7 @@ export function fixtureSpotlightModel(fixture: Fixture) {
     penumbra: SPOT_PENUMBRA,
     decay: SPOT_DECAY,
     beamShape: profile?.beamShape,
-    map: null as THREE.Texture | null,
+    map: (hasProfileShutter(fixture) ? profileShutterMap(fixture, halfAngle) : null) as THREE.Texture | null,
     intensityCandela: fluxLumens / solidAngle * fixture.intensity,
   }
 }

@@ -7,6 +7,7 @@ import { gelByHex, GEL_GROUPS, GELS } from '../lighting/gels'
 import { useDraggablePanel } from './useDraggablePanel'
 import { MEASURED_FRESNEL_KEY } from '../photometric/measuredFresnel'
 import { MEASURED_CYC_KEY } from '../photometric/measuredCyc'
+import { profileHalfFieldDeg, SHUTTER_KINDS } from '../photometric/profileShutter'
 import { isWorkspacePath } from '../io/workspacePath'
 import { HierarchyPanel } from './HierarchyPanel'
 import { Inspector } from './Inspector'
@@ -33,10 +34,10 @@ const BARN_DOOR_SIDES: { key: BarnDoorSide; label: string }[] = [
   { key: 'bottom', label: '下側' }, { key: 'left', label: '左側' },
 ]
 
-function BarnDoorEditor({ fixture, onChange }: { fixture: Fixture; onChange: (patch: Partial<Fixture>) => void }) {
+function BarnDoorEditor({ fixture, onChange, shutter = false }: { fixture: Fixture; onChange: (patch: Partial<Fixture>) => void; shutter?: boolean }) {
   const active = fixture.barnDoorAngles !== undefined || fixture.upstageCutDeg !== undefined
   const cuts = fixture.barnDoorAngles ?? (fixture.upstageCutDeg === undefined ? {} : { top: fixture.upstageCutDeg })
-  const halfField = 45 * Math.max(7, Math.min(55, fixture.beamAngleDeg)) / 28
+  const halfField = shutter ? profileHalfFieldDeg(fixture) : 45 * Math.max(7, Math.min(55, fixture.beamAngleDeg)) / 28
   const amount = (side: BarnDoorSide) => cuts[side] === undefined ? 0
     : Math.max(0, Math.min(75, Math.round((halfField - cuts[side]) / (2 * halfField) * 100)))
   const setAmount = (side: BarnDoorSide, value: number) => {
@@ -51,7 +52,7 @@ function BarnDoorEditor({ fixture, onChange }: { fixture: Fixture; onChange: (pa
   const height = 128 - (amount('top') + amount('bottom')) * 1.28
   return <section className="barn-door-editor">
     <div className="barn-door-heading">
-      <strong>バンドアで光を切る</strong>
+      <strong>{shutter ? 'シャッターで光を切る' : 'バンドアで光を切る'}</strong>
       <button type="button" className={active ? 'active' : ''} aria-pressed={active}
         onClick={() => onChange({ barnDoorAngles: active ? undefined : { top: 5 }, upstageCutDeg: undefined })}>
         {active ? '使用中' : '使う'}
@@ -68,7 +69,7 @@ function BarnDoorEditor({ fixture, onChange }: { fixture: Fixture; onChange: (pa
         <span>光の形の目安</span>
       </div>
       <div className="barn-door-actions">
-        <button type="button" onClick={() => onChange({ barnDoorAngles: { top: 2.5 }, upstageCutDeg: undefined })}>奥壁側を切る</button>
+        {!shutter && <button type="button" onClick={() => onChange({ barnDoorAngles: { top: 2.5 }, upstageCutDeg: undefined })}>奥壁側を切る</button>}
         <button type="button" onClick={() => onChange({ barnDoorAngles: {}, upstageCutDeg: undefined })}>全開に戻す</button>
       </div>
       {BARN_DOOR_SIDES.map(({ key, label }) => <div className="barn-door-slider" key={key}>
@@ -248,6 +249,8 @@ export function FixtureEditor({ fixture }: { fixture: Fixture }) {
       )}
 
       {isMeasured && <BarnDoorEditor fixture={fixture} onChange={update} />}
+      {!isMeasured && SHUTTER_KINDS.has(FIXTURE_PROFILES[fixture.presetKey]?.kind ?? '') && !fixture.gobo
+        && <BarnDoorEditor fixture={fixture} onChange={update} shutter />}
 
       {canFollow(fixture) && <FollowField fixture={fixture} onChange={update} />}
 

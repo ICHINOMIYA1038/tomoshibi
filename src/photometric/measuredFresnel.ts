@@ -23,7 +23,7 @@ function barnDoorLimits(fixture: Fixture): Partial<Record<BarnDoorSide, number>>
   return fixture.barnDoorAngles ?? (fixture.upstageCutDeg === undefined ? {} : { top: fixture.upstageCutDeg })
 }
 
-function barnDoorTransmission(horizontalDeg: number, verticalDeg: number, limits: Partial<Record<BarnDoorSide, number>>): number {
+export function barnDoorTransmission(horizontalDeg: number, verticalDeg: number, limits: Partial<Record<BarnDoorSide, number>>): number {
   return cutTransmission(verticalDeg, limits.top)
     * cutTransmission(horizontalDeg, limits.right)
     * cutTransmission(-verticalDeg, limits.bottom)

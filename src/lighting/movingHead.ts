@@ -97,7 +97,9 @@ export function followPoint(fixture: Fixture, performers: Performer[]): [number,
   const performer = performers.find(item => item.id === fixture.followPerformerId)
   if (!performer) return null
   const scale = Number.isFinite(performer.scale) ? performer.scale : 1
-  return [performer.position[0], performer.position[1] + 1.1 * scale, performer.position[2]]
+  // 胸の高さは姿勢で変わる。寝ている役者に立った人の高さで当てると、光が体を越えて奥の幕に丸く当たった（2026-11-20）
+  const chest = performer.pose === 'lying' ? 0.25 : performer.pose === 'sitting' || performer.pose === 'kneeling' ? 0.75 : 1.1
+  return [performer.position[0], performer.position[1] + chest * scale, performer.position[2]]
 }
 
 /**
