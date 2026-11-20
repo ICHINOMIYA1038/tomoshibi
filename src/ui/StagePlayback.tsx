@@ -132,6 +132,10 @@ export function StagePlayback({ onClose, simplified = false }: { onClose: () => 
         event.preventDefault()
         if (!event.repeat) toggleAuto()
       }
+      if (event.key === 'Home' && !event.repeat) {
+        event.preventDefault()
+        showScene(0)
+      }
       if (event.key === 'ArrowRight' && !event.repeat) {
         event.preventDefault()
         setAuto(false)
@@ -145,7 +149,7 @@ export function StagePlayback({ onClose, simplified = false }: { onClose: () => 
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [goTo, onClose, toggleAuto])
+  }, [goTo, onClose, showScene, toggleAuto])
 
   // いまのシーンを、タイムラインの真ん中へなめらかに寄せる
   const timelineRef = useRef<HTMLOListElement>(null)
@@ -205,6 +209,9 @@ export function StagePlayback({ onClose, simplified = false }: { onClose: () => 
       </ol>
     </nav>}
     <div className="stage-playback-controls">
+      {/* 途中から 1 シーン目へ戻す。暗転を待たずに切り替え、自動再生中ならそのまま続ける（2026-11-20 オーナー要望） */}
+      <button disabled={index === 0 && !transitioning} title="Home キーでも最初に戻れます"
+        onClick={() => showScene(0)}>最初から</button>
       <button disabled={transitioning || index === 0}
         onClick={() => { setAuto(false); goTo(index - 1) }}>前のシーン</button>
       <button className="stage-playback-primary" disabled={scenes.length < 2}
