@@ -98,6 +98,9 @@ export function applyCycWash(material: THREE.MeshStandardMaterial) {
     shader.fragmentShader = shader.fragmentShader
       .replace('#include <common>', '#include <common>\n' + declarations)
       .replace('#include <emissivemap_fragment>', '#include <emissivemap_fragment>\ntotalEmissiveRadiance += cycWash(vCycWorld) * diffuseColor.rgb;')
+      // 光の跳ね返り（BounceLight.tsx の半球光）はホリには当てない。ホリはホリ用の器具の明るさで描いており、
+      // 跳ね返りと単位がそろわないため、夜の青いホリが一様に白っぽく洗われた。本物でもホリ用の器具の方がずっと強い（2026-11-21）
+      .replace('#include <lights_fragment_begin>', THREE.ShaderChunk.lights_fragment_begin.replace('irradiance += getHemisphereLightIrradiance( hemisphereLights[ i ], geometryNormal );', ''))
   }
   material.customProgramCacheKey = () => 'cyc-wash'
   material.needsUpdate = true
