@@ -13,6 +13,16 @@ function smoothEdge(value: number, start: number) {
   return t * t * (3 - 2 * t)
 }
 
+// ピンと、模様（ゴボ）を映すエリスポは、レンズで光の縁をくっきり結ぶ。どの器具も同じぼけ（0.6）で描くと、ピンの丸が白いもやに見えた。
+// 縁のぼけは、ビーム角とフィールド角の差の分にする（エリスポ 26° なら約 0.17、ピンなら約 0.25）。
+// 横明かりのように広く当てるエリスポは、本物でもピントをぼかして使う。縁をくっきりさせると、2 本の交わりが床に楕円の形で出た（2026-11-20）
+function hardEdgePenumbra(fixture: Fixture, profile: (typeof FIXTURE_PROFILES)[string] | undefined): number | undefined {
+  if (!profile) return undefined
+  const sharp = profile.kind === 'FollowSpot' || ((profile.kind === 'Profile' || profile.kind === 'LED_Profile') && !!fixture.gobo)
+  if (!sharp) return undefined
+  return Math.min(0.6, Math.max(0.08, 1 - profile.beamAngleDeg / profile.fieldAngleDeg + 0.05))
+}
+
 export function cycBeamAttenuation(horizontal: number, vertical: number) {
   return smoothEdge(horizontal, 0.46) * smoothEdge(vertical, 0.7)
 }
@@ -68,7 +78,7 @@ export function fixtureSpotlightModel(fixture: Fixture) {
     color: fixtureSpotlightColor(fixture),
     fieldAngleRad,
     halfAngle,
-    penumbra: SPOT_PENUMBRA,
+    penumbra: hardEdgePenumbra(fixture, profile) ?? SPOT_PENUMBRA,
     decay: SPOT_DECAY,
     beamShape: profile?.beamShape,
     map: (hasProfileShutter(fixture) ? profileShutterMap(fixture, halfAngle) : null) as THREE.Texture | null,
