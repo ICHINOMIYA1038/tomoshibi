@@ -71,7 +71,7 @@ export function StagePlayback({ onClose, simplified = false }: { onClose: () => 
         const eased = progress * progress * (3 - 2 * progress)
         useStore.setState(state => ({
           productionPlan: { ...plan, activeSceneId: from.id },
-          ...interpolateStage(from, to, eased),
+          ...interpolateStage(from, to, eased, plan.venueLayout),
           settings: { ...state.settings, ...interpolateLook(from, to, state.settings, eased) },
         }))
         lastDraw = now

@@ -1,4 +1,5 @@
-import { sceneStage, type Fixture, type Performer, type PlanScene } from '../store'
+import { sceneStage, type Fixture, type Performer, type PlanScene, type VenueLayout } from '../store'
+import { portalPoint } from '../stagePortals'
 import type { SetPiece } from '../types'
 import { interpolateMoverTarget, isMover } from '../lighting/movingHead'
 
@@ -6,9 +7,7 @@ const lerp = (a: number, b: number, t: number) => a + (b - a) * t
 const lerp3 = (a: [number, number, number], b: [number, number, number], t: number): [number, number, number] => [
   lerp(a[0], b[0], t), lerp(a[1], b[1], t), lerp(a[2], b[2], t),
 ]
-const wingX = (x: number) => (x < 0 ? -1 : 1) * 8.7
-
-export function interpolateStage(from: PlanScene, to: PlanScene, progress: number) {
+export function interpolateStage(from: PlanScene, to: PlanScene, progress: number, layout?: VenueLayout) {
   const t = Math.max(0, Math.min(1, progress))
   if (t === 0) return sceneStage(from)
   if (t === 1) return sceneStage(to)
@@ -54,10 +53,15 @@ export function interpolateStage(from: PlanScene, to: PlanScene, progress: numbe
     const next = newPerformers.get(id)
     if (!old && !next) return []
     const person = next ?? old!
-    const oldPosition = old?.position ?? [wingX(person.position[0]), person.position[1], person.position[2]] as [number, number, number]
-    const newPosition = next?.position ?? [wingX(person.position[0]), person.position[1], person.position[2]] as [number, number, number]
-    const start = old?.onStage === false ? [wingX(oldPosition[0]), oldPosition[1], oldPosition[2]] as [number, number, number] : oldPosition
-    const end = next?.onStage === false ? [wingX(newPosition[0]), newPosition[1], newPosition[2]] as [number, number, number] : newPosition
+    // 舞台にいない側は、出入り口の点（入りは次のシーンの役者、ハケは前のシーンの役者に書いた出入り口。stagePortals.ts）
+    const offstage = (who: Performer, portal: Performer['entryVia']): [number, number, number] => {
+      const [x, z] = portalPoint(layout, portal, who.position)
+      return [x, who.position[1], z]
+    }
+    const oldOn = !!old && old.onStage !== false
+    const nextOn = !!next && next.onStage !== false
+    const start = oldOn ? old!.position : offstage(person, next?.entryVia)
+    const end = nextOn ? next!.position : offstage(old ?? person, old?.exitVia)
     // 高さの違う所（台の上と床）へは歩いて行けないので、滑らせずに入れ替える
     const jump = changeover || Math.abs(start[1] - end[1]) > 0.05
     if (jump) {
