@@ -54,10 +54,11 @@ export function Stage({ onMaterialsReady }: { onMaterialsReady: (mats: THREE.Sha
     baseColor: layout.cycColor ? new THREE.Color(layout.cycColor) : new THREE.Color(...DEFAULT_CYC_COLOR),
     roughness: 1.0,
   }) as unknown as THREE.MeshStandardMaterial) as unknown as THREE.ShaderMaterial, [layout.cycColor])
-  // 袖幕: 黒のベロア。本物はほとんど光を返さず、照り（鏡のような反射）も無い。
-  // ふつうの材質は色に関係なく表面で光を 4% ほど返すので、横から光が当たると黒い幕が灰色の板に見えた。
-  // 照りの無い材質（Lambert）で、反射 0.5% 前後にする（2026-11-20）
-  const wingMat = useMemo(() => new THREE.MeshLambertMaterial({ color: new THREE.Color(0.005, 0.0047, 0.0052) }) as unknown as THREE.ShaderMaterial, [])
+  const wingMat = useMemo(() => createStageMaterial({
+    // 袖幕: 黒のベロア
+    baseColor: new THREE.Color(0.02, 0.019, 0.021),
+    roughness: 1.0,
+  }), [])
   useEffect(() => () => floorMat.dispose(), [floorMat])
   useEffect(() => () => wallMat.dispose(), [wallMat])
   useEffect(() => () => cycMat.dispose(), [cycMat])

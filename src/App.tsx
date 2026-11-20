@@ -436,7 +436,7 @@ export default function App() {
           dpr={[1, QUALITY_PRESETS[settings.quality].pixelRatio]}
           shadows="soft"
           onCreated={({ gl }) => {
-            gl.toneMapping = new URLSearchParams(location.search).get('tone') === 'agx' ? THREE.AgXToneMapping : THREE.ACESFilmicToneMapping
+            gl.toneMapping = THREE.ACESFilmicToneMapping
             gl.toneMappingExposure = EXPOSURE_SCALE * (settings.exposure ?? 1.0)
           }}
           onPointerMissed={(event) => { if (event.button !== 2 && !isGizmoEngaged()) select(null, null) }}
