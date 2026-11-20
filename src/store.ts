@@ -8,6 +8,7 @@ import { clearChange, recordChange } from './changeLog'
 import { DEFAULT_VENUE_LAYOUT, stageLocalFootprint, THEATRE } from './venueLayout'
 import { isWorkspacePath } from './io/workspacePath'
 import type { PerformerPose } from './performerPoses'
+import { portalPoint, type StagePortal } from './stagePortals'
 
 let nextFid = 1
 let nextPid = 1
@@ -64,6 +65,10 @@ export interface Performer {
   pose: PerformerPose
   /** 向き（度、シーンごと）。0 が客席向き、90 が上手、-90 が下手、180 が奥。無ければ 0（2026-11-18） */
   facingDeg?: number
+  /** このシーンへ入ってくる出入り口（前のシーンで舞台にいなかったとき）。無ければ近い側の袖（stagePortals.ts、2026-11-20） */
+  entryVia?: StagePortal
+  /** 次のシーンへハケる出入り口（次のシーンで舞台にいないとき）。無ければ近い側の袖 */
+  exitVia?: StagePortal
   /** 親（hierarchy.ts）。null は親なし、無ければ舞台の床 */
   parentId?: string | null
 }
@@ -279,14 +284,15 @@ export function activeSceneDirections(plan: ProductionPlan, performers: Performe
     const wasOnStage = previousPerformer.onStage !== false
     const isOnStage = performer.onStage !== false
     if (!wasOnStage && !isOnStage) return []
-    const wingX = (performer.position[0] < 0 ? -1 : 1) * 8.7
+    // 出入り口は、入りはこのシーンの役者、ハケは前のシーンの役者に書いてある（stagePortals.ts）
     const from: StagePoint = wasOnStage
       ? [previousPerformer.position[0], previousPerformer.position[2]]
-      : [wingX, performer.position[2]]
+      : portalPoint(plan.venueLayout, performer.entryVia, performer.position)
     const to: StagePoint = isOnStage
       ? [performer.position[0], performer.position[2]]
-      : [wingX, performer.position[2]]
+      : portalPoint(plan.venueLayout, previousPerformer.exitVia, previousPerformer.position)
     if (Math.hypot(to[0] - from[0], to[1] - from[1]) < 0.12) return []
+    // 袖の位置（|x| > 8）に置いて出入りを表す古いプランも、そのまま入り・ハケとして扱う
     const kind: DirectionKind = !wasOnStage || Math.abs(from[0]) > 8
       ? 'entrance' : !isOnStage || Math.abs(to[0]) > 8 ? 'exit' : 'move'
     return [{ id: `${plan.activeSceneId}-${performer.id}`, performerId: performer.id, kind, from, to, note: '' }]

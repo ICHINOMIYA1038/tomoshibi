@@ -8,6 +8,7 @@ import {
 } from '../stageParts'
 import { canBeParent, hierarchyContext, parentOf, STAGE_ID, type ChildKind } from '../hierarchy'
 import { PERFORMER_POSES } from '../performerPoses'
+import { STAGE_PORTALS, type StagePortal } from '../stagePortals'
 import { canDelete, deleteSelection, duplicateSelection } from '../objectActions'
 import { useStageParts } from './StagePartsEditor'
 import { smokeAmountOf } from '../scene/SmokeCloud'
@@ -148,6 +149,37 @@ function FixtureInspector({ fixture }: { fixture: Fixture }) {
   </>
 }
 
+/** 出入り口（出ハケ）。入りは前のシーンで舞台にいなかったとき、ハケは次のシーンで舞台にいないときに使う（stagePortals.ts） */
+function PortalFields({ performer, update }: { performer: Performer; update: (patch: Partial<Performer>) => void }) {
+  const plan = useStore(state => state.productionPlan)
+  const index = plan.scenes.findIndex(scene => scene.id === plan.activeSceneId)
+  const onStageIn = (offset: number) => {
+    const scene = plan.scenes[index + offset]
+    if (!scene) return null
+    const mine = scene.performers.find(item => item.id === performer.id)
+    return !!mine && mine.onStage !== false
+  }
+  const here = performer.onStage !== false
+  const before = onStageIn(-1)
+  const after = onStageIn(1)
+  const field = (key: 'entryVia' | 'exitVia', label: string, used: boolean, why: string) => <>
+    <label className="inspector-text"><span>{label}</span>
+      <select value={performer[key] ?? ''} onChange={event => update({ [key]: (event.target.value || undefined) as StagePortal | undefined })}>
+        <option value="">自動（近い側の袖）</option>
+        {STAGE_PORTALS.map(item => <option key={item.value} value={item.value}>{item.label}</option>)}
+      </select>
+    </label>
+    {!used && <p className="inspector-note">{why}</p>}
+  </>
+  return <>
+    {field('entryVia', '入り', here && before === false,
+      !here ? 'このシーンでは舞台にいないので、使いません。' : before === null ? '最初のシーンなので、幕が開いたときから舞台にいます。' : '前のシーンから舞台にいるので、使いません。')}
+    {field('exitVia', 'ハケ', here && after === false,
+      !here ? 'このシーンでは舞台にいないので、使いません。' : after === null ? '最後のシーンなので、ハケはありません。' : '次のシーンも舞台にいるので、使いません。')}
+    <p className="inspector-note">「入り」はこのシーンに出てくる所、「ハケ」は次のシーンへ引っ込む所です。通しで見ると、選んだ所から歩いて出入りします。</p>
+  </>
+}
+
 function PerformerInspector({ performer }: { performer: Performer }) {
   const update = (patch: Partial<Performer>) => useStore.getState().updatePerformer(performer.id, patch)
   const move = (axis: 0 | 1 | 2, value: number) => {
@@ -171,6 +203,7 @@ function PerformerInspector({ performer }: { performer: Performer }) {
       <label className="inspector-check"><input type="checkbox" checked={performer.onStage !== false}
         onChange={event => update({ onStage: event.target.checked })} />このシーンで舞台上にいる</label>
       <p className="scope-note">このシーンに出ない役者は、ここを外します（ほかのシーンには残ります）。</p>
+      <PortalFields performer={performer} update={update} />
     </InspectorSection>
     <InspectorSection title="位置と親">
       <NumberField label="X" value={performer.position[0]} onChange={value => move(0, value)} />
