@@ -7,6 +7,11 @@ const lerp = (a: number, b: number, t: number) => a + (b - a) * t
 const lerp3 = (a: [number, number, number], b: [number, number, number], t: number): [number, number, number] => [
   lerp(a[0], b[0], t), lerp(a[1], b[1], t), lerp(a[2], b[2], t),
 ]
+/** これより短い移動は、その場で向きや姿勢を変えるだけとして扱う（m） */
+const WALK_MIN = 0.3
+/** 歩き出す前と着いたあとに、元の姿勢・次の姿勢でいる時間（切り替えの長さに対する割合） */
+const WALK_HOLD = 0.12
+
 export function interpolateStage(from: PlanScene, to: PlanScene, progress: number, layout?: VenueLayout) {
   const t = Math.max(0, Math.min(1, progress))
   if (t === 0) return sceneStage(from)
@@ -68,8 +73,23 @@ export function interpolateStage(from: PlanScene, to: PlanScene, progress: numbe
       const show = t < .5 ? old : next
       return show ? [{ ...show, position: t < .5 ? start : end }] : []
     }
-    return [{ ...person, position: lerp3(start, end, t), pose: t < .5 ? old?.pose ?? person.pose : next?.pose ?? person.pose,
-      onStage: old?.onStage !== false || next?.onStage !== false }]
+    const onStage = old?.onStage !== false || next?.onStage !== false
+    const dx = end[0] - start[0], dz = end[2] - start[2]
+    if (Math.hypot(dx, dz) < WALK_MIN) {
+      return [{ ...person, position: lerp3(start, end, t), pose: t < .5 ? old?.pose ?? person.pose : next?.pose ?? person.pose, onStage }]
+    }
+    // 歩いて移る役者は、座る・ひざをつく・寝る姿勢のまま滑らせず、立ち上がってから進む方を向いて歩き、着いてから次の姿勢になる。
+    // 舞台の外（袖）にいる側の姿勢は使わない（入ってくる人は立って歩いてくる）（2026-11-20）
+    const u = Math.max(0, Math.min(1, (t - WALK_HOLD) / (1 - 2 * WALK_HOLD)))
+    const walkFacing = Math.atan2(dx, dz) * 180 / Math.PI
+    const atStart = t < WALK_HOLD && oldOn, atEnd = t > 1 - WALK_HOLD && nextOn
+    return [{
+      ...person,
+      position: lerp3(start, end, u),
+      pose: atStart ? old!.pose : atEnd ? next!.pose : 'standing',
+      facingDeg: atStart ? old!.facingDeg : atEnd ? next!.facingDeg : walkFacing,
+      onStage,
+    }]
   })
 
   const oldPieces = new Map(from.setPieces.map(item => [item.id, item]))
