@@ -139,7 +139,7 @@ export function HierarchyPanel() {
     const open = !collapsed.has(key)
     const canDrop = PARENT_KINDS.has(node.kind)
     return <li key={key} role="treeitem" aria-selected={selected} aria-expanded={node.children.length ? open : undefined}>
-      <div className={'hierarchy-row' + (selected ? ' selected' : '') + (dropTarget === key ? ' drop-target' : '')}
+      <div className={'hierarchy-row' + (node.kind === 'fixture' ? ' fixture-row' : '') + (selected ? ' selected' : '') + (dropTarget === key ? ' drop-target' : '')}
         style={{ paddingLeft: 4 + depth * 16 }}
         draggable={CHILD_KINDS.has(node.kind)}
         onDragStart={event => {
@@ -164,8 +164,10 @@ export function HierarchyPanel() {
           if (!event.currentTarget.closest('.phone-list')) requestAnimationFrame(() => focusSelection())
         }}>
           <KindIcon node={node} />
-          <strong>{node.label}</strong>
-          {node.detail && <small>{node.detail}</small>}
+          {/* 照明の行は、名前を 1 行目に幅いっぱい、機種名を 2 行目に出す。右に点灯と「この光だけ見る」のスイッチが並び、名前が「…」で切れていた（2026-11-21 オーナー） */}
+          {node.kind === 'fixture'
+            ? <span className="hierarchy-name-text"><strong>{node.label}</strong>{node.detail && <small>{node.detail}</small>}</span>
+            : <><strong>{node.label}</strong>{node.detail && <small>{node.detail}</small>}</>}
         </button>
         {node.kind === 'fixture' && <button type="button" className={'hierarchy-lamp' + (node.enabled ? ' on' : '')}
           aria-pressed={node.enabled} aria-label={`${node.label}を${node.enabled ? '消灯' : '点灯'}`} title={node.enabled ? '点灯中' : '消灯中'}
