@@ -137,7 +137,8 @@ function TargetItems({ target, run, sub, setSub }: { target: MenuTarget } & Item
       <Item label={fixture.enabled ? '消灯する' : '点灯する'} onClick={run(() => s.updateFixture(fixture.id, { enabled: !fixture.enabled }))} />
       <Item label={handle === 'target' ? '照明の本体をつかむ' : '狙いをつかむ'}
         onClick={run(() => s.select('fixture', fixture.id, handle === 'target' ? 'position' : 'target'))} />
-      <Item label="ほかの照明を消して、これだけ点ける" onClick={run(() => s.fixtures.forEach(item => s.updateFixture(item.id, { enabled: item.id === fixture.id })))} />
+      {/* 前は「ほかの照明を消して、これだけ点ける」で、そのシーンの点灯・消灯を書き換えていた。見るだけにする（highlight.ts） */}
+      <Item label="この器具の光だけ見る" onClick={run(() => { s.select('fixture', fixture.id); s.setHighlight(fixture.id) })} />
     </>}
     {performer && <Item label={performer.onStage === false ? '舞台に出す' : '舞台から外す'}
       onClick={run(() => s.updatePerformer(performer.id, { onStage: performer.onStage === false }))} />}

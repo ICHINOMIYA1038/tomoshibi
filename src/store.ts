@@ -404,6 +404,8 @@ interface State {
   productionPlan: ProductionPlan
   selection: Selection
   hovered: { kind: SelectionKind; id: string | null }
+  /** 「この器具の光だけ見る」で光を残す器具（見え方だけ。保存しない）。highlight.ts */
+  highlightFixtureId: string | null
   settings: SceneSettings
   probeMeasurement: import('./photometric/illuminance').IlluminanceMeasurement | null
   setProbeMeasurement: (m: import('./photometric/illuminance').IlluminanceMeasurement | null) => void
@@ -465,6 +467,7 @@ interface State {
 
   select: (kind: SelectionKind, id: string | null, handle?: 'position' | 'target') => void
   setHover: (kind: SelectionKind, id: string | null) => void
+  setHighlight: (id: string | null) => void
   updateSettings: (patch: Partial<SceneSettings>) => void
   loadPreset: (name: string) => void
 }
@@ -564,6 +567,7 @@ export const useStore = create<State>((set, get) => ({
   },
   selection: { kind: null, id: null },
   hovered: { kind: null, id: null },
+  highlightFixtureId: null,
   probeMeasurement: null,
   setProbeMeasurement: (m) => set({ probeMeasurement: m }),
   setPieces: initialSetPieces(),
@@ -1167,7 +1171,12 @@ export const useStore = create<State>((set, get) => ({
     return result
   },
 
-  select: (kind, id, handle) => set({ selection: { kind, id, fixtureHandle: handle ?? 'position' } }),
+  // 「この器具の光だけ見る」のあいだにほかの器具を選んだら、光を残す器具もそちらに移す（1 灯ずつ順に確かめられる）
+  select: (kind, id, handle) => set(s => ({
+    selection: { kind, id, fixtureHandle: handle ?? 'position' },
+    ...(s.highlightFixtureId && kind === 'fixture' && id ? { highlightFixtureId: id } : {}),
+  })),
+  setHighlight: (id) => set({ highlightFixtureId: id }),
   setHover: (kind, id) => set({ hovered: { kind, id } }),
 
   updateSettings: (patch) => {
