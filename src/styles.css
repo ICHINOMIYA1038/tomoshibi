@@ -5638,3 +5638,18 @@ button.library-guide-demo { font-family: inherit; cursor: pointer; }
   .highlight-bar-note { display: none; }
   .highlight-bar button { min-height: 36px; }
 }
+
+/* 「この光だけ見る」のボタン（HighlightButton.tsx）。固定のボタンと同じ形で、入れているあいだは光の色 */
+.lock-button.highlight-button { display: inline-flex; align-items: center; gap: 5px; }
+.lock-button.highlight-button.on { border-color: #d9a75e; background: rgba(242, 194, 123, .16); color: #ffd28a; }
+
+/* 照明を選ぶとボタンが 4 つになり、右の欄からはみ出した。入りきらないときは次の行へ送る */
+.inspector-actions { flex-wrap: wrap; justify-content: flex-start; }
+@media (max-width: 600px) {
+  /* スマホの札：照明を選ぶとボタンが増え、名前が「前…」まで縮んだ。名前を 1 行目に、ボタンを 2 行目に置く */
+  .phone-card:has(.highlight-button) { flex-wrap: wrap; row-gap: 6px; }
+  .phone-card:has(.highlight-button) .phone-card-text { flex: 1 0 calc(100% - 52px); }
+  .phone-card:has(.highlight-button) .phone-card-close { order: 1; }
+  .phone-card:has(.highlight-button) .lock-button, .phone-card:has(.highlight-button) .phone-card-main { order: 2; }
+  .phone-card:has(.highlight-button) .phone-card-main { margin-left: auto; }
+}
