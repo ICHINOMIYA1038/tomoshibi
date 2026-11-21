@@ -179,6 +179,8 @@ const sceneDepth = {
 
 function shadowPriority(fixture: Fixture, setPieces: SetPiece[]) {
   if (passesWindow(fixture, setPieces)) return 3
+  // 床に置いた器具（転がし）は、下から当てて役者の大きな影をホリや壁に映すのが目的なので、影を先に回す（2026-11-21）
+  if (fixture.position[1] < 1.0 && !isCycWash(fixture)) return 2.5
   if (FIXTURE_PROFILES[fixture.presetKey]?.kind === 'FollowSpot') return 2
   return hasMeasuredFresnel(fixture) ? 1 : 0
 }
