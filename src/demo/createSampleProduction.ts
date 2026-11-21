@@ -8,7 +8,7 @@
 // - ピンは客席の後ろから追う。場面ごとに追う役者と絞りを決める（バルコニーは上半身だけに細く絞る）（吊った器具は場面の途中で向きを変えられないので、狙いを変えるのはピンだけ）
 // - 月明かり（木漏れ日のゴボ）は木のある庭の場面だけ。窓明かり（窓を通す朝の光。形は窓枠の影）は朝の室内の 2 場面
 // - 横明かりは、袖幕のすき間（2 番の袖の手前）から人の高さを狙う。袖幕の奥から当てると、幕のひだの影が床に並んだ
-// - 器具は 18 灯。バルコニーの特別と部屋の中の明かり、窓の外の背景を照らす器具を足している。光るものは、どれも器具で照らす（自分で光る背景は使わない）
+// - 器具は 20 灯（決闘の転がし 2 灯を含む）。バルコニーの特別と部屋の中の明かり、窓の外の背景を照らす器具を足している。光るものは、どれも器具で照らす（自分で光る背景は使わない）
 // - セットが替わる場面は暗転で転換する（通しで見るでは、明かりを消し切ってからセットと役者を入れ替える）
 import { useStore, type AudienceBlock, type Fixture, type SceneTriggerType } from '../store'
 import type { SetPiece } from '../types'
@@ -85,6 +85,9 @@ const LIGHTS: Light[] = [
   // ジュリエットの部屋の中の明かり：バルコニーの壁の裏の高い所（一文字幕で客席から隠れる高さ）に吊り、部屋の奥の壁を暖色で照らす。戸の向こうが明るい部屋に見える。光が壁からはみ出してホリに漏れないよう、絞りの狭いエリスポにする
   { key: 'roomLight', name: 'ジュリエットの部屋の明かり', number: '17', preset: 'Source4_26', position: [3.2, 7.2, -6.3], target: [3.2, 3.4, -6.7], beam: 22 },
   { key: 'backingLight', name: '窓の外の背景', number: '18', preset: 'Source4_19', position: [4.1, 6.8, -4.6], target: [4.1, 2.2, -5.4], beam: 14 },
+  // 転がし：舞台の前の床の中央寄りに置き、下から外向きに役者へ当てる。決闘の場面で、ロミオの影をホリの下手側に、ティボルトの影を上手側に大きく映し、向かい合わせる（2026-11-21 オーナー）
+  { key: 'rollL', name: '転がし・下手', number: '19', preset: 'Source4_36', position: [-0.4, 0.3, 1.2], target: [-2.4, 1.6, -2.6], beam: 36 },
+  { key: 'rollR', name: '転がし・上手', number: '20', preset: 'Source4_36', position: [0.4, 0.3, 1.2], target: [2.4, 1.6, -2.6], beam: 36 },
   { key: 'sideL', name: '横明かり・下手', number: '14', preset: 'Source4_36', position: [-7.6, 3.2, -0.7], target: [2.0, 1.2, -1.8], beam: 26, barnDoorAngles: { top: 3 } },
   { key: 'sideR', name: '横明かり・上手', number: '15', preset: 'Source4_36', position: [7.6, 3.2, -0.7], target: [-2.0, 1.2, -1.8], beam: 26, barnDoorAngles: { top: 3 } },
 ]
@@ -255,8 +258,10 @@ const SCENES: Scene[] = [
       fohL: { level: 0.14, color: C.amber }, fohC: { level: 0.16, color: C.amber }, fohR: { level: 0.14, color: C.amber },
       usL: { level: 0.1, color: C.amber }, usC: { level: 0.1, color: C.amber }, usR: { level: 0.1, color: C.amber },
       backL: { level: 0.32, color: C.red }, backR: { level: 0.32, color: C.red },
-      cycL: { level: 0.42, color: C.skyRed }, cycR: { level: 0.42, color: C.skyRed },
+      // ホリを少し落とし、転がしで映す役者の影が読めるようにする
+      cycL: { level: 0.24, color: C.skyRed }, cycR: { level: 0.24, color: C.skyRed },
       sideL: { level: 0.36, color: C.amber }, sideR: { level: 0.36, color: C.amber },
+      rollL: { level: 0.045, color: C.amber }, rollR: { level: 0.045, color: C.amber },
     },
   },
   {
