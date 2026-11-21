@@ -101,6 +101,8 @@ export function HierarchyPanel() {
   const select = useStore(s => s.select)
   const setParent = useStore(s => s.setParent)
   const updateFixture = useStore(s => s.updateFixture)
+  const highlightId = useStore(s => s.highlightFixtureId)
+  const setHighlight = useStore(s => s.setHighlight)
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set())
   const [dropTarget, setDropTarget] = useState<string | null>(null)
   const [adding, setAdding] = useState(false)
@@ -170,6 +172,20 @@ export function HierarchyPanel() {
           onClick={() => updateFixture(node.id, { enabled: !node.enabled })}>
           {/* 丸だけだと、点いているかと押せることが伝わらなかった（2026-11-20 オーナー）。字で今の状態を出す */}
           <span className="hierarchy-lamp-dot" aria-hidden="true" />{node.enabled ? '点灯' : '消灯'}</button>}
+        {/* 「この光だけ見る」。点灯のスイッチと同じく一覧から入・切する（2026-11-21 オーナー）。幅が無いのでアイコンだけ */}
+        {node.kind === 'fixture' && <button type="button" className={'hierarchy-solo' + (highlightId === node.id ? ' on' : '')}
+          aria-pressed={highlightId === node.id} aria-label={`${node.label}の光だけ見る`}
+          title={highlightId === node.id ? 'この照明の光だけを表示中。押すと元に戻ります' : 'この照明の光だけを見る（ほかを一時的に暗くします。設定は変わりません）'}
+          onClick={() => {
+            if (highlightId === node.id) { setHighlight(null); return }
+            select('fixture', node.id)
+            setHighlight(node.id)
+          }}>
+          <svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="5.5" y="1.5" width="5" height="3.5" rx="0.6" />
+            <path d="M6 5 2.5 14.5h11L10 5" />
+          </svg>
+        </button>}
       </div>
       {node.children.length > 0 && open && <ul role="group" className="hierarchy-children" style={{ ['--guide-x' as string]: `${12 + depth * 16}px` }}>{node.children.map(child => row(child, depth + 1))}</ul>}
     </li>

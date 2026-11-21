@@ -5653,3 +5653,12 @@ button.library-guide-demo { font-family: inherit; cursor: pointer; }
   .phone-card:has(.highlight-button) .lock-button, .phone-card:has(.highlight-button) .phone-card-main { order: 2; }
   .phone-card:has(.highlight-button) .phone-card-main { margin-left: auto; }
 }
+
+/* 一覧の「この光だけ見る」（HierarchyPanel.tsx）。点灯のスイッチの右に、同じ形の小さな丸で */
+.unified-shell .unity-panel button.hierarchy-solo { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 20px; min-height: 0; margin-right: 4px; padding: 0; border: 1px solid #4a3f36; border-radius: 10px; background: none; color: #9a8c7e; cursor: pointer; }
+.unified-shell .unity-panel button.hierarchy-solo:hover { border-color: #8a7560; background: rgba(255, 255, 255, .05); }
+.unified-shell .unity-panel button.hierarchy-solo.on { border-color: #d9a75e; background: rgba(242, 194, 123, .26); color: #ffd28a; }
+.unified-shell .unity-panel button.hierarchy-solo.on path { fill: currentColor; fill-opacity: .4; }
+@media (pointer: coarse) {
+  .unified-shell .unity-panel button.hierarchy-solo { width: 36px; height: 30px; }
+}
