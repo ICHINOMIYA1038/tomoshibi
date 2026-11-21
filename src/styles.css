@@ -5626,3 +5626,15 @@ button.library-guide-demo { font-family: inherit; cursor: pointer; }
 /* 設定の欄の見出しで、名前を切らずに折り返す（固定・複製・削除が並ぶと「フレネ…」になった。2026-11-19 の動作確認） */
 .inspector-head { flex-wrap: wrap; }
 .inspector-head strong { display: block; white-space: normal; overflow-wrap: anywhere; text-overflow: clip; overflow: visible; }
+
+/* 「この器具の光だけ見る」のあいだだけ出す帯（HighlightBar.tsx）。3D の上の道具の列の下に置く */
+.highlight-bar { position: fixed; z-index: 44; top: calc(var(--header-height) + 64px); left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 10px; max-width: calc(100vw - 24px); padding: 6px 6px 6px 14px; border: 1px solid #d9a75e; border-radius: 8px; background: rgba(28, 21, 14, .94); color: #f2e6cf; font-family: var(--font-sans); font-size: 13px; line-height: 1.5; box-shadow: 0 4px 16px rgba(0, 0, 0, .35); }
+.highlight-bar b { color: #ffd28a; }
+.highlight-bar button { flex: none; min-height: 32px; padding: 0 12px; border: 1px solid #d9a75e; border-radius: 6px; background: #d9a75e; color: #1c150e; font: inherit; font-weight: 700; cursor: pointer; }
+.change-scope-bar ~ .highlight-bar { top: calc(var(--header-height) + 116px); }
+@media (max-width: 600px) {
+  /* スマホは画面の幅いっぱいにし、上の道具の列の下に置く。長い説明は省く */
+  .highlight-bar { top: calc(var(--header-height) + 62px); left: 12px; right: 12px; transform: none; justify-content: space-between; font-size: 13px; }
+  .highlight-bar-note { display: none; }
+  .highlight-bar button { min-height: 36px; }
+}

@@ -24,6 +24,7 @@ import { ADD_DRAG_TYPE, addItem, parseAddItem } from './objectActions'
 import { XRButton, XRGLBinder } from './scene/XRSupport'
 import { PhoneChrome } from './ui/PhoneChrome'
 import { ChangeScopeBar } from './ui/ChangeScopeBar'
+import { HighlightBar } from './ui/HighlightBar'
 import { ControlPanel } from './ui/ControlPanel'
 import { HelpOverlay } from './ui/HelpOverlay'
 import { ConsoleDesk } from './ui/ConsoleDesk'
@@ -608,6 +609,7 @@ export default function App() {
       {!playbackOpen && <SelectionStatusHint />}
       {/* 右のパネルを開いているときは、パネルの中に出す（3D の画面に重ねない）。閉じているときだけ画面の下に出す */}
       {!phoneLayout && !playbackOpen && <ChangeScopeBar />}
+      <HighlightBar hidden={playbackOpen} />
       {!isEmbed && <KeyHint />}
     </div>}
     {adFooter && <footer className="ad-footer" aria-label="広告">

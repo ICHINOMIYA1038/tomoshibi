@@ -16,6 +16,7 @@ import { isCycWash } from '../lighting/cycWash'
 import { hasMeasuredFresnel } from '../photometric/measuredFresnel'
 import { hasMeasuredCyc } from '../photometric/measuredCyc'
 import { DEFAULT_VENUE_LAYOUT } from '../venueLayout'
+import { highlightFixtures } from '../lighting/highlight'
 import { DEFAULT_CYC_COLOR, FLOOR_FINISHES } from '../stageParts'
 
 /** 舞台の箱（床・ホリ・袖・天井・壁）の面積の目安（m²）。間口 14m・奥行き 10m・高さ 8m の箱 */
@@ -60,7 +61,9 @@ export function estimateBounce(fixtures: Fixture[], floorColor: THREE.Color, cyc
 }
 
 export function BounceLight() {
-  const fixtures = useStore(s => s.fixtures)
+  const stored = useStore(s => s.fixtures)
+  const highlightId = useStore(s => s.highlightFixtureId)
+  const fixtures = useMemo(() => highlightFixtures(stored, highlightId), [stored, highlightId])
   const layout = useStore(s => s.productionPlan.venueLayout ?? DEFAULT_VENUE_LAYOUT)
   const floorColor = useMemo(() => {
     const finish = FLOOR_FINISHES.find(item => item.id === layout.floorFinish) ?? FLOOR_FINISHES[0]
