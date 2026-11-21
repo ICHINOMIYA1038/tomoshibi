@@ -13,6 +13,7 @@ import { redoMockWorkspace, undoMockWorkspace, useMockWorkspaceState } from '../
 import { EFFECT_TYPES, FIXTURE_GLYPH, FIXTURE_TILES, Glyph, SET_PIECE_GLYPH, STAGE_PART_KINDS } from './AddPalette'
 import { Inspector } from './Inspector'
 import { LockButton } from './LockButton'
+import { HighlightButton } from './HighlightButton'
 import { ChangeScopeBar } from './ChangeScopeBar'
 
 // スマホ（幅 600px 以下）の編集画面。PC の道具の列・ヒエラルキー・インスペクターは出さず、
@@ -122,6 +123,7 @@ function SelectedCard({ onSettings }: { onSettings: () => void }) {
   return <div className="phone-card">
     <div className="phone-card-text"><span>{KIND_LABELS[selection.kind] ?? ''}</span><strong>{name ?? KIND_LABELS[selection.kind]}</strong></div>
     <LockButton className="phone-card-lock" />
+    <HighlightButton short />
     <button type="button" className="phone-card-main" onClick={onSettings}>設定</button>
     <button type="button" className="phone-icon phone-card-close" aria-label="選ぶのをやめる" onClick={() => useStore.getState().select(null, null)}>×</button>
   </div>
