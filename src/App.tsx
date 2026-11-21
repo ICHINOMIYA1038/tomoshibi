@@ -25,6 +25,8 @@ import { XRButton, XRGLBinder } from './scene/XRSupport'
 import { PhoneChrome } from './ui/PhoneChrome'
 import { ChangeScopeBar } from './ui/ChangeScopeBar'
 import { HighlightBar } from './ui/HighlightBar'
+import { LightAtPointPanel } from './ui/LightAtPointPanel'
+import { LightProbeMarker } from './scene/LightProbeMarker'
 import { ControlPanel } from './ui/ControlPanel'
 import { HelpOverlay } from './ui/HelpOverlay'
 import { ConsoleDesk } from './ui/ConsoleDesk'
@@ -490,6 +492,7 @@ export default function App() {
           {!playbackOpen && <SelectionGizmo />}
           <DirectionPaths visible={planOpen && !playbackOpen && showSceneDirections} />
           <PhotometricProbe />
+          <LightProbeMarker />
           <ProbeClickCatcher />
           <FloorPicker />
 
@@ -610,6 +613,7 @@ export default function App() {
       {/* 右のパネルを開いているときは、パネルの中に出す（3D の画面に重ねない）。閉じているときだけ画面の下に出す */}
       {!phoneLayout && !playbackOpen && <ChangeScopeBar />}
       <HighlightBar hidden={playbackOpen} />
+      <LightAtPointPanel hidden={playbackOpen} />
       {!isEmbed && <KeyHint />}
     </div>}
     {adFooter && <footer className="ad-footer" aria-label="広告">
