@@ -60,8 +60,8 @@ export function ObjectContextMenu() {
       style={at ? { left: at.left, top: at.top } : { left: menu.x, top: menu.y, visibility: 'hidden' }}
       onContextMenu={event => event.preventDefault()}>
       {menu.target && menu.target.kind !== 'stage'
-        ? <TargetItems target={menu.target} run={run} sub={sub} setSub={setSub} />
-        : <SpaceItems point={menu.point} onStage={menu.target?.kind === 'stage'} run={run} sub={sub} setSub={setSub} />}
+        ? <TargetItems target={menu.target} point={menu.point} menuAt={{ x: menu.x, y: menu.y }} run={run} sub={sub} setSub={setSub} />
+        : <SpaceItems point={menu.point} menuAt={{ x: menu.x, y: menu.y }} onStage={menu.target?.kind === 'stage'} run={run} sub={sub} setSub={setSub} />}
     </div>
   </>
 }
@@ -108,7 +108,7 @@ function focusName() {
   }, 60)
 }
 
-function TargetItems({ target, run, sub, setSub }: { target: MenuTarget } & ItemsProps) {
+function TargetItems({ target, point, menuAt, run, sub, setSub }: { target: MenuTarget; point?: [number, number, number]; menuAt: { x: number; y: number } } & ItemsProps) {
   const s = useStore()
   const layout = s.productionPlan.venueLayout ?? DEFAULT_VENUE_LAYOUT
   const parts = resolveStageParts(layout)
@@ -140,6 +140,8 @@ function TargetItems({ target, run, sub, setSub }: { target: MenuTarget } & Item
       {/* 前は「ほかの照明を消して、これだけ点ける」で、そのシーンの点灯・消灯を書き換えていた。見るだけにする（highlight.ts） */}
       <Item label="この器具の光だけ見る" onClick={run(() => { s.select('fixture', fixture.id); s.setHighlight(fixture.id) })} />
     </>}
+    {/* 役者や装置の上の点にも、どの照明が当たっているかを調べられる */}
+    {point && (performer || setPiece) && <Item label="この点に当たっている照明" onClick={run(() => s.setLightProbe({ point, ...menuAt }))} />}
     {performer && <Item label={performer.onStage === false ? '舞台に出す' : '舞台から外す'}
       onClick={run(() => s.updatePerformer(performer.id, { onStage: performer.onStage === false }))} />}
     {(fixture || performer || setPiece || block) && <Item label="名前を変える" onClick={run(focusName)} />}
@@ -154,7 +156,7 @@ function TargetItems({ target, run, sub, setSub }: { target: MenuTarget } & Item
   </>
 }
 
-function SpaceItems({ point, onStage, run, sub, setSub }: { point?: [number, number, number]; onStage: boolean } & ItemsProps) {
+function SpaceItems({ point, menuAt, onStage, run, sub, setSub }: { point?: [number, number, number]; menuAt: { x: number; y: number }; onStage: boolean } & ItemsProps) {
   const s = useStore()
   const view = s.settings.cameraView
   const layout = s.productionPlan.venueLayout ?? DEFAULT_VENUE_LAYOUT
@@ -170,6 +172,7 @@ function SpaceItems({ point, onStage, run, sub, setSub }: { point?: [number, num
     {onStage && <div className="object-menu-head"><small>舞台の床</small><strong>舞台 {layout.stageWidth}m × {layout.stageDepth}m</strong></div>}
     {onStage && <ToolItems kind="stage" run={run} />}
     {onStage && <Item label="舞台の設定を開く" onClick={run(() => { s.select('stage', 'stage'); s.updateSettings({ panelOpen: true }); window.dispatchEvent(new Event('tomoshibi-inspector-show')) })} />}
+    {onStage && point && <Item label="この点に当たっている照明" onClick={run(() => s.setLightProbe({ point, ...menuAt }))} />}
     {onStage && <hr />}
     <Item label={`${here}役者を足す`} onClick={run(() => { const id = s.addPerformer(at); if (id) useStore.getState().select('performer', id) })} />
     <Item label={`${here}照明を足す（狙いをこの点に）`} disabled={!at} onClick={run(() => {

@@ -66,8 +66,9 @@ const LIGHTS: Light[] = [
   { key: 'usC', name: 'サス・中央', number: '5', preset: 'Fresnel10', measured: 'fresnel', position: [0, 8, 0.8], target: [0, 1.5, -3.8], beam: 46, barnDoorAngles: { top: 4 } },
   { key: 'usR', name: 'サス・上手', number: '6', preset: 'Fresnel10', measured: 'fresnel', position: [4.2, 8, 0.8], target: [4.2, 1.5, -3.6], beam: 46, barnDoorAngles: { top: 4, left: 14 } },
   // 逆光は奥側（前へ下向きに当てるので、バンドアの「下側」）を切る。切らないと、外側の弱い光がホリに当たって波形が出た（2026-11-20）
-  { key: 'backL', name: '逆光・下手', number: '7', preset: 'Fresnel10', measured: 'fresnel', position: [-3, 8, -4.15], target: [-2.4, 0, -0.8], beam: 44, barnDoorAngles: { bottom: 12 } },
-  { key: 'backR', name: '逆光・上手', number: '8', preset: 'Fresnel10', measured: 'fresnel', position: [3, 8, -4.15], target: [2.4, 0, -0.8], beam: 44, barnDoorAngles: { bottom: 12 } },
+  // 逆光は一文字幕（奥行き 3.9m・下端 6.3m）より 0.9m 奥に吊る。幕のすぐ裏（0.25m）だと、舞台の前へ向けた光が幕の下端に掛かって切られる（2026-11-21、「この点に当たっている照明」で見つかった）
+  { key: 'backL', name: '逆光・下手', number: '7', preset: 'Fresnel10', measured: 'fresnel', position: [-3, 8, -4.8], target: [-2.4, 0, -0.8], beam: 44, barnDoorAngles: { bottom: 12 } },
+  { key: 'backR', name: '逆光・上手', number: '8', preset: 'Fresnel10', measured: 'fresnel', position: [3, 8, -4.8], target: [2.4, 0, -0.8], beam: 44, barnDoorAngles: { bottom: 12 } },
   { key: 'cycL', name: 'ホリゾント・下手', number: '9', preset: 'CycWashStudy', measured: 'cyc', position: [-3.4, 8, -4.15], target: [-3.4, 2.6, -7.0], beam: 60 },
   { key: 'cycR', name: 'ホリゾント・上手', number: '10', preset: 'CycWashStudy', measured: 'cyc', position: [3.4, 8, -4.15], target: [3.4, 2.6, -7.0], beam: 60 },
   // ピン：客席の後ろの高い投光室から（低いと光が役者を越えてホリに丸く当たる）。場面ごとに追う役者を変える。
@@ -85,9 +86,9 @@ const LIGHTS: Light[] = [
   // ジュリエットの部屋の中の明かり：バルコニーの壁の裏の高い所（一文字幕で客席から隠れる高さ）に吊り、部屋の奥の壁を暖色で照らす。戸の向こうが明るい部屋に見える。光が壁からはみ出してホリに漏れないよう、絞りの狭いエリスポにする
   { key: 'roomLight', name: 'ジュリエットの部屋の明かり', number: '17', preset: 'Source4_26', position: [3.2, 7.2, -6.3], target: [3.2, 3.4, -6.7], beam: 22 },
   { key: 'backingLight', name: '窓の外の背景', number: '18', preset: 'Source4_19', position: [4.1, 6.8, -4.6], target: [4.1, 2.2, -5.4], beam: 14 },
-  // 転がし：舞台の前の床の中央寄りに置き、下から外向きに役者へ当てる。決闘の場面で、ロミオの影をホリの下手側に、ティボルトの影を上手側に大きく映し、向かい合わせる（2026-11-21 オーナー）
-  { key: 'rollL', name: '転がし・下手', number: '19', preset: 'Source4_36', position: [-0.4, 0.3, 1.2], target: [-2.4, 1.6, -2.6], beam: 36 },
-  { key: 'rollR', name: '転がし・上手', number: '20', preset: 'Source4_36', position: [0.4, 0.3, 1.2], target: [2.4, 1.6, -2.6], beam: 36 },
+  // 転がし：舞台の前の縁（フットライトの位置）の中央寄りに置き、ほかの場面で舞台の真ん中に器具が残らないようにする。下から外向きに役者へ当てる。決闘の場面で、ロミオの影をホリの下手側に、ティボルトの影を上手側に大きく映し、向かい合わせる（2026-11-21 オーナー）
+  { key: 'rollL', name: '転がし・下手', number: '19', preset: 'Source4_36', position: [-0.4, 0.25, 1.85], target: [-2.4, 1.6, -2.6], beam: 36 },
+  { key: 'rollR', name: '転がし・上手', number: '20', preset: 'Source4_36', position: [0.4, 0.25, 1.85], target: [2.4, 1.6, -2.6], beam: 36 },
   { key: 'sideL', name: '横明かり・下手', number: '14', preset: 'Source4_36', position: [-7.6, 3.2, -0.7], target: [2.0, 1.2, -1.8], beam: 26, barnDoorAngles: { top: 3 } },
   { key: 'sideR', name: '横明かり・上手', number: '15', preset: 'Source4_36', position: [7.6, 3.2, -0.7], target: [-2.0, 1.2, -1.8], beam: 26, barnDoorAngles: { top: 3 } },
 ]
