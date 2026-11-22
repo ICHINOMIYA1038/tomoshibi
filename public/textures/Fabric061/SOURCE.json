@@ -1,0 +1,14 @@
+{
+ "id": "Fabric061",
+ "kind": "material",
+ "source": "ambientCG",
+ "license": "CC0 1.0",
+ "license_url": "https://docs.ambientcg.com/license",
+ "author": "ambientCG (Lennart Demes)",
+ "source_url": "https://ambientcg.com/view?id=Fabric061",
+ "download_url": "https://ambientcg.com/get?file=Fabric061_2K-JPG.zip",
+ "retrieved": "2026-11-22",
+ "sha256_zip": "27b729c1bafa7c47f5f89dea8ca43d6107156acd437c1439a30d28e9de0013c2",
+ "resolution": "2K-JPG",
+ "note": "幕のビロードの凹凸（色は付け直す）"
+}

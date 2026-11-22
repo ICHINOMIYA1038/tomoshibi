@@ -4,6 +4,7 @@ import type { ThreeEvent } from '@react-three/fiber'
 import * as THREE from 'three'
 import { createStageMaterial } from '../lighting/StageMaterial'
 import { applyCycWash } from '../lighting/cycWash'
+import { surfaceMap } from '../lighting/surfaceTextures'
 import { useStore } from '../store'
 import { DEFAULT_VENUE_LAYOUT, stageLocalFootprint } from '../venueLayout'
 import { DEFAULT_CYC_COLOR, DEFAULT_WALL_COLOR, FLOOR_FINISHES, resolveStageParts, type StagePart } from '../stageParts'
@@ -39,11 +40,27 @@ export function Stage({ onMaterialsReady }: { onMaterialsReady: (mats: THREE.Sha
     recordHit({ kind, id }, [event.point.x, event.point.y, event.point.z])
   }
   const finish = FLOOR_FINISHES.find(item => item.id === layout.floorFinish) ?? FLOOR_FINISHES[0]
-  const floorMat = useMemo(() => createStageMaterial({
+  const quality = useStore(state => state.settings.quality)
+  const textured = quality !== 'low'
+  const floorMat = useMemo(() => {
     // 舞台床: 既定は黒塗装の僅かに反射する木の感触。仕上げと色は舞台のインスペクターで変えられる
-    baseColor: layout.floorColor ? new THREE.Color(layout.floorColor) : new THREE.Color(...finish.color),
-    roughness: finish.roughness,
-  }), [finish, layout.floorColor])
+    const material = createStageMaterial({
+      baseColor: layout.floorColor ? new THREE.Color(layout.floorColor) : new THREE.Color(...finish.color),
+      roughness: finish.roughness,
+    }) as unknown as THREE.MeshStandardMaterial
+    // 木の板の質感（CC0、public/textures/LICENSES.md）。床の形の UV は m 単位なので、3m で 1 回くり返す
+    // 木地は木目の色も見せる。黒塗りは塗った板の凹凸だけ。リノリウムは板がないので貼らない
+    if (textured && (finish.id === 'wood' || finish.id === 'black')) {
+      material.normalMap = surfaceMap('Planks037A', 'NormalGL', 1 / 3)
+      material.normalScale.setScalar(finish.id === 'wood' ? 0.8 : 0.35)
+      material.roughnessMap = surfaceMap('Planks037A', 'Roughness', 1 / 3)
+      if (finish.id === 'wood') {
+        material.map = surfaceMap('Planks037A', 'Color', 1 / 3)
+        if (!layout.floorColor) material.color.setRGB(1.05, 0.95, 0.88)   // 画像の色をそのまま出すために、掛ける色を明るくする
+      }
+    }
+    return material as unknown as THREE.ShaderMaterial
+  }, [finish, layout.floorColor, textured])
   const wallMat = useMemo(() => createStageMaterial({
     // バックウォール: マット黒
     baseColor: layout.wallColor ? new THREE.Color(layout.wallColor) : new THREE.Color(...DEFAULT_WALL_COLOR),
@@ -54,11 +71,15 @@ export function Stage({ onMaterialsReady }: { onMaterialsReady: (mats: THREE.Sha
     baseColor: layout.cycColor ? new THREE.Color(layout.cycColor) : new THREE.Color(...DEFAULT_CYC_COLOR),
     roughness: 1.0,
   }) as unknown as THREE.MeshStandardMaterial) as unknown as THREE.ShaderMaterial, [layout.cycColor])
-  const wingMat = useMemo(() => createStageMaterial({
-    // 袖幕: 黒のベロア
-    baseColor: new THREE.Color(0.02, 0.019, 0.021),
-    roughness: 1.0,
-  }), [])
+  const wingMat = useMemo(() => {
+    // 袖幕: 黒のベロア。光が当たると布の毛並みがわずかに光る（sheen）。布目は CC0 の画像
+    const material = new THREE.MeshPhysicalMaterial({
+      color: new THREE.Color(0.02, 0.019, 0.021), roughness: 1.0,
+      sheen: 0.7, sheenRoughness: 0.45, sheenColor: new THREE.Color(0.16, 0.15, 0.17),
+    })
+    if (textured) { material.normalMap = surfaceMap('Fabric061', 'NormalGL', 3, 6); material.normalScale.setScalar(0.6) }
+    return material as unknown as THREE.ShaderMaterial
+  }, [textured])
   useEffect(() => () => floorMat.dispose(), [floorMat])
   useEffect(() => () => wallMat.dispose(), [wallMat])
   useEffect(() => () => cycMat.dispose(), [cycMat])
@@ -121,11 +142,14 @@ export function Stage({ onMaterialsReady }: { onMaterialsReady: (mats: THREE.Sha
         {item.kind === 'platform' && <mesh position={[0, item.height / 2, 0]} material={materialOf(item, platformMat)} castShadow receiveShadow>
           <boxGeometry args={[item.width, item.height, item.depth]} />
         </mesh>}
-        {(item.kind === 'wall' || item.kind === 'cyc' || item.kind === 'wing') &&
+        {(item.kind === 'wall' || item.kind === 'cyc') &&
           <mesh position={[0, item.elevation + item.height / 2, 0]} receiveShadow
-            material={materialOf(item, item.kind === 'cyc' ? cycMat : item.kind === 'wing' ? wingMat : wallMat)}>
+            material={materialOf(item, item.kind === 'cyc' ? cycMat : wallMat)}>
             <planeGeometry args={[item.width, item.height]} />
           </mesh>}
+        {item.kind === 'wing' &&
+          <mesh position={[0, item.elevation + item.height / 2, 0]} receiveShadow castShadow
+            geometry={pleatedGeometry(item.width, item.height, item.id)} material={materialOf(item, wingMat)} />}
         {item.kind === 'batten' && <>
           <mesh position={[0, item.elevation, 0]} rotation={[0, 0, Math.PI / 2]} material={batonMat}>
             <cylinderGeometry args={[0.04, 0.04, item.width, 12]} />
@@ -172,4 +196,28 @@ function partBoxSize(item: StagePart): [number, number, number] {
   if (item.kind === 'floor') return [item.width, 0.04, item.depth]
   if (item.kind === 'platform') return [item.width, item.height, item.depth]
   return [item.width, item.height, 0.1]
+}
+
+
+/** ひだのある幕の形。幅 1m に 2.4 回ほど波打ち、間隔と深さに少し揺らぎを付ける。同じ大きさなら使い回す */
+const pleatCache = new Map<string, THREE.BufferGeometry>()
+function pleatedGeometry(width: number, height: number, seedKey: string) {
+  const key = `${width.toFixed(2)}x${height.toFixed(2)}:${seedKey}`
+  const cached = pleatCache.get(key)
+  if (cached) return cached
+  let seed = 0
+  for (const ch of seedKey) seed = (seed * 31 + ch.charCodeAt(0)) % 1000
+  const phase = [seed * 0.013, seed * 0.029, seed * 0.047]
+  const geometry = new THREE.PlaneGeometry(width, height, Math.max(32, Math.round(width * 40)), 2)
+  const position = geometry.attributes.position
+  const k = 2 * Math.PI * 2.4
+  for (let i = 0; i < position.count; i++) {
+    const x = position.getX(i)
+    const u = k * x + 0.6 * Math.sin(0.37 * k * x + phase[2])
+    const depth = 0.08 * (0.65 + 0.35 * Math.sin(0.23 * k * x + phase[1]) ** 2)
+    position.setZ(i, depth * (0.7 * Math.sin(u + phase[0]) + 0.2 * Math.sin(1.7 * u + phase[1]) + 0.1 * Math.sin(0.5 * u)))
+  }
+  geometry.computeVertexNormals()
+  pleatCache.set(key, geometry)
+  return geometry
 }

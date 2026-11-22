@@ -5,6 +5,7 @@ import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeom
 import type { ThreeEvent } from '@react-three/fiber'
 import { audienceSeatPositions } from '../audienceLayout'
 import { useStore, type AudienceBlock } from '../store'
+import { surfaceMap } from '../lighting/surfaceTextures'
 
 // 劇場の座席らしい見た目（2026-11-18 オーナー「座席の見栄えが悪い」）。角の丸い座面と、少し後ろに倒した背もたれ、
 // 座席のあいだの肘掛け。えんじの布地で、光が当たると陰影が出る。客電を消しても形がわかるよう、少しだけ自分で光らせる
@@ -14,6 +15,12 @@ const armGeometry = new RoundedBoxGeometry(.06, .62, .52, 2, .02)
 const seatMaterial = new THREE.MeshStandardMaterial({ color: '#8c3040', roughness: .8, emissive: '#4a1822', emissiveIntensity: .75 })
 const backMaterial = new THREE.MeshStandardMaterial({ color: '#7a2836', roughness: .8, emissive: '#3e141e', emissiveIntensity: .75 })
 const armMaterial = new THREE.MeshStandardMaterial({ color: '#3a3034', roughness: .55, emissive: '#1c1619', emissiveIntensity: .9 })
+// 座面と背もたれに布目の凹凸（CC0、public/textures/LICENSES.md）。色は今のえんじのまま
+for (const material of [seatMaterial, backMaterial]) {
+  material.normalMap = surfaceMap('Fabric026', 'NormalGL', 2)
+  material.normalScale.setScalar(0.7)
+  material.roughnessMap = surfaceMap('Fabric026', 'Roughness', 2)
+}
 
 function SeatingBlock({ block }: { block: AudienceBlock }) {
   const seats = useMemo(() => audienceSeatPositions(block), [block])
