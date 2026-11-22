@@ -72,11 +72,8 @@ export function Stage({ onMaterialsReady }: { onMaterialsReady: (mats: THREE.Sha
     roughness: 1.0,
   }) as unknown as THREE.MeshStandardMaterial) as unknown as THREE.ShaderMaterial, [layout.cycColor])
   const wingMat = useMemo(() => {
-    // 袖幕: 黒のベロア。光が当たると布の毛並みがわずかに光る（sheen）。布目は CC0 の画像
-    const material = new THREE.MeshPhysicalMaterial({
-      color: new THREE.Color(0.02, 0.019, 0.021), roughness: 1.0,
-      sheen: 0.7, sheenRoughness: 0.45, sheenColor: new THREE.Color(0.16, 0.15, 0.17),
-    })
+    // 袖幕: 黒のベロア。布目は CC0 の画像。光沢（sheen）は器具の数だけ重くなるので使わない（品質「高」で fps が落ちた）
+    const material = new THREE.MeshStandardMaterial({ color: new THREE.Color(0.022, 0.021, 0.023), roughness: 0.95 })
     if (textured) { material.normalMap = surfaceMap('Fabric061', 'NormalGL', 3, 6); material.normalScale.setScalar(0.6) }
     return material as unknown as THREE.ShaderMaterial
   }, [textured])
