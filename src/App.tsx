@@ -52,6 +52,7 @@ import { WebGLErrorBoundary } from './ui/WebGLErrorBoundary'
 
 import { FIXTURE_PROFILES, type FixtureProfile } from './lighting/fixtureTypes'
 import { tryLoadFromHash } from './io/sceneIO'
+import { isSharedPlaybackURL, loadSharedPlayback } from './io/playbackShare'
 import { createShowcasePlan } from './demo/createShowcasePlan'
 import { createRainLibraryLightingStudyPlan } from './demo/createRainLibraryLightingStudyPlan'
 import { createAkaoniPlan } from './demo/createAkaoniPlan'
@@ -115,6 +116,8 @@ function ResponsiveFov() {
 
 const isEmbed = new URLSearchParams(location.search).has('embed')
 const isMockPreview = isWorkspacePath()
+/** 共有 URL（/studio/#play=...）で開いた、通しで見るだけの画面。編集の道具と自動保存を出さない */
+const isSharedView = isSharedPlaybackURL()
 const isProjectLibraryPath = isWorkspaceLibraryPath
 const requestedDemo = () => isMockPreview ? new URLSearchParams(location.search).get('demo') : null
 const EXPOSURE_SCALE = 0.45
@@ -190,7 +193,10 @@ export default function App() {
   const displayMenuRef = useRef<HTMLDivElement>(null)
   const displayMenuPanelRef = useRef<HTMLDivElement>(null)
   const [workspaceFeedback, setWorkspaceFeedback] = useState('')
-  const [playbackOpen, setPlaybackOpen] = useState(false)
+  const [playbackOpenState, setPlaybackOpen] = useState(false)
+  const [sharedStatus, setSharedStatus] = useState<'loading' | 'ready' | 'error'>('loading')
+  // 共有 URL で開いたときは、読み込めたらずっと通しで見るの画面にする（閉じる操作は出さない）
+  const playbackOpen = isSharedView ? sharedStatus === 'ready' : playbackOpenState
   // 無料プランの広告の帯（編集画面の下）。画面に固定する広告は PC だけ（AdSense の決まり）。通しで見るのあいだは隠す
   const showAds = useShowAds()
   const wideScreen = useWideScreen()
@@ -296,6 +302,11 @@ export default function App() {
 
   // 初回: URL hashからシーン読込 / GDTF動的プロファイル登録窓口
   useEffect(() => {
+    if (isSharedView) {
+      // この端末の作業中のプランや保存データには触らない（引き継ぎ・自動保存・デモの読み込みをしない）
+      void loadSharedPlayback().then(ok => setSharedStatus(ok ? 'ready' : 'error'))
+      return
+    }
     const handoff = isMockPreview ? consumeWorkspaceHandoff() : 'none'
     const loadedFromHash = handoff !== 'imported' && tryLoadFromHash()
     const demo = !loadedFromHash ? requestedDemo() : null
@@ -338,6 +349,8 @@ export default function App() {
   // キーボードショートカット
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
+      // 見るだけの画面のキー操作は、通しで見る（StagePlayback）の分だけにする
+      if (isSharedView) return
       const t = e.target as HTMLElement
       const k = e.key.toLowerCase()
       if (isMockPreview && (e.metaKey || e.ctrlKey) && !e.altKey &&
@@ -403,12 +416,14 @@ export default function App() {
     useStore.getState().updateSettings({ scenePanelOpen: false, settingsOpen: false, showHelp: false })
   }
 
+  if (isSharedView && sharedStatus !== 'ready') return <SharedPlaybackStatus failed={sharedStatus === 'error'} />
+
   return (
-    <OnlineWorkspace enabled={isMockPreview} editorVisible={mockPage !== 'projects'} onProjects={() => navigateMock('projects')}>
-      {isMockPreview && <><WorkspaceNotices /><UpdateNotice /><CloudProjectAutosave /></>}
+    <OnlineWorkspace enabled={isMockPreview && !isSharedView} editorVisible={mockPage !== 'projects'} onProjects={() => navigateMock('projects')}>
+      {isMockPreview && !isSharedView && <><WorkspaceNotices /><UpdateNotice /><CloudProjectAutosave /></>}
       {isMockPreview && mockPage === 'projects'
         ? <ProjectLibrary onOpenEditor={() => navigateMock('editor')} />
-        : <div className={'unified-shell' + (planOpen ? ' plan-open' : '') + (settings.panelOpen ? ' panel-open' : '') + (playbackOpen ? ' playback-open' : '') + (isMockPreview ? ' workspace-layout mobile-view-' + mobileView : '') + (mapVisible ? '' : ' map-hidden') + (outlineVisible ? ' outline-visible' : '') + (adFooter ? ' has-ad-footer' : '') + (phoneLayout ? ' phone-layout' : '') + (deskLayout && deskView === 'plan' && mapVisible ? ' desk-plan-full' : '') + (deskLayout && deskView === 'side' && mapVisible ? ' desk-split-side' : '') + (deskLayout && inspectorHidden ? ' inspector-hidden' : '') + (deskLayout && consoleOpen && !playbackOpen ? ' console-open' : '')}
+        : <div className={'unified-shell' + (planOpen ? ' plan-open' : '') + (settings.panelOpen ? ' panel-open' : '') + (playbackOpen ? ' playback-open' : '') + (isMockPreview ? ' workspace-layout mobile-view-' + mobileView : '') + (mapVisible ? '' : ' map-hidden') + (outlineVisible ? ' outline-visible' : '') + (adFooter ? ' has-ad-footer' : '') + (phoneLayout ? ' phone-layout' : '') + (deskLayout && deskView === 'plan' && mapVisible ? ' desk-plan-full' : '') + (deskLayout && deskView === 'side' && mapVisible ? ' desk-split-side' : '') + (deskLayout && inspectorHidden ? ' inspector-hidden' : '') + (deskLayout && consoleOpen && !playbackOpen ? ' console-open' : '') + (isSharedView ? ' shared-view' : '')}
           style={{ '--desk-h': deskLayout && consoleOpen && !playbackOpen ? `${deskHeight}px` : '0px' } as React.CSSProperties}>
       {/* 右ボタンを押して離しただけのときに、右クリックのメニューを出す（ドラッグは視点の移動。objectMenu.ts） */}
       <div className={'canvas-wrap' + (addDropActive ? ' add-drop-active' : '')} onContextMenu={event => event.preventDefault()}
@@ -510,7 +525,7 @@ export default function App() {
 
       <header className="workspace-header">
         {!isEmbed && <BrandStrip />}
-        {isMockPreview ? <>
+        {isSharedView ? <SharedPlaybackCredit title={projectTitle} /> : isMockPreview ? <>
           <button className="workspace-project-back" onClick={() => navigateMock('projects')}
             aria-label="プロジェクト一覧へ戻る">← <span>一覧</span></button>
           <MockProjectTitle title={projectTitle} />
@@ -534,7 +549,7 @@ export default function App() {
           {(isEmbed || !isMockPreview) && <button onClick={() => useStore.getState().updateSettings({ settingsOpen: true })} aria-label="設定">⚙</button>}
           {!isMockPreview && <button onClick={() => useStore.getState().updateSettings({ showHelp: true })} aria-label="ヘルプ">?</button>}
         </div>
-        {isMockPreview && !isEmbed && <AccountMenu onOpenSettings={() => useStore.getState().updateSettings({ settingsOpen: true })} />}
+        {isMockPreview && !isEmbed && !isSharedView && <AccountMenu onOpenSettings={() => useStore.getState().updateSettings({ settingsOpen: true })} />}
       </header>
       {isMockPreview && !playbackOpen && <nav className="mobile-workspace-views" aria-label="編集画面の切り替え">
         <button aria-pressed={mobileView === 'stage'} onClick={() => { setMobileView('stage'); setDisplayMenuOpen(false) }}>3Dで確認</button>
@@ -606,7 +621,7 @@ export default function App() {
         sceneEditorOpen={sceneEditorOpen} onOpenSceneEditor={() => setSceneEditorOpen(true)}
         onCloseSceneEditor={() => setSceneEditorOpen(false)}
       />}
-      {playbackOpen && <StagePlayback onClose={() => setPlaybackOpen(false)} simplified={isMockPreview} />}
+      {playbackOpen && <StagePlayback onClose={() => setPlaybackOpen(false)} simplified={isMockPreview} shared={isSharedView} />}
       {!playbackOpen && <HelpOverlay />}
 
       {!playbackOpen && <SelectionStatusHint />}
@@ -614,7 +629,7 @@ export default function App() {
       {!phoneLayout && !playbackOpen && <ChangeScopeBar />}
       <HighlightBar hidden={playbackOpen} />
       <LightAtPointPanel hidden={playbackOpen} />
-      {!isEmbed && <KeyHint />}
+      {!isEmbed && !isSharedView && <KeyHint />}
     </div>}
     {adFooter && <footer className="ad-footer" aria-label="広告">
       <AdSlot width={300} height={50} />
@@ -730,6 +745,25 @@ function MockSceneIndicator({ outlineVisible, onToggleOutline }: { outlineVisibl
     <button type="button" aria-label="次のシーン" disabled={index >= plan.scenes.length - 1}
       onClick={() => selectScene(plan.scenes[index + 1].id)}>→</button>
   </div>
+}
+
+/** 共有 URL で開いた人に、何の画面かとアプリへの入口を 1 行で見せる */
+function SharedPlaybackCredit({ title }: { title?: string }) {
+  return <div className="shared-playback-credit">
+    {title?.trim() && <strong>{title.trim()}</strong>}
+    <span>TOMOSHIBI小屋で作った舞台プランです。<a href="/">自分でも舞台を組む</a></span>
+  </div>
+}
+
+/** 共有 URL を読み込んでいる間と、読めなかったとき */
+function SharedPlaybackStatus({ failed }: { failed: boolean }) {
+  return <main className="shared-playback-status" aria-live="polite">
+    <LanternMark size={28} />
+    {failed ? <>
+      <p>この共有 URL を開けませんでした。URL が途中で切れていないか、送った人に確かめてください。</p>
+      <a href="/">TOMOSHIBI小屋のトップへ</a>
+    </> : <p>舞台プランを読み込んでいます…</p>}
+  </main>
 }
 
 function LegalFooter() {
