@@ -186,6 +186,9 @@ function normalizeProductionPlan(raw: unknown, fixtures: Fixture[], performers: 
         trigger: typeof rawScene.trigger === 'string' ? rawScene.trigger.slice(0, 160) : '',
         note: typeof rawScene.note === 'string' ? rawScene.note.slice(0, 1000) : '',
         look,
+        // 場面の切り替えの時間（卓のキュー表）。読み込みで落とすと、通しで見るの切り替えがすべて 1.2 秒になる
+        ...(typeof rawScene.fadeSec === 'number' && Number.isFinite(rawScene.fadeSec)
+          ? { fadeSec: Math.max(0, Math.min(60, rawScene.fadeSec)) } : {}),
       }]
     })
     const activeSceneId = scenes.some(scene => scene.id === data.activeSceneId)

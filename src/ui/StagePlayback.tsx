@@ -3,6 +3,7 @@ import { Fragment, useCallback, useEffect, useRef, useState } from 'react'
 import { captureActiveScene, sceneDisplayTitle, sceneStage, SCENE_TRIGGER_LABELS, useStore,
   type PlanScene, type ProductionPlan } from '../store'
 import { interpolateStage } from '../playback/interpolateStage'
+import { PlaybackSharePanel } from './PlaybackSharePanel'
 
 const TRANSITION_MS = 1200
 
@@ -17,14 +18,20 @@ function interpolateLook(from: PlanScene, to: PlanScene, current: LookSettings, 
   return { hazeDensity: pick('hazeDensity'), ambient: pick('ambient'), exposure: pick('exposure'), bloom: pick('bloom') }
 }
 
-export function StagePlayback({ onClose, simplified = false }: { onClose: () => void; simplified?: boolean }) {
+/**
+ * 通しで見る。shared は共有 URL で開いた見るだけの画面（編集に戻る・共有の操作を出さない）
+ */
+export function StagePlayback({ onClose, simplified = false, shared = false }: { onClose: () => void; simplified?: boolean; shared?: boolean }) {
   const cameraView = useStore(state => state.settings.cameraView)
   const [scenes, setScenes] = useState<PlanScene[]>([])
   const [index, setIndex] = useState(0)
   const [auto, setAuto] = useState(false)
   const [holdSeconds, setHoldSeconds] = useState(3)
   const [transitioning, setTransitioning] = useState(false)
-  const [displayMode, setDisplayMode] = useState<'full' | 'compact' | 'hidden'>(simplified ? 'compact' : 'full')
+  const [displayMode, setDisplayMode] = useState<'full' | 'compact' | 'hidden'>(() =>
+    // 共有で開いた人には、PC ではシーンの流れまで見せる。スマホでは舞台が隠れないよう簡易表示から
+    simplified && !(shared && window.innerWidth > 960) ? 'compact' : 'full')
+  const [shareOpen, setShareOpen] = useState(false)
   const planRef = useRef<ProductionPlan | null>(null)
   const indexRef = useRef(0)
   const frameRef = useRef(0)
@@ -117,6 +124,7 @@ export function StagePlayback({ onClose, simplified = false }: { onClose: () => 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
+        if (shared) return
         event.preventDefault()
         onClose()
         return
@@ -149,7 +157,7 @@ export function StagePlayback({ onClose, simplified = false }: { onClose: () => 
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [goTo, onClose, showScene, toggleAuto])
+  }, [goTo, onClose, shared, showScene, toggleAuto])
 
   // いまのシーンを、タイムラインの真ん中へなめらかに寄せる
   const timelineRef = useRef<HTMLOListElement>(null)
@@ -173,7 +181,8 @@ export function StagePlayback({ onClose, simplified = false }: { onClose: () => 
     <span>操作を表示</span>
   </button>
 
-  return <section className={`stage-playback stage-playback-${displayMode}`} aria-label="通しで見る">
+  return <>{shareOpen && <PlaybackSharePanel onClose={() => setShareOpen(false)} />}
+  <section className={`stage-playback stage-playback-${displayMode}`} aria-label="通しで見る">
     <div className="stage-playback-summary">
       <span>通しで見る</span>
       {displayMode === 'full' && <small>{[plan?.projectTitle, chapter?.title, ...(simplified ? [] : [sequence?.title])].filter(Boolean).join(' › ')}</small>}
@@ -234,7 +243,9 @@ export function StagePlayback({ onClose, simplified = false }: { onClose: () => 
         {displayMode === 'full' ? '簡易表示' : '詳細'}
       </button>
       <button onClick={() => setDisplayMode('hidden')} title="H キーでも隠す・戻すができます">隠す</button>
-      <button className="stage-playback-close" onClick={onClose}>編集に戻る</button>
+      {!shared && <button aria-expanded={shareOpen} onClick={() => setShareOpen(open => !open)}
+        title="この通しで見るを、見るだけの URL にして渡します">共有</button>}
+      {!shared && <button className="stage-playback-close" onClick={onClose}>編集に戻る</button>}
     </div>
-  </section>
+  </section></>
 }
