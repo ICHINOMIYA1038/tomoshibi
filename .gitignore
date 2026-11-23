@@ -29,3 +29,6 @@ public/mock/version.json
 
 # 操作説明の動画の録画（scripts/help-videos/record.sh）。載せるのは public/help-media/ の mp4
 scripts/help-videos/out/
+
+# Claude Code の実行中の印（コミットしない）
+.claude/scheduled_tasks.lock
