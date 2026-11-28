@@ -321,6 +321,8 @@ function badgeTexture(label: string, gel: string, selected: boolean) {
  */
 function FixtureBadge({ fixture, index, selected }: { fixture: Fixture; index: number; selected: boolean }) {
   const touch = useTouchScreen()
+  // 初めての人の案内のあいだは、舞台の絵に番号の丸を重ねない（2026-11-28 オーナー）
+  const coachActive = useStore(s => s.coachActive)
   const label = (typeof fixture.number === 'string' && fixture.number.trim()) || String(index + 1)
   const gel = '#' + new THREE.Color(...fixture.color).getHexString()
   const texture = useMemo(() => touch ? badgeTexture(label.slice(0, 3), gel, selected) : null, [touch, label, gel, selected])
@@ -336,7 +338,7 @@ function FixtureBadge({ fixture, index, selected }: { fixture: Fixture; index: n
     const pixels = .35 / (2 * distance * Math.tan(THREE.MathUtils.degToRad(fov) / 2)) * size.height
     badge.visible = pixels < 10
   })
-  if (!touch || !texture) return null
+  if (!touch || !texture || coachActive) return null
   return <group>
     <sprite ref={badgeRef} scale={[.05, .05, 1]} renderOrder={1002} raycast={() => null} visible={false}>
       <spriteMaterial map={texture} sizeAttenuation={false} depthTest={false} transparent />

@@ -5800,46 +5800,52 @@ button.library-guide-demo { font-family: inherit; cursor: pointer; }
   --coach-paper: #e8dfcb;
   --coach-ink: #1b1613;
   position: absolute; z-index: 60; left: 0; right: 0; bottom: 0;
-  display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 0 40px;
-  padding: 20px max(24px, calc((100% - 1120px) / 2));
+  display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 0 32px;
+  /* 段ごとに文の長さが違っても卓の高さを変えない（高さが変わると、舞台の絵が段ごとに伸び縮みする） */
+  min-height: 240px;
+  padding: 20px max(24px, calc((100% - 1200px) / 2));
   background: #100d0f;
   border-top: 1px solid #3b3134;
   color: var(--ink-primary); font-family: var(--font-sans);
 }
 /* 卓は客席の側にあるので、舞台の絵は卓の上までにする（卓で舞台の手前を隠さない） */
 .unified-shell.coach-on .canvas-wrap { bottom: var(--coach-h, 200px) !important; }
-/* フェーダー。テープ・溝・つまみ・灯数の縦の並び */
-.first-coach-desk { display: flex; gap: 6px; padding: 10px 12px 8px; background: #0b090a; border: 1px solid #2c2427; }
-.first-coach-ch { width: 50px; display: grid; justify-items: center; gap: 6px; }
+/* フェーダー。テープ・溝・つまみ・灯数の縦の並び。X の動画で縮んでも見えるよう、溝とつまみは太く、光は強めに */
+.first-coach-desk { display: flex; gap: 8px; padding: 12px 14px 10px; background: #0b090a; border: 1px solid #2c2427; }
+.first-coach-ch { width: 52px; display: grid; justify-items: center; gap: 8px; }
 .first-coach-tape {
-  width: 100%; padding: 3px 0 2px; background: var(--coach-paper); color: var(--coach-ink);
-  font: 700 13px/1.3 var(--font-sans); text-align: center; letter-spacing: .02em;
+  width: 100%; padding: 4px 0 3px; background: var(--coach-paper); color: var(--coach-ink);
+  font: 700 14px/1.3 var(--font-sans); text-align: center; letter-spacing: .02em;
   clip-path: polygon(0 6%, 4% 0, 97% 4%, 100% 0, 99% 94%, 96% 100%, 3% 96%, 0 100%);
+  transition: background-color .3s, transform .3s;
 }
-.first-coach-ch.down .first-coach-tape { opacity: .55; }
-.first-coach-track { position: relative; width: 6px; height: 92px; background: #26201f; box-shadow: inset 0 0 0 1px #3a3033; }
+.first-coach-ch.down .first-coach-tape { opacity: .45; }
+/* いま上げたフェーダーの札。金に塗って少し持ち上げる */
+.first-coach-ch.current .first-coach-tape { background: var(--kin); transform: translateY(-3px); box-shadow: 0 0 14px rgba(212, 175, 111, .7); }
+.first-coach-track { position: relative; width: 10px; height: 96px; background: #241e1d; box-shadow: inset 0 0 0 1px #3a3033; }
 .first-coach-track::before {
   content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 0;
-  background: var(--ch-color); box-shadow: 0 0 10px var(--ch-color);
+  background: var(--ch-color); box-shadow: 0 0 16px 2px var(--ch-color), 0 0 4px var(--ch-color);
+  filter: brightness(1.15) saturate(1.2);
   transition: height .9s cubic-bezier(.2, .7, .2, 1);
 }
 .first-coach-knob {
-  position: absolute; left: 50%; bottom: -2px; width: 30px; height: 14px; transform: translateX(-50%);
-  background: linear-gradient(#5c5254, #2f2829); border: 1px solid #6e6264;
-  box-shadow: 0 3px 6px rgba(0, 0, 0, .6), inset 0 1px 0 rgba(255, 255, 255, .18);
+  position: absolute; left: 50%; bottom: -3px; width: 40px; height: 18px; transform: translateX(-50%);
+  background: linear-gradient(#7a6f71, #3a3233); border: 1px solid #8e8183;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, .7), inset 0 1px 0 rgba(255, 255, 255, .25);
   transition: bottom .9s cubic-bezier(.2, .7, .2, 1);
 }
-.first-coach-knob::after { content: ''; position: absolute; left: 4px; right: 4px; top: 6px; height: 1px; background: #d9cfc2; }
+.first-coach-knob::after { content: ''; position: absolute; left: 5px; right: 5px; top: 8px; height: 2px; background: #f0e8da; }
 .first-coach-ch.up .first-coach-track::before { height: 100%; }
-.first-coach-ch.up .first-coach-knob { bottom: calc(100% - 12px); }
-.first-coach-ch.next .first-coach-knob { border-color: var(--kin); box-shadow: 0 0 0 2px rgba(212, 175, 111, .35), 0 3px 6px rgba(0, 0, 0, .6); }
-.first-coach-count { color: var(--ink-muted); font: 500 11px var(--font-mono); font-variant-numeric: tabular-nums; }
+.first-coach-ch.up .first-coach-knob { bottom: calc(100% - 15px); background: linear-gradient(#fff6ea, #b9ad9f); border-color: #fff6ea; }
+.first-coach-ch.next .first-coach-knob { border-color: var(--kin); box-shadow: 0 0 0 2px rgba(212, 175, 111, .45), 0 4px 8px rgba(0, 0, 0, .7); }
+.first-coach-count { color: var(--ink-muted); font: 500 12px var(--font-mono); font-variant-numeric: tabular-nums; }
 .first-coach-ch.up .first-coach-count { color: var(--ink-secondary); }
 
 .first-coach-text { min-width: 0; }
-.first-coach-where { margin: 0 0 6px; color: var(--ink-secondary); font-size: 13px; font-variant-numeric: tabular-nums; }
-.first-coach-text h2 { margin: 0 0 8px; font: 700 30px/1.25 var(--font-sans); letter-spacing: .01em; text-wrap: balance; }
-.first-coach-text p:last-child { margin: 0; max-width: 34em; color: #d9cfc0; font-size: 16px; line-height: 1.75; }
+.first-coach-where { margin: 0 0 6px; color: var(--ink-secondary); font-size: 14px; font-variant-numeric: tabular-nums; }
+.first-coach-text h2 { margin: 0 0 8px; font: 900 42px/1.2 var(--font-sans); letter-spacing: .01em; text-wrap: balance; }
+.first-coach-text p:last-child { margin: 0; max-width: 32em; color: #e6ddcf; font-size: 18px; font-weight: 500; line-height: 1.7; }
 
 .first-coach-actions { display: grid; gap: 10px; justify-items: stretch; min-width: 236px; }
 .first-coach-go {
@@ -5863,20 +5869,25 @@ button.library-guide-demo { font-family: inherit; cursor: pointer; }
 }
 .first-coach-skip:hover { color: var(--ink-primary); border-color: rgba(240, 232, 218, .5); }
 .first-coach.is-finished .first-coach-actions { min-width: 320px; }
+.first-coach.is-finished .first-coach-text h2 { font-size: 34px; word-break: keep-all; }
 @media (prefers-reduced-motion: reduce) {
-  .first-coach-track::before, .first-coach-knob { transition: none; }
+  .first-coach-track::before, .first-coach-knob, .first-coach-tape { transition: none; }
 }
 /* スマホ: 画面の下いっぱいに。フェーダーを上、文を中、押す所を下に */
 @media (max-width: 760px) {
-  .first-coach { grid-template-columns: minmax(0, 1fr); gap: 12px; padding: 14px 16px calc(14px + env(safe-area-inset-bottom)); }
-  .first-coach-desk { justify-content: space-between; gap: 4px; padding: 8px; }
-  .first-coach-ch { width: auto; flex: 1; gap: 4px; }
-  .first-coach-tape { font-size: 12px; }
-  .first-coach-track { height: 54px; }
-  .first-coach-knob { width: 26px; height: 12px; }
-  .first-coach-where { font-size: 12px; margin-bottom: 4px; }
-  .first-coach-text h2 { font-size: 22px; margin-bottom: 4px; }
-  .first-coach-text p:last-child { font-size: 14px; line-height: 1.65; }
+  .first-coach { grid-template-columns: minmax(0, 1fr); gap: 10px; min-height: 372px; align-content: start; padding: 12px 16px calc(14px + env(safe-area-inset-bottom)); }
+  .first-coach-text { min-height: 150px; }
+  .first-coach.is-finished .first-coach-text h2 { font-size: 28px; }
+  .first-coach-desk { justify-content: space-between; gap: 6px; padding: 8px; }
+  .first-coach-ch { width: auto; flex: 1; gap: 6px; }
+  .first-coach-tape { font-size: 14px; }
+  .first-coach-track { width: 10px; height: 60px; }
+  .first-coach-knob { width: 34px; height: 16px; }
+  .first-coach-ch.up .first-coach-knob { bottom: calc(100% - 13px); }
+  .first-coach-knob::after { top: 7px; }
+  .first-coach-where { font-size: 13px; margin-bottom: 2px; }
+  .first-coach-text h2 { font-size: 30px; margin-bottom: 4px; }
+  .first-coach-text p:last-child { font-size: 16px; line-height: 1.6; }
   .first-coach-actions, .first-coach.is-finished .first-coach-actions { min-width: 0; }
   .first-coach-go { min-height: 52px; font-size: 16px; }
   .first-coach-sub { min-height: 48px; }

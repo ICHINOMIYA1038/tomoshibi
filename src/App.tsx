@@ -529,6 +529,7 @@ export default function App() {
           <ambientLight intensity={settings.ambient ?? 0.05} color={'#3a2a20'} />
           {/* 光の跳ね返り（点いている器具から見積もる。BounceLight.tsx）。前はどの明かりでも同じ弱い光だった */}
           <BounceLight />
+          <CoachGlow />
           {settings.showHouseLights && (
             <>
               {/* 客電の明かりは客席の真上から当てる（AudienceSeating）。ここは舞台に回り込む分だけ */}
@@ -788,6 +789,16 @@ function MockSceneIndicator({ outlineVisible, onToggleOutline }: { outlineVisibl
     <button type="button" aria-label="次のシーン" disabled={index >= plan.scenes.length - 1}
       onClick={() => selectScene(plan.scenes[index + 1].id)}>→</button>
   </div>
+}
+
+/** 案内の暗転で、幕・床の縁・役者の影がうっすら見えるだけの弱い明かり（見え方だけ。FirstStageCoach） */
+function CoachGlow() {
+  const glow = useStore(s => s.stageGlow)
+  if (glow <= 0) return null
+  return <>
+    <hemisphereLight args={[new THREE.Color('#8a9ac4'), new THREE.Color('#2a2018'), glow]} />
+    <directionalLight position={[0, 6, 12]} color="#9aa6c8" intensity={glow * 0.6} />
+  </>
 }
 
 /** トップから来た人に、一覧と見本のどちらを開くかを確かめている間。暗い客席のまま待たせる */

@@ -7,6 +7,12 @@ import { fixtureRole, type FixtureRoleKey } from '../lighting/fixtureGuide'
 // 明かりを消して見せるのは描き方だけ（store の stageMask）。公演のデータ（キュー）は書き換えない
 
 const DONE_KEY = 'tomoshibi.firstStageCoach'
+/** 明かりを入れる長さ（フェーダーの動きと合わせる。styles.css の .first-coach-knob） */
+const RISE_MS = 900
+/** ピンを入れたときに、ほかの明かりを落とす割合 */
+const PIN_DIM = 0.45
+/** 暗転のあいだの、輪郭だけを見せる明かりの強さ */
+const GLOW = 0.5
 
 export function firstStageCoachDone(): boolean {
   try { return localStorage.getItem(DONE_KEY) === 'done' } catch { return false }
@@ -74,26 +80,36 @@ export function FirstStageCoach({ hidden, onPlay, onBuild, onClose }: { hidden: 
     return () => { observer.disconnect(); shell.style.removeProperty('--coach-h') }
   }, [groups, hidden])
 
-  // 段に合わせて、点けて見せる器具を決める。いま入れた段は、フェーダーを上げるように 0.9 秒で立ち上げる
+  // 段に合わせて、点けて見せる器具を決める。いま入れた段は、フェーダーを上げるように 0.9 秒で立ち上げる。
+  // 暗転の間は、舞台の輪郭がうっすら見えるだけの明かりを残し、最初の段（ホリ）を入れながら消す。
+  // ピン（最後の段）は、入れながらほかの明かりを 45% に落として、二人だけを浮かせる（2026-11-28 オーナー）
   useEffect(() => {
     const store = useStore.getState()
     if (!groups) return
     if (finished) { store.setStageMask(null); return }
     const lit = groups.slice(0, step).flatMap(group => group.fixtures.map(item => item.id))
-    const rising = step > 0 ? groups[step - 1].fixtures.map(item => item.id) : []
+    const current = step > 0 ? groups[step - 1] : null
+    const rising = current ? current.fixtures.map(item => item.id) : []
+    const spotlight = current?.key === 'pin'
+    const glowFrom = step <= 1 ? GLOW : 0
+    const shape = (eased: number) => ({ ids: rising, level: eased, ...(spotlight ? { dim: 1 - (1 - PIN_DIM) * eased } : {}) })
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    if (!rising.length || reduce) { store.setStageMask(lit); return }
+    if (!rising.length || reduce) { store.setStageMask(lit, shape(1), step === 0 ? GLOW : 0); return }
     let frame = 0
     const started = performance.now()
     const tick = (now: number) => {
-      const t = Math.min(1, (now - started) / 900)
+      const t = Math.min(1, (now - started) / RISE_MS)
       const eased = 1 - (1 - t) ** 3
-      useStore.getState().setStageMask(lit, { ids: rising, level: eased })
+      useStore.getState().setStageMask(lit, shape(eased), glowFrom * (1 - eased))
       if (t < 1) frame = requestAnimationFrame(tick)
     }
     frame = requestAnimationFrame(tick)
     return () => cancelAnimationFrame(frame)
   }, [step, groups, finished])
+  useEffect(() => {
+    useStore.getState().setCoachActive(!hidden)
+    return () => useStore.getState().setCoachActive(false)
+  }, [hidden])
   useEffect(() => () => useStore.getState().setStageMask(null), [])
   // 途中で上の「通しで見る」を押されたら、明かりを全部入れた最後の段にしてから通す
   useEffect(() => { if (hidden && groups && !finished) setStep(groups.length + 1) }, [hidden, groups, finished])
@@ -111,7 +127,7 @@ export function FirstStageCoach({ hidden, onPlay, onBuild, onClose }: { hidden: 
   return <section ref={rootRef} className={'first-coach' + (finished ? ' is-finished' : '')} aria-label="明かりを入れる案内">
     <div className="first-coach-desk" role="img" aria-label={`調光卓。${groups.length} 本のうち ${Math.min(step, groups.length)} 本が上がっています`}>
       {groups.map((group, index) => {
-        const state = finished || index < step ? 'up' : index === step ? 'next' : 'down'
+        const state = (finished || index < step ? 'up' : index === step ? 'next' : 'down') + (!finished && index === step - 1 ? ' current' : '')
         return <div key={group.key} className={'first-coach-ch ' + state} style={{ '--ch-color': toRgb(group.fixtures[0]) } as React.CSSProperties}>
           <span className="first-coach-tape">{group.tape}</span>
           <span className="first-coach-track"><span className="first-coach-knob" /></span>
