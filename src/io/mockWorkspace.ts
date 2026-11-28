@@ -120,6 +120,23 @@ export function isUntouchedDemo(): boolean {
   } catch { return false }
 }
 
+/**
+ * この端末に、作業の続きが残っているか。見本を開いただけ・最初の空の画面のまま、は数えない。
+ * 初めての人の案内（FirstStageCoach）を出すかどうかに使う。前から使っている人の流れは変えない
+ */
+export function hasWorkspaceDraft(): boolean {
+  try {
+    const raw = workspaceStorage().getItem(SESSION_KEY)
+    if (!raw) return false
+    const session = JSON.parse(raw) as { scene?: SerializedScene; demoBaseline?: string | null; pristine?: string | null; activeSavedName?: string | null; activeCloudProject?: unknown }
+    if (!session.scene) return false
+    if (session.activeSavedName || session.activeCloudProject) return true
+    if (session.demoBaseline && projectContentKey(session.scene) === session.demoBaseline) return false
+    if (session.pristine && pristineKey(session.scene) === session.pristine) return false
+    return true
+  } catch { return false }
+}
+
 export function preserveMockDraftBeforeDemo(): boolean {
   // ウェブでも、ログインしていないときは編集中のプロジェクトを一覧に控える（アプリと同じ。2026-11-17 から 2 件まで持てる）
   if (getActiveCloudProject()) {

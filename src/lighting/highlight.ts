@@ -13,3 +13,15 @@ export function highlightFixtures(fixtures: Fixture[], id: string | null): Fixtu
     ? { ...item, enabled: true, intensity: item.enabled && item.intensity > 0 ? item.intensity : HIGHLIGHT_FALLBACK_LEVEL }
     : { ...item, enabled: false })
 }
+
+/**
+ * 初めての人の案内（FirstStageCoach）で、1 段ずつ明かりを入れて見せる。mask にない器具は消して描く。
+ * highlightFixtures と同じく見え方だけで、公演のデータ（キュー）は書き換えない
+ */
+export function maskFixtures(fixtures: Fixture[], mask: string[] | null, rise: { ids: string[]; level: number } | null = null): Fixture[] {
+  if (!mask) return fixtures
+  const lit = new Set(mask)
+  const rising = new Set(rise && rise.level < 1 ? rise.ids : [])
+  return fixtures.map(item => !lit.has(item.id) ? { ...item, enabled: false }
+    : rising.has(item.id) ? { ...item, intensity: item.intensity * Math.max(0, rise!.level) } : item)
+}

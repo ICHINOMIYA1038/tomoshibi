@@ -15,6 +15,7 @@ import { Inspector } from './Inspector'
 import { LockButton } from './LockButton'
 import { HighlightButton } from './HighlightButton'
 import { ChangeScopeBar } from './ChangeScopeBar'
+import { FixtureCardNote } from './FixtureNote'
 
 // スマホ（幅 600px 以下）の編集画面。PC の道具の列・ヒエラルキー・インスペクターは出さず、
 // 舞台をいつも見せたまま、追加・シーン・設定を下からのシートで出す（2026-11-17 オーナーと決めた案 A）
@@ -119,8 +120,10 @@ function SelectedCard({ onSettings }: { onSettings: () => void }) {
     if (kind === 'stage') return '舞台'
     return undefined
   })
+  const fixture = useStore(s => s.selection.kind === 'fixture' ? s.fixtures.find(item => item.id === s.selection.id) : undefined)
   if (!selection.kind) return null
-  return <div className="phone-card">
+  return <div className={'phone-card' + (fixture ? ' has-note' : '')}>
+    {fixture && <FixtureCardNote fixture={fixture} />}
     <div className="phone-card-text"><span>{KIND_LABELS[selection.kind] ?? ''}</span><strong>{name ?? KIND_LABELS[selection.kind]}</strong></div>
     <LockButton className="phone-card-lock" />
     <HighlightButton short />

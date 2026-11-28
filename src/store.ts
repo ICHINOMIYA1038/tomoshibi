@@ -406,6 +406,10 @@ interface State {
   hovered: { kind: SelectionKind; id: string | null }
   /** 「この器具の光だけ見る」で光を残す器具（見え方だけ。保存しない）。highlight.ts */
   highlightFixtureId: string | null
+  /** 初めての人の案内で、点けて見せる器具（ほかは消して描く。見え方だけ。保存しない）。null なら絞らない。FirstStageCoach.tsx */
+  stageMask: string[] | null
+  /** stageMask で入れている途中の器具と、その立ち上がり（0〜1）。フェーダーを上げるように明かりを入れる */
+  stageMaskRise: { ids: string[]; level: number } | null
   /** 「この点に当たっている照明」を調べている点と、一覧を出す画面上の位置（見え方だけ。保存しない）。lightAtPoint.ts */
   lightProbe: { point: [number, number, number]; x: number; y: number } | null
   settings: SceneSettings
@@ -470,6 +474,7 @@ interface State {
   select: (kind: SelectionKind, id: string | null, handle?: 'position' | 'target') => void
   setHover: (kind: SelectionKind, id: string | null) => void
   setHighlight: (id: string | null) => void
+  setStageMask: (ids: string[] | null, rise?: { ids: string[]; level: number } | null) => void
   setLightProbe: (probe: { point: [number, number, number]; x: number; y: number } | null) => void
   updateSettings: (patch: Partial<SceneSettings>) => void
   loadPreset: (name: string) => void
@@ -571,6 +576,8 @@ export const useStore = create<State>((set, get) => ({
   selection: { kind: null, id: null },
   hovered: { kind: null, id: null },
   highlightFixtureId: null,
+  stageMask: null,
+  stageMaskRise: null,
   lightProbe: null,
   probeMeasurement: null,
   setProbeMeasurement: (m) => set({ probeMeasurement: m }),
@@ -1181,6 +1188,7 @@ export const useStore = create<State>((set, get) => ({
     ...(s.highlightFixtureId && kind === 'fixture' && id ? { highlightFixtureId: id } : {}),
   })),
   setHighlight: (id) => set({ highlightFixtureId: id }),
+  setStageMask: (ids, rise = null) => set({ stageMask: ids, stageMaskRise: ids ? rise : null }),
   setLightProbe: (probe) => set({ lightProbe: probe }),
   setHover: (kind, id) => set({ hovered: { kind, id } }),
 
