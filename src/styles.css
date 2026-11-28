@@ -5775,3 +5775,149 @@ button.library-guide-demo { font-family: inherit; cursor: pointer; }
   .unified-shell.phone-layout.shared-view .workspace-header .brand-strip { display: none; }
   .unified-shell.phone-layout.shared-view .canvas-wrap { top: 56px !important; bottom: 0 !important; }
 }
+
+/* ── 初めての人の案内（FirstStageCoach、2026-11-28）──────────────────────────
+   調光卓の一部を画面の下に置く。フェーダーの上の白いテープは、本物の卓で回路の名前を書いて貼る養生テープ。
+   3D の舞台を主役にするため、案内のあいだは左右の欄・道具の帯・平面図・キーの案内を隠す */
+.unified-shell.coach-on .toolbar,
+.unified-shell.coach-on .keyhint,
+.unified-shell.coach-on .workspace-current-scene,
+.unified-shell.coach-on .empty-selection-hint,
+.unified-shell.coach-on .console-reopen,
+.unified-shell.coach-on .outline-reopen,
+.unified-shell.coach-on .inspector-reopen,
+.unified-shell.coach-on .change-scope-bar,
+.unified-shell.coach-on .mobile-workspace-views,
+.unified-shell.coach-on .phone-view-switch,
+.unified-shell.coach-on .phone-list-button,
+.unified-shell.coach-on .phone-bottom,
+.unified-shell.coach-on .phone-card,
+.unified-shell.coach-on .phone-gesture-hint,
+.unified-shell.coach-on .phone-view-picker,
+.unified-shell.coach-on .phone-house-lights { display: none !important; }
+
+.first-coach {
+  --coach-paper: #e8dfcb;
+  --coach-ink: #1b1613;
+  position: absolute; z-index: 60; left: 0; right: 0; bottom: 0;
+  display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 0 32px;
+  /* 段ごとに文の長さが違っても卓の高さを変えない（高さが変わると、舞台の絵が段ごとに伸び縮みする） */
+  min-height: 240px;
+  padding: 20px max(24px, calc((100% - 1200px) / 2));
+  background: #100d0f;
+  border-top: 1px solid #3b3134;
+  color: var(--ink-primary); font-family: var(--font-sans);
+}
+/* 卓は客席の側にあるので、舞台の絵は卓の上までにする（卓で舞台の手前を隠さない） */
+.unified-shell.coach-on .canvas-wrap { bottom: var(--coach-h, 200px) !important; }
+/* フェーダー。テープ・溝・つまみ・灯数の縦の並び。X の動画で縮んでも見えるよう、溝とつまみは太く、光は強めに */
+.first-coach-desk { display: flex; gap: 8px; padding: 12px 14px 10px; background: #0b090a; border: 1px solid #2c2427; }
+.first-coach-ch { width: 52px; display: grid; justify-items: center; gap: 8px; }
+.first-coach-tape {
+  width: 100%; padding: 4px 0 3px; background: var(--coach-paper); color: var(--coach-ink);
+  font: 700 14px/1.3 var(--font-sans); text-align: center; letter-spacing: .02em;
+  clip-path: polygon(0 6%, 4% 0, 97% 4%, 100% 0, 99% 94%, 96% 100%, 3% 96%, 0 100%);
+  transition: background-color .3s, transform .3s;
+}
+.first-coach-ch.down .first-coach-tape { opacity: .45; }
+/* いま上げたフェーダーの札。金に塗って少し持ち上げる */
+.first-coach-ch.current .first-coach-tape { background: var(--kin); transform: translateY(-3px); box-shadow: 0 0 14px rgba(212, 175, 111, .7); }
+.first-coach-track { position: relative; width: 10px; height: 96px; background: #241e1d; box-shadow: inset 0 0 0 1px #3a3033; }
+.first-coach-track::before {
+  content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 0;
+  background: var(--ch-color); box-shadow: 0 0 16px 2px var(--ch-color), 0 0 4px var(--ch-color);
+  filter: brightness(1.15) saturate(1.2);
+  transition: height .9s cubic-bezier(.2, .7, .2, 1);
+}
+.first-coach-knob {
+  position: absolute; left: 50%; bottom: -3px; width: 40px; height: 18px; transform: translateX(-50%);
+  background: linear-gradient(#7a6f71, #3a3233); border: 1px solid #8e8183;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, .7), inset 0 1px 0 rgba(255, 255, 255, .25);
+  transition: bottom .9s cubic-bezier(.2, .7, .2, 1);
+}
+.first-coach-knob::after { content: ''; position: absolute; left: 5px; right: 5px; top: 8px; height: 2px; background: #f0e8da; }
+.first-coach-ch.up .first-coach-track::before { height: 100%; }
+.first-coach-ch.up .first-coach-knob { bottom: calc(100% - 15px); background: linear-gradient(#fff6ea, #b9ad9f); border-color: #fff6ea; }
+.first-coach-ch.next .first-coach-knob { border-color: var(--kin); box-shadow: 0 0 0 2px rgba(212, 175, 111, .45), 0 4px 8px rgba(0, 0, 0, .7); }
+.first-coach-count { color: var(--ink-muted); font: 500 12px var(--font-mono); font-variant-numeric: tabular-nums; }
+.first-coach-ch.up .first-coach-count { color: var(--ink-secondary); }
+
+.first-coach-text { min-width: 0; }
+.first-coach-where { margin: 0 0 6px; color: var(--ink-secondary); font-size: 14px; font-variant-numeric: tabular-nums; }
+.first-coach-text h2 { margin: 0 0 8px; font: 900 42px/1.2 var(--font-sans); letter-spacing: .01em; text-wrap: balance; }
+.first-coach-text p:last-child { margin: 0; max-width: 32em; color: #e6ddcf; font-size: 18px; font-weight: 500; line-height: 1.7; }
+
+.first-coach-actions { display: grid; gap: 10px; justify-items: stretch; min-width: 236px; }
+.first-coach-go {
+  min-height: 64px; padding: 0 28px; border: 0; border-radius: 0;
+  background: var(--shu); color: #fff6ec; font: 700 18px var(--font-sans); letter-spacing: .02em; cursor: pointer;
+  box-shadow: inset 0 -3px 0 rgba(0, 0, 0, .25);
+}
+.first-coach-go:hover { background: #d65435; }
+.first-coach-go:focus-visible { outline: 1px solid rgba(212, 175, 111, .7); outline-offset: 3px; }
+.first-coach-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.first-coach-sub {
+  min-height: 52px; display: grid; align-content: center; gap: 2px; padding: 6px 12px; border: 1px solid #4c4246; border-radius: 0;
+  background: transparent; color: var(--ink-primary); font: 700 14px var(--font-sans); text-align: left; cursor: pointer;
+}
+.first-coach-sub small { color: var(--ink-secondary); font-size: 11px; font-weight: 500; }
+.first-coach-sub span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.first-coach-sub:hover { border-color: var(--kin); }
+.first-coach-skip {
+  position: absolute; right: 12px; top: -40px; min-height: 32px; padding: 0 12px; border: 1px solid rgba(240, 232, 218, .25); border-radius: 0;
+  background: rgba(16, 13, 15, .7); color: var(--ink-secondary); font: 500 13px var(--font-sans); cursor: pointer;
+}
+.first-coach-skip:hover { color: var(--ink-primary); border-color: rgba(240, 232, 218, .5); }
+.first-coach.is-finished .first-coach-actions { min-width: 320px; }
+.first-coach.is-finished .first-coach-text h2 { font-size: 34px; word-break: keep-all; }
+@media (prefers-reduced-motion: reduce) {
+  .first-coach-track::before, .first-coach-knob, .first-coach-tape { transition: none; }
+}
+/* スマホ: 画面の下いっぱいに。フェーダーを上、文を中、押す所を下に */
+@media (max-width: 760px) {
+  .first-coach { grid-template-columns: minmax(0, 1fr); gap: 10px; min-height: 372px; align-content: start; padding: 12px 16px calc(14px + env(safe-area-inset-bottom)); }
+  .first-coach-text { min-height: 150px; }
+  .first-coach.is-finished .first-coach-text h2 { font-size: 28px; }
+  .first-coach-desk { justify-content: space-between; gap: 6px; padding: 8px; }
+  .first-coach-ch { width: auto; flex: 1; gap: 6px; }
+  .first-coach-tape { font-size: 14px; }
+  .first-coach-track { width: 10px; height: 60px; }
+  .first-coach-knob { width: 34px; height: 16px; }
+  .first-coach-ch.up .first-coach-knob { bottom: calc(100% - 13px); }
+  .first-coach-knob::after { top: 7px; }
+  .first-coach-where { font-size: 13px; margin-bottom: 2px; }
+  .first-coach-text h2 { font-size: 30px; margin-bottom: 4px; }
+  .first-coach-text p:last-child { font-size: 16px; line-height: 1.6; }
+  .first-coach-actions, .first-coach.is-finished .first-coach-actions { min-width: 0; }
+  .first-coach-go { min-height: 52px; font-size: 16px; }
+  .first-coach-sub { min-height: 48px; }
+}
+
+/* 器具の役目（FixtureNote）。右の欄のいちばん上に、欄外の書き込みのように左に金の線を引く */
+.fixture-note { margin: 10px 0 12px; border-left: 2px solid var(--kin); background: rgba(212, 175, 111, .06); }
+.fixture-note-toggle {
+  width: 100%; display: grid; grid-template-columns: 1fr auto; align-items: baseline; gap: 2px 8px; padding: 8px 10px;
+  border: 0; border-radius: 0; background: transparent; color: var(--ink-primary); text-align: left; cursor: pointer; font-family: var(--font-sans);
+}
+.fixture-note-toggle span { grid-column: 1; color: var(--ink-secondary); font-size: 11px; }
+.fixture-note-toggle strong { grid-column: 1; font-size: 15px; font-weight: 700; }
+.fixture-note-toggle em { grid-column: 2; grid-row: 1 / span 2; align-self: center; color: var(--kin); font-size: 12px; font-style: normal; text-decoration: underline; text-underline-offset: 3px; }
+.fixture-note.open .fixture-note-toggle strong { display: none; }
+.fixture-note-body { padding: 0 10px 10px; }
+.fixture-note-body h4 { margin: 0 0 4px; font-size: 15px; font-weight: 700; color: var(--ink-primary); }
+.fixture-note-body p { margin: 0 0 8px; color: #d9cfc0; font-size: 14px; line-height: 1.75; }
+.fixture-note-body p.fixture-note-more, .fixture-note-body p.fixture-note-color { font-size: 13px; line-height: 1.7; }
+.fixture-note-body b { display: block; color: var(--ink-primary); font-size: 13px; }
+.fixture-note-more { padding-top: 8px; border-top: 1px solid var(--divider); }
+.fixture-note-color { display: grid; grid-template-columns: 14px 1fr; gap: 8px; padding-top: 8px; border-top: 1px solid var(--divider); }
+.fixture-note-color i { width: 14px; height: 14px; margin-top: 4px; box-shadow: 0 0 0 1px rgba(255, 255, 255, .25); }
+.fixture-note-body small { display: block; color: var(--ink-muted); font-size: 11px; }
+/* スマホの札。1 行の「〜とは」を押すと、札の上に説明が広がる */
+.phone-card.has-note { flex-wrap: wrap; row-gap: 4px; }
+.fixture-card-note { flex: 1 0 100%; order: -1; }
+.fixture-card-note-toggle {
+  min-height: 32px; padding: 0; border: 0; background: transparent; color: var(--kin);
+  font: 500 13px var(--font-sans); text-decoration: underline; text-underline-offset: 3px; cursor: pointer;
+}
+.fixture-card-note .fixture-note-body { max-height: 38dvh; overflow-y: auto; padding: 6px 4px 4px 10px; border-left: 2px solid var(--kin); }
+.fixture-card-note .fixture-note-body p { font-size: 14px; }

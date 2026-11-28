@@ -19,6 +19,7 @@ import { LockButton } from './LockButton'
 import { HighlightButton } from './HighlightButton'
 import { askConfirm } from './askConfirm'
 import { StageShapeEditor } from './StageShapeEditor'
+import { FixtureNote } from './FixtureNote'
 import { clearChange } from '../changeLog'
 import * as THREE from 'three'
 
@@ -127,6 +128,7 @@ function FixtureInspector({ fixture }: { fixture: Fixture }) {
   // スマホでは、よく使う明るさ・色（照明の欄）をいちばん上に出す。数字の欄の下で、1 画面半スクロールしないと届かなかった（2026-11-19）
   const phone = typeof window !== 'undefined' && window.matchMedia('(max-width: 600px)').matches
   return <>
+    <FixtureNote fixture={fixture} />
     {phone && <InspectorSection title="明るさと色（このシーン）"><FixtureEditor fixture={fixture} /></InspectorSection>}
     <div className="scope-heading shared">全シーン共通（仕込み）</div>
     <p className="scope-note">名前・親・吊る位置を変えると、すべてのシーンで変わります。</p>

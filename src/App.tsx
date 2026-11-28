@@ -63,6 +63,10 @@ import { AudienceSeating } from './scene/AudienceSeating'
 import { isWorkspaceLibraryPath, isWorkspacePath, workspaceBasePath } from './io/workspacePath'
 import { LanternMark } from './ui/LanternMark'
 import { createSampleProduction } from './demo/createSampleProduction'
+import { FirstStageCoach, firstStageCoachDone } from './ui/FirstStageCoach'
+import { listCloudProjects } from './io/cloud'
+import { hasWorkspaceDraft } from './io/mockWorkspace'
+import { listSavedScenes } from './io/sceneIO'
 
 const CAMERA_VIEWS: Record<string, { pos: [number, number, number]; target: [number, number, number] }> = {
   audience: { pos: [0, 2.5, 10], target: [0, 2.5, -2] },
@@ -120,6 +124,11 @@ const isMockPreview = isWorkspacePath()
 const isSharedView = isSharedPlaybackURL()
 const isProjectLibraryPath = isWorkspaceLibraryPath
 const requestedDemo = () => isMockPreview ? new URLSearchParams(location.search).get('demo') : null
+/** トップの「無料で舞台を組む」（/studio/projects/?start=1）から来た。プロジェクトがまだ無い人には、一覧を挟まず見本を暗転で開く */
+const arrivedFromTop = () => isMockPreview && !isSharedView && isProjectLibraryPath() && new URLSearchParams(location.search).get('start') === '1'
+/** 見本を、初めての人の案内つきで開く（/studio/?demo=2&coach=1） */
+const requestedCoach = () => isMockPreview && !isSharedView && !isEmbed && !isProjectLibraryPath() &&
+  new URLSearchParams(location.search).get('demo') === '2' && new URLSearchParams(location.search).get('coach') === '1' && !firstStageCoachDone()
 const EXPOSURE_SCALE = 0.45
 
 function ExposureSync({ exposure }: { exposure: number }) {
@@ -148,6 +157,34 @@ export default function App() {
   })
   const projectTitle = useStore(s => s.productionPlan.projectTitle)
   const [mockPage, setMockPage] = useState<'projects' | 'editor'>(() => isProjectLibraryPath() ? 'projects' : 'editor')
+  // 初めての人の案内（FirstStageCoach）。見本を暗転で開き、1 段ずつ明かりを入れる
+  const [coachOpen, setCoachOpen] = useState(requestedCoach)
+  // 見本を読み込んでから案内を出す（子の effect は親より先に走るので、読み込む前の舞台で段を決めてしまう）
+  const [coachReady, setCoachReady] = useState(false)
+  // トップから来た人に、一覧と見本の案内のどちらを出すか確かめている間
+  const [startCheck, setStartCheck] = useState(() => arrivedFromTop() && !firstStageCoachDone())
+  // 案内の最後の「自分の舞台を組む」から一覧へ来たら、新しいプロジェクトを作る画面を開く
+  const [createOnOpen, setCreateOnOpen] = useState(false)
+  const { user: sessionUser, loading: sessionLoading } = useCloudSession()
+  useEffect(() => {
+    if (!arrivedFromTop()) return
+    const stay = () => {
+      const url = new URL(location.href)
+      url.searchParams.delete('start')
+      history.replaceState(null, '', url.pathname + url.search + url.hash)
+      setStartCheck(false)
+    }
+    if (!startCheck) { stay(); return }
+    if (sessionLoading) return
+    // 前から使っている人（この端末かアカウントにプロジェクトや作業の続きがある人）は、これまでどおり一覧へ
+    if (listSavedScenes().length > 0 || hasWorkspaceDraft()) { stay(); return }
+    const openSample = () => location.replace(`${workspaceBasePath()}/?demo=2&coach=1`)
+    if (!sessionUser) { openSample(); return }
+    let cancelled = false
+    listCloudProjects().then(items => { if (!cancelled) { if (items.length === 0) openSample(); else stay() } })
+      .catch(() => { if (!cancelled) stay() })
+    return () => { cancelled = true }
+  }, [startCheck, sessionLoading, sessionUser?.id])
   const [planOpen, setPlanOpen] = useState(isMockPreview)
   const [mapVisible, setMapVisible] = useState(true)
   // PC の見え方。3D だけ・平面図だけ（どちらも画面いっぱい）・上下に並べる（2026-11-17 オーナーの提案）。覚えておく
@@ -336,8 +373,10 @@ export default function App() {
       flushMockAutosave()
       const url = new URL(location.href)
       url.searchParams.delete('demo')
+      url.searchParams.delete('coach')
       history.replaceState(null, '', url.pathname + url.search + url.hash)
     }
+    setCoachReady(true)
     if (isMockPreview && useStore.getState().savedSnapshot === null) {
       useStore.getState().markSavedSnapshot()
     }
@@ -417,14 +456,15 @@ export default function App() {
   }
 
   if (isSharedView && sharedStatus !== 'ready') return <SharedPlaybackStatus failed={sharedStatus === 'error'} />
+  const coachOn = coachOpen && !playbackOpen && mockPage === 'editor'
 
   return (
     <OnlineWorkspace enabled={isMockPreview && !isSharedView} editorVisible={mockPage !== 'projects'} onProjects={() => navigateMock('projects')}>
       {isMockPreview && !isSharedView && <><WorkspaceNotices /><UpdateNotice /><CloudProjectAutosave /></>}
       {isMockPreview && mockPage === 'projects'
-        ? <ProjectLibrary onOpenEditor={() => navigateMock('editor')} />
-        : <div className={'unified-shell' + (planOpen ? ' plan-open' : '') + (settings.panelOpen ? ' panel-open' : '') + (playbackOpen ? ' playback-open' : '') + (isMockPreview ? ' workspace-layout mobile-view-' + mobileView : '') + (mapVisible ? '' : ' map-hidden') + (outlineVisible ? ' outline-visible' : '') + (adFooter ? ' has-ad-footer' : '') + (phoneLayout ? ' phone-layout' : '') + (deskLayout && deskView === 'plan' && mapVisible ? ' desk-plan-full' : '') + (deskLayout && deskView === 'side' && mapVisible ? ' desk-split-side' : '') + (deskLayout && inspectorHidden ? ' inspector-hidden' : '') + (deskLayout && consoleOpen && !playbackOpen ? ' console-open' : '') + (isSharedView ? ' shared-view' : '')}
-          style={{ '--desk-h': deskLayout && consoleOpen && !playbackOpen ? `${deskHeight}px` : '0px' } as React.CSSProperties}>
+        ? startCheck ? <FirstVisitCurtain /> : <ProjectLibrary onOpenEditor={() => navigateMock('editor')} openCreate={createOnOpen} onCreateOpened={() => setCreateOnOpen(false)} />
+        : <div className={'unified-shell' + (planOpen ? ' plan-open' : '') + (settings.panelOpen && !coachOn ? ' panel-open' : '') + (playbackOpen ? ' playback-open' : '') + (isMockPreview ? ' workspace-layout mobile-view-' + (coachOn ? 'stage' : mobileView) : '') + (mapVisible && !coachOn ? '' : ' map-hidden') + (outlineVisible && !coachOn ? ' outline-visible' : '') + (adFooter ? ' has-ad-footer' : '') + (phoneLayout ? ' phone-layout' : '') + (deskLayout && deskView === 'plan' && mapVisible && !coachOn ? ' desk-plan-full' : '') + (deskLayout && deskView === 'side' && mapVisible && !coachOn ? ' desk-split-side' : '') + (deskLayout && (inspectorHidden || coachOn) ? ' inspector-hidden' : '') + (deskLayout && consoleOpen && !playbackOpen && !coachOn ? ' console-open' : '') + (isSharedView ? ' shared-view' : '') + (coachOn ? ' coach-on' : '')}
+          style={{ '--desk-h': deskLayout && consoleOpen && !playbackOpen && !coachOn ? `${deskHeight}px` : '0px' } as React.CSSProperties}>
       {/* 右ボタンを押して離しただけのときに、右クリックのメニューを出す（ドラッグは視点の移動。objectMenu.ts） */}
       <div className={'canvas-wrap' + (addDropActive ? ' add-drop-active' : '')} onContextMenu={event => event.preventDefault()}
         onPointerDownCapture={canvasPointerDown} onPointerUpCapture={canvasPointerUp}
@@ -489,6 +529,7 @@ export default function App() {
           <ambientLight intensity={settings.ambient ?? 0.05} color={'#3a2a20'} />
           {/* 光の跳ね返り（点いている器具から見積もる。BounceLight.tsx）。前はどの明かりでも同じ弱い光だった */}
           <BounceLight />
+          <CoachGlow />
           {settings.showHouseLights && (
             <>
               {/* 客電の明かりは客席の真上から当てる（AudienceSeating）。ここは舞台に回り込む分だけ */}
@@ -604,7 +645,7 @@ export default function App() {
         onView={next => { setMobileView(next); if (next === 'plan') setMapVisible(true) }}
         onBack={() => navigateMock('projects')} onPlay={startPlayback} />}
       {!playbackOpen && <ControlPanel planOpen={planOpen} />}
-      {deskLayout && consoleOpen && !playbackOpen && <ConsoleDesk onClose={() => setConsoleOpen(false)} height={deskHeight} onResize={setDeskHeight} />}
+      {deskLayout && consoleOpen && !playbackOpen && !coachOn && <ConsoleDesk onClose={() => setConsoleOpen(false)} height={deskHeight} onResize={setDeskHeight} />}
       {deskLayout && !consoleOpen && !playbackOpen && <button type="button" className="console-reopen" onClick={() => setConsoleOpen(true)}
         title="卓（試作）：フェーダーとキュー表で、シーンごとの照明のレベルを組みます">卓 ⌃</button>}
       {deskLayout && !outlineVisible && !playbackOpen && <button type="button" className="outline-reopen" onClick={() => setOutlineVisible(true)}
@@ -622,6 +663,9 @@ export default function App() {
         onCloseSceneEditor={() => setSceneEditorOpen(false)}
       />}
       {playbackOpen && <StagePlayback onClose={() => setPlaybackOpen(false)} simplified={isMockPreview} shared={isSharedView} />}
+      {/* 通しで見るの間も、案内の段を覚えておくために消さずに隠す */}
+      {coachOpen && coachReady && mockPage === 'editor' && <FirstStageCoach hidden={playbackOpen} onPlay={startPlayback} onClose={() => setCoachOpen(false)}
+        onBuild={() => { setCoachOpen(false); setCreateOnOpen(true); navigateMock('projects') }} />}
       {!playbackOpen && <HelpOverlay />}
 
       {!playbackOpen && <SelectionStatusHint />}
@@ -745,6 +789,24 @@ function MockSceneIndicator({ outlineVisible, onToggleOutline }: { outlineVisibl
     <button type="button" aria-label="次のシーン" disabled={index >= plan.scenes.length - 1}
       onClick={() => selectScene(plan.scenes[index + 1].id)}>→</button>
   </div>
+}
+
+/** 案内の暗転で、幕・床の縁・役者の影がうっすら見えるだけの弱い明かり（見え方だけ。FirstStageCoach） */
+function CoachGlow() {
+  const glow = useStore(s => s.stageGlow)
+  if (glow <= 0) return null
+  return <>
+    <hemisphereLight args={[new THREE.Color('#8a9ac4'), new THREE.Color('#2a2018'), glow]} />
+    <directionalLight position={[0, 6, 12]} color="#9aa6c8" intensity={glow * 0.6} />
+  </>
+}
+
+/** トップから来た人に、一覧と見本のどちらを開くかを確かめている間。暗い客席のまま待たせる */
+function FirstVisitCurtain() {
+  return <main className="shared-playback-status first-visit-curtain" aria-live="polite">
+    <LanternMark size={28} />
+    <p>舞台を用意しています…</p>
+  </main>
 }
 
 /** 共有 URL で開いた人に、何の画面かとアプリへの入口を 1 行で見せる */

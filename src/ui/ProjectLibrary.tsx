@@ -113,7 +113,7 @@ function StructurePreview({ item }: { item: LibraryItem }) {
   </div>
 }
 
-export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
+export function ProjectLibrary({ onOpenEditor, openCreate: openCreateOnMount = false, onCreateOpened }: { onOpenEditor: () => void; openCreate?: boolean; onCreateOpened?: () => void }) {
   const dirty = useIsDirty()
   const { cloudDirty, saveStatus } = useMockWorkspaceState()
   const { user, loading: sessionLoading } = useCloudSession()
@@ -240,6 +240,13 @@ export function ProjectLibrary({ onOpenEditor }: { onOpenEditor: () => void }) {
     setCreateTemplate(template)
     setCreateOpen(true)
   }
+
+  // 初めての人の案内の最後（「自分の舞台を組む」）から来たら、新しいプロジェクトを作る画面を開く
+  useEffect(() => {
+    if (!openCreateOnMount) return
+    openCreate('proscenium')
+    onCreateOpened?.()
+  }, [openCreateOnMount])
 
   const selectItem = (key: string) => {
     setSelectedKey(key)

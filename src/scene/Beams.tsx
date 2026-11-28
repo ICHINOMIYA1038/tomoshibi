@@ -1,4 +1,4 @@
-import { highlightFixtures } from '../lighting/highlight'
+import { highlightFixtures, maskFixtures } from '../lighting/highlight'
 import type { SetPiece } from '../types'
 import { useMemo, useRef, useEffect } from 'react'
 import * as THREE from 'three'
@@ -187,10 +187,12 @@ function shadowPriority(fixture: Fixture, setPieces: SetPiece[]) {
 
 export function Beams() {
   const highlightId = useStore(s => s.highlightFixtureId)
+  const stageMask = useStore(s => s.stageMask)
+  const stageMaskRise = useStore(s => s.stageMaskRise)
   const stored = useStore(s => s.fixtures)
   const performers = useStore(s => s.performers)
   // 役者を追う照明は、狙いを役者に置き換えて描く（通しで見るでは、歩く役者についていく）
-  const fixtures = useMemo(() => highlightFixtures(stored.map(f => resolveFixture(f, performers)), highlightId), [stored, performers, highlightId])
+  const fixtures = useMemo(() => maskFixtures(highlightFixtures(stored.map(f => resolveFixture(f, performers)), highlightId), stageMask, stageMaskRise), [stored, performers, highlightId, stageMask, stageMaskRise])
   const sceneHaze = useStore(s => s.settings.hazeDensity)
   const setPieces = useStore(s => s.setPieces)
   // 置いたスモークマシンの煙が、会場の空気を濃くする
