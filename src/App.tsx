@@ -126,9 +126,13 @@ const isProjectLibraryPath = isWorkspaceLibraryPath
 const requestedDemo = () => isMockPreview ? new URLSearchParams(location.search).get('demo') : null
 /** トップの「無料で舞台を組む」（/studio/projects/?start=1）から来た。プロジェクトがまだ無い人には、一覧を挟まず見本を暗転で開く */
 const arrivedFromTop = () => isMockPreview && !isSharedView && isProjectLibraryPath() && new URLSearchParams(location.search).get('start') === '1'
-/** 見本を、初めての人の案内つきで開く（/studio/?demo=2&coach=1） */
-const requestedCoach = () => isMockPreview && !isSharedView && !isEmbed && !isProjectLibraryPath() &&
-  new URLSearchParams(location.search).get('demo') === '2' && new URLSearchParams(location.search).get('coach') === '1' && !firstStageCoachDone()
+/** 見本を、初めての人の案内つきで開く（/studio/?demo=2&coach=1）。coach=again は、案内を終えた人にももう一度出す（記事から案内を見てもらうためのリンク） */
+const requestedCoach = () => {
+  if (!isMockPreview || isSharedView || isEmbed || isProjectLibraryPath()) return false
+  const q = new URLSearchParams(location.search)
+  if (q.get('demo') !== '2') return false
+  return q.get('coach') === 'again' || (q.get('coach') === '1' && !firstStageCoachDone())
+}
 const EXPOSURE_SCALE = 0.45
 
 function ExposureSync({ exposure }: { exposure: number }) {
